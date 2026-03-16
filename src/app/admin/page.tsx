@@ -181,7 +181,8 @@ export default function AdminDashboard() {
                 price: parseFloat(formData.get('price') as string),
                 stock_quantity: parseInt(formData.get('stock') as string),
                 specs: JSON.parse(formData.get('specs') as string || "{}"),
-                image_urls: imageUrls
+                image_urls: imageUrls,
+                sku: formData.get('sku')
             };
 
             let error;
@@ -633,6 +634,7 @@ export default function AdminDashboard() {
                                                     {({ 'instagram': '📸', 'facebook': '👥', 'google_ads': '🔍', 'google_organico': '🌱', 'whatsapp': '💬', 'tiktok': '🎵', 'direto': '🔗', 'outros': '🌐' } as Record<string, string>)[lead.marketing_source] || '🔗'}
                                                 </span>
                                                 <div className="text-[9px] text-white/20 mt-0.5">{lead.marketing_source || 'direto'}</div>
+                                                {lead.campaign_name && <div className="text-[8px] text-blue-400/60 font-black uppercase tracking-tighter mt-1">{lead.campaign_name}</div>}
                                             </td>
                                             <td className="p-6 font-mono text-xs text-blue-300">{lead.voucher_code}</td>
                                             <td className="p-6">
@@ -888,6 +890,7 @@ export default function AdminDashboard() {
                                     </select>
                                     <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="Preço (R$)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
                                     <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="Estoque" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
+                                    <input name="sku" defaultValue={editingProduct?.sku} placeholder="SKU (Olist/Estoque)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" />
                                     <div className="md:col-span-2 space-y-4">
                                         <div>
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">Especificações (JSON)</label>
@@ -950,6 +953,7 @@ export default function AdminDashboard() {
                                     <div className="text-2xl font-black mb-4">R$ {p.price?.toLocaleString('pt-BR')}</div>
                                     <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center text-xs">
                                         <span className="text-white/40">Estoque: <span className={p.stock_quantity > 0 ? "text-green-400" : "text-red-400"}>{p.stock_quantity}</span></span>
+                                        {p.sku && <span className="text-white/20 font-mono text-[10px]">SKU: {p.sku}</span>}
                                     </div>
                                 </div>
                             ))}

@@ -10,6 +10,8 @@ CREATE TABLE products (
     specs JSONB,
     image_urls TEXT[], -- Array de URLs das imagens
     views INTEGER DEFAULT 0, -- Contador de visualizações
+    sku TEXT UNIQUE, -- Código SKU para estoque/Olist
+    olist_product_id TEXT, -- ID do produto na Olist
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -27,6 +29,9 @@ CREATE TABLE leads (
     delivery_address TEXT,
     final_value DECIMAL(10, 2),
     commission_value DECIMAL(10, 2), -- 5% of final_value
+    marketing_source TEXT, -- 'google', 'facebook', 'instagram', 'direct'
+    campaign_name TEXT, -- Nome da campanha de Ads
+    utm_parameters JSONB, -- Objeto completo com UTMs
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     converted_at TIMESTAMP WITH TIME ZONE
 );

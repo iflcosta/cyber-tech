@@ -1,33 +1,53 @@
 import { supabase } from './supabase';
 import { createTinyOrder } from './tiny';
 
-// Detecta a origem do lead via UTM params ou referrer
-function detectMarketingSource(): string {
-    if (typeof window === 'undefined') return 'direto';
+// Detecta a origem do lead via UTM params ou referrer e retorna detalhes completos
+function detectMarketingSource() {
+    const details = {
+        source: 'direto',
+        campaign: '',
+        utm_params: {} as Record<string, string>
+    };
+
+    if (typeof window === 'undefined') return details;
 
     const params = new URLSearchParams(window.location.search);
+    
+    // Captura todos os UTMs
+    params.forEach((value, key) => {
+        if (key.startsWith('utm_')) {
+            details.utm_params[key] = value;
+        }
+    });
+
     const utmSource = params.get('utm_source');
-    const utmMedium = params.get('utm_medium');
+    const utmCampaign = params.get('utm_campaign');
+    
+    if (utmCampaign) details.campaign = utmCampaign;
 
     if (utmSource) {
-        // Normaliza nomes comuns
         const src = utmSource.toLowerCase();
-        if (src.includes('instagram') || src.includes('ig')) return 'instagram';
-        if (src.includes('facebook') || src.includes('fb')) return 'facebook';
-        if (src.includes('google') || src.includes('gads')) return 'google_ads';
-        if (src.includes('whatsapp') || src.includes('wpp')) return 'whatsapp';
-        if (src.includes('tiktok')) return 'tiktok';
-        return utmMedium ? `${utmSource}/${utmMedium}` : utmSource;
+        if (src.includes('instagram') || src.includes('ig')) details.source = 'instagram';
+        else if (src.includes('facebook') || src.includes('fb')) details.source = 'facebook';
+        else if (src.includes('google') || src.includes('gads')) details.source = 'google_ads';
+        else if (src.includes('whatsapp') || src.includes('wpp')) details.source = 'whatsapp';
+        else if (src.includes('tiktok')) details.source = 'tiktok';
+        else details.source = utmSource;
+        
+        return details;
     }
 
     const referrer = document.referrer;
-    if (!referrer) return 'direto';
-    if (referrer.includes('instagram.com')) return 'instagram';
-    if (referrer.includes('facebook.com')) return 'facebook';
-    if (referrer.includes('google.com')) return 'google_organico';
-    if (referrer.includes('whatsapp.com')) return 'whatsapp';
-    if (referrer.includes('tiktok.com')) return 'tiktok';
-    return 'outros';
+    if (!referrer) return details;
+    
+    if (referrer.includes('instagram.com')) details.source = 'instagram';
+    else if (referrer.includes('facebook.com')) details.source = 'facebook';
+    else if (referrer.includes('google.com')) details.source = 'google_organico';
+    else if (referrer.includes('whatsapp.com')) details.source = 'whatsapp';
+    else if (referrer.includes('tiktok.com')) details.source = 'tiktok';
+    else details.source = 'outros';
+
+    return details;
 }
 
 export const trackLead = async (data: {
@@ -45,8 +65,8 @@ export const trackLead = async (data: {
         localStorage.setItem('cyber_session', sessionId);
     }
 
-    // Detecta a origem de marketing
-    const marketingSource = detectMarketingSource();
+    // Detecta a origem de marketing detalhada
+    const marketingData = detectMarketingSource();
 
     // Voucher CYBER-XXXX
     const voucherCode = 'CYBER-' + Math.random().toString(36).substr(2, 4).toUpperCase();
@@ -74,7 +94,9 @@ export const trackLead = async (data: {
         description: data.description,
         status: 'pending',
         order_id_tiny: tinyId,
-        marketing_source: marketingSource
+        marketing_source: marketingData.source,
+        campaign_name: marketingData.campaign,
+        utm_parameters: marketingData.utm_params
     });
 
     if (error) {
