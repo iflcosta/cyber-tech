@@ -6,11 +6,11 @@ export async function saveCheckoutLead(name: string, whatsapp: string, items: an
       .from('leads')
       .insert([
         {
-          name,
+          client_name: name,
           whatsapp,
-          source: 'checkout_abandonment',
-          notes: `Produtos no carrinho: ${items.map(i => i.product.name).join(', ')}`,
-          status: 'new'
+          interest_type: 'checkout_abandonment',
+          description: `Produtos no carrinho: ${items.map(i => i.product.name).join(', ')}`,
+          status: 'pending'
         }
       ]);
 
@@ -18,5 +18,31 @@ export async function saveCheckoutLead(name: string, whatsapp: string, items: an
     console.log('[LEADS] Lead de checkout salvo com sucesso!');
   } catch (error) {
     console.error('[LEADS] Erro ao salvar lead:', error);
+  }
+}
+
+export async function trackLead(data: any) {
+  try {
+    const voucherCode = `CYBER-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    
+    const { error } = await supabase
+      .from('leads')
+      .insert([
+        {
+          client_name: data.client_name,
+          whatsapp: data.whatsapp,
+          interest_type: data.interest_type,
+          description: data.description,
+          status: 'pending',
+          voucher_code: voucherCode
+        }
+      ]);
+
+    if (error) throw error;
+    console.log('[LEADS] Lead geral capturado com sucesso!');
+    return voucherCode;
+  } catch (error) {
+    console.error('[LEADS] Erro ao rastrear lead:', error);
+    return null;
   }
 }
