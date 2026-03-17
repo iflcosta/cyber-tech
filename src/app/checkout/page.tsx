@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
-import { CreditCard, Truck, ShieldCheck, MapPin, QrCode, Lock, ChevronLeft, Loader2, CheckCircle2, Copy } from 'lucide-react';
+import { CreditCard, Truck, ShieldCheck, MapPin, QrCode, Lock, ChevronLeft, Loader2, CheckCircle2, Copy, Smartphone } from 'lucide-react';
 import Header from '@/components/Header';
 import { createOrder } from '@/lib/orders';
 import { getProducts } from '@/lib/products';
+import { saveCheckoutLead } from '@/lib/leads';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CheckoutPage() {
@@ -12,7 +13,8 @@ export default function CheckoutPage() {
     const [cep, setCep] = useState('');
     const [shippingCost, setShippingCost] = useState<number | null>(null);
     const [calculatingShipping, setCalculatingShipping] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix'>('credit_card');
+    const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix' | 'pay_at_store'>('credit_card');
+    const [deliveryType, setDeliveryType] = useState<'delivery' | 'store'>('delivery');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [clientName, setClientName] = useState('');
@@ -44,7 +46,37 @@ export default function CheckoutPage() {
         };
 
         handleMagicLink();
-    }, [isLoaded, items.length, isSuccess, clearCart, addToCart]);
+
+        // Track InitiateCheckout
+        if (items.length > 0 && typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'InitiateCheckout', {
+                num_items: items.length,
+                value: totalPrice,
+                currency: 'BRL'
+            });
+        }
+    }, [isLoaded, items.length, isSuccess, clearCart, addToCart, totalPrice]);
+
+    // Ao mudar para retirada na loja, limpa frete e seta pagamento para loja por padrão
+    useEffect(() => {
+        if (deliveryType === 'store') {
+            setShippingCost(0);
+            setPaymentMethod('pay_at_store');
+        } else {
+            setShippingCost(null);
+            setPaymentMethod('credit_card');
+        }
+    }, [deliveryType]);
+
+    // Captura de Lead (Abandono de Carrinho)
+    useEffect(() => {
+        if (clientName.length > 3 && clientWhatsapp.length > 10 && !isSuccess) {
+            const timer = setTimeout(() => {
+                saveCheckoutLead(clientName, clientWhatsapp, items);
+            }, 2000); // 2 segundos de debounce para não sobrecarregar o banco
+            return () => clearTimeout(timer);
+        }
+    }, [clientName, clientWhatsapp, items, isSuccess]);
 
     const handleCalculateShipping = async () => {
         if (cep.length < 8) return;
@@ -63,6 +95,11 @@ export default function CheckoutPage() {
             return;
         }
 
+        if (deliveryType === 'delivery' && !shippingCost) {
+            alert('Por favor, calcule o frete para entrega em casa.');
+            return;
+        }
+
         setIsProcessing(true);
 
         const totalOrderValue = totalPrice + (shippingCost || 0);
@@ -72,21 +109,63 @@ export default function CheckoutPage() {
         const orderId = await createOrder({
             client_name: clientName,
             client_whatsapp: clientWhatsapp,
-            delivery_type: 'delivery',
-            delivery_address: `CEP ${cep}`, // Em produção, colheríamos endereço completo
+            delivery_type: deliveryType,
+            delivery_address: deliveryType === 'delivery' ? `CEP ${cep}` : 'Retirada na Loja Física',
             shipping_cost: shippingCost || 0,
             subtotal: totalPrice,
             total: finalTotal,
             payment_method: paymentMethod
         }, items);
 
-        // 2. Simular delay do Gateway (Olist Pay / PagSeguro / MercadoPago)
+        if (!orderId) {
+            alert('Falha ao registrar pedido no banco de dados.');
+            setIsProcessing(false);
+            return;
+        }
+
+        // 2. Integrar com Olist ERP via API Interna
+        try {
+            const apiResponse = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId,
+                    paymentMethod,
+                    clientData: {
+                        name: clientName,
+                        whatsapp: clientWhatsapp,
+                        cep: cep,
+                        address: deliveryType === 'delivery' ? `CEP ${cep}` : 'Retirada na Loja'
+                    },
+                    items
+                })
+            });
+
+            const apiResult = await apiResponse.json();
+            if (!apiResult.success) {
+                console.warn('[Checkout] Erro na integração Olist:', apiResult.error);
+            }
+        } catch (error) {
+            console.error('[Checkout] Erro ao chamar API de Checkout:', error);
+        }
+
+        // 3. Simular delay do Gateway (Olist Pay / PagSeguro / MercadoPago)
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         if (orderId) {
             setCreatedOrderId(orderId);
             setIsSuccess(true);
             clearCart();
+
+            // Track Purchase
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+                (window as any).fbq('track', 'Purchase', {
+                    value: finalTotal,
+                    currency: 'BRL',
+                    content_ids: items.map(i => i.product.id),
+                    content_type: 'product'
+                });
+            }
         } else {
             alert('Falha ao processar pedido. Tente novamente mais tarde.');
         }
@@ -116,7 +195,27 @@ export default function CheckoutPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="max-w-md w-full mx-auto p-8 rounded-3xl border border-blue-500/20 bg-blue-500/5 text-center shadow-[0_0_50px_rgba(37,99,235,0.1)]"
                 >
-                    {paymentMethod === 'pix' ? (
+                    {paymentMethod === 'pay_at_store' ? (
+                        <>
+                            <div className="flex justify-center mb-6">
+                                <div className="bg-purple-500/20 text-purple-500 p-4 rounded-full border border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                                    <MapPin size={48} />
+                                </div>
+                            </div>
+                            <h2 className="text-2xl font-black italic mb-2 uppercase">PEDIDO <span className="text-purple-500">RESERVADO!</span></h2>
+                            <p className="text-white/60 mb-6 text-sm">
+                                Pedido #{createdOrderId?.slice(0, 8)} gerado! Mostre este número no balcão da Cyber Tech em Bragança Paulista para retirar seu produto e realizar o pagamento.
+                            </p>
+                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+                                <p className="text-xs text-white/40 mb-1 font-bold uppercase tracking-widest text-left">Onde Retirar:</p>
+                                <p className="text-sm font-bold text-left italic">Rua da Tecnologia, 123 - Centro<br/>Bragança Paulista - SP</p>
+                                <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                                    <span className="text-xs text-white/40">Total Original:</span>
+                                    <span className="font-bold text-white text-lg">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue)}</span>
+                                </div>
+                            </div>
+                        </>
+                    ) : paymentMethod === 'pix' ? (
                         <>
                             <div className="flex justify-center mb-6">
                                 <div className="bg-blue-500/20 text-blue-500 p-4 rounded-full border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
@@ -128,7 +227,6 @@ export default function CheckoutPage() {
                                 Pedido #{createdOrderId?.slice(0, 8)} gerado! Escaneie o QR Code ou cole o código Pix Copia e Cola em seu banco para garantir o pedido.
                             </p>
 
-                            {/* Bloco de Código Pix */}
                             <div className="bg-white/5 border border-dashed border-white/20 rounded-2xl p-6 mb-8 relative group overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
                                 <div className="text-xs break-all font-mono text-white/80 mb-4">{mockPixCode}</div>
@@ -139,10 +237,6 @@ export default function CheckoutPage() {
                                     <Copy size={16} /> Copiar Linha Digitável
                                 </button>
                             </div>
-                            <div className="text-xs text-white/40 mb-6 flex justify-between items-center bg-black/50 p-3 rounded-lg border border-white/5">
-                                <span>Valor do Pix:</span>
-                                <span className="font-bold text-green-400 text-lg">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue * 0.95)}</span>
-                            </div>
                         </>
                     ) : (
                         <>
@@ -151,9 +245,9 @@ export default function CheckoutPage() {
                                     <CheckCircle2 size={48} />
                                 </div>
                             </div>
-                            <h2 className="text-2xl font-black italic mb-2">PAGAMENTO <span className="text-green-500">APROVADO!</span></h2>
+                            <h2 className="text-2xl font-black italic mb-2 text-green-500 uppercase">PAGAMENTO APROVADO!</h2>
                             <p className="text-white/60 mb-8 text-sm">
-                                Pedido #{createdOrderId?.slice(0, 8)} aprovado via Cartão de Crédito. Ele já foi integrado ao sistema e você receberá atualizações em breve.
+                                Pedido #{createdOrderId?.slice(0, 8)} processado com sucesso via Cartão de Crédito Online. Você receberá as atualizações em breve.
                             </p>
                         </>
                     )}
@@ -174,7 +268,6 @@ export default function CheckoutPage() {
             <Header />
 
             <div className="container mx-auto px-4 max-w-6xl">
-                {/* Header do Checkout */}
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
                     <button
                         onClick={() => window.history.back()}
@@ -188,19 +281,35 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-
-                    {/* Lado Esquerdo: Dados de Envio e Pagamento */}
                     <div className="lg:col-span-7 space-y-8">
-
-                        {/* Seção 1: Frete e Endereço */}
+                        {/* Seção 1: Recebimento */}
                         <div className="bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl">
-                            <h2 className="text-xl font-black italic flex items-center gap-3 mb-6">
+                            <h2 className="text-xl font-black italic flex items-center gap-3 mb-6 uppercase">
                                 <span className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">1</span>
-                                ENTREGA
+                                MODO DE RECEBIMENTO
                             </h2>
 
-                            <div className="space-y-4">
-                                <div>
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeliveryType('delivery')}
+                                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${deliveryType === 'delivery' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                >
+                                    <Truck size={24} />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Receber em Casa</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setDeliveryType('store')}
+                                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${deliveryType === 'store' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                >
+                                    <MapPin size={24} />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Retirar na Loja</span>
+                                </button>
+                            </div>
+
+                            {deliveryType === 'delivery' ? (
+                                <div className="space-y-4">
                                     <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Cálculo de Frete</label>
                                     <div className="flex gap-4">
                                         <div className="relative flex-1">
@@ -222,53 +331,43 @@ export default function CheckoutPage() {
                                             {calculatingShipping ? <Loader2 size={20} className="animate-spin" /> : 'CALCULAR'}
                                         </button>
                                     </div>
+
+                                    <AnimatePresence>
+                                        {shippingCost !== null && shippingCost > 0 && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-4">
+                                                <label className="flex items-center justify-between p-4 border border-blue-500 bg-blue-500/10 rounded-xl cursor-pointer">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-5 h-5 rounded-full border-4 border-blue-500 flex items-center justify-center">
+                                                            <div className="w-2 h-2 bg-white rounded-full" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold">Correios PAC</div>
+                                                            <div className="text-xs text-white/50">Entrega em até 5 dias úteis</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="font-black text-blue-400">
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(shippingCost)}
+                                                    </div>
+                                                </label>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
-
-                                {/* Opções de Frete Disponíveis (Mock) */}
-                                <AnimatePresence>
-                                    {shippingCost !== null && (
-                                        <motion.div
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: 'auto' }}
-                                            className="pt-4"
-                                        >
-                                            <label className="flex items-center justify-between p-4 border border-blue-500 bg-blue-500/10 rounded-xl cursor-pointer">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-5 h-5 rounded-full border-4 border-blue-500 flex items-center justify-center">
-                                                        <div className="w-2 h-2 bg-white rounded-full" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-bold">Correios PAC</div>
-                                                        <div className="text-xs text-white/50">Entrega em até 5 dias úteis</div>
-                                                    </div>
-                                                </div>
-                                                <div className="font-black text-blue-400">
-                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(shippingCost)}
-                                                </div>
-                                            </label>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                {shippingCost !== null && (
-                                    <div className="space-y-4 pt-4 mt-4 border-t border-white/5">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <input type="text" placeholder="Rua / Avenida" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500" />
-                                            </div>
-                                            <div>
-                                                <input type="text" placeholder="Número" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <input type="text" placeholder="Complemento (Opcional)" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500" />
-                                        </div>
+                            ) : (
+                                <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex items-center gap-4">
+                                    <div className="bg-blue-500/20 p-3 rounded-full text-blue-500">
+                                        <MapPin size={24} />
                                     </div>
-                                )}
-                            </div>
+                                    <div>
+                                        <p className="font-bold text-sm text-blue-400">Ponto de Retirada Oficial:</p>
+                                        <p className="text-sm font-bold mt-1 uppercase italic">Cyber Tech Bragança - Unidade Centro</p>
+                                        <p className="text-xs text-white/50 mt-1">Rua da Tecnologia, 123 - Centro, Bragança Paulista - SP</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Seção 1.5: Dados do Comprador */}
+                        {/* Seção 2: Seus Dados */}
                         <div className="bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl">
                             <h2 className="text-xl font-black italic flex items-center gap-3 mb-6">
                                 <span className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">2</span>
@@ -276,32 +375,30 @@ export default function CheckoutPage() {
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Nome Completo</label>
-                                    <input required type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Ex: Iago Lopes" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-medium" />
+                                    <input required type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Nome Completo" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-medium" />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">WhatsApp</label>
-                                    <input required type="text" value={clientWhatsapp} onChange={(e) => setClientWhatsapp(e.target.value)} placeholder="(11) 99999-9999" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-medium" />
+                                    <input required type="text" value={clientWhatsapp} onChange={(e) => setClientWhatsapp(e.target.value)} placeholder="WhatsApp" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-medium" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Seção 2: Pagamento Híbrido */}
-                        <div className={`bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border shadow-2xl transition-all ${(shippingCost === null || !clientName || !clientWhatsapp) ? 'border-white/5 opacity-50 pointer-events-none' : 'border-white/10'}`}>
+                        {/* Seção 3: Pagamento */}
+                        <div className={`bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border shadow-2xl transition-all ${(deliveryType === 'delivery' && !shippingCost) || !clientName || !clientWhatsapp ? 'border-white/5 opacity-50 pointer-events-none' : 'border-white/10'}`}>
                             <h2 className="text-xl font-black italic flex items-center gap-3 mb-6">
                                 <span className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">3</span>
                                 PAGAMENTO
                             </h2>
 
                             <form onSubmit={handlePayment}>
-                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className={`grid ${deliveryType === 'store' ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-8`}>
                                     <button
                                         type="button"
                                         onClick={() => setPaymentMethod('credit_card')}
                                         className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${paymentMethod === 'credit_card' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
                                     >
                                         <CreditCard size={24} />
-                                        <span className="text-xs font-bold uppercase tracking-wider">Cartão de Crédito</span>
+                                        <span className="text-[10px] font-black uppercase tracking-wider">Cartão Online</span>
                                     </button>
                                     <button
                                         type="button"
@@ -309,53 +406,28 @@ export default function CheckoutPage() {
                                         className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${paymentMethod === 'pix' ? 'border-green-500 bg-green-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
                                     >
                                         <QrCode size={24} />
-                                        <span className="text-xs font-bold uppercase tracking-wider">Pix (Desconto 5%)</span>
+                                        <span className="text-[10px] font-black uppercase tracking-wider">Pix (Desconto)</span>
                                     </button>
+                                    {deliveryType === 'store' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('pay_at_store')}
+                                            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${paymentMethod === 'pay_at_store' ? 'border-purple-500 bg-purple-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                        >
+                                            <Smartphone size={24} />
+                                            <span className="text-[10px] font-black uppercase tracking-wider">Pagar na Loja</span>
+                                        </button>
+                                    )}
                                 </div>
 
-                                {/* Formulário de Cartão Mockado */}
                                 {paymentMethod === 'credit_card' && (
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 mb-8">
-                                        <div>
-                                            <label className="text-xs font-bold text-white/40 mb-2 block">Número do Cartão</label>
-                                            <input required type="text" placeholder="0000 0000 0000 0000" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
-                                        </div>
+                                    <div className="space-y-4 mb-8">
+                                        <input required type="text" placeholder="Número do Cartão" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-xs font-bold text-white/40 mb-2 block">Validade</label>
-                                                <input required type="text" placeholder="MM/AA" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-bold text-white/40 mb-2 block">CVV</label>
-                                                <input required type="text" placeholder="123" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
-                                            </div>
+                                            <input required type="text" placeholder="MM/AA" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
+                                            <input required type="text" placeholder="CVV" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
                                         </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-white/40 mb-2 block">Nome Impresso no Cartão</label>
-                                            <input required type="text" placeholder="IAGO LOPES" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 uppercase" />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-white/40 mb-2 block">Parcelamento</label>
-                                            <select className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 appearance-none">
-                                                <option>1x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue)} sem juros</option>
-                                                <option>2x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue / 2)} sem juros</option>
-                                                <option>10x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue / 10)} sem juros</option>
-                                            </select>
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {/* Informação Pix Mockada */}
-                                {paymentMethod === 'pix' && (
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8 p-6 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-4">
-                                        <div className="bg-green-500/20 p-3 rounded-full text-green-500">
-                                            <QrCode size={24} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-sm">O código Pix será gerado após finalizar a compra.</p>
-                                            <p className="text-xs text-white/60 mt-1">O seu pedido será reservado por 30 minutos.</p>
-                                        </div>
-                                    </motion.div>
+                                    </div>
                                 )}
 
                                 <button
@@ -363,44 +435,20 @@ export default function CheckoutPage() {
                                     disabled={isProcessing}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-3 text-lg disabled:opacity-70"
                                 >
-                                    {isProcessing ? (
-                                        <>
-                                            <Loader2 size={24} className="animate-spin" />
-                                            PROCESSANDO PAGAMENTO...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <ShieldCheck size={24} />
-                                            FINALIZAR E PAGAR
-                                            {paymentMethod === 'pix'
-                                                ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue * 0.95)
-                                                : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue)}
-                                        </>
-                                    )}
+                                    {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <><ShieldCheck size={24} /> {paymentMethod === 'pay_at_store' ? 'RESERVAR PRODUTO' : 'FINALIZAR E PAGAR'}</>}
                                 </button>
-                                <p className="text-center text-xs text-white/30 mt-4 flex items-center justify-center gap-1">
-                                    <Lock size={12} /> Ambiente 100% Seguro. Pagamento processado via Gateway Parceiro.
-                                </p>
                             </form>
                         </div>
                     </div>
 
-                    {/* Lado Direito: Resumo do Pedido */}
+                    {/* Resumo */}
                     <div className="lg:col-span-5 h-fit sticky top-28 bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl">
                         <h2 className="text-xl font-black italic mb-6">RESUMO DO PEDIDO</h2>
-
-                        <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
+                        <div className="space-y-4 mb-6">
                             {items.map((item) => (
                                 <div key={item.product.id} className="flex gap-4">
-                                    <div className="w-16 h-16 rounded-lg bg-black/50 overflow-hidden flex-shrink-0 border border-white/5">
-                                        {item.product.image_urls && item.product.image_urls[0] ? (
-                                            <img src={item.product.image_urls[0]} alt={item.product.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full bg-blue-900/20" />
-                                        )}
-                                    </div>
                                     <div className="flex-1">
-                                        <h4 className="font-bold text-sm line-clamp-2 leading-tight">{item.product.name}</h4>
+                                        <h4 className="font-bold text-sm line-clamp-2 leading-tight uppercase italic">{item.product.name}</h4>
                                         <div className="text-xs text-white/50 mt-1">Qtd: {item.quantity}</div>
                                     </div>
                                     <div className="font-bold">
@@ -409,34 +457,13 @@ export default function CheckoutPage() {
                                 </div>
                             ))}
                         </div>
-
-                        <div className="space-y-3 pt-6 border-t border-white/10 text-sm">
-                            <div className="flex justify-between items-center text-white/70">
-                                <span>Subtotal dos Produtos</span>
-                                <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-white/70">
-                                <span>Frete & Manuseio</span>
-                                <span>{shippingCost !== null ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(shippingCost) : '---'}</span>
-                            </div>
-                            {paymentMethod === 'pix' && (
-                                <div className="flex justify-between items-center text-green-400 font-bold">
-                                    <span>Desconto (Pix 5%)</span>
-                                    <span>- {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue * 0.05)}</span>
-                                </div>
-                            )}
-                        </div>
-
                         <div className="pt-6 mt-6 border-t border-white/10 flex justify-between items-end">
-                            <span className="font-bold uppercase tracking-widest text-white/50 text-sm">Total a Pagar</span>
+                            <span className="font-bold uppercase tracking-widest text-white/50 text-xs">Total Final</span>
                             <span className="text-3xl font-black text-blue-500">
-                                {paymentMethod === 'pix'
-                                    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue * 0.95)
-                                    : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue)}
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paymentMethod === 'pix' ? totalOrderValue * 0.95 : totalOrderValue)}
                             </span>
                         </div>
                     </div>
-
                 </div>
             </div>
         </main>

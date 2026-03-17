@@ -219,7 +219,12 @@ export default function Showroom() {
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <button
-                                                onClick={() => handleInterest(product)}
+                                                onClick={() => {
+                                                    handleInterest(product);
+                                                    if (typeof window !== 'undefined' && (window as any).fbq) {
+                                                        (window as any).fbq('track', 'Contact', { content_name: product.name });
+                                                    }
+                                                }}
                                                 className="bg-white/5 text-white/70 px-2 py-2 md:py-2.5 rounded-xl font-bold text-[10px] md:text-xs uppercase hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-1.5 border border-white/10"
                                             >
                                                 <Smartphone className="w-3 h-3 md:w-4 md:h-4" />
@@ -227,7 +232,16 @@ export default function Showroom() {
                                                 <span className="sm:hidden">LOJA</span>
                                             </button>
                                             <button
-                                                onClick={() => addToCart(product)}
+                                                onClick={() => {
+                                                    addToCart(product);
+                                                    if (typeof window !== 'undefined' && (window as any).fbq) {
+                                                        (window as any).fbq('track', 'AddToCart', { 
+                                                            content_name: product.name,
+                                                            value: product.price,
+                                                            currency: 'BRL'
+                                                        });
+                                                    }
+                                                }}
                                                 className="bg-blue-600 text-white px-2 py-2 md:py-2.5 rounded-xl font-bold text-[10px] md:text-xs uppercase hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/20"
                                             >
                                                 <ShoppingBag className="w-3 h-3 md:w-4 md:h-4" />

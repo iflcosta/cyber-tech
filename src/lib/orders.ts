@@ -9,7 +9,7 @@ export interface CheckoutData {
     shipping_cost: number;
     subtotal: number;
     total: number;
-    payment_method: 'credit_card' | 'pix';
+    payment_method: 'credit_card' | 'pix' | 'pay_at_store';
 }
 
 export async function createOrder(data: CheckoutData, items: CartItem[]): Promise<string | null> {

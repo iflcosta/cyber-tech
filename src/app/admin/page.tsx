@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { syncTinyProductsToSupabase } from '@/lib/tiny';
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'products' | 'reviews'>('dashboard');
@@ -204,6 +205,22 @@ export default function AdminDashboard() {
         } catch (err: any) {
             console.error("Erro ao salvar produto:", err);
             alert("❌ Erro ao salvar produto: " + (err.message || "Verifique as permissões do banco."));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSyncProducts = async () => {
+        if (!confirm("Isso irá atualizar o estoque e preços baseados no Tiny ERP (Olist). Prosseguir?")) return;
+        
+        setLoading(true);
+        try {
+            const result = await syncTinyProductsToSupabase();
+            alert(`✅ Sincronização concluída! ${result.count} produtos atualizados/inseridos.`);
+            fetchProducts();
+        } catch (err: any) {
+            console.error("Erro na sincronização:", err);
+            alert("❌ Falha na sincronização: " + (err.message || "Verifique as credenciais do Tiny no .env"));
         } finally {
             setLoading(false);
         }
@@ -865,7 +882,15 @@ export default function AdminDashboard() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-4">
+                            <button
+                                onClick={handleSyncProducts}
+                                disabled={loading}
+                                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all"
+                            >
+                                <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
+                                {loading ? 'Sincronizando...' : 'Sincronizar com Olist (Tiny)'}
+                            </button>
                             <button
                                 onClick={() => {
                                     setEditingProduct(null);

@@ -135,3 +135,65 @@ export async function getTinyPaymentLink(orderId: string) {
         return null;
     }
 }
+
+/**
+ * Busca a lista de produtos ativos no Tiny ERP
+ */
+export async function fetchTinyProducts() {
+    if (!TINY_API_TOKEN) throw new Error("TINY_API_TOKEN não configurado.");
+
+    try {
+        const formData = new URLSearchParams();
+        formData.append('token', TINY_API_TOKEN);
+        formData.append('formato', 'json');
+        
+        const response = await fetch(`${TINY_API_URL}/produtos.pesquisa.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        });
+
+        const result = await response.json();
+
+        if (result.retorno.status === 'Erro') {
+            if (result.retorno.erros[0]?.erro.includes('não encontrou')) return [];
+            throw new Error(`Tiny API Error: ${result.retorno.erros[0]?.erro}`);
+        }
+
+        return result.retorno.produtos.map((p: any) => p.produto);
+    } catch (error) {
+        console.error('Erro ao buscar produtos no Tiny:', error);
+        throw error;
+    }
+}
+
+/**
+ * Sincroniza os produtos do Tiny com o banco de dados Supabase
+ */
+export async function syncTinyProductsToSupabase() {
+    try {
+        const tinyProducts = await fetchTinyProducts();
+        if (!tinyProducts || tinyProducts.length === 0) return { count: 0 };
+
+        const productsToUpsert = tinyProducts.map((tp: any) => ({
+            sku: tp.codigo,
+            name: tp.nome,
+            price: tp.preco,
+            stock_quantity: tp.saldo,
+            category: 'hardware', // Categoria padrão, pode ser ajustada via mapeamento
+            olist_product_id: tp.id?.toString()
+        }));
+
+        // Upsert no Supabase usando o SKU como chave de conflito
+        const { data, error } = await supabase
+            .from('products')
+            .upsert(productsToUpsert, { onConflict: 'sku' });
+
+        if (error) throw error;
+
+        return { count: productsToUpsert.length };
+    } catch (error) {
+        console.error('Erro na sincronização de produtos:', error);
+        throw error;
+    }
+}
