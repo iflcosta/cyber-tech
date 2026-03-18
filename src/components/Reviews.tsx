@@ -82,15 +82,19 @@ export default function Reviews() {
     };
 
     return (
-        <section id="reviews" className="py-24 bg-[#F0EFED] border-y border-[#D4D2CF]">
-            <div className="container mx-auto px-4">
+        <section id="reviews" className="py-24 bg-[var(--bg-primary)] border-y border-[var(--border-subtle)] relative overflow-hidden">
+            <div className="absolute inset-0 hero-texture opacity-30" />
+            <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
                     <div>
-                        <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-none uppercase">
+                        <div className="text-[10px] font-mono text-[var(--accent-primary)] uppercase tracking-[0.4em] font-black mb-4 flex items-center gap-3">
+                            <span className="w-8 h-[1px] bg-[var(--accent-primary)]" /> REPUTAÇÃO E CONFIANÇA
+                        </div>
+                        <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[var(--text-primary)] leading-none uppercase chrome-text">
                             FEEDBACK DOS <br />
-                            <span className="text-outline">CLIENTES</span>
+                            <span className="opacity-40 italic">CLIENTES</span>
                         </h2>
-                        <p className="text-[#888888] max-w-xl text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                        <p className="text-[var(--text-secondary)] max-w-xl text-[10px] font-bold uppercase tracking-widest leading-relaxed">
                             A satisfação de quem confia na Cyber Informática para seus setups mais críticos.
                         </p>
                     </div>
@@ -114,20 +118,20 @@ export default function Reviews() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 key={review.id}
-                                className="bg-white p-10 rounded-[2px] border border-[#D4D2CF] relative group h-full flex flex-col"
+                                className="bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] relative group h-full flex flex-col hover:border-[var(--accent-primary)] transition-all"
                             >
-                                <div className="absolute top-8 right-10 text-[#1A1A1A]/10 group-hover:text-[#1A1A1A]/20 transition-colors">
+                                <div className="absolute top-8 right-10 text-[var(--accent-primary)]/5 group-hover:text-[var(--accent-primary)]/10 transition-colors">
                                     <MessageSquareQuote size={56} />
                                 </div>
                                 <div className="flex gap-1 mb-6">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} className={i < review.rating ? "text-[#1A1A1A] fill-[#1A1A1A]" : "text-[#ECEAE6] fill-[#ECEAE6]"} />
+                                        <Star key={i} size={14} className={i < review.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--border-subtle)] fill-[var(--border-subtle)]"} />
                                     ))}
                                 </div>
-                                <p className="text-[#555555] font-medium leading-relaxed mb-8 flex-1 italic">"{review.comment}"</p>
-                                <div className="pt-8 border-t border-[#ECEAE6] flex items-center justify-between">
-                                    <span className="font-display font-bold text-[#1A1A1A] uppercase tracking-tight">{review.user_name}</span>
-                                    <span className="text-[10px] text-[#AAAAAA] uppercase font-bold tracking-widest">{new Date(review.created_at).toLocaleDateString()}</span>
+                                <p className="text-[var(--text-secondary)] font-medium leading-relaxed mb-8 flex-1 italic">"{review.comment}"</p>
+                                <div className="pt-8 border-t border-[var(--border-subtle)] flex items-center justify-between">
+                                    <span className="font-display font-bold text-[var(--text-primary)] uppercase tracking-tight">{review.user_name}</span>
+                                    <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest">{new Date(review.created_at).toLocaleDateString()}</span>
                                 </div>
                             </motion.div>
                         )) : (
@@ -153,9 +157,10 @@ export default function Reviews() {
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white w-full max-w-xl p-10 rounded-[2px] border border-[#D4D2CF] shadow-2xl relative z-10"
+                            className="bg-[var(--bg-surface)] w-full max-w-xl p-10 rounded-2xl border border-[var(--border-subtle)] shadow-2xl relative z-10 overflow-hidden"
                         >
-                            <h3 className="text-3xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight mb-8">SUA AVALIAÇÃO</h3>
+                            <div className="absolute inset-0 hero-texture opacity-30" />
+                            <h3 className="text-3xl font-display font-bold text-[var(--text-primary)] uppercase tracking-tight mb-8 relative z-10 chrome-text">SUA AVALIAÇÃO</h3>
 
                             {message.text ? (
                                 <div className={cn(
@@ -168,21 +173,21 @@ export default function Reviews() {
                             ) : null}
 
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                <div>
-                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Como devemos te chamar?</label>
+                                <div className="relative z-10">
+                                    <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Como devemos te chamar?</label>
                                     <input
                                         required
                                         type="text"
                                         placeholder="Seu nome"
-                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium placeholder:opacity-20"
                                         value={newReview.name}
                                         onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Nota (1 a 5 estrelas)</label>
-                                    <div className="flex gap-4 p-4 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px]">
+                                <div className="relative z-10">
+                                    <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Nota (1 a 5 estrelas)</label>
+                                    <div className="flex gap-4 p-4 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg">
                                         {[1, 2, 3, 4, 5].map((star) => (
                                             <button
                                                 key={star}
@@ -194,7 +199,7 @@ export default function Reviews() {
                                                     size={32}
                                                     className={cn(
                                                         "transition-colors",
-                                                        star <= newReview.rating ? "text-[#1A1A1A] fill-[#1A1A1A]" : "text-[#D4D2CF]"
+                                                        star <= newReview.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--border-subtle)]"
                                                     )}
                                                 />
                                             </button>
@@ -202,13 +207,13 @@ export default function Reviews() {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Seu Depoimento</label>
+                                <div className="relative z-10">
+                                    <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Seu Depoimento</label>
                                     <textarea
                                         required
-                                        placeholder="Conte como foi sua experiência conãosco..."
+                                        placeholder="Conte como foi sua experiência conosco..."
                                         rows={4}
-                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium placeholder:opacity-20 resize-none"
                                         value={newReview.comment}
                                         onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                                     />

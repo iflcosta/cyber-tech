@@ -1,64 +1,139 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, Copy, Send, Smartphone } from 'lucide-react';
+import { X, CheckCircle2, Copy, Send, Monitor, Smartphone, Wrench, HelpCircle, ArrowRight } from 'lucide-react';
 import { trackLead } from '@/lib/leads';
 import { brand } from '@/lib/brand';
-import { cn } from './ui/Button';
+import { useSearchParams } from 'next/navigation';
+import { useLeadModal } from '@/contexts/LeadModalContext';
 
-interface LeadModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    interestType: 'venda' | 'manutencao' | 'voucher' | 'pc_build';
-    customDescription?: string;
-    whatsappMessage?: string;
-}
+type LeadStep = 'intent' | 'details' | 'success';
+type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
 
-export default function LeadModal({ isOpen, onClose, interestType, customDescription, whatsappMessage }: LeadModalProps) {
-    const [step, setStep] = useState<'form' | 'success'>('form');
+export default function LeadModal() {
+    const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, openModal } = useLeadModal();
+    const [step, setStep] = useState<LeadStep>('intent');
+    const [intent, setIntent] = useState<IntentType | null>(null);
+    const [goal, setGoal] = useState<'compra' | 'manutencao' | 'duvida' | null>(null);
+
+    // Form states
     const [name, setName] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
-    const [model, setModel] = useState('');
-    const [problem, setProblem] = useState('');
-    const [deliveryType, setDeliveryType] = useState<'store' | 'delivery'>('store');
-    const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [description, setDescription] = useState('');
+    const [budget, setBudget] = useState('');
+    const [usage, setUsage] = useState('');
+
     const [voucher, setVoucher] = useState('');
     const [loading, setLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
+    
+    const searchParams = useSearchParams();
+
+    // Sync context goal and reset state when opening/closing
+    useEffect(() => {
+        if (isOpen) {
+            if (initialGoal) {
+                setGoal(initialGoal);
+                setStep('details');
+                // Auto-set intent based on goal
+                if (initialGoal === 'manutencao') setIntent('manutencao_urgente');
+                else if (initialGoal === 'duvida') setIntent('duvida_tecnica');
+                else setIntent('pesquisando_preco');
+            } else {
+                setStep('intent');
+            }
+        }
+    }, [isOpen, initialGoal]);
 
     useEffect(() => {
         setMounted(true);
+        const hasUTM = searchParams.get('utm_source') || searchParams.get('utm_medium');
+        const expiry = localStorage.getItem('lead_modal_expiry');
+        const isExpired = !expiry || new Date().getTime() > parseInt(expiry);
+
+        if (hasUTM && isExpired) {
+            openModal();
+        } else if (isExpired) {
+            const timer = setTimeout(() => openModal(), 45000);
+            const handleMouseLeave = (e: MouseEvent) => {
+                if (e.clientY <= 0) {
+                    openModal();
+                    document.removeEventListener('mouseleave', handleMouseLeave);
+                }
+            };
+            document.addEventListener('mouseleave', handleMouseLeave);
+            return () => {
+                clearTimeout(timer);
+                document.removeEventListener('mouseleave', handleMouseLeave);
+            };
+        }
+    }, [searchParams, openModal]);
+
+    useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
-            // Reset state when closing
-            setTimeout(() => setStep('form'), 300);
+            // Reset form after animation
+            const timer = setTimeout(() => {
+                setStep('intent');
+                setGoal(initialGoal || null);
+                setName('');
+                setWhatsapp('');
+                setDescription('');
+                setBudget('');
+                setUsage('');
+            }, 300);
+            return () => clearTimeout(timer);
         }
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
+    }, [isOpen, initialGoal]);
+
+    const handleIntentSelection = (selectedGoal: 'compra' | 'manutencao' | 'duvida') => {
+        setGoal(selectedGoal);
+        setStep('details');
+        if (selectedGoal === 'manutencao') setIntent('manutencao_urgente');
+        else if (selectedGoal === 'duvida') setIntent('duvida_tecnica');
+        else setIntent('pesquisando_preco');
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !whatsapp || loading) return;
 
         setLoading(true);
-        let description = customDescription || '';
-        if (interestType === 'manutencao') {
-            description = `Modelo: ${model} | Problema: ${problem}`;
+        
+        let currentIntent = intent;
+        
+        // Merge descriptions
+        let finalDescription = description;
+        if (goal === 'compra') {
+            finalDescription = `Orçamento: ${budget} | Uso: ${usage}${description ? ' | Obs: ' + description : ''}`;
+            if (budget === 'acima de R$3.000') {
+                currentIntent = 'compra_imediata';
+                setIntent('compra_imediata');
+            }
         }
-        if (interestType === 'venda' || interestType === 'pc_build') {
-            description += ` | Entrega: ${deliveryType === 'store' ? 'Retirada na Loja' : 'Entrega em ' + deliveryAddress}`;
+        
+        if (customDescription) {
+            finalDescription = `${customDescription} | Detalhes: ${finalDescription}`;
         }
+
+        const utm_params = {
+            source: searchParams.get('utm_source'),
+            medium: searchParams.get('utm_medium'),
+            campaign: searchParams.get('utm_campaign')
+        };
 
         const code = await trackLead({
             client_name: name,
             whatsapp: whatsapp,
-            interest_type: interestType,
-            description,
-            delivery_type: deliveryType,
-            delivery_address: deliveryAddress
+            interest_type: goal === 'manutencao' ? 'manutencao' : 'venda',
+            intent_type: currentIntent || 'duvida_tecnica',
+            description: finalDescription,
+            marketing_source: utm_params.source || 'direct',
+            utm_parameters: utm_params
         });
 
         if (code) {
@@ -70,209 +145,144 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
 
     if (!mounted) return null;
 
-    const modalContent = (
+    const intentClasses = "flex flex-col items-center justify-center p-6 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl hover:border-[var(--border-active)] hover:bg-[var(--bg-surface)] transition-all group text-center";
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-lg overflow-y-auto">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                        className="bg-white/95 backdrop-blur-xl w-full max-w-md my-auto rounded-3xl overflow-hidden border border-[#D4D2CF] shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative"
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="bg-[var(--bg-surface)] w-full max-w-lg my-auto rounded-2xl overflow-hidden border border-[var(--border-subtle)] shadow-2xl relative"
                     >
                         <button
-                            onClick={onClose}
-                            className="absolute top-4 right-4 text-[#AAAAAA] hover:text-[#1A1A1A] z-20 p-2 hover:bg-[#F8F7F5] rounded-full transition-all"
+                            onClick={closeModal}
+                            className="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text-primary)] z-20 p-2 hover:bg-[var(--bg-elevated)] rounded-full transition-all"
                         >
-                            <X size={24} />
+                            <X size={20} />
                         </button>
 
-                        <div className="p-6 md:p-8">
-                            {step === 'form' ? (
-                                <>
-                                    <div className="mb-8">
-                                        <div className="inline-flex p-3 rounded-xl bg-[#F8F7F5] text-[#1A1A1A] mb-6 border border-[#ECEAE6]">
-                                            <Smartphone size={24} />
+                        <div className="relative">
+                            <div className="h-24 bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center px-8">
+                                <h2 className="text-3xl font-display font-bold tracking-tight text-[var(--text-primary)] chrome-text leading-none">
+                                    {step === 'intent' ? 'VAMOS COMEÇAR?' : step === 'details' ? 'QUASE LÁ' : 'TUDO PRONTO!'}
+                                </h2>
+                            </div>
+
+                            <div className="p-8">
+                                {step === 'intent' ? (
+                                    <div className="space-y-6">
+                                        <p className="text-[var(--text-secondary)] font-mono text-xs uppercase tracking-[0.2em] mb-4">Qual é o seu objetivo hoje?</p>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
+                                                <Monitor className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar PC/Notebook</span>
+                                            </button>
+                                            <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
+                                                <Smartphone className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar Celular</span>
+                                            </button>
+                                            <button onClick={() => handleIntentSelection('manutencao')} className={intentClasses}>
+                                                <Wrench className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Consertar Dispositivo</span>
+                                            </button>
+                                            <button onClick={() => handleIntentSelection('duvida')} className={intentClasses}>
+                                                <HelpCircle className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Tirar uma Dúvida</span>
+                                            </button>
                                         </div>
-                                        <h2 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] leading-none">
-                                            {interestType === 'voucher' ? (
-                                                <>GARANTA SEU <span className="text-outline text-[#AAAAAA]">BRINDE</span></>
-                                            ) : interestType === 'manutencao' ? (
-                                                <>SOLICITAR <span className="text-outline text-[#AAAAAA]">ORÇAMENTO</span></>
-                                            ) : interestType === 'pc_build' ? (
-                                                <>ENVIAR <span className="text-outline text-[#AAAAAA]">SETUP</span></>
-                                            ) : (
-                                                <>TENHO <span className="text-outline text-[#AAAAAA]">INTERESSE</span></>
-                                            )}
-                                        </h2>
-                                        <p className="text-[#888888] text-[10px] font-black uppercase tracking-widest mt-4">
-                                            {interestType === 'voucher'
-                                                ? "Contato para resgate de voucher exclusivo."
-                                                : interestType === 'pc_build'
-                                                    ? "Contato para orçamento do seu PC Gamer."
-                                                    : "Contato para atendimento especializado."}
-                                        </p>
                                     </div>
-
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">nome Completo</label>
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    value={name}
-                                                    onChange={(e) => setName(e.target.value)}
-                                                    placeholder="Ex: Iago Lopes"
-                                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
-                                                />
+                                ) : step === 'details' ? (
+                                    <form onSubmit={handleSubmit} className="space-y-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Seu Nome</label>
+                                                <input required type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome Completo" className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">WhatsApp</label>
-                                                <input
-                                                    required
-                                                    type="tel"
-                                                    value={whatsapp}
-                                                    onChange={(e) => setWhatsapp(e.target.value)}
-                                                    placeholder="(11) 99999-9999"
-                                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
-                                                />
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">WhatsApp</label>
+                                                <input required type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="(11) 99999-9999" className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
                                             </div>
                                         </div>
 
-                                        {interestType === 'manutencao' && (
+                                        {goal === 'manutencao' ? (
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que está acontecendo?</label>
+                                                <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva brevemente o problema..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
+                                            </div>
+                                        ) : goal === 'compra' ? (
                                             <>
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">Modelo do Aparelho</label>
-                                                        <input
-                                                            required
-                                                            type="text"
-                                                            value={model}
-                                                            onChange={(e) => setModel(e.target.value)}
-                                                            placeholder="Ex: iPhone 13, Dell G15"
-                                                            className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">Descreva o Problema</label>
-                                                        <textarea
-                                                            required
-                                                            value={problem}
-                                                            onChange={(e) => setProblem(e.target.value)}
-                                                            placeholder="O que está acontecendo?"
-                                                            className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all h-24 font-medium placeholder:text-[#CCCCCC]"
-                                                        />
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Qual é o seu orçamento?</label>
+                                                    <select required value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm">
+                                                        <option value="">Selecione uma faixa...</option>
+                                                        <option value="até R$1.500">Até R$ 1.500</option>
+                                                        <option value="R$1.500-3.000">R$ 1.500 — R$ 3.000</option>
+                                                        <option value="acima de R$3.000">Acima de R$ 3.000</option>
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Vai usar para quê?</label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {['GAMES', 'TRABALHO', 'ESTUDOS', 'GERAL'].map((val) => (
+                                                            <button key={val} type="button" onClick={() => setUsage(val)} className={`py-2 text-[10px] font-bold rounded-md border transition-all ${usage === val ? 'bg-[var(--accent-glow)] border-[var(--accent-primary)] text-[var(--bg-primary)]' : 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--border-active)]'}`}>
+                                                                {val}
+                                                            </button>
+                                                        ))}
                                                     </div>
                                                 </div>
                                             </>
-                                        )}
-
-                                        {(interestType === 'venda' || interestType === 'pc_build') && (
-                                            <div className="pt-2">
-                                                <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Preferência de Retirada/Entrega</label>
-                                                <div className="flex gap-4 mb-4">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setDeliveryType('store')}
-                                                        className={`flex-1 py-3 border rounded-xl text-xs font-bold transition-all ${deliveryType === 'store' ? 'bg-blue-600/20 border-blue-500 text-blue-500' : 'border-white/10 text-white/40 hover:border-white/30'}`}
-                                                    >
-                                                        NA LOJA
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setDeliveryType('delivery')}
-                                                        className={`flex-1 py-3 border rounded-xl text-xs font-bold transition-all ${deliveryType === 'delivery' ? 'bg-blue-600/20 border-blue-500 text-blue-500' : 'border-white/10 text-white/40 hover:border-white/30'}`}
-                                                    >
-                                                        ENTREGA
-                                                    </button>
-                                                </div>
-                                                {deliveryType === 'delivery' && (
-                                                    <div className="mb-4">
-                                                        <input
-                                                            required
-                                                            type="text"
-                                                            value={deliveryAddress}
-                                                            onChange={(e) => setDeliveryAddress(e.target.value)}
-                                                            placeholder="Endereço Completo e Bairro"
-                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-medium"
-                                                        />
-                                                    </div>
-                                                )}
+                                        ) : (
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Como podemos ajudar?</label>
+                                                <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Sua dúvida ou comentário..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
                                             </div>
                                         )}
 
-                                        <button
-                                            disabled={loading}
-                                            type="submit"
-                                            className="w-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-black uppercase tracking-widest py-5 mt-6 flex items-center justify-center gap-3 disabled:opacity-50 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-all font-display"
-                                        >
-                                            {loading ? 'PROCESSANDO...' : (
-                                                <>
-                                                    {interestType === 'voucher' ? 'GERAR MEU VOUCHER' : 'ENVIAR SOLICITAÇÃO'}
-                                                    <Send size={18} />
-                                                </>
-                                            )}
+                                        <button disabled={loading} type="submit" className="btn-primary w-full py-4 mt-4 flex items-center justify-center gap-3 disabled:opacity-50">
+                                            {loading ? 'ENVIANDO...' : (<>CONCLUIR E GANHAR VOUCHER <ArrowRight size={18} /></>)}
+                                        </button>
+                                        <button type="button" onClick={() => setStep('intent')} className="w-full text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--text-primary)] transition-colors">
+                                            ← Voltar
                                         </button>
                                     </form>
-                                </>
-                            ) : (
-                                <div className="text-center py-6">
-                                    <div className="flex justify-center mb-6">
-                                        <div className="bg-green-500/20 text-green-500 p-4 rounded-full border border-green-500/20">
-                                            <CheckCircle2 size={48} />
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <div className="flex justify-center mb-6">
+                                            <div className="bg-[var(--accent-success)]/20 text-[var(--accent-success)] p-4 rounded-full border border-[var(--accent-success)]/10">
+                                                <CheckCircle2 size={48} />
+                                            </div>
+                                        </div>
+                                        <h2 className="text-2xl font-display font-bold uppercase mb-2 chrome-text">VOUCHER LIBERADO!</h2>
+                                        <p className="text-[var(--text-secondary)] text-sm mb-8 px-4">
+                                            Seu código <span className="text-[var(--text-primary)] font-bold">BPC</span> foi gerado com sucesso. Use-o para prioridade no atendimento.
+                                        </p>
+
+                                        <div className="bg-[var(--bg-elevated)] border border-dashed border-[var(--border-subtle)] rounded-xl p-8 mb-8 relative group overflow-hidden shadow-inner">
+                                            <div className="text-4xl font-mono font-bold tracking-[0.2em] text-[var(--text-primary)] mb-4">{voucher}</div>
+                                            <button onClick={() => navigator.clipboard.writeText(voucher)} className="inline-flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-mono hover:text-[var(--text-primary)] transition-colors uppercase tracking-widest">
+                                                <Copy size={12} /> Copiar Código
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-3 px-4">
+                                            <a href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida'}.`)}`} target="_blank" rel="noreferrer" className="btn-primary w-full py-5 flex items-center justify-center gap-3" onClick={closeModal} >
+                                                <Send size={18} /> INICIAR NO WHATSAPP
+                                            </a>
+                                            <button onClick={closeModal} className="w-full py-3 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--text-primary)] transition-colors">
+                                                Fechar este aviso
+                                            </button>
                                         </div>
                                     </div>
-                                    <h2 className="text-2xl font-black italic uppercase mb-2">
-                                        {interestType === 'voucher' ? (
-                                            <>VOUCHER <span className="text-blue-500">LIBERADO!</span></>
-                                        ) : (
-                                            <>SOLICITAÇÃO <span className="text-blue-500">ENVIADA!</span></>
-                                        )}
-                                    </h2>
-                                    <p className="text-white/40 text-sm mb-8">
-                                        {interestType === 'voucher'
-                                            ? "Apresente este código na loja em Bragança para ganhar seu **BRINDE**."
-                                            : "Obrigado! Um consultor entrará em contato via WhatsApp em breve."}
-                                    </p>
-
-                                    <div className="bg-[#1A1A1A] border border-dashed border-white/10 rounded-2xl p-8 mb-8 relative group overflow-hidden shadow-2xl">
-                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-                                        <div className="text-3xl font-display font-bold tracking-widest text-white mb-2">{voucher}</div>
-                                        <button
-                                            onClick={() => navigator.clipboard.writeText(voucher)}
-                                            className="inline-flex items-center gap-2 text-[10px] text-white/30 font-black hover:text-white transition-colors uppercase tracking-widest"
-                                        >
-                                            <Copy size={12} /> COPIAR CÓDIGO
-                                        </button>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={onClose}
-                                            className="w-full py-4 border border-[#ECEAE6] rounded-xl text-[#AAAAAA] text-[10px] font-black uppercase tracking-widest hover:text-[#1A1A1A] hover:bg-[#F8F7F5] transition-all"
-                                        >
-                                            FECHAR JANELA
-                                        </button>
-
-                                        <a
-                                            href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de fazer uma solicitação no site (Código: ${voucher}). Gostaria de mais informações!`)}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="w-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-black py-5 flex items-center justify-center gap-3 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-all font-display"
-                                            onClick={onClose}
-                                        >
-                                            <Smartphone size={16} /> INICIAR NEGOCIAÇÃO
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     </motion.div>
                 </div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
-
-    return createPortal(modalContent, document.body);
 }

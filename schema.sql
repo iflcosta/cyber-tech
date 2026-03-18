@@ -22,6 +22,9 @@ CREATE TABLE leads (
     client_name TEXT,
     whatsapp TEXT,
     interest_type TEXT, -- 'venda', 'manutencao', 'voucher', 'pc_build'
+    intent_type TEXT CHECK (intent_type IN (
+        'compra_imediata', 'pesquisando_preco', 'manutencao_urgente', 'duvida_tecnica'
+    )),
     voucher_code TEXT UNIQUE, -- Format: BPC-XXXX
     description TEXT,
     status TEXT DEFAULT 'pending', -- 'pending', 'converted', 'cancelled', 'ready', etc.

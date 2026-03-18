@@ -1,14 +1,26 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
-import { Send, X, Bot, Sparkles, Loader2 } from "lucide-react";
+import { Send, X, Bot, Sparkles, Loader2, Wrench, Monitor, Smartphone, Cpu, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGeminiResponse } from "@/lib/gemini";
 import { getProducts } from "@/lib/products";
+import { useLeadModal } from "@/contexts/LeadModalContext";
+
+type Message = { role: 'user' | 'ai', content: string };
+type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
+
+
+const GUIDED_PROMPTS = [
+    { label: "Meu PC não liga", icon: Monitor, prompt: "Olá! Meu computador parou de ligar hoje. O que pode ser?" },
+    { label: "Notebook lento", icon: Cpu, prompt: "Meu notebook está muito lento ultimamente, demora pra abrir tudo. Tem como melhorar?" },
+    { label: "iPhone quebrado", icon: Smartphone, prompt: "Quebrei a tela do meu iPhone, vocês trocam em quanto tempo?" },
+    { label: "Orçamento PC Gamer", icon: Sparkles, prompt: "Quero montar um PC Gamer pra jogar CS2 e Valorant. Qual o orçamento inicial?" }
+];
 
 export default function CyberIA() {
+    const { openModal } = useLeadModal();
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [productsString, setProductsString] = useState('');
@@ -31,11 +43,10 @@ export default function CyberIA() {
             try {
                 setMessages(JSON.parse(saved));
             } catch (e) {
-                console.error("Erro ao carregar histórico da IA", e);
-                setMessages([{ role: 'ai', content: 'Olá! Sou o Cyber IA. Como posso ajudar você a montar seu setup ou consertar seu aparelho hoje?' }]);
+                setMessages([{ role: 'ai', content: 'Fala! Sou o Cyber IA, seu consultor técnico aqui em Bragança Paulista. Como posso salvar seu dia (ou seu dispositivo) hoje?' }]);
             }
         } else {
-            setMessages([{ role: 'ai', content: 'Olá! Sou o Cyber IA. Como posso ajudar você a montar seu setup ou consertar seu aparelho hoje?' }]);
+            setMessages([{ role: 'ai', content: 'Fala! Sou o Cyber IA, seu consultor técnico aqui em Bragança Paulista. Como posso salvar seu dia (ou seu dispositivo) hoje?' }]);
         }
 
         preloadProducts();
@@ -48,136 +59,203 @@ export default function CyberIA() {
     }, [messages]);
 
     useEffect(() => {
-        if (messages.length > 0) {
-            const lastMsg = messages[messages.length - 1];
-            if (lastMsg.role === 'ai' && lastMessageRef.current) {
-                lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-            }
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, loading]);
 
-    const handleSend = async () => {
-        if (!input.trim() || loading) return;
+    const handleSend = async (customPrompt?: string) => {
+        const userMsg = customPrompt || input;
+        if (!userMsg.trim() || loading) return;
 
-        const userMsg = input;
-        setInput('');
+        if (!customPrompt) setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setLoading(true);
 
-        const recentMessages = messages.slice(-4);
-        const context = `Você é o consultor Cyber IA da Cyber Informática em Bragança Paulista. 
-Seu objetivo principal é ser amigável e resolver o problema do cliente.
+        const recentMessages = messages.slice(-6);
+        const context = `Você é a Cyber IA, assistente técnica da Cyber Informática em Bragança Paulista, SP.
 
-HISTÓRICO DA CONVERSA:
-${recentMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'Você'}: ${m.content}`).join('\n')}
+REGRAS CRÍTICAS:
+- Seja direto e técnico (industrial refined). Use sotaque leve do interior paulista, mas mantenha o profissionalismo.
+- MÁXIMO 3 perguntas antes de dar um diagnóstico provável ou estimativa.
+- Nunca diga que não sabe. Se incerto, dê uma faixa de preço ("entre R$80 e R$150") baseada nos preços de mão de obra.
+- Sempre termine com uma ação clara: visitar a loja, orçamento via WhatsApp ou previsão de preço.
+- Conheça o contexto: a loja conserta notebooks, PCs, celulares e vende hardware de alta performance.
+
+FLUXO PARA MANUTENÇÃO:
+1. Identifique o dispositivo e sintoma.
+2. Faça no máximo 2 perguntas sobre o comportamento específico.
+3. Forneça o diagnóstico provável + faixa de preço + CTA WhatsApp.
+
+FLUXO PARA COMPRA:
+1. Pergunte o uso principal (games, trabalho, etc.) e o orçamento do cliente.
+2. Sugira opções do estoque real disponível (abaixo).
+3. Se houver poucas unidades, mencione a urgência ("temos apenas X unidades").
+4. CTA WhatsApp ou convite para visitar a loja em Bragança.
 
 ESTOQUE ATUAL:
-${productsString || "Nenhum produto cadastrado não momento."}
+${productsString || "Consulte-nos sobre disponibilidade imediata."}
 
-    Instruções:
-    1. FOCO NA DOR: Se o cliente fala de manutenção, foque APENAS em como ajudá-lo com o conserto.
-    2. MENÇÃO AO VOUCHER: Mencione o voucher SOMENTE UMA VEZ, preferencialmente não final.
-    3. RECOMENDAÇÕES: Recomende produtos se o cliente demonstrar interesse.
-    4. NATURALIDADE: Responda como um técnico humanão. Seja direto e empático.
-    5. LIMITE: Respostas curtas (max 2-3 parágrafos).
+PREÇOS DE MÃO DE OBRA (BASE):
+- Celulares: R$ 80 - R$ 350
+- Notebooks: R$ 120 - R$ 450
+- PCs/Desktop: R$ 150 - R$ 500
+- Limpeza/Formatação: R$ 150
 
-    Pergunta atual: ${userMsg}`;
+HISTÓRICO DA CONVERSA:
+${recentMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'Cyber IA'}: ${m.content}`).join('\n')}
+
+PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
 
         const aiResponse = await getGeminiResponse(context);
+        
+        // Identificação automática de intenção baseada no Prompt Master
+        const determineIntent = (text: string): IntentType => {
+            const t = text.toLowerCase();
+            if (t.includes('comprar') || t.includes('preço') || t.includes('estoque') || t.includes('disponível')) return 'compra_imediata';
+            if (t.includes('consertar') || t.includes('quebrado') || t.includes('não liga') || t.includes('ajuda técnica')) return 'manutencao_urgente';
+            if (t.includes('pesquisando') || t.includes('olhando') || t.includes('comparando')) return 'pesquisando_preco';
+            return 'duvida_tecnica';
+        };
+
+        const currentIntent = determineIntent(userMsg + " " + aiResponse);
+
         setMessages(prev => {
-            const newMessages = [...prev, { role: 'ai', content: aiResponse }];
+            const newMessages: Message[] = [...prev, { role: 'ai', content: aiResponse }];
             try {
                 fetch('/api/extract-lead', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: newMessages, source: 'Cyber IA Chat' })
+                    body: JSON.stringify({ 
+                        messages: newMessages, 
+                        source: 'Cyber IA',
+                        intent_type: currentIntent
+                    })
                 });
-            } catch (e) {
-                console.error("Erro ao disparar extração de lead", e);
-            }
-            return newMessages as { role: 'user' | 'ai', content: string }[];
+            } catch (e) {}
+            return newMessages;
         });
         setLoading(false);
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[100]">
+        <div className="fixed bottom-6 right-6 z-[100] font-sans">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="mb-4 w-[350px] h-[550px] bg-white rounded-[2px] flex flex-col overflow-hidden border border-[#D4D2CF] shadow-2xl"
+                        className="mb-4 w-[380px] h-[600px] bg-[var(--bg-surface)] rounded-2xl flex flex-col overflow-hidden border border-[var(--border-subtle)] shadow-2xl"
                     >
-                        <div className="p-6 bg-[#1A1A1A] flex items-center justify-between">
-                            <div className="flex items-center gap-3 text-white font-display font-bold uppercase tracking-tight">
-                                <Bot size={20} />
-                                Cyber IA
+                        {/* Chrome Header */}
+                        <div className="p-5 bg-gradient-to-r from-[var(--bg-elevated)] to-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[var(--accent-glow)] rounded-lg border border-[var(--accent-primary)]/20 shadow-[0_0_15px_rgba(255,107,0,0.2)]">
+                                    <Bot size={20} className="text-[var(--accent-primary)]" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-display font-bold uppercase tracking-widest chrome-text">Cyber IA</h3>
+                                    <p className="text-[10px] font-mono text-[var(--accent-success)] opacity-80 uppercase tracking-tighter flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 bg-[var(--accent-success)] rounded-full animate-pulse" /> Operacional
+                                    </p>
+                                </div>
                             </div>
-                            <button onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white transition-colors">
+                            <button onClick={() => setIsOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#F8F7F5]">
-                            {messages.map((msg, i) => {
-                                const isLastMessage = i === messages.length - 1;
-                                return (
-                                    <div
-                                        key={i}
-                                        ref={isLastMessage && msg.role === 'ai' ? lastMessageRef : null}
-                                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                    >
-                                        <div className={`max-w-[85%] p-4 rounded-[2px] text-sm whitespace-pre-wrap font-medium leading-relaxed ${
-                                            msg.role === 'user' 
-                                            ? 'bg-[#1A1A1A] text-white' 
-                                            : 'bg-white text-[#1A1A1A] border border-[#ECEAE6]'
-                                        }`}>
-                                            {msg.content}
-                                        </div>
+                        {/* Chat Body */}
+                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 bg-[var(--bg-primary)] scrollbar-thin scrollbar-thumb-[var(--border-subtle)]">
+                            {messages.map((msg, i) => (
+                                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[85%] p-3.5 rounded-xl text-sm leading-relaxed ${
+                                        msg.role === 'user' 
+                                        ? 'bg-[var(--accent-glow)] text-[var(--bg-primary)] font-bold border border-[var(--accent-primary)]/30' 
+                                        : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]'
+                                    }`}>
+                                        {msg.content}
                                     </div>
-                                );
-                            })}
+                                </div>
+                            ))}
+                            
                             {loading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white p-4 rounded-[2px] border border-[#ECEAE6] flex items-center gap-2">
-                                        <Loader2 size={14} className="animate-spin text-[#AAAAAA]" />
-                                        <span className="text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest">PROCESSANDO...</span>
+                                    <div className="bg-[var(--bg-elevated)] p-3 rounded-xl border border-[var(--border-subtle)] flex items-center gap-3">
+                                        <Loader2 size={16} className="animate-spin text-[var(--accent-primary)]" />
+                                        <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Diagnosticando...</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {messages.length <= 1 && !loading && (
+                                <div className="pt-4 space-y-3">
+                                    <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-[0.2em] mb-4 text-center">Diagnósticos Rápidos</p>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {GUIDED_PROMPTS.map((gp, i) => (
+                                            <button 
+                                                key={i} 
+                                                onClick={() => handleSend(gp.prompt)}
+                                                className="flex items-center gap-3 p-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg hover:border-[var(--accent-primary)] transition-all text-left group"
+                                            >
+                                                <gp.icon size={16} className="text-[var(--text-muted)] group-hover:text-[var(--accent-primary)]" />
+                                                <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">{gp.label}</span>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-6 border-t border-[#D4D2CF] bg-white">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                    placeholder="Como posso ajudar?"
-                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[#1A1A1A] text-[#1A1A1A] transition-all"
-                                />
-                                <button
-                                    onClick={handleSend}
-                                    className="absolute right-2 top-2 w-8 h-8 bg-[#1A1A1A] rounded-[2px] flex items-center justify-center text-white hover:bg-black transition-all"
+                        {/* Input Area */}
+                        <div className="p-5 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={() => openModal()}
+                                    className="p-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] hover:text-[var(--bg-primary)] transition-all flex-shrink-0"
+                                    title="Gerar Voucher"
                                 >
-                                    <Send size={14} />
+                                    <Sparkles size={20} />
                                 </button>
+                                <div className="relative flex-1">
+                                    <input
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                        placeholder="Digite aqui sua dúvida..."
+                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[var(--accent-primary)] text-[var(--text-primary)] font-sans"
+                                    />
+                                    <button
+                                        onClick={() => handleSend()}
+                                        disabled={loading}
+                                        className="absolute right-2 top-1.5 w-9 h-9 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center text-[var(--bg-primary)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                        <Send size={16} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
+            {/* Float Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-16 h-16 bg-[#1A1A1A] rounded-[2px] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all group"
+                className="w-16 h-16 bg-[var(--bg-elevated)] rounded-2xl flex items-center justify-center shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:shadow-[0_0_20px_rgba(255,107,0,0.3)] active:scale-95 transition-all group relative overflow-hidden"
             >
-                {isOpen ? <X className="text-white" /> : <Sparkles className="text-white group-hover:animate-pulse" />}
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isOpen ? (
+                    <X className="text-[var(--text-primary)]" size={24} />
+                ) : (
+                    <div className="relative">
+                        <MessageSquare className="text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors" size={24} />
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent-primary)] rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
+                    </div>
+                )}
             </button>
         </div>
     );

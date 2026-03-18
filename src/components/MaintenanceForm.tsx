@@ -1,20 +1,15 @@
 "use client";
-
 import { useState } from "react";
-import { CheckCircle2, Copy, Smartphone, Laptop, Monitor, Send } from "lucide-react";
+import { CheckCircle2, Copy, Smartphone, Laptop, Monitor, Send, ArrowRight, Zap } from "lucide-react";
 import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
 import { Card, CardContent } from "./ui/Card";
-import { Badge } from "./ui/Badge";
-import { generateVoucher } from "@/lib/voucher";
+import { trackLead } from "@/lib/leads";
 import { brand } from "@/lib/brand";
 
-import { trackLead } from "@/lib/leads";
-
 const equipmentTypes = [
-  { id: "smartphone", label: "Smartphone", icon: <Smartphone size={16} /> },
-  { id: "notebook", label: "Notebook", icon: <Laptop size={16} /> },
-  { id: "pc", label: "Desktop/PC", icon: <Monitor size={16} /> },
+  { id: "smartphone", label: "Smartphone", icon: <Smartphone size={18} /> },
+  { id: "notebook", label: "Notebook", icon: <Laptop size={18} /> },
+  { id: "pc", label: "Desktop/PC", icon: <Monitor size={18} /> },
 ];
 
 export function MaintenanceForm() {
@@ -58,146 +53,153 @@ export function MaintenanceForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full">
+    <div className="max-w-xl mx-auto w-full">
       {step === 1 && (
-        <Card className="border-[#D4D2CF] bg-white/90 backdrop-blur-md shadow-xl overflow-hidden relative group rounded-3xl">
-          <CardContent className="p-10">
-            <h3 className="text-2xl font-display font-bold tracking-tight text-[#1A1A1A] mb-8 uppercase">
-              TIPO DE <span className="text-outline text-[#AAAAAA]">EQUIPAMENTO</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              {equipmentTypes.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => {
-                    setFormData({ ...formData, equipment: type.id });
-                    setStep(2);
-                  }}
-                  className={`flex flex-col items-center justify-center p-6 rounded-xl border transition-all gap-4 group ${
-                    formData.equipment === type.id
-                      ? "bg-[#1A1A1A] border-[#1A1A1A] text-white shadow-[0_10px_20px_rgba(0,0,0,0.1)]"
-                      : "bg-[#F8F7F5] border-[#ECEAE6] text-[#AAAAAA] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-                  }`}
-                >
-                  <div className={`${formData.equipment === type.id ? "text-white" : "text-[#1A1A1A] group-hover:scale-110 transition-transform"}`}>
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
+          <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase chrome-text">
+            SINAL DE <span className="text-[var(--accent-primary)]">ENTRADA</span>
+          </h3>
+          <div className="grid grid-cols-1 gap-4 mb-4">
+            {equipmentTypes.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => {
+                  setFormData({ ...formData, equipment: type.id });
+                  setStep(2);
+                }}
+                className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${
+                  formData.equipment === type.id
+                    ? "bg-[var(--accent-glow)] border-[var(--accent-primary)] text-[var(--bg-primary)]"
+                    : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                <div className="flex items-center gap-5">
+                  <div className={`p-3 rounded-lg ${formData.equipment === type.id ? "bg-[var(--bg-primary)] text-[var(--accent-primary)]" : "bg-[var(--bg-surface)] text-[var(--text-secondary)]"}`}>
                     {type.icon}
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">
+                  <span className="text-xs font-mono font-bold uppercase tracking-[0.2em]">
                     {type.label}
                   </span>
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+                <ArrowRight size={18} className="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {step === 2 && (
-        <Card className="border-[#D4D2CF] bg-white/95 backdrop-blur-md shadow-xl overflow-hidden relative group rounded-3xl">
-          <CardContent className="p-10">
-            <button onClick={() => setStep(1)} className="text-[10px] font-black text-[#AAAAAA] uppercase mb-6 hover:text-[#1A1A1A] transition-colors tracking-widest flex items-center gap-2">
-              <span className="text-lg">←</span> VOLTAR
-            </button>
-            <h3 className="text-2xl font-display font-bold tracking-tight text-[#1A1A1A] mb-8 uppercase">
-              DETALHES DO <span className="text-outline text-[#AAAAAA]">REPARO</span>
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-2">Seu Nome</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="Ex: João Silva"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-2">WhatsApp</label>
-                  <input
-                    required
-                    type="tel"
-                    placeholder="(00) 00000-0000"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
-                  />
-                </div>
-              </div>
-
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
+          <button onClick={() => setStep(1)} className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase mb-6 hover:text-[var(--accent-primary)] transition-colors tracking-widest flex items-center gap-2">
+            <span>[ BACK ]</span>
+          </button>
+          <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase chrome-text">
+            LOG DE <span className="text-[var(--accent-primary)]">DIAGNÓSTICO</span>
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-2">Modelo do Aparelho</label>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] ml-2">OPERADOR (NOME)</label>
                 <input
                   required
                   type="text"
-                  placeholder="Ex: iPhone 13 Pro, Notebook Dell G15..."
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
+                  placeholder="João Silva"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium placeholder:text-[var(--text-muted)] opacity-80 focus:opacity-100"
                 />
               </div>
-
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-2">O que aconteceu?</label>
-                <textarea
+                <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] ml-2">CONEXÃO (WHATSAPP)</label>
+                <input
                   required
-                  placeholder="Descreva brevemente o problema (Ex: Tela quebrada, não liga...)"
-                  className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium min-h-[120px] placeholder:text-[#CCCCCC]"
-                  value={formData.problem}
-                  onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium placeholder:text-[var(--text-muted)] opacity-80 focus:opacity-100"
                 />
               </div>
+            </div>
 
-              <Button className="w-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-black uppercase tracking-widest py-6 rounded-xl transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] font-display" isLoading={loading}>
-                GERAR VOUCHER DE PRIORIDADE
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] ml-2">MODELO DO EQUIPAMENTO</label>
+              <input
+                required
+                type="text"
+                placeholder="Ex: iPhone 13 Pro, Notebook Dell G15..."
+                value={formData.model}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium placeholder:text-[var(--text-muted)] opacity-80 focus:opacity-100"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] ml-2">SINTOMAS / PROBLEMA</label>
+              <textarea
+                required
+                placeholder="Descreva brevemente o problema..."
+                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium min-h-[120px] placeholder:text-[var(--text-muted)] opacity-80 focus:opacity-100"
+                value={formData.problem}
+                onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
+              />
+            </div>
+
+            <Button className="w-full btn-primary py-6 rounded-xl font-display shadow-2xl group" isLoading={loading}>
+              <span className="text-sm font-display font-bold uppercase tracking-widest">Registrar e Gerar Voucher</span>
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </form>
+        </div>
       )}
 
       {step === 3 && voucher && (
-        <Card className="border-[#D4D2CF] bg-white/95 backdrop-blur-md shadow-xl text-center overflow-hidden relative rounded-3xl">
-          <CardContent className="p-10">
-            <div className="flex justify-center mb-8">
-              <div className="bg-[#F8F7F5] p-6 rounded-full text-[#1A1A1A] border border-[#ECEAE6]">
-                <CheckCircle2 size={48} />
-              </div>
+        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-10 shadow-2xl text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Zap size={100} />
+          </div>
+          
+          <div className="flex justify-center mb-8">
+            <div className="bg-[var(--accent-glow)] p-6 rounded-full text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 shadow-[0_0_30px_rgba(255,107,0,0.1)] relative">
+              <div className="absolute inset-0 bg-[var(--accent-primary)] opacity-20 rounded-full animate-ping" />
+              <CheckCircle2 size={48} className="relative z-10" />
             </div>
-            <h3 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] mb-4 uppercase">
-              VOUCHER <span className="text-outline text-[#AAAAAA]">GERADO!</span>
-            </h3>
-            <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest mb-10">
-              Apresente este código na nossa loja para atendimento prioritário.
+          </div>
+          <h3 className="text-2xl font-display font-bold tracking-tight text-[var(--text-primary)] mb-4 uppercase chrome-text">
+            VOUCHER DE <span className="italic opacity-60">PRIORIDADE</span>
+          </h3>
+          <p className="text-[var(--text-muted)] text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-10">
+            APRESENTE ESTE TOKEN PARA ATENDIMENTO ELITE
+          </p>
+
+          <div className="bg-[var(--bg-elevated)] border border-dashed border-[var(--border-subtle)] rounded-2xl p-8 mb-10 relative group">
+            <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mb-4 block">
+              ACCESS_TOKEN / PRIORITY_CODE
+            </span>
+            <div className="text-4xl font-display font-bold tracking-[0.2em] text-[var(--text-primary)] flex items-center justify-center gap-6 chrome-text">
+              {voucher}
+              <button 
+                onClick={() => navigator.clipboard.writeText(voucher)}
+                className="text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors"
+              >
+                <Copy size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <button 
+                onClick={handleWhatsAppRedirect}
+                className="w-full btn-primary py-6 flex items-center justify-center gap-3 rounded-xl transition-all shadow-2xl animate-pulse-slow"
+            >
+              <Send size={20} /> 
+              <span className="text-sm font-display font-bold uppercase tracking-widest">Enviar para Técnico Digital</span>
+            </button>
+            <p className="text-[10px] text-[var(--text-muted)] font-mono font-bold uppercase tracking-widest">
+              STATUS: <span className="text-[var(--accent-success)]">TÉCNICO ONLINE AGUARDANDO</span>
             </p>
-
-            <div className="bg-[#F8F7F5] border border-dashed border-[#D4D2CF] rounded-2xl p-8 mb-10 relative group overflow-hidden">
-              <span className="text-[8px] font-black text-[#AAAAAA] uppercase tracking-[0.4em] mb-4 block">
-                CÓDIGO ÚNICO DE ATENDIMENTO
-              </span>
-              <div className="text-4xl font-display font-bold tracking-[0.2em] text-[#1A1A1A] flex items-center justify-center gap-6">
-                {voucher}
-                <button 
-                  onClick={() => navigator.clipboard.writeText(voucher)}
-                  className="text-[#CCCCCC] hover:text-[#1A1A1A] transition-colors"
-                >
-                  <Copy size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <Button className="w-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-black uppercase tracking-widest py-6 gap-3 rounded-xl transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] font-display" onClick={handleWhatsAppRedirect}>
-                <Send size={20} /> INICIAR NO WHATSAPP
-              </Button>
-              <p className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest italic">
-                Um técnico está aguardando sua mensagem.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -39,8 +39,8 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
   )}`;
 
   return (
-    <Card className="group flex flex-col h-full card-industrial">
-      <div className="relative aspect-video w-full overflow-hidden bg-[#F8F7F5]">
+    <Card className="group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+      <div className="relative aspect-video w-full overflow-hidden bg-[var(--bg-primary)]">
         {product.image_url ? (
           <Image
             src={product.image_url}
@@ -49,8 +49,8 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
             className="object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#ECEAE6]">
-            <Package className="h-10 w-10 text-[#D4D2CF]" />
+          <div className="flex h-full w-full items-center justify-center bg-[var(--bg-elevated)]">
+            <Package className="h-10 w-10 text-[var(--border-active)]" />
           </div>
         )}
         <div className="absolute top-4 right-4">
@@ -68,41 +68,41 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
           className="mb-3 cursor-zoom-in"
           onClick={() => product.image_urls && onOpenGallery?.(product.image_urls)}
         >
-          <Badge variant="secondary" className="text-[8px] font-display tracking-widest rounded-[2px] bg-[#F0EFED] text-[#555555] border-[#D4D2CF]">
+          <Badge variant="secondary" className="text-[8px] font-display tracking-widest rounded-lg bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-subtle)]">
             {product.category.replace('_', ' ')}
           </Badge>
         </div>
-        <h3 className="text-xl font-display font-bold mb-4 text-[#1A1A1A] group-hover:text-[#555555] transition-colors tracking-tight leading-tight cursor-pointer" onClick={onInterest}>
+        <h3 className="text-xl font-display font-bold mb-4 text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors tracking-tight leading-tight cursor-pointer uppercase" onClick={onInterest}>
           {product.name}
         </h3>
         
         <div className="space-y-2 mb-8" onClick={onInterest}>
-          <div className="flex items-center gap-2 text-[10px] text-[#888888] font-bold uppercase tracking-widest">
-            <Cpu size={12} className="text-[#1A1A1A]" />
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
+            <Cpu size={12} className="text-[var(--accent-primary)]" />
             <span>{product.specs.cpu}</span>
           </div>
           {product.specs.gpu && (
-            <div className="flex items-center gap-2 text-[10px] text-[#888888] font-bold uppercase tracking-widest">
-              <Zap size={12} className="text-[#1A1A1A]" />
+            <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
+              <Zap size={12} className="text-[var(--accent-primary)]" />
               <span>{product.specs.gpu}</span>
             </div>
           )}
-          <div className="flex items-center gap-2 text-[10px] text-[#888888] font-bold uppercase tracking-widest">
-            <span className="text-[#1A1A1A]">{product.specs.ram} RAM</span> • 
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
+            <span className="text-[var(--text-primary)]">{product.specs.ram} RAM</span> • 
             <span>{product.specs.storage}</span>
           </div>
         </div>
 
-        <div className="text-2xl font-display font-bold text-[#1A1A1A] tracking-tighter">
+        <div className="text-2xl font-display font-bold text-[var(--text-primary)] tracking-tighter chrome-text">
           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price_estimate)}
         </div>
       </CardContent>
 
       <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-3">
-        <Button variant="outline" size="sm" className="w-full" onClick={onInterest}>
+        <Button variant="outline" size="sm" className="w-full btn-ghost" onClick={onInterest}>
              SIMILAR
         </Button>
-        <Button size="sm" className="w-full gap-2" onClick={onInterest}>
+        <Button size="sm" className="w-full gap-2 btn-primary" onClick={onInterest}>
              <MessageSquare className="h-3 w-3" />
              ORÇAMENTO
         </Button>

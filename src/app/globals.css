@@ -1,90 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;600&family=Barlow+Condensed:wght@700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #F0EFED;
-  --foreground: #1A1A1A;
-  --surface: #FFFFFF;
-  --surface-2: #F8F7F5;
-  --border: #D4D2CF;
-  --border-sub: #ECEAE6;
-  --ink: #1A1A1A;
-  --ink-mid: #555555;
-  --muted: #888888;
-  --ghost: #AAAAAA;
-  --radius: 2px;
+  /* Cromados — extraídos do logo */
+  --chrome-light: #E8E8E8;
+  --chrome-mid: #C0C0C0;
+  --chrome-dark: #8A8A8A;
+  --chrome-shadow: #2A2A2A;
+
+  /* Background — dark industrial */
+  --bg-primary: #0D0D0F;
+  --bg-secondary: #141416;
+  --bg-surface: #1A1A1E;
+  --bg-elevated: #222228;
+
+  /* Acentos */
+  --accent-primary: #C0C0C0;      /* Prata cromado */
+  --accent-glow: #D8D8E8;         /* Brilho metálico suave */
+  --accent-hot: #E84C4C;          /* Vermelho para urgência/estoque baixo */
+  --accent-success: #4CAF7D;      /* Verde para confirmações */
+
+  /* Texto */
+  --text-primary: #F0F0F2;
+  --text-secondary: #9090A0;
+  --text-muted: #505060;
+
+  /* Bordas */
+  --border-subtle: rgba(192, 192, 192, 0.12);
+  --border-active: rgba(192, 192, 192, 0.35);
+  --border-glow: rgba(216, 216, 232, 0.6);
+
+  --radius: 4px;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: 'Barlow', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-dm-sans), sans-serif;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-attachment: fixed;
+  opacity: 0.98;
 }
 
 h1, h2, h3, h4 {
-  font-family: 'Barlow Condensed', sans-serif;
-  text-transform: uppercase;
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+code, .mono {
+  font-family: var(--font-jetbrains-mono), monospace;
 }
 
 @utility font-display {
-  font-family: 'Barlow Condensed', sans-serif;
-  text-transform: uppercase;
+  font-family: var(--font-rajdhani), sans-serif;
 }
 
 @layer base {
   body {
-    @apply antialiased;
+    @apply antialiased selection:bg-[var(--accent-glow)] selection:text-[var(--bg-primary)];
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-[#1A1A1A] hover:bg-[#333333] text-white font-bold py-3 px-6 transition-all duration-[130ms] ease-linear tracking-[0.15em];
-    font-family: 'Barlow Condensed', sans-serif;
-    text-transform: uppercase;
+    @apply relative overflow-hidden bg-gradient-to-b from-[var(--chrome-light)] to-[var(--chrome-mid)] text-[var(--bg-primary)] font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase;
+    font-family: var(--font-rajdhani), sans-serif;
     border-radius: var(--radius);
+    box-shadow: 0 4px 0 var(--chrome-dark);
+  }
+  
+  .btn-primary:hover {
+    @apply brightness-110 -translate-y-[1px];
+    box-shadow: 0 5px 0 var(--chrome-dark), 0 0 15px var(--border-glow);
+  }
+
+  .btn-primary:active {
+    @apply translate-y-[2px];
+    box-shadow: 0 2px 0 var(--chrome-dark);
   }
   
   .btn-ghost {
-    @apply bg-transparent border border-[#D4D2CF] text-[#666666] hover:border-[#888888] hover:text-[#1A1A1A] font-bold py-3 px-6 transition-all duration-[130ms] ease-linear tracking-[0.15em];
-    font-family: 'Barlow Condensed', sans-serif;
-    text-transform: uppercase;
+    @apply bg-transparent border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-active)] hover:text-[var(--text-primary)] font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase;
+    font-family: var(--font-rajdhani), sans-serif;
     border-radius: var(--radius);
-  }
-
-  .glass {
-    @apply bg-white/80 backdrop-blur-md border border-[#D4D2CF];
-    border-radius: var(--radius);
-  }
-  
-  .text-outline {
-    -webkit-text-stroke: 1px #AAAAAA;
-    color: transparent;
-  }
-
-  .hero-texture {
-    background-image: repeating-linear-gradient(90deg, transparent, transparent 48px, 
-      rgba(0,0,0,.03) 48px, rgba(0,0,0,.03) 49px),
-      repeating-linear-gradient(0deg, transparent, transparent 48px, 
-      rgba(0,0,0,.03) 48px, rgba(0,0,0,.03) 49px);
   }
 
   .card-industrial {
-    @apply bg-white border border-[#D4D2CF] transition-all duration-[130ms] ease-linear;
+    @apply bg-[var(--bg-surface)] border border-[var(--border-subtle)] transition-all duration-300 ease-out overflow-hidden;
     border-radius: var(--radius);
   }
 
   .card-industrial:hover {
-    @apply border-[#888888];
+    @apply border-[var(--border-active)];
+    box-shadow: 0 0 20px var(--border-subtle);
+  }
+
+  .chrome-text {
+    @apply bg-gradient-to-b from-[var(--chrome-light)] via-[var(--chrome-mid)] to-[var(--chrome-dark)] bg-clip-text text-transparent;
   }
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--chrome-dark);
 }

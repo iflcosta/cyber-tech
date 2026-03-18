@@ -7,13 +7,13 @@ import { ProductCard, Product } from "./ProductCard";
 import { FilterBar } from "./FilterBar";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import LeadModal from "./LeadModal";
+import { useLeadModal } from "@/contexts/LeadModalContext";
 import { AnimatePresence, motion } from "framer-motion";
 
 function ShowroomContent() {
+  const { openModal } = useLeadModal();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedGallery, setSelectedGallery] = useState<{ images: string[], index: number } | null>(null);
   const searchParams = useSearchParams();
@@ -39,7 +39,10 @@ function ShowroomContent() {
 
   const handleInterest = (product: Product) => {
     setSelectedProduct(product);
-    setIsModalOpen(true);
+    openModal('compra', 
+      `Interesse no Produto: ${product.name} (R$ ${product.price.toLocaleString('pt-BR')})`,
+      `Olá, tenho interesse no *${product.name}* que vi no site por *R$ ${product.price.toLocaleString('pt-BR')}*. Pode me ajudar?`
+    );
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'ViewContent', {
         content_name: product.name,
@@ -76,13 +79,6 @@ function ShowroomContent() {
 
   return (
     <div className="container mx-auto px-4">
-      <LeadModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        interestType="venda"
-        customDescription={selectedProduct ? `Interesse não Produto: ${selectedProduct.name} (R$ ${selectedProduct.price.toLocaleString('pt-BR')})` : undefined}
-        whatsappMessage={selectedProduct ? `Olá, tenho interesse não *${selectedProduct.name}* que vi não site por *R$ ${selectedProduct.price.toLocaleString('pt-BR')}*. Pode me ajudar?` : undefined}
-      />
 
       <AnimatePresence>
         {selectedGallery && (
@@ -142,19 +138,22 @@ function ShowroomContent() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8 relative z-10">
         <div>
-          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-none uppercase">
+          <div className="text-[10px] font-mono text-[var(--accent-primary)] uppercase tracking-[0.4em] font-black mb-4 flex items-center gap-3">
+            <span className="w-8 h-[1px] bg-[var(--accent-primary)]" /> PERFORMANCE & HARDWARE ELITE
+          </div>
+          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[var(--text-primary)] leading-none uppercase chrome-text">
             SHOWROOM <br />
-            <span className="text-outline">PERFORMANCE</span>
+            <span className="opacity-40 italic">PRECISION</span>
           </h2>
-          <p className="text-[#888888] max-w-xl text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+          <p className="text-[var(--text-secondary)] max-w-xl text-[10px] font-bold uppercase tracking-widest leading-relaxed">
             Workstations de IA e setups de alto desempenho configurados para máxima produtividade.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[#1A1A1A] font-display font-bold tracking-tight uppercase">
-          <Zap className="h-5 w-5" />
-          <span>CYBER INFORMÁTICA PRECISION</span>
+        <div className="flex items-center gap-3 text-[var(--text-primary)] font-display font-bold tracking-[0.2em] uppercase text-xs">
+          <Zap className="h-5 w-5 text-[var(--accent-primary)]" />
+          <span className="chrome-text">ESTOQUE REAL BRAGANÇA</span>
         </div>
       </div>
 
@@ -178,7 +177,7 @@ function ShowroomContent() {
           </div>
 
           {filteredProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[#D4D2CF] rounded-[2px] bg-white/50 text-[#AAAAAA]">
+            <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[var(--border-subtle)] rounded-xl bg-[var(--bg-surface)]/50 text-[var(--text-muted)]">
               <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado nesta categoria.</p>
             </div>
           )}
@@ -190,9 +189,9 @@ function ShowroomContent() {
 
 export default function Showroom() {
   return (
-    <section id="kits-gamer" className="py-24 bg-[#F0EFED] relative overflow-hidden">
+    <section id="produtos" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative overflow-hidden">
       <Suspense fallback={
-        <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[#1A1A1A]">
+        <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[var(--text-primary)]">
           <Loader2 className="h-12 w-12 animate-spin" />
         </div>
       }>

@@ -1,92 +1,134 @@
 "use client";
-import { useState } from "react";
-import { Smartphone, HardDrive, Cpu, MessageSquare, Ticket, Menu, X as CloseIcon, Zap, ShieldCheck, ShoppingBag } from "lucide-react";
-import LeadModal from "./LeadModal";
-import { useCart } from "@/contexts/CartContext";
+import { useState, useEffect } from "react";
+import { Menu, X as CloseIcon, MessageSquare, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { brand } from "@/lib/brand";
+import Link from "next/link";
 
 export default function Header() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { totalItems, setIsCartOpen } = useCart();
+    const [storeStatus, setStoreStatus] = useState<{ status: 'open' | 'closing' | 'closed'; message: string }>({ status: 'closed', message: 'Carregando...' });
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
     const menuItems = [
-        { label: "Assistência", href: "#assistencia" },
-        { label: "Kits Gamer", href: "#kits-gamer" },
-        { label: "Monte seu PC", href: "#monte-seu-pc" },
-        { label: "Consultar Status", href: "#consultar-status" },
+        { label: "Produtos", href: "/#produtos" },
+        { label: "Manutenção", href: "/manutencao" },
+        { label: "PC Builder", href: "/#pc-builder" },
+        { label: "Calculadora", href: "/calculadora" },
     ];
+
+    useEffect(() => {
+        const checkStatus = () => {
+            const now = new Date();
+            const day = now.getDay();
+            const hour = now.getHours();
+            const minutes = now.getMinutes();
+            const time = hour + minutes / 60;
+
+            const HOURS = {
+                weekdays: { open: 9, close: 18 },
+                saturday: { open: 9, close: 13 },
+                sunday: null
+            };
+
+            let status: 'open' | 'closing' | 'closed' = 'closed';
+            let message = '';
+
+            if (day === 0) {
+                status = 'closed';
+                message = 'Fechado · Abrimos amanhã às 9h';
+            } else if (day === 6) {
+                if (time >= HOURS.saturday.open && time < HOURS.saturday.close) {
+                    status = (HOURS.saturday.close - time <= 0.5) ? 'closing' : 'open';
+                    message = status === 'closing' ? 'Fechamos em 30 min' : `Abertos · Fecha às 13h`;
+                } else {
+                    status = 'closed';
+                    message = 'Fechado · Abrimos segunda às 9h';
+                }
+            } else {
+                if (time >= HOURS.weekdays.open && time < HOURS.weekdays.close) {
+                    status = (HOURS.weekdays.close - time <= 0.5) ? 'closing' : 'open';
+                    message = status === 'closing' ? 'Fechamos em 30 min' : `Abertos · Fecha às 18h`;
+                } else {
+                    status = 'closed';
+                    message = `Fechado · Abrimos amanhã às 9h`;
+                }
+            }
+            setStoreStatus({ status, message });
+        };
+
+        checkStatus();
+        const interval = setInterval(checkStatus, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const statusColors = {
+        open: "text-[var(--accent-success)]",
+        closing: "text-amber-500",
+        closed: "text-[var(--accent-hot)]"
+    };
+
+    const statusBg = {
+        open: "bg-[var(--accent-success)]/10",
+        closing: "bg-amber-500/10",
+        closed: "bg-[var(--accent-hot)]/10"
+    };
 
     return (
         <>
-        <header className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-[#D4D2CF]">
-
+        <header className="fixed top-0 w-full z-[100] bg-[var(--bg-primary)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 overflow-hidden" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
-                        <img 
-                            src="file:///C:/Users/User/.gemini/antigravity/brain/250ba7d9-697e-4b5a-8c54-73ffbe615991/media__1773775060477.jpg" 
-                            alt="Cyber Informática" 
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
+                <Link href="/" className="flex items-center gap-3 group">
+                    <img 
+                        src="/logo.png" 
+                        alt="Cyber Informática" 
+                        className="w-10 h-10 object-contain brightness-110 contrast-125"
+                    />
                     <div className="flex flex-col">
-                        <span className="text-xl font-display font-bold tracking-[0.1em] text-[#1A1A1A] leading-none">CYBER</span>
-                        <span className="text-[10px] font-light tracking-[0.22em] text-[#555555] uppercase">Informática</span>
+                        <span className="text-xl font-display font-bold tracking-[0.05em] text-[var(--text-primary)] leading-none chrome-text">CYBER</span>
+                        <span className="text-[10px] font-mono tracking-[0.2em] text-[var(--text-secondary)] uppercase">Informática</span>
                     </div>
-                </div>
+                </Link>
 
                 {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-8 text-[10px] font-display font-bold text-[#555555] uppercase tracking-[0.15em]">
+                <nav className="hidden md:flex items-center gap-8">
                     {menuItems.map((item) => (
-                        <a key={item.label} href={item.href} className="hover:text-[#1A1A1A] transition-colors">{item.label}</a>
+                        <Link 
+                            key={item.label} 
+                            href={item.href} 
+                            className="text-[12px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase tracking-wider transition-colors relative group"
+                        >
+                            {item.label}
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] transition-all group-hover:w-full" />
+                        </Link>
                     ))}
-
-                    <button
-                        onClick={() => setIsCartOpen(true)}
-                        className="relative p-2 text-[#555555] hover:text-[#1A1A1A] transition-colors group"
-                    >
-                        <ShoppingBag size={20} className="group-hover:scale-110 transition-transform" />
-                        {totalItems > 0 && (
-                            <span className="absolute top-0 right-0 bg-[#1A1A1A] text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center -translate-y-1 translate-x-1">
-                                {totalItems}
-                            </span>
-                        )}
-                    </button>
                 </nav>
 
-                {/* Mobile Actions */}
-                <div className="flex items-center gap-2 md:gap-4">
+                {/* Desktop Store Status & WhatsApp */}
+                <div className="hidden lg:flex items-center gap-6">
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full border border-current ${statusColors[storeStatus.status]} ${statusBg[storeStatus.status]} text-[10px] font-mono uppercase tracking-tight`}>
+                        <div className={`w-1.5 h-1.5 rounded-full fill-current animate-pulse ${statusBg[storeStatus.status].replace('/10', '')}`} />
+                        {storeStatus.message}
+                    </div>
+
                     <a
                         href={`https://wa.me/${brand.whatsapp}`}
                         target="_blank"
-                        className="hidden sm:block bg-[#1A1A1A] hover:bg-[#333333] text-white px-6 py-2 rounded-[2px] text-[10px] font-display font-bold uppercase tracking-[0.15em] transition-all"
+                        className="btn-primary flex items-center gap-2 text-[11px]"
                     >
+                        <MessageSquare size={14} />
                         WhatsApp
                     </a>
-
-                    <button
-                        onClick={() => setIsCartOpen(true)}
-                        className="md:hidden relative p-2 text-[#555555] hover:text-[#1A1A1A] transition-colors"
-                    >
-                        <ShoppingBag size={20} />
-                        {totalItems > 0 && (
-                            <span className="absolute top-0 right-0 bg-[#1A1A1A] text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                                {totalItems}
-                            </span>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={toggleMenu}
-                        className="md:hidden text-[#1A1A1A] p-2"
-                    >
-                        <Menu size={24} />
-                    </button>
                 </div>
+
+                {/* Mobile Menu Icon */}
+                <button
+                    onClick={toggleMenu}
+                    className="md:hidden text-[var(--text-primary)] p-2 hover:bg-[var(--bg-surface)] rounded-md transition-colors"
+                >
+                    {isMenuOpen ? <CloseIcon size={24} /> : <Menu size={24} />}
+                </button>
             </div>
         </header>
 
@@ -99,43 +141,51 @@ export default function Header() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={toggleMenu}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[110]"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]"
                     />
                     <motion.div
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
-                        className="fixed right-0 top-0 h-full w-[80%] max-w-sm bg-white border-l border-[#D4D2CF] z-[120] p-6 flex flex-col"
+                        className="fixed right-0 top-0 h-full w-[85%] max-w-sm bg-[var(--bg-surface)] border-l border-[var(--border-subtle)] z-[120] p-6 flex flex-col"
                     >
-                        <div className="flex justify-between items-center mb-10 mt-safe">
-                            <span className="text-xl font-display font-bold tracking-[0.1em] text-[#1A1A1A]">MENU</span>
-                            <button onClick={toggleMenu} className="w-10 h-10 bg-[#F0EFED] rounded-[2px] flex justify-center items-center text-[#555555] hover:text-[#1A1A1A] transition-colors">
+                        <div className="flex justify-between items-center mb-10">
+                            <span className="text-xl font-display font-bold tracking-widest text-[var(--text-primary)] chrome-text">MENU</span>
+                            <button onClick={toggleMenu} className="w-10 h-10 bg-[var(--bg-elevated)] rounded-md flex justify-center items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                                 <CloseIcon size={20} />
                             </button>
                         </div>
 
-                        <nav className="flex flex-col gap-4 text-[10px] font-display font-bold flex-1 uppercase tracking-[0.15em]">
+                        <div className={`flex items-center gap-3 p-4 rounded-lg mb-8 border border-[var(--border-subtle)] ${statusBg[storeStatus.status]}`}>
+                            <Clock size={20} className={statusColors[storeStatus.status]} />
+                            <div className="flex flex-col">
+                                <span className={`text-[12px] font-bold ${statusColors[storeStatus.status]}`}>{storeStatus.status === 'closed' ? 'FECHADO' : 'ABERTO'}</span>
+                                <span className="text-[10px] text-[var(--text-secondary)] uppercase">{storeStatus.message}</span>
+                            </div>
+                        </div>
+
+                        <nav className="flex flex-col gap-3">
                             {menuItems.map((item) => (
-                                <a
+                                <Link
                                     key={item.label}
                                     href={item.href}
                                     onClick={toggleMenu}
-                                    className="text-[#555555] hover:text-[#1A1A1A] bg-[#F8F7F5] px-4 py-4 border border-[#ECEAE6] transition-all flex items-center justify-between"
+                                    className="text-[14px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-elevated)] px-5 py-4 rounded-md border border-[var(--border-subtle)] transition-all flex items-center justify-between uppercase tracking-wider"
                                 >
                                     {item.label}
-                                </a>
+                                    <span className="text-[10px] opacity-30">→</span>
+                                </Link>
                             ))}
-
                         </nav>
 
-                        <div className="mt-auto pt-6 border-t border-[#D4D2CF]">
+                        <div className="mt-auto">
                             <a
                                 href={`https://wa.me/${brand.whatsapp}`}
                                 target="_blank"
-                                className="bg-[#1A1A1A] text-white w-full py-4 mb-safe rounded-[2px] flex items-center justify-center gap-2 font-display font-bold uppercase tracking-[0.15em]"
+                                className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-[13px]"
                             >
                                 <MessageSquare size={20} />
-                                WPP DA LOJA
+                                FALAR COM TÉCNICO
                             </a>
                         </div>
                     </motion.div>

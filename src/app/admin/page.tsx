@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { syncTinyProductsToSupabase } from '@/lib/tiny';
 import { Badge } from '@/components/ui/Badge';
@@ -15,6 +15,12 @@ export default function AdminDashboard() {
     const [products, setProducts] = useState<any[]>([]);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+      totalLeadValue: 0,
+      convertedCount: 0,
+      pendingCount: 0,
+      avgTicket: 0
+    });
 
     const [showProductForm, setShowProductForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -310,8 +316,7 @@ export default function AdminDashboard() {
         1. Resuma o sentimento geral em uma frase impactante.
         2. Liste 3 pontos fortes citados.
         3. Liste 1 ponto de melhoria se houver.
-        4. DÃª um 'Score de Satisfação' de 0 a 100.
-        
+        4. Dê um 'Score de Satisfação' de 0 a 100.
         FORMATO: Responda em Markdown curto e direto para um dashboard administrativo.`;
 
         try {
@@ -319,126 +324,126 @@ export default function AdminDashboard() {
             const response = await getGeminiResponse(prompt);
             setSentimentAnalysis(response);
         } catch (e) {
-            console.error("Erro na anÃ¡lise de sentimento:", e);
+            console.error("Erro na análise de sentimento:", e);
         }
         setIsAnalyzing(false);
     };
 
+    useEffect(() => {
+        if (leads.length > 0) {
+            const converted = leads.filter(l => l.status === 'converted');
+            const total = converted.reduce((acc, l) => acc + (l.final_value || 0), 0);
+            setStats({
+                totalLeadValue: total,
+                convertedCount: converted.length,
+                pendingCount: leads.filter(l => l.status === 'pending').length,
+                avgTicket: converted.length > 0 ? total / converted.length : 0
+            });
+        }
+    }, [leads]);
+
+    const getSourceIcon = (source: string) => {
+        const sources: Record<string, string> = {
+            'instagram': '📸',
+            'facebook': '👥',
+            'google_ads': '🔍',
+            'google_organico': '🌱',
+            'whatsapp': '💬',
+            'tiktok': '🎵',
+            'direto': '🔗',
+            'outros': '🌐'
+        };
+        return sources[source] || '🔗';
+    };
+
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8">
-            <div className="max-w-6xl mx-auto">
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                    <div>
-                        <h1 className="text-3xl font-black italic tracking-tighter">CYBER <span className="text-blue-500">ADMIN</span></h1>
-                        <p className="text-white/40">Controle total da Cyber Informática</p>
+        <div className="min-h-screen bg-[#020406] text-[var(--text-primary)] p-4 md:p-8 font-sans selection:bg-[var(--accent-primary)] selection:text-white">
+            <div className="max-w-7xl mx-auto">
+                <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12 border-b border-[var(--border-subtle)] pb-12">
+                    <div className="relative">
+                        <div className="absolute -top-6 -left-6 w-24 h-24 bg-[var(--accent-primary)] opacity-5 blur-3xl rounded-full" />
+                        <h1 className="text-4xl font-black italic tracking-tighter chrome-text uppercase leading-none">
+                            CYBER <span className="text-[var(--accent-primary)]">CONTROL</span>
+                        </h1>
+                        <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mt-2">Industrial Management Terminal</p>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="hidden md:block text-right">
-                            <div className="text-[10px] text-white/40 uppercase font-black tracking-widest">Acesso Autorizado</div>
-                            <div className="text-sm font-bold text-blue-400">{userEmail}</div>
+                    <div className="flex flex-wrap items-center gap-6">
+                        <div className="hidden lg:block text-right border-r border-[var(--border-subtle)] pr-6">
+                            <div className="text-[9px] text-[var(--text-muted)] uppercase font-black tracking-widest mb-1">Authenticated Operator</div>
+                            <div className="text-xs font-mono font-bold text-[var(--accent-primary)]">{userEmail}</div>
                         </div>
 
-                        <div className="glass p-4 rounded-2xl flex items-center gap-4 bg-white/5 border border-white/10">
-                            <TrendingUp className="text-green-500" />
+                        <div className="bg-[var(--bg-elevated)] p-5 rounded-2xl flex items-center gap-5 border border-[var(--border-subtle)] group hover:border-[var(--accent-primary)]/30 transition-all shadow-xl">
+                            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20 group-hover:scale-110 transition-transform">
+                                <TrendingUp className="text-green-500" size={20} />
+                            </div>
                             <div>
-                                <div className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Minhas Comissões (Iago)</div>
-                                <div className="text-xl font-black">R$ {leads.filter(l => l.status === 'converted').reduce((acc, l) => acc + (l.commission_value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                                <div className="text-[9px] text-[var(--text-muted)] uppercase font-black tracking-widest mb-0.5">Comissões Acumuladas</div>
+                                <div className="text-xl font-display font-bold chrome-text tracking-tight">R$ {leads.filter(l => l.status === 'converted').reduce((acc, l) => acc + (l.commission_value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                             </div>
                         </div>
 
-                        {installable && (
-                            <button
-                                onClick={handleInstallPWA}
-                                className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-blue-600/20"
-                            >
-                                <Smartphone size={16} /> Instalar Painel
-                            </button>
-                        )}
+                        <div className="flex gap-3">
+                            {installable && (
+                                <button
+                                    onClick={handleInstallPWA}
+                                    className="p-3 bg-[var(--bg-elevated)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-xl border border-[var(--border-subtle)] transition-all shadow-lg flex items-center gap-2 group"
+                                >
+                                    <Smartphone size={18} className="text-[var(--accent-primary)]" />
+                                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden sm:inline">Build PWA</span>
+                                </button>
+                            )}
 
-                        <button
-                            onClick={handleLogout}
-                            className="p-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl border border-red-500/20 transition-all group"
-                            title="Sair do Sistema"
-                        >
-                            <LogOut size={20} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                            <button
+                                onClick={handleLogout}
+                                className="p-3 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl border border-red-500/20 transition-all group"
+                                title="Safe Logout"
+                            >
+                                <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                            </button>
+                        </div>
                     </div>
                 </header>
 
-                <div className="flex gap-4 mb-8">
-                    <button
-                        onClick={() => setActiveTab('dashboard')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
-                    >
-                        <LayoutDashboard size={18} /> Dashboard
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('leads')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'leads' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
-                    >
-                        <Users size={18} /> Leads & Vendas
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('products')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
-                    >
-                        <Package size={18} /> Estoque Showroom
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('reviews')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'reviews' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
-                    >
-                        <Star size={18} /> Depoimentos
-                    </button>
-                    <button
-                        onClick={() => (setActiveTab as any)('maintenance')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${(activeTab as string) === 'maintenance' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
-                    >
-                        <RefreshCw size={18} /> Manutenção
-                    </button>
-                </div>
+                <nav className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-4 custom-scrollbar">
+                    {[
+                        { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+                        { id: 'leads', label: 'Triage & Leads', icon: Users },
+                        { id: 'products', label: 'Showroom Stock', icon: Package },
+                        { id: 'maintenance', label: 'Technicals', icon: RefreshCw },
+                        { id: 'reviews', label: 'CX / Feedback', icon: Star },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`flex items-center gap-3 px-6 py-4 rounded-xl font-display font-black uppercase tracking-widest text-[10px] transition-all border shrink-0 ${activeTab === tab.id ? 'bg-[var(--accent-primary)] text-[var(--bg-primary)] border-transparent' : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/40 hover:text-[var(--text-primary)]'}`}
+                        >
+                            <tab.icon size={14} className={activeTab === tab.id ? 'animate-pulse' : ''} />
+                            {tab.label}
+                        </button>
+                    ))}
+                </nav>
 
                 {activeTab === 'dashboard' ? (
-                    <div className="space-y-8">
+                    <div className="space-y-10">
                         {/* KPI Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="glass p-6 rounded-3xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Receita Total</div>
-                                <div className="text-3xl font-black text-white">
-                                    R$ {leads.filter(l => l.status === 'converted').reduce((acc, l) => acc + (l.final_value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            {[
+                                { label: 'Receita Total', val: `R$ ${stats.totalLeadValue.toLocaleString('pt-BR')}`, sub: `+${stats.convertedCount} conversões`, color: 'var(--accent-primary)', icon: TrendingUp },
+                                { label: 'Active Leads', val: leads.length, sub: `${stats.pendingCount} pendentes`, color: 'var(--accent-primary)', icon: Users },
+                                { label: 'Ticket Médio', val: `R$ ${stats.avgTicket.toFixed(0)}`, sub: 'Faturamento/Conversão', color: 'var(--accent-primary)', icon: Package },
+                                { label: 'Critical Stock', val: products.filter(p => p.stock_quantity <= 3).length, sub: 'Itens < 4 unidades', color: 'red-500', icon: AlertTriangle }
+                            ].map((kpi, i) => (
+                                <div key={i} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group hover:border-[var(--accent-primary)]/30 transition-all">
+                                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                        <kpi.icon size={40} />
+                                    </div>
+                                    <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-[0.3em] mb-3">{kpi.label}</div>
+                                    <div className="text-3xl font-display font-bold chrome-text mb-2">{kpi.val}</div>
+                                    <div className="text-[9px] font-mono font-bold text-[var(--accent-primary)] opacity-70 uppercase">{kpi.sub}</div>
                                 </div>
-                                <div className="text-[10px] text-green-500 font-bold mt-2 flex items-center gap-1">
-                                    <TrendingUp size={12} /> +{leads.filter(l => l.status === 'converted').length} vendas fechadas
-                                </div>
-                            </div>
-
-                            <div className="glass p-6 rounded-3xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Total de Leads</div>
-                                <div className="text-3xl font-black text-white">{leads.length}</div>
-                                <div className="text-[10px] text-blue-400 font-bold mt-2 uppercase tracking-tight">CaptaÃ§Ã£o em tempo real</div>
-                            </div>
-
-                            <div className="glass p-6 rounded-3xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Taxa de ConversÃ£o</div>
-                                <div className="text-3xl font-black text-white">
-                                    {leads.length > 0 ? ((leads.filter(l => l.status === 'converted').length / leads.length) * 100).toFixed(1) : 0}%
-                                </div>
-                                <div className="w-full bg-white/5 h-1.5 rounded-full mt-3 overflow-hidden">
-                                    <div
-                                        className="bg-blue-600 h-full transition-all duration-1000"
-                                        style={{ width: `${leads.length > 0 ? (leads.filter(l => l.status === 'converted').length / leads.length) * 100 : 0}%` }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="glass p-6 rounded-3xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Baixo Estoque</div>
-                                <div className={`text-3xl font-black ${products.filter(p => p.stock_quantity <= 3).length > 0 ? 'text-red-500' : 'text-white'}`}>
-                                    {products.filter(p => p.stock_quantity <= 3).length}
-                                </div>
-                                <div className="text-[10px] text-white/40 font-bold mt-2 uppercase">Produtos com {"<"} 4 un.</div>
-                            </div>
+                            ))}
                         </div>
 
                         {/* Secondary View: Types Breakdown, Marketing Channels and Inventory Alerts */}
@@ -476,44 +481,45 @@ export default function AdminDashboard() {
                             {/* Marketing Channels */}
                             <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
                                 <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
-                                    ð¡ Canais de Marketing
+                                    📡 Canais de Marketing
                                 </h3>
                                 <div className="space-y-4">
                                     {(() => {
                                         const channelMap: Record<string, { label: string; color: string; emoji: string }> = {
-                                            instagram: { label: 'Instagram', color: 'bg-pink-500', emoji: 'ð¸' },
-                                            facebook: { label: 'Facebook', color: 'bg-blue-600', emoji: 'ð¥' },
-                                            google_ads: { label: 'Google Ads', color: 'bg-yellow-500', emoji: 'ð' },
-                                            google_organico: { label: 'Google OrgÃ¢nico', color: 'bg-green-500', emoji: 'ð±' },
-                                            whatsapp: { label: 'WhatsApp', color: 'bg-green-400', emoji: 'ð¬' },
-                                            tiktok: { label: 'TikTok', color: 'bg-cyan-400', emoji: 'ðµ' },
-                                            direto: { label: 'Acesso Direto', color: 'bg-white/40', emoji: 'ð' },
-                                            outros: { label: 'Outros', color: 'bg-white/20', emoji: 'ð' },
+                                            instagram: { label: 'Instagram', color: 'bg-pink-500', emoji: '📸' },
+                                            facebook: { label: 'Facebook', color: 'bg-blue-600', emoji: '👥' },
+                                            google_ads: { label: 'Google Ads', color: 'bg-yellow-500', emoji: '🔍' },
+                                            google_organico: { label: 'Google Orgânico', color: 'bg-green-500', emoji: '🌱' },
+                                            whatsapp: { label: 'WhatsApp', color: 'bg-green-400', emoji: '💬' },
+                                            tiktok: { label: 'TikTok', color: 'bg-cyan-400', emoji: '🎵' },
+                                            direto: { label: 'Acesso Direto', color: 'bg-white/40', emoji: '🔗' },
+                                            outros: { label: 'Outros', color: 'bg-white/20', emoji: '📍' },
                                         };
-
-                                        const channels = leads.reduce((acc: Record<string, number>, l) => {
+                                        const channels = leads.reduce((acc: any, l) => {
                                             const src = l.marketing_source || 'direto';
                                             acc[src] = (acc[src] || 0) + 1;
                                             return acc;
                                         }, {});
 
-                                        const sorted = Object.entries(channels).sort((a, b) => b[1] - a[1]);
+                                        const sorted = Object.entries(channels).sort((a: any, b: any) => b[1] - a[1]);
 
                                         if (sorted.length === 0) {
-                                            return <div className="text-white/20 italic text-sm text-center py-8">Nenhum lead rastreado ainda.</div>;
+                                            return <div className="text-[var(--text-muted)] italic text-[10px] font-mono uppercase tracking-widest text-center py-12 border-2 border-dashed border-[var(--border-subtle)] rounded-2xl">No Data Stream Detected</div>;
                                         }
 
-                                        return sorted.map(([key, count]) => {
-                                            const ch = channelMap[key] || { label: key, color: 'bg-white/20', emoji: 'ð' };
+                                        return sorted.map(([key, count]: [string, any]) => {
+                                            const ch = (channelMap as any)[key] || { label: key, color: 'bg-white/20', emoji: '📍' };
                                             const pct = leads.length > 0 ? (count / leads.length) * 100 : 0;
                                             return (
-                                                <div key={key}>
-                                                    <div className="flex justify-between text-xs font-bold mb-1">
-                                                        <span className="text-white/60">{ch.emoji} {ch.label}</span>
-                                                        <span>{count} ({pct.toFixed(0)}%)</span>
+                                                <div key={key} className="group/channel">
+                                                    <div className="flex justify-between text-[10px] font-mono font-black uppercase tracking-widest mb-3 transition-colors group-hover/channel:text-[var(--accent-primary)]">
+                                                        <span className="flex items-center gap-2 opacity-60">
+                                                            {ch.emoji} {ch.label}
+                                                        </span>
+                                                        <span className="opacity-100">{count} UNITS <span className="text-[var(--text-muted)] pl-2">// {pct.toFixed(0)}%</span></span>
                                                     </div>
-                                                    <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                                                        <div className={`${ch.color} h-full transition-all duration-1000`} style={{ width: `${pct}%` }} />
+                                                    <div className="w-full bg-[var(--bg-primary)] h-1.5 rounded-full overflow-hidden border border-[var(--border-subtle)] shadow-inner">
+                                                        <div className={`${ch.color} h-full transition-all duration-1000 group-hover/channel:opacity-100 opacity-60`} style={{ width: `${pct}%` }} />
                                                     </div>
                                                 </div>
                                             );
@@ -523,26 +529,27 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Inventory Alerts List */}
-                            <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
-                                <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
-                                    <Package size={16} className="text-blue-500" /> Alertas de ReposiÃ§Ã£o
+                            <div className="bg-[var(--bg-elevated)] p-10 rounded-3xl border border-[var(--border-subtle)] relative overflow-hidden group">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-10" />
+                                <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-10 flex items-center gap-3">
+                                    <Package size={14} className="text-red-500" /> Inventory Delta
                                 </h3>
                                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                     {products.filter(p => p.stock_quantity <= 3).length > 0 ? (
                                         products.filter(p => p.stock_quantity <= 3).map(p => (
-                                            <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl">
+                                            <div key={p.id} className="flex items-center justify-between p-5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl group/item hover:border-red-500/30 transition-all">
                                                 <div>
-                                                    <div className="text-sm font-bold">{p.name}</div>
-                                                    <div className="text-[10px] text-white/30 uppercase">{p.category}</div>
+                                                    <div className="text-[11px] font-black uppercase leading-tight italic tracking-tighter group-hover/item:text-red-500 transition-colors">{p.name}</div>
+                                                    <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1 opacity-50">{p.category}</div>
                                                 </div>
-                                                <div className={`px-3 py-1 rounded-full text-[10px] font-black ${p.stock_quantity === 0 ? 'bg-red-500/20 text-red-500' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                                                    {p.stock_quantity} UNID.
+                                                <div className={`px-4 py-1.5 rounded-full text-[9px] font-mono font-black uppercase tracking-widest border ${p.stock_quantity === 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
+                                                    {p.stock_quantity <= 0 ? 'Depleted' : `${p.stock_quantity} Left`}
                                                 </div>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="h-full flex items-center justify-center text-white/20 italic text-sm">
-                                            Estoque saudÃ¡vel em todos os itens.
+                                        <div className="h-full flex items-center justify-center py-10">
+                                            <div className="text-[10px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] italic opacity-40">System Nominal // All Modules Stocked</div>
                                         </div>
                                     )}
                                 </div>
@@ -566,49 +573,50 @@ export default function AdminDashboard() {
 
                             return (
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    <div className="lg:col-span-2">
-                                        <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
-                                            <TrendingUp size={16} className="text-green-500" /> Extrato de Repasses (Acumulado)
+                                    <div className="lg:col-span-2 bg-[var(--bg-elevated)] p-10 rounded-3xl border border-[var(--border-subtle)] relative overflow-hidden group">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-10" />
+                                        <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-10 flex items-center gap-3">
+                                            <TrendingUp size={14} className="text-green-500" /> Ledger Settlement (Aggregate)
                                         </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                             {/* Loja Card */}
-                                            <div className="glass p-6 rounded-3xl bg-white/5 border border-green-500/20 relative overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent" />
+                                            <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-green-500/20 relative overflow-hidden group/card hover:border-green-500/40 transition-all">
+                                                <div className="absolute top-0 right-0 w-20 h-20 bg-green-500 opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-green-400/60 uppercase font-black tracking-widest mb-1">Lucro da Loja (JoÃ£o)</div>
-                                                    <div className="text-2xl font-black text-green-400">
+                                                    <div className="text-[9px] font-mono font-black text-green-400 opacity-60 uppercase tracking-widest mb-3">Store Net Yield</div>
+                                                    <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalLoja.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
-                                                    <div className="text-[10px] text-white/30 mt-2">
-                                                        Bruto: R$ {totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} Â· peças: R$ {totalCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                    <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
+                                                        Gross: {totalBruto.toLocaleString('pt-BR')} // Delta: {totalCusto.toLocaleString('pt-BR')}
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Iago Card */}
-                                            <div className="glass p-6 rounded-3xl bg-white/5 border border-blue-500/20 relative overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+                                            <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-[var(--accent-primary)]/20 relative overflow-hidden group/card hover:border-[var(--accent-primary)]/40 transition-all">
+                                                <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--accent-primary)] opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-blue-400/60 uppercase font-black tracking-widest mb-1">Comissões Iago</div>
-                                                    <div className="text-2xl font-black text-blue-400">
+                                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] opacity-60 uppercase tracking-widest mb-3">Consultant Bounty</div>
+                                                    <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalIago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
-                                                    <div className="text-[10px] text-white/30 mt-2 line-clamp-1">
-                                                        {convertedLeads.filter(l => l.commission_ecosystem).length} via Eco Â· {convertedLeads.filter(l => l.commission_service).length} Exec.
+                                                    <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
+                                                        Ecosystem managed commission
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Técnico Card */}
-                                            <div className="glass p-6 rounded-3xl bg-white/5 border border-purple-500/20 relative overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent" />
+                                            {/* Tecnico Card */}
+                                            <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-purple-500/20 relative overflow-hidden group/card hover:border-purple-500/40 transition-all">
+                                                <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500 opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-purple-400/60 uppercase font-black tracking-widest mb-1">Repasse Técnico</div>
-                                                    <div className="text-2xl font-black text-purple-400">
+                                                    <div className="text-[9px] font-mono font-black text-purple-400 opacity-60 uppercase tracking-widest mb-3">Technical Partition</div>
+                                                    <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
-                                                    <div className="text-[10px] text-white/30 mt-2">
-                                                        {convertedLeads.filter(l => l.performed_by_partner).length} ordens executadas
+                                                    <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
+                                                        External partner payout stream
                                                     </div>
                                                 </div>
                                             </div>
@@ -660,42 +668,65 @@ export default function AdminDashboard() {
                         <div className="overflow-x-auto text-sm">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
-                                        <th className="p-6">Cliente</th>
-                                        <th className="p-6">Interesse</th>
-                                        <th className="p-6">Canal</th>
-                                        <th className="p-6">Voucher</th>
-                                        <th className="p-6">Operacional</th>
-                                        <th className="p-6">Financeiro</th>
-                                        <th className="p-6">Ações / Valor</th>
+                                    <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
+                                        <th className="p-6">Client / Bio</th>
+                                        <th className="p-6">Diagnosis</th>
+                                        <th className="p-6">Source</th>
+                                        <th className="p-6 text-center">Voucher</th>
+                                        <th className="p-6">Production</th>
+                                        <th className="p-6">Financial</th>
+                                        <th className="p-6 text-right">Yield</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
                                     {leads.filter(l => l.interest_type !== 'manutencao').length > 0 ? leads.filter(l => l.interest_type !== 'manutencao').map((lead) => (
-                                        <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors">
+                                        <tr key={lead.id} className="hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group">
                                             <td className="p-6">
-                                                <div className="font-bold">{lead.client_name || "Anônimo"}</div>
-                                                <div className="text-xs text-white/30 mb-1">{lead.whatsapp || lead.session_id}</div>
+                                                <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{lead.client_name || "Nexus Guest"}</div>
+                                                <div className="font-mono text-[10px] text-[var(--accent-primary)] mb-3">{lead.whatsapp || lead.session_id}</div>
                                                 {lead.description && (
-                                                    <div className="text-[10px] bg-white/5 p-2 rounded text-blue-200 mt-2 border border-white/5 max-w-xs italic leading-relaxed">
+                                                    <div className="text-[10px] font-medium bg-[var(--bg-primary)] p-3 rounded-xl text-[var(--text-secondary)] border border-[var(--border-subtle)] max-w-xs italic leading-relaxed relative overflow-hidden">
+                                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--accent-primary)] opacity-40" />
                                                         "{lead.description}"
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="p-6">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${lead.interest_type === 'voucher' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'
+                                                <div className="flex flex-col gap-2">
+                                                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest w-fit ${
+                                                        lead.interest_type === 'pc_build' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 
+                                                        lead.interest_type === 'manutencao' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                                        'bg-green-500/10 text-green-400 border border-green-500/20'
                                                     }`}>
-                                                    {lead.interest_type}
-                                                </span>
+                                                        {lead.interest_type}
+                                                    </span>
+                                                    {lead.intent_type && (
+                                                        <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
+                                                            Intent: {lead.intent_type}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
-                                            <td className="p-6 text-center" title={lead.marketing_source || 'direto'}>
-                                                <span className="text-lg">
-                                                    {({ 'instagram': 'ð¸', 'facebook': 'ð¥', 'google_ads': 'ð', 'google_organico': 'ð±', 'whatsapp': 'ð¬', 'tiktok': 'ðµ', 'direto': 'ð', 'outros': 'ð' } as Record<string, string>)[lead.marketing_source] || 'ð'}
-                                                </span>
-                                                <div className="text-[9px] text-white/20 mt-0.5">{lead.marketing_source || 'direto'}</div>
-                                                {lead.campaign_name && <div className="text-[8px] text-blue-400/60 font-black uppercase tracking-tighter mt-1">{lead.campaign_name}</div>}
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xl opacity-70 group-hover:opacity-100 transition-opacity">
+                                                        {getSourceIcon(lead.marketing_source)}
+                                                    </span>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-black uppercase text-[var(--text-muted)] tracking-tighter">{lead.marketing_source || 'direct'}</span>
+                                                        {lead.utm_parameters?.utm_campaign && (
+                                                            <span className="text-[8px] font-mono text-[var(--accent-primary)]/60 font-bold uppercase truncate max-w-[80px]">{lead.utm_parameters.utm_campaign}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td className="p-6 font-mono text-xs text-blue-300">{lead.voucher_code}</td>
+                                            <td className="p-6 text-center">
+                                                {lead.voucher_code ? (
+                                                    <div className="font-mono text-[10px] font-black bg-[var(--bg-primary)] border border-[var(--border-subtle)] px-3 py-1.5 rounded-lg text-[var(--accent-primary)] shadow-sm inline-block">
+                                                        {lead.voucher_code}
+                                                    </div>
+                                                ) : <span className="opacity-20">—</span>}
+                                            </td>
                                             <td className="p-6">
                                                 <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Produção / Logística</div>
                                                 <select
@@ -865,20 +896,20 @@ export default function AdminDashboard() {
                         <div className="overflow-x-auto text-sm">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
-                                        <th className="p-6">Cliente / Voucher</th>
-                                        <th className="p-6">AvaliaÃ§Ã£o</th>
-                                        <th className="p-6">ComentÃ¡rio</th>
-                                        <th className="p-6">Data</th>
-                                        <th className="p-6 text-right">Ações</th>
+                                    <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
+                                        <th className="p-6">Client / Voucher</th>
+                                        <th className="p-6">Rating</th>
+                                        <th className="p-6">Content</th>
+                                        <th className="p-6">Timestamp</th>
+                                        <th className="p-6 text-right">Operations</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/10">
+                                <tbody className="divide-y divide-[var(--border-subtle)]">
                                     {reviews.length > 0 ? reviews.map((review) => (
-                                        <tr key={review.id} className={`hover:bg-white/[0.02] transition-colors ${!review.is_approved ? 'bg-blue-500/5' : ''}`}>
+                                        <tr key={review.id} className={`hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group ${!review.is_approved ? 'bg-[var(--accent-primary)]/5' : ''}`}>
                                             <td className="p-6">
-                                                <div className="font-bold">{review.user_name}</div>
-                                                <div className="text-[10px] font-mono text-blue-400">{review.voucher_code}</div>
+                                                <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{review.user_name}</div>
+                                                <div className="font-mono text-[10px] text-[var(--accent-primary)]">{review.voucher_code}</div>
                                             </td>
                                             <td className="p-6">
                                                 <div className="flex gap-1">
@@ -888,9 +919,13 @@ export default function AdminDashboard() {
                                                 </div>
                                             </td>
                                             <td className="p-6 max-w-xs">
-                                                <p className="text-white/70 italic text-xs leading-relaxed">"{review.comment}"</p>
+                                                <p className="text-[var(--text-secondary)] italic text-xs leading-relaxed relative pl-4">
+                                                    <span className="absolute left-0 top-0 text-[var(--accent-primary)] opacity-40 font-serif text-2xl leading-none">"</span>
+                                                    {review.comment}
+                                                    <span className="text-[var(--accent-primary)] opacity-40 font-serif text-2xl leading-none">"</span>
+                                                </p>
                                             </td>
-                                            <td className="p-6 text-[10px] text-white/20 uppercase font-bold">
+                                            <td className="p-6 text-[10px] text-[var(--text-muted)] uppercase font-mono font-bold">
                                                 {new Date(review.created_at).toLocaleDateString()}
                                             </td>
                                             <td className="p-6 text-right space-x-2">
@@ -934,15 +969,15 @@ export default function AdminDashboard() {
                         <div className="overflow-x-auto text-sm">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
-                                        <th className="p-6">Voucher / Cliente</th>
-                                        <th className="p-6">Equipamento</th>
-                                        <th className="p-6">Operacional</th>
-                                        <th className="p-6">Financeiro</th>
-                                        <th className="p-6">Valor / Ações</th>
+                                    <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
+                                        <th className="p-6">Ticket / Identity</th>
+                                        <th className="p-6">Device</th>
+                                        <th className="p-6">Workflow</th>
+                                        <th className="p-6">Treasury</th>
+                                        <th className="p-6 text-right">Settlement</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/10">
+                                <tbody className="divide-y divide-[var(--border-subtle)]">
                                     {/* Merge leads of maintenance type into this view */}
                                     {(() => {
                                         const merged = [
@@ -989,31 +1024,31 @@ export default function AdminDashboard() {
                                         }
 
                                         return merged.map((order) => (
-                                            <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
+                                            <tr key={order.id} className="hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group">
                                                 <td className="p-6">
-                                                    <div className="font-mono text-blue-400 font-bold mb-1">{order.voucher_code}</div>
-                                                    <div className="font-bold">{order.customer_name || "Anônimo"}</div>
-                                                    <div className="text-[10px] text-white/40">{order.customer_phone || (order as any).customer_email}</div>
+                                                    <div className="font-mono text-[var(--accent-primary)] font-black text-xs mb-1 tracking-tight">{order.voucher_code}</div>
+                                                    <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{order.customer_name || "Nexus Client"}</div>
+                                                    <div className="font-mono text-[10px] text-[var(--text-muted)] mb-3">{order.customer_phone || (order as any).customer_email}</div>
                                                     {order.problem_description && (
-                                                        <div className="text-[10px] bg-white/5 p-2 rounded text-blue-200 mt-2 border border-white/5 max-w-xs italic leading-relaxed">
+                                                        <div className="text-[10px] font-medium bg-[var(--bg-primary)] p-3 rounded-xl text-[var(--text-secondary)] border border-[var(--border-subtle)] max-w-xs italic leading-relaxed relative overflow-hidden">
+                                                            <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--accent-primary)] opacity-40" />
                                                             "{order.problem_description}"
                                                         </div>
                                                     )}
                                                 </td>
                                                 <td className="p-6">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest bg-white/5 px-2 py-1 rounded">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 px-3 py-1 rounded-full">
                                                         {order.equipment_type}
                                                     </span>
                                                 </td>
                                                 <td className="p-6">
-                                                    <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Produção</div>
+                                                    <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Operation Mode</div>
                                                     <select
                                                         value={order.status || 'pending'}
                                                         onChange={(e) => updateMaintenanceStatus(order.id, e.target.value)}
-                                                        className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${order.status === 'converted' ? 'text-green-400 border-green-500/20' :
-                                                            order.status === 'ready' ? 'text-blue-400 border-blue-500/20' :
-                                                                order.status === 'maintenance' || order.status === 'analysis' ? 'text-purple-400 border-purple-500/20' :
-                                                                    'text-yellow-500 border-yellow-500/20'
+                                                        className={`w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-2 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all ${order.status === 'converted' ? 'text-green-500 border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.1)]' :
+                                                            order.status === 'ready' ? 'text-[var(--accent-primary)] border-[var(--accent-primary)]/30' :
+                                                                'text-[var(--text-muted)]'
                                                             }`}
                                                     >
                                                         <option value="pending" className="bg-black">PENDENTE</option>
@@ -1026,13 +1061,13 @@ export default function AdminDashboard() {
                                                     </select>
                                                 </td>
                                                 <td className="p-6">
-                                                    <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Pagamento</div>
+                                                    <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Treasury Status</div>
                                                     <select
                                                         value={order.payment_status || 'pending'}
                                                         onChange={(e) => updateMaintenancePaymentStatus(order.id, e.target.value)}
-                                                        className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${order.payment_status === 'paid' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
-                                                            order.payment_status === 'awaiting_payment' ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5' :
-                                                                'text-white/40 border-white/5'
+                                                        className={`w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-2 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all ${order.payment_status === 'paid' ? 'text-green-500 border-green-500/30 bg-green-500/5 shadow-[0_0_10px_rgba(34,197,94,0.1)]' :
+                                                            order.payment_status === 'awaiting_payment' ? 'text-yellow-500 border-yellow-500/20 bg-yellow-500/5' :
+                                                                'text-[var(--text-muted)]'
                                                             }`}
                                                     >
                                                         <option value="pending" className="bg-black">PENDENTE</option>
@@ -1043,57 +1078,67 @@ export default function AdminDashboard() {
                                                 <td className="p-6">
                                                     {order.status === 'converted' ? (
                                                         <div className="space-y-4">
-                                                            <div className="space-y-1">
+                                                            <div className="space-y-1 bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-subtle)]">
                                                                 <div className="flex items-center justify-between gap-4">
-                                                                    <span className="text-[10px] text-white/40 uppercase font-bold">Total:</span>
-                                                                    <span className="font-bold">R$ {(order.final_value || 0).toLocaleString('pt-BR')}</span>
+                                                                    <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase">Gross:</span>
+                                                                    <span className="font-display font-bold text-sm">R$ {(order.final_value || 0).toLocaleString('pt-BR')}</span>
                                                                 </div>
-                                                                <div className="flex items-center justify-between gap-4 border-t border-white/5 pt-1">
-                                                                    <span className="text-[10px] text-blue-400 font-bold">Iago:</span>
-                                                                    <span className="text-[10px] font-bold text-blue-400">R$ {(order.commission_value || 0).toLocaleString('pt-BR')}</span>
+                                                                <div className="flex items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-1.5 mt-1.5">
+                                                                    <span className="text-[9px] font-mono font-black text-[var(--accent-primary)] uppercase tracking-tighter">Ops:</span>
+                                                                    <span className="text-[10px] font-mono font-black text-[var(--accent-primary)]">R$ {(order.commission_value || 0).toLocaleString('pt-BR')}</span>
                                                                 </div>
                                                                 {order.performed_by_partner && (
                                                                     <div className="flex items-center justify-between gap-4">
-                                                                        <span className="text-[10px] text-purple-400 font-bold">Téc.:</span>
-                                                                        <span className="text-[10px] font-bold text-purple-400">
+                                                                        <span className="text-[9px] font-mono font-black text-purple-400 uppercase tracking-tighter">Ext:</span>
+                                                                        <span className="text-[10px] font-mono font-black text-purple-400">
                                                                             R$ {(((order.final_value || 0) - (order.cost_value || 0)) * 0.5).toLocaleString('pt-BR')}
                                                                         </span>
                                                                     </div>
                                                                 )}
-                                                                <div className="flex items-center justify-between gap-4 border-t border-white/5 pt-1 opacity-60 italic">
-                                                                    <span className="text-[10px] text-white/40">Loja:</span>
-                                                                    <span className="text-[10px] text-white/40">
+                                                                <div className="flex items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-1.5 mt-1.5 opacity-40 italic">
+                                                                    <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase">Net:</span>
+                                                                    <span className="text-[9px] font-mono font-bold text-[var(--text-muted)]">
                                                                         R$ {((order.final_value || 0) - (order.commission_value || 0) - (order.performed_by_partner ? ((order.final_value || 0) - (order.cost_value || 0)) * 0.5 : 0)).toLocaleString('pt-BR')}
                                                                     </span>
                                                                 </div>
                                                             </div>
-                                                            <Button size="sm" variant="ghost" className="w-full h-8 text-[10px] font-bold border border-white/10" onClick={() => {
-                                                                const originalLead = leads.find(l => l.id === order.id);
-                                                                setSelectedLeadForCommission(originalLead || order);
-                                                                setCommissionForm({
-                                                                    finalValue: order.final_value?.toString() || '',
-                                                                    costValue: order.cost_value?.toString() || '',
-                                                                    ecosystemCaptured: (order as any).commission_ecosystem ?? true,
-                                                                    executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : 'owner')
-                                                                });
-                                                                setShowCommissionModal(true);
-                                                            }}>EDITAR VALORES</Button>
+                                                            <button 
+                                                                className="w-full h-8 text-[9px] font-mono font-black uppercase tracking-widest bg-[var(--bg-elevated)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-lg border border-[var(--border-subtle)] transition-all"
+                                                                onClick={() => {
+                                                                    const originalLead = leads.find(l => l.id === order.id);
+                                                                    setSelectedLeadForCommission(originalLead || order);
+                                                                    setCommissionForm({
+                                                                        finalValue: order.final_value?.toString() || '',
+                                                                        costValue: order.cost_value?.toString() || '',
+                                                                        ecosystemCaptured: (order as any).commission_ecosystem ?? true,
+                                                                        executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : 'owner')
+                                                                    });
+                                                                    setShowCommissionModal(true);
+                                                                }}
+                                                            >
+                                                                Log Adjust
+                                                            </button>
                                                         </div>
                                                     ) : (
                                                         <div className="space-y-2">
-                                                            <Button size="sm" variant="outline" className="w-full h-8 text-[10px] font-black" onClick={() => {
-                                                                const originalLead = leads.find(l => l.id === order.id);
-                                                                setSelectedLeadForCommission(originalLead || order);
-                                                                setCommissionForm({
-                                                                    finalValue: '',
-                                                                    costValue: '',
-                                                                    ecosystemCaptured: true,
-                                                                    executor: 'owner'
-                                                                });
-                                                                setShowCommissionModal(true);
-                                                            }}>FINALIZAR VENDIDO</Button>
-                                                            <div className="text-[10px] text-white/20 text-center uppercase font-bold">
-                                                                {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                                                            <button 
+                                                                className="w-full h-9 text-[9px] font-mono font-black uppercase tracking-widest bg-[var(--accent-primary)] text-[var(--bg-primary)] rounded-lg hover:opacity-90 transition-all shadow-[0_0_15px_rgba(var(--accent-primary-rgb),0.2)]"
+                                                                onClick={() => {
+                                                                    const originalLead = leads.find(l => l.id === order.id);
+                                                                    setSelectedLeadForCommission(originalLead || order);
+                                                                    setCommissionForm({
+                                                                        finalValue: '',
+                                                                        costValue: '',
+                                                                        ecosystemCaptured: true,
+                                                                        executor: 'owner'
+                                                                    });
+                                                                    setShowCommissionModal(true);
+                                                                }}
+                                                            >
+                                                                Finalize Order
+                                                            </button>
+                                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] text-center uppercase tracking-widest mt-2">
+                                                                Opened: {new Date(order.created_at).toLocaleDateString('pt-BR')}
                                                             </div>
                                                         </div>
                                                     )}
@@ -1114,33 +1159,57 @@ export default function AdminDashboard() {
                                     setPreviewUrls([]);
                                     setShowProductForm(true);
                                 }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"
+                                className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-8 py-4 rounded-xl font-display font-black uppercase tracking-widest text-xs flex items-center gap-3 transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(var(--accent-primary-rgb),0.2)]"
                             >
-                                <Plus size={20} /> Novo Produto
+                                <Plus size={18} strokeWidth={3} /> Register Component
                             </button>
                         </div>
 
                         {showProductForm && (
-                            <form onSubmit={handleSaveProduct} className="glass p-8 rounded-3xl border border-white/10 bg-white/5 space-y-4">
-                                <h3 className="text-xl font-bold mb-4">{editingProduct ? 'Editar Produto' : 'Novo Produto'}</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input name="name" defaultValue={editingProduct?.name} placeholder="Nome do Produto" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
-                                    <select name="category" defaultValue={editingProduct?.category || 'kit'} className="bg-black border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none">
-                                        <option value="kit">Kit Gamer</option>
-                                        <option value="smartphone">Smartphone</option>
-                                        <option value="notebook">Notebook</option>
-                                        <option value="hardware">Hardware</option>
-                                    </select>
-                                    <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="Preço (R$)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
-                                    <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="Estoque" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
-                                    <input name="sku" defaultValue={editingProduct?.sku} placeholder="SKU (Olist/Estoque)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" />
-                                    <div className="md:col-span-2 space-y-4">
-                                        <div>
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">Especificações (JSON)</label>
-                                            <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='Ex: {"cpu": "i5", "ram": "16GB"}' className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none h-24 font-mono text-sm" />
+                            <form onSubmit={handleSaveProduct} className="bg-[var(--bg-elevated)] p-10 rounded-3xl border border-[var(--border-subtle)] space-y-8 relative overflow-hidden group/form">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-display font-black italic uppercase tracking-tighter chrome-text">
+                                        {editingProduct ? 'Update System Interface' : 'Initialize New Entry'}
+                                    </h3>
+                                    <div className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest bg-[var(--bg-primary)] px-3 py-1 rounded-full border border-[var(--border-subtle)]">
+                                        {editingProduct ? `UUID: ${editingProduct.id.slice(0,8)}` : 'Draft Mode'}
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Component Name</label>
+                                        <input name="name" defaultValue={editingProduct?.name} placeholder="Ex: RTX 4070 SUPER" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Registry Category</label>
+                                        <select name="category" defaultValue={editingProduct?.category || 'kit'} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all uppercase appearance-none">
+                                            <option value="kit">Kit Gamer</option>
+                                            <option value="smartphone">Smartphone</option>
+                                            <option value="notebook">Notebook</option>
+                                            <option value="hardware">Hardware</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Base Valuation (R$)</label>
+                                        <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="0.00" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Inventory Count</label>
+                                        <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="0" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Stock Keeping Unit (SKU)</label>
+                                        <input name="sku" defaultValue={editingProduct?.sku} placeholder="ERP-SYNC-ID" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-xs font-mono font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">System Specifications (JSON)</label>
+                                            <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='{"key": "value"}' className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 focus:border-[var(--accent-primary)]/50 outline-none h-32 font-mono text-xs font-bold leading-relaxed transition-all" />
                                         </div>
-                                        <div>
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">URLs das Imagens (Uma por linha)</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Asset Catalogs (URL per line)</label>
                                             <textarea
                                                 name="image_urls"
                                                 defaultValue={editingProduct?.image_urls?.join('\n') || ''}
@@ -1148,8 +1217,8 @@ export default function AdminDashboard() {
                                                     const urls = e.target.value.split('\n').filter(url => url.trim() !== '');
                                                     setPreviewUrls(urls);
                                                 }}
-                                                placeholder='https://exemplo.com/imagem1.jpg'
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none h-24 font-mono text-sm"
+                                                placeholder='https://assets.nexus.tech/...'
+                                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 focus:border-[var(--accent-primary)]/50 outline-none h-32 font-mono text-xs font-bold leading-relaxed transition-all"
                                             />
                                         </div>
 
@@ -1174,29 +1243,44 @@ export default function AdminDashboard() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {products.map((p) => (
-                                <div key={p.id} className="glass p-6 rounded-3xl border border-white/10 bg-white/5 flex flex-col">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <span className="text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded italic text-center">
-                                            {p.category}
-                                        </span>
+                                <div key={p.id} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] flex flex-col relative group hover:border-[var(--accent-primary)]/30 transition-all shadow-xl overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                         <div className="flex gap-2">
                                             <button onClick={() => {
                                                 setEditingProduct(p);
                                                 setPreviewUrls(p.image_urls || []);
                                                 setShowProductForm(true);
-                                            }} className="p-2 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors">
+                                            }} className="p-2 bg-[var(--bg-primary)]/80 backdrop-blur rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-primary)] border border-[var(--border-subtle)] transition-all">
                                                 <Edit size={16} />
                                             </button>
-                                            <button onClick={() => deleteProduct(p.id)} className="p-2 hover:bg-red-500/20 rounded-lg text-white/40 hover:text-red-500 transition-colors">
+                                            <button onClick={() => deleteProduct(p.id)} className="p-2 bg-[var(--bg-primary)]/80 backdrop-blur rounded-lg text-[var(--text-muted)] hover:text-red-500 border border-[var(--border-subtle)] transition-all">
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </div>
-                                    <h4 className="text-xl font-bold mb-1">{p.name}</h4>
-                                    <div className="text-2xl font-black mb-4">R$ {p.price?.toLocaleString('pt-BR')}</div>
-                                    <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center text-xs">
-                                        <span className="text-white/40">Estoque: <span className={p.stock_quantity > 0 ? "text-green-400" : "text-red-400"}>{p.stock_quantity}</span></span>
-                                        {p.sku && <span className="text-white/20 font-mono text-[10px]">SKU: {p.sku}</span>}
+
+                                    <div className="flex justify-between items-start mb-6">
+                                        <span className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 px-3 py-1 rounded-full italic">
+                                            {p.category}
+                                        </span>
+                                    </div>
+
+                                    <h4 className="text-xl font-display font-black italic uppercase tracking-tighter mb-2 group-hover:chrome-text transition-all leading-tight">{p.name}</h4>
+                                    <div className="text-2xl font-black mb-6 tracking-tighter">R$ {p.price?.toLocaleString('pt-BR')}</div>
+                                    
+                                    <div className="mt-auto pt-6 border-t border-[var(--border-subtle)] flex justify-between items-center">
+                                        <div className="flex flex-col">
+                                            <span className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">Status</span>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${p.stock_quantity > 0 ? "text-green-500" : "text-red-500"}`}>
+                                                {p.stock_quantity > 0 ? `Stock: ${p.stock_quantity}` : 'Depleted'}
+                                            </span>
+                                        </div>
+                                        {p.sku && (
+                                            <div className="text-right">
+                                                <div className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1 text-right">Identifier</div>
+                                                <div className="text-[10px] font-mono font-bold text-[var(--text-muted)] opacity-60">#{p.sku}</div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -1207,107 +1291,158 @@ export default function AdminDashboard() {
 
             {/* Modal de Card Social */}
             {showSocialCard && socialCardLead && (
-                <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-                    <div className="max-w-sm w-full space-y-4">
-                        <div className="flex items-center justify-between text-white/40 text-xs font-bold uppercase">
-                            <span>ð¸ Card para Redes Sociais</span>
-                            <button onClick={() => setShowSocialCard(false)} className="hover:text-white"><X size={18} /></button>
+                <div className="fixed inset-0 bg-[#020406]/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+                    <div className="max-w-sm w-full space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center border border-[var(--accent-primary)]/20">
+                                    <Smartphone size={16} className="text-[var(--accent-primary)]" />
+                                </div>
+                                <span className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Social Asset Generator</span>
+                            </div>
+                            <button onClick={() => setShowSocialCard(false)} className="p-2 hover:bg-[var(--bg-elevated)] rounded-full transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+                                <X size={20} />
+                            </button>
                         </div>
 
-                        {/* The Card â screenshot this! */}
-                        <div className="bg-gradient-to-br from-[#0a0a0a] via-[#111] to-black border border-white/10 rounded-3xl p-8 relative overflow-hidden">
-                            {/* Glow */}
-                            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-blue-500/10 blur-3xl" />
-                            <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-purple-500/10 blur-3xl" />
+                        {/* The Card — screenshot this! */}
+                        <div className="bg-[#0a0a0a] border border-[var(--border-subtle)] rounded-[32px] p-10 relative overflow-hidden shadow-2xl group/card">
+                            {/* Industrial Grid Overlay */}
+                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(var(--accent-primary) 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
+                            
+                            {/* Glows */}
+                            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[var(--accent-primary)]/10 blur-[80px]" />
+                            <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-blue-500/5 blur-[80px]" />
 
                             <div className="relative">
-                                {/* Logo */}
-                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Cyber Informática â¢ Bragança Paulista</div>
+                                {/* Header */}
+                                <div className="flex justify-between items-start mb-10">
+                                    <div className="text-[8px] font-mono font-black uppercase tracking-[0.4em] text-[var(--text-muted)] leading-relaxed">
+                                        Cyber Informática<br />
+                                        <span className="text-[var(--accent-primary)]">Bragança Paulista // SP</span>
+                                    </div>
+                                    <div className="w-10 h-10 border border-[var(--border-subtle)] rounded-xl flex items-center justify-center bg-[var(--bg-primary)] shadow-inner">
+                                        <div className="w-4 h-4 rounded-sm bg-[var(--accent-primary)] animate-pulse" />
+                                    </div>
+                                </div>
 
                                 {/* Service Type Badge */}
-                                <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/20' :
-                                    socialCardLead.interest_type === 'manutencao' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' :
-                                        'bg-green-500/20 text-green-400 border border-green-500/20'
+                                <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-mono font-black uppercase tracking-widest mb-6 ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                    socialCardLead.interest_type === 'manutencao' ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20' :
+                                        'bg-green-500/10 text-green-400 border border-green-500/20'
                                     }`}>
-                                    {socialCardLead.interest_type === 'pc_build' ? 'ð¥ï¸ Montagem Concluída' :
-                                        socialCardLead.interest_type === 'manutencao' ? 'ð§ Manutenção Concluída' :
-                                            'â Serviço ConcluÃ­do'}
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-ping ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-400' : socialCardLead.interest_type === 'manutencao' ? 'bg-[var(--accent-primary)]' : 'bg-green-400'}`} />
+                                    {socialCardLead.interest_type === 'pc_build' ? 'System Assembly' :
+                                        socialCardLead.interest_type === 'manutencao' ? 'Maintenance Protocol' :
+                                            'Success Managed'}
                                 </div>
 
                                 {/* Client */}
-                                <div className="text-3xl font-black italic uppercase tracking-tight mb-2">
-                                    {socialCardLead.client_name || "Cliente"}
+                                <div className="mb-4">
+                                    <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Authenticated Client</div>
+                                    <div className="text-4xl font-display font-black italic uppercase tracking-tighter chrome-text leading-none py-1">
+                                        {socialCardLead.client_name || "Nexus Unit"}
+                                    </div>
                                 </div>
 
                                 {/* Description */}
                                 {socialCardLead.description && (
-                                    <div className="text-sm text-white/50 leading-relaxed mb-6 italic">
-                                        "{socialCardLead.description.slice(0, 120)}{socialCardLead.description.length > 120 ? '...' : ''}"
+                                    <div className="text-xs text-[var(--text-secondary)] leading-relaxed mb-10 italic pl-4 border-l-2 border-[var(--accent-primary)]/20">
+                                        "{socialCardLead.description.slice(0, 100)}{socialCardLead.description.length > 100 ? '...' : ''}"
                                     </div>
                                 )}
 
                                 {/* Divider */}
-                                <div className="border-t border-white/5 mb-6" />
+                                <div className="h-px bg-gradient-to-r from-[var(--border-subtle)] via-[var(--accent-primary)]/20 to-[var(--border-subtle)] mb-8" />
 
-                                {/* Value */}
-                                {socialCardLead.final_value > 0 && (
-                                    <div className="flex items-end justify-between mb-4">
-                                        <div className="text-[10px] text-white/30 uppercase font-bold">Valor Total</div>
-                                        <div className="text-2xl font-black text-green-400">R$ {socialCardLead.final_value?.toLocaleString('pt-BR')}</div>
+                                {/* Highlights Grid */}
+                                <div className="grid grid-cols-2 gap-6 mb-10">
+                                    <div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Operational Value</div>
+                                        <div className="text-xl font-display font-bold chrome-text">R$ {socialCardLead.final_value?.toLocaleString('pt-BR')}</div>
                                     </div>
-                                )}
+                                    <div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Warranty Lock</div>
+                                        <div className="text-xl font-display font-bold text-[var(--text-primary)]">90 DAYS</div>
+                                    </div>
+                                </div>
 
                                 {/* Voucher */}
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
+                                <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 flex items-center justify-between relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-[var(--accent-primary)] opacity-[0.03] rotate-45 translate-x-8 -translate-y-8" />
                                     <div>
-                                        <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">CÃ³digo do Cliente</div>
-                                        <div className="text-lg font-black font-mono text-blue-400">{socialCardLead.voucher_code}</div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Security Token</div>
+                                        <div className="text-lg font-mono font-black text-[var(--accent-primary)] tracking-tight">{socialCardLead.voucher_code}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">Garantia</div>
-                                        <div className="text-sm font-black text-white">90 dias</div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Verified</div>
+                                        <CheckCircle2 size={24} className="text-green-500 ml-auto" />
                                     </div>
                                 </div>
 
                                 {/* Footer */}
-                                <div className="mt-6 text-[9px] text-white/20 text-center uppercase tracking-widest">
-                                    cybertech.com.br â¢ @cybertechbraganca
+                                <div className="mt-10 pt-6 border-t border-[var(--border-subtle)] text-[8px] font-mono font-black text-[var(--text-muted)] text-center uppercase tracking-[0.4em]">
+                                    CYBERINFORMATICA.TECH // @CYBERTECH
                                 </div>
                             </div>
                         </div>
 
-                        <p className="text-center text-white/30 text-xs italic">
-                            Tire um print do card acima para postar! ð±
-                        </p>
+                        <div className="flex flex-col items-center gap-3">
+                            <p className="text-center text-[var(--text-muted)] text-[10px] font-mono font-bold uppercase tracking-widest animate-pulse">
+                                Capture snapshot for broadcast
+                            </p>
+                            <button 
+                                onClick={() => setShowSocialCard(false)}
+                                className="w-full py-4 bg-[var(--bg-elevated)] text-[var(--text-primary)] font-display font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/40 transition-all"
+                            >
+                                Close Terminal
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Modal de Comissões */}
             {showCommissionModal && selectedLeadForCommission && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-                    <form onSubmit={submitCommissionForm} className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 max-w-lg w-full relative">
-                        <button type="button" onClick={() => setShowCommissionModal(false)} className="absolute top-6 right-6 text-white/40 hover:text-white"><X size={20} /></button>
+                <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <form onSubmit={submitCommissionForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-10 max-w-lg w-full relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
+                        
+                        <button type="button" onClick={() => setShowCommissionModal(false)} className="absolute top-8 right-8 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                            <X size={24} />
+                        </button>
 
-                        <div className="flex items-center gap-3 mb-2">
-                            <TrendingUp className="text-green-500" size={24} />
-                            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Fechar Venda</h2>
+                        <div className="flex items-center gap-4 mb-2">
+                            <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                                <TrendingUp className="text-green-500" size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-display font-black italic uppercase tracking-tighter chrome-text leading-tight">Closing Protocol</h2>
+                                <p className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest">Financial Settlement Interface</p>
+                            </div>
                         </div>
                         
-                        <p className="text-sm text-white/50 mb-8 border-b border-white/10 pb-4">
-                            Cliente: <strong className="text-white">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Anônimo"}</strong> <br />
-                            Serviço: <span className="uppercase text-blue-400 font-bold text-xs">{selectedLeadForCommission.interest_type || selectedLeadForCommission.equipment_type || "Manutenção"}</span>
-                        </p>
+                        <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-4 my-8 space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Origin Client</span>
+                                <span className="font-display font-bold uppercase italic tracking-tighter text-[var(--text-primary)]">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Nexus Unit"}</span>
+                            </div>
+                            <div className="h-px bg-[var(--border-subtle)] opacity-50" />
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Service Class</span>
+                                <span className="font-mono font-black text-[var(--accent-primary)] uppercase tracking-tighter">{selectedLeadForCommission.interest_type || selectedLeadForCommission.equipment_type || "Generic_Manutencao"}</span>
+                            </div>
+                        </div>
 
                         <div className="space-y-6">
-                            <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Valor Faturado Bruto (R$)</label>
+                            <div className="space-y-2">
+                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Gross Revenue (R$)</label>
                                 <input
                                     type="number" step="0.01" required
                                     value={commissionForm.finalValue}
                                     onChange={(e) => setCommissionForm({ ...commissionForm, finalValue: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500"
-                                    placeholder="Ex: 5000.00"
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl focus:outline-none focus:border-green-500/50 shadow-inner transition-all"
+                                    placeholder="0.00"
                                 />
                             </div>
 
@@ -1315,83 +1450,83 @@ export default function AdminDashboard() {
                               selectedLeadForCommission.interest_type === 'pc_build' || 
                               selectedLeadForCommission.equipment_type ||
                               !selectedLeadForCommission.isLead) && (
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Custo de peças/Componentes (R$)</label>
+                                <div className="space-y-2">
+                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 text-red-400/80">Material Costs / Parts (R$)</label>
                                     <input
                                         type="number" step="0.01"
                                         value={commissionForm.costValue}
                                         onChange={(e) => setCommissionForm({ ...commissionForm, costValue: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-500/50"
-                                        placeholder="Ex: 800.00 (opcional)"
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-mono font-bold focus:outline-none focus:border-red-500/30 transition-all font-mono"
+                                        placeholder="0.00"
                                     />
-                                    <p className="text-[10px] text-white/30 mt-1">* Descontado do lucro líquido da loja. Não afeta as comissões do Iago.</p>
+                                    <p className="text-[8px] font-mono font-medium text-[var(--text-muted)] mt-1 px-1 leading-relaxed">* Deduction directly impacts store net profit. Operational commissions remain static.</p>
                                 </div>
                             )}
 
-                            <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
                                 <label className="flex items-start gap-4 cursor-pointer group">
-                                    <div className="relative flex items-center bg-black border border-white/20 rounded-md w-6 h-6 shrink-0 group-hover:border-blue-500 transition-colors">
+                                    <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
                                         <input
                                             type="checkbox"
                                             checked={commissionForm.ecosystemCaptured}
                                             onChange={(e) => setCommissionForm({ ...commissionForm, ecosystemCaptured: e.target.checked })}
-                                            className="opacity-0 absolute inset-0 cursor-pointer"
+                                            className="opacity-0 absolute inset-0 cursor-pointer z-10"
                                         />
-                                        {commissionForm.ecosystemCaptured && <CheckCircle2 size={16} className="text-blue-500 mx-auto" />}
+                                        {commissionForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                     </div>
                                     <div>
-                                        <div className="text-sm font-bold">Captação via Ecossistema (+5%)</div>
-                                        <div className="text-[10px] text-white/40">O lead veio pelo Site ou Redes Sociais administradas pelo Iago.</div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Ecosystem Bounty (+5%)</div>
+                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Lead captured via automated digital interfaces (Site/ADS).</div>
                                     </div>
                                 </label>
                             </div>
 
-                            <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-4">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Quem executou o serviço?</div>
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Operational Executor</div>
 
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <input
-                                        type="radio" name="executor" value="owner"
-                                        checked={commissionForm.executor === 'owner'}
-                                        onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                        className="w-4 h-4 accent-blue-500"
-                                    />
-                                    <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Dono da Loja (João) <span className="font-normal text-[10px] text-white/30 ml-2">Sem taxa</span></div>
-                                </label>
-
-                                {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
-                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="grid grid-cols-1 gap-3">
+                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
                                         <input
-                                            type="radio" name="executor" value="iago"
-                                            checked={commissionForm.executor === 'iago'}
+                                            type="radio" name="executor" value="owner"
+                                            checked={commissionForm.executor === 'owner'}
                                             onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                            className="w-4 h-4 accent-blue-500"
+                                            className="w-4 h-4 accent-[var(--accent-primary)]"
                                         />
-                                        <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Iago Lopes <span className="font-normal text-[10px] text-blue-400/50 bg-blue-500/10 px-2 py-0.5 rounded ml-2">+3% Faturamento Bruto</span></div>
+                                        <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">Nexus Chief (João) <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Base Protocol</span></div>
                                     </label>
-                                )}
 
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <input
-                                        type="radio" name="executor" value="partner"
-                                        checked={commissionForm.executor === 'partner'}
-                                        onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                        className="w-4 h-4 accent-blue-500"
-                                    />
-                                    <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">
-                                        Técnico Parceiro
-                                        <span className="font-normal text-[10px] text-purple-400/50 bg-purple-500/10 px-2 py-0.5 rounded ml-2">
-                                            {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Lucro Líquido' : '+3% Faturamento Bruto'}
-                                        </span>
-                                    </div>
-                                </label>
+                                    {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
+                                        <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
+                                            <input
+                                                type="radio" name="executor" value="iago"
+                                                checked={commissionForm.executor === 'iago'}
+                                                onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
+                                                className="w-4 h-4 accent-[var(--accent-primary)]"
+                                            />
+                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Iago Lopes <span className="ml-2 font-mono text-[8px] bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded">+3% Total Revenue</span></div>
+                                        </label>
+                                    )}
+
+                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
+                                        <input
+                                            type="radio" name="executor" value="partner"
+                                            checked={commissionForm.executor === 'partner'}
+                                            onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
+                                            className="w-4 h-4 accent-[var(--accent-primary)]"
+                                        />
+                                        <div className="text-xs font-black uppercase tracking-widest text-purple-400">
+                                            External Technician
+                                            <span className="ml-2 font-mono text-[8px] bg-purple-500/10 px-2 py-0.5 rounded">
+                                                {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Net Profit' : '+3% Total Revenue'}
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div className="pt-4">
-                                <button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-black font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-                                    Confirmar Fechamento
-                                </button>
-                            </div>
+                            <button type="submit" className="w-full bg-[var(--accent-primary)] hover:opacity-90 text-[var(--bg-primary)] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all shadow-[0_10px_30px_rgba(var(--accent-primary-rgb),0.3)] hover:scale-[1.01]">
+                                Confirm Settlement
+                            </button>
                         </div>
                     </form>
                 </div>

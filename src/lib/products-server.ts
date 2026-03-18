@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Admin client for server-side updates ONLY
-export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+// During build, if keys are missing, we provide a dummy one to prevent initialization crash
+export const supabaseAdmin = createClient(
+    SUPABASE_URL || 'https://placeholder.supabase.co', 
+    SUPABASE_SERVICE_ROLE_KEY || 'service-role-key-missing-during-build'
+);
 
 export const updateProductStock = async (id: string, quantityToSubtract: number) => {
     // 1. Fetch current stock

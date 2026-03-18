@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search, Loader2, Package, Clock, CheckCircle2, AlertCircle, QrCode, Copy, CreditCard, Laptop, Smartphone, Monitor } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { brand } from "@/lib/brand";
 
 const statusSteps = [
     { id: 'pending', label: 'Recebido', icon: Package },
@@ -116,28 +117,29 @@ export default function ServiceSearch() {
     const paymentInfo = result?.payment_info;
 
     return (
-        <section id="consultar-status" className="py-24 bg-[#F8F7F5] border-y border-[#D4D2CF]">
+        <section id="consultar-status" className="py-24 bg-[var(--bg-primary)] border-y border-[var(--border-subtle)]">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-none uppercase">
+                    <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[var(--text-primary)] leading-none uppercase">
                         RASTREIO DE <br />
-                        <span className="text-outline">MANUTENÇÃO</span>
+                        <span className="opacity-40 italic">MANUTENÇÃO</span>
                     </h2>
-                    <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest max-w-lg mx-auto leading-relaxed">
+                    <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest max-w-lg mx-auto leading-relaxed">
                         Acompanhe o status do seu equipamento em tempo real com transparência total e segurança digital.
                     </p>
                 </div>
 
-                <div className="bg-white p-10 rounded-[2px] border border-[#D4D2CF] shadow-xl mb-12">
-                    <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+                <div className="bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] shadow-xl mb-12 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--chrome-light)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 relative z-10">
                         <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#AAAAAA]" size={20} />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={20} />
                             <input
                                 type="text"
-                                placeholder="CÓDIGO DO PEDIDO OU VOUCHER (EX: CYB-1234, CYBER-R8N0JT)"
+                                placeholder="CÓDIGO DO PEDIDO OU VOUCHER..."
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value.toUpperCase())}
-                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-4 pl-12 pr-4 text-[#1A1A1A] font-display font-bold uppercase tracking-tight focus:outline-none focus:border-[#1A1A1A] transition-all"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg py-4 pl-12 pr-4 text-[var(--text-primary)] font-display font-bold uppercase tracking-tight focus:outline-none focus:border-[var(--accent-primary)] transition-all placeholder:opacity-30"
                             />
                         </div>
                         <button
@@ -159,27 +161,27 @@ export default function ServiceSearch() {
 
                 <AnimatePresence>
                     {result && (
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-10 rounded-[2px] border border-[#D4D2CF] shadow-2xl overflow-hidden relative">
-                            <div className="absolute top-0 left-0 w-full h-[2px] bg-[#1A1A1A]" />
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-b border-[#ECEAE6] pb-8">
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] shadow-2xl overflow-hidden relative">
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-primary)]" />
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-b border-[var(--border-subtle)] pb-8">
                                 <div>
-                                    <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">
+                                    <div className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mb-1">
                                         {result.type === 'maintenance' ? 'ORDEM DE SERVIÇO' : 'CÓDIGO DO PEDIDO'}
                                     </div>
-                                    <h3 className="text-3xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">{result.id}</h3>
+                                    <h3 className="text-3xl font-display font-bold text-[var(--text-primary)] uppercase tracking-tight chrome-text">{result.id}</h3>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">CLIENTE</div>
-                                    <div className="text-sm font-bold text-[#1A1A1A] uppercase mb-2">{result.customer_name}</div>
-                                    <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">ÚLTIMA ATUALIZAÇÃO</div>
-                                    <div className="text-[10px] font-bold text-[#555555] uppercase">
+                                    <div className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mb-1">CLIENTE</div>
+                                    <div className="text-sm font-bold text-[var(--text-primary)] uppercase mb-2">{result.customer_name}</div>
+                                    <div className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mb-1">ÚLTIMA ATUALIZAÇÃO</div>
+                                    <div className="text-[10px] font-bold text-[var(--text-secondary)] uppercase">
                                         {formatDate(result.updated_at)}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="mb-16 relative">
-                                <div className="absolute top-5 left-0 w-full h-[1px] bg-[#ECEAE6] hidden md:block" />
+                                <div className="absolute top-5 left-0 w-full h-[1px] bg-[var(--border-subtle)] hidden md:block" />
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-8 relative z-10">
                                     {statusSteps.map((step, idx) => {
                                         const Icon = step.icon;
@@ -188,15 +190,15 @@ export default function ServiceSearch() {
 
                                         return (
                                             <div key={step.id} className="flex flex-col items-center gap-4 relative group">
-                                                <div className={`w-12 h-12 rounded-[2px] flex items-center justify-center transition-all duration-500 border-2 ${
-                                                    isCurrent ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white' :
-                                                    isActive ? 'bg-white border-[#1A1A1A] text-[#1A1A1A]' : 
-                                                    'bg-[#F8F7F5] border-[#ECEAE6] text-[#CCCCCC]'
+                                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-500 border ${
+                                                    isCurrent ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--bg-primary)] shadow-[0_0_20px_var(--border-glow)]' :
+                                                    isActive ? 'bg-[var(--bg-elevated)] border-[var(--accent-primary)] text-[var(--accent-primary)]' : 
+                                                    'bg-[var(--bg-primary)] border-[var(--border-subtle)] text-[var(--text-muted)]'
                                                 }`}>
                                                     <Icon size={20} />
                                                 </div>
                                                 <div className="flex flex-col items-center">
-                                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-[#1A1A1A]' : 'text-[#AAAAAA]'}`}>
+                                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
                                                         {step.label}
                                                     </span>
                                                 </div>
@@ -207,41 +209,41 @@ export default function ServiceSearch() {
                             </div>
 
                             {result.payment_status === 'paid' && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] p-6 mb-12 flex items-center justify-center gap-4 text-[#1A1A1A] font-display font-bold uppercase tracking-tight">
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[var(--bg-elevated)] border border-[var(--accent-success)]/30 rounded-xl p-6 mb-12 flex items-center justify-center gap-4 text-[var(--accent-success)] font-display font-bold uppercase tracking-tight">
                                     <CheckCircle2 size={24} /> PAGAMENTO CONFIRMADO
                                 </motion.div>
                             )}
 
                             {result.payment_status === 'awaiting_payment' && paymentInfo && (
-                                <div className="bg-[#F8F7F5] border border-[#D4D2CF] rounded-[2px] p-10 mb-12 relative overflow-hidden">
-                                    <h3 className="text-2xl font-display font-bold uppercase mb-4 text-[#1A1A1A]">PAGAMENTO <span className="text-outline">LIBERADO</span></h3>
-                                    <p className="text-[10px] font-bold text-[#888888] mb-10 uppercase tracking-widest max-w-lg">
+                                <div className="bg-[var(--bg-elevated)] border border-[var(--border-active)] rounded-2xl p-10 mb-12 relative overflow-hidden">
+                                    <h3 className="text-2xl font-display font-bold uppercase mb-4 text-[var(--text-primary)]">PAGAMENTO <span className="chrome-text">LIBERADO</span></h3>
+                                    <p className="text-[10px] font-bold text-[var(--text-secondary)] mb-10 uppercase tracking-widest max-w-lg">
                                         Seu pedido está pronto para o próximo passo. Escolha a melhor forma para finalizar:
                                     </p>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="bg-white border border-[#ECEAE6] rounded-[2px] p-8 flex flex-col justify-between shadow-sm">
+                                        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-8 flex flex-col justify-between shadow-sm">
                                             <div>
                                                 <div className="flex items-center gap-4 mb-8">
-                                                    <div className="p-3 bg-[#F8F7F5] text-[#1A1A1A] rounded-[2px] border border-[#ECEAE6]"><QrCode size={24} /></div>
-                                                    <h4 className="font-display font-bold uppercase tracking-tight text-[#1A1A1A]">PIX COPIA E COLA</h4>
+                                                    <div className="p-3 bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-lg border border-[var(--border-subtle)]"><QrCode size={24} /></div>
+                                                    <h4 className="font-display font-bold uppercase tracking-tight text-[var(--text-primary)]">PIX COPIA E COLA</h4>
                                                 </div>
-                                                <div className="bg-[#F8F7F5] p-4 rounded-[2px] flex items-center gap-3 border border-[#ECEAE6] overflow-hidden group">
-                                                    <span className="text-xs font-mono text-[#555555] truncate flex-1">{paymentInfo.pixCode}</span>
+                                                <div className="bg-[var(--bg-primary)] p-4 rounded-lg flex items-center gap-3 border border-[var(--border-subtle)] overflow-hidden group">
+                                                    <span className="text-xs font-mono text-[var(--text-secondary)] truncate flex-1">{paymentInfo.pixCode}</span>
                                                     <button
                                                         onClick={() => { navigator.clipboard.writeText(paymentInfo.pixCode); setCopiedPix(true); setTimeout(() => setCopiedPix(false), 2000); }}
-                                                        className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors p-2"
+                                                        className="text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors p-2"
                                                     >
-                                                        {copiedPix ? <CheckCircle2 size={18} className="text-green-600" /> : <Copy size={18} />}
+                                                        {copiedPix ? <CheckCircle2 size={18} className="text-[var(--accent-success)]" /> : <Copy size={18} />}
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="bg-white border border-[#ECEAE6] rounded-[2px] p-8 flex flex-col justify-between shadow-sm">
+                                        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-8 flex flex-col justify-between shadow-sm">
                                             <div className="flex items-center gap-4 mb-8">
-                                                <div className="p-3 bg-[#F8F7F5] text-[#1A1A1A] rounded-[2px] border border-[#ECEAE6]"><CreditCard size={24} /></div>
-                                                <h4 className="font-display font-bold uppercase tracking-tight text-[#1A1A1A]">CARTÃO DE CRÉDITO</h4>
+                                                <div className="p-3 bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-lg border border-[var(--border-subtle)]"><CreditCard size={24} /></div>
+                                                <h4 className="font-display font-bold uppercase tracking-tight text-[var(--text-primary)]">CARTÃO DE CRÉDITO</h4>
                                             </div>
                                             <a
                                                 href={paymentInfo.checkoutUrl}
@@ -253,21 +255,21 @@ export default function ServiceSearch() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-10 pt-10 border-t border-[#ECEAE6] flex flex-col md:flex-row items-center justify-between gap-6">
-                                        <p className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest max-w-sm leading-relaxed">
-                                            <strong>Prefere pagar na retirada?</strong><br />
-                                            Aceitamos dinheiro e cartão maquininha direto na nãossa loja.
+                                    <div className="mt-10 pt-10 border-t border-[var(--border-subtle)] flex flex-col md:flex-row items-center justify-between gap-6">
+                                        <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest max-w-sm leading-relaxed">
+                                            <strong className="text-[var(--text-secondary)]">Prefere pagar na retirada?</strong><br />
+                                            Aceitamos dinheiro e cartão maquininha direto na nossa loja.
                                         </p>
-                                        <a href={`https://wa.me/5511999999999?text=Oi, estou indo retirar meu pedido ${result.id}!`} target="_blank" rel="noreferrer" className="text-[10px] text-[#1A1A1A] font-bold uppercase tracking-[0.2em] border-b border-[#1A1A1A] pb-1 hover:border-transparent transition-all">
+                                        <a href={`https://wa.me/${brand.whatsapp}?text=Oi, estou indo retirar meu pedido ${result.id}!`} target="_blank" rel="noreferrer" className="text-[10px] text-[var(--accent-primary)] font-bold uppercase tracking-[0.2em] border-b border-[var(--accent-primary)]/30 pb-1 hover:border-[var(--accent-primary)] transition-all">
                                             AVISAR NO WHATSAPP &rarr;
                                         </a>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="bg-[#F8F7F5] rounded-[2px] p-8 border border-[#ECEAE6]">
-                                <div className="text-[10px] text-[#AAAAAA] mb-4 uppercase font-bold tracking-[0.3em]">INFORMAÇÃO TÉCNICA:</div>
-                                <p className="text-[#1A1A1A] font-medium leading-relaxed italic">
+                            <div className="bg-[var(--bg-elevated)] rounded-xl p-8 border border-[var(--border-subtle)]">
+                                <div className="text-[10px] text-[var(--text-muted)] mb-4 uppercase font-bold tracking-[0.3em]">INFORMAÇÃO TÉCNICA:</div>
+                                <p className="text-[var(--text-primary)] font-medium leading-relaxed italic opacity-80">
                                     "{result.description || "Iniciando processo de avaliação técnica."}"
                                 </p>
                             </div>

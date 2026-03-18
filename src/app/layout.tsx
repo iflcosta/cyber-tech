@@ -1,28 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Rajdhani, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const rajdhani = Rajdhani({
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-rajdhani",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
 import { brand } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: brand.name + " | " + brand.slogan,
+  title: "Cyber Informática | " + brand.slogan,
   description: brand.description,
   keywords: brand.seo.keywords,
-  authors: [{ name: brand.name }],
+  authors: [{ name: "Cyber Informática" }],
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
-  alternates: { canonical: "https://cyberinformatica.com.br" },
+  alternates: { canonical: "https://cyberinformatica.tech" },
 };
 
 export default function RootLayout({
@@ -88,7 +94,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className="antialiased"
+        className={`${rajdhani.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased font-sans bg-[var(--bg-primary)] text-[var(--text-primary)]`}
       >
         <Providers>
           {children}

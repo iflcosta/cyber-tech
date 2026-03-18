@@ -23,12 +23,12 @@ export function FilterBar() {
     } else {
       params.set("category", id);
     }
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 md:gap-4 p-4 bg-[#F8F7F5] border border-[#D4D2CF] rounded-[2px] mb-8">
-      <span className="text-[10px] font-display font-bold text-[#888888] uppercase tracking-[0.2em] mr-2">
+    <div className="flex flex-wrap items-center gap-2 md:gap-4 p-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl mb-8 shadow-sm">
+      <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] mr-2">
         Filtrar por:
       </span>
       {categories.map((cat) => (
@@ -36,10 +36,10 @@ export function FilterBar() {
           key={cat.id}
           onClick={() => handleFilter(cat.id)}
           className={cn(
-            "px-4 py-1.5 rounded-[2px] text-[10px] font-display font-bold uppercase tracking-[0.15em] transition-all duration-130",
+            "px-4 py-1.5 rounded-lg text-[10px] font-display font-bold uppercase tracking-[0.15em] transition-all duration-300",
             currentCategory === cat.id
-              ? "bg-[#1A1A1A] text-white"
-              : "bg-white text-[#555555] border border-[#ECEAE6] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+              ? "bg-[var(--accent-primary)] text-[var(--bg-primary)] shadow-[0_0_15px_var(--border-glow)]"
+              : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]"
           )}
         >
           {cat.label}

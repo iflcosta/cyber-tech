@@ -23,7 +23,7 @@ export async function saveCheckoutLead(name: string, whatsapp: string, items: an
 
 export async function trackLead(data: any) {
   try {
-    const voucherCode = `CYBER-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const voucherCode = `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     
     const { error } = await supabase
       .from('leads')
@@ -32,15 +32,18 @@ export async function trackLead(data: any) {
           client_name: data.client_name,
           whatsapp: data.whatsapp,
           interest_type: data.interest_type,
+          intent_type: data.intent_type,
           description: data.description,
           status: 'pending',
-          voucher_code: voucherCode
+          voucher_code: data.voucher_code || voucherCode,
+          marketing_source: data.marketing_source || 'direct',
+          utm_parameters: data.utm_parameters || {}
         }
       ]);
 
     if (error) throw error;
     console.log('[LEADS] Lead geral capturado com sucesso!');
-    return voucherCode;
+    return data.voucher_code || voucherCode;
   } catch (error) {
     console.error('[LEADS] Erro ao rastrear lead:', error);
     return null;

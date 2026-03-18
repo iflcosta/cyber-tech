@@ -9,7 +9,7 @@ import Reviews from "@/components/Reviews";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#F0EFED]">
+    <main className="min-h-screen bg-[var(--bg-primary)]">
       <Header />
       <Hero />
       <Maintenance />
@@ -19,10 +19,16 @@ export default function Home() {
       <Reviews />
       <CyberIA />
 
-      <footer className="py-12 border-t border-[#D4D2CF] bg-white text-center">
-        <p className="text-[#AAAAAA] text-[10px] font-bold uppercase tracking-[0.2em]">
-          &copy; 2026 CYBER INFORMÁTICA - BRAGANÇA PAULISTA. TODOS OS DIREITOS RESERVADOS.
-        </p>
+      <footer className="py-20 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center relative overflow-hidden">
+        <div className="absolute inset-0 hero-texture opacity-50" />
+        <div className="container mx-auto px-4 relative z-10">
+          <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-[0.3em] mb-4">
+            &copy; 2026 CYBER INFORMÁTICA - BRAGANÇA PAULISTA
+          </p>
+          <p className="text-[var(--text-secondary)] text-[9px] font-mono uppercase tracking-widest">
+            Sólida. Técnica. Confiável.
+          </p>
+        </div>
       </footer>
     </main>
   );
