@@ -86,7 +86,7 @@ export default function Reviews() {
             <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
                     <div>
-                        <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
+                        <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-none uppercase">
                             FEEDBACK DOS <br />
                             <span className="text-outline">CLIENTES</span>
                         </h2>
@@ -173,15 +173,15 @@ export default function Reviews() {
                                     <input
                                         required
                                         type="text"
-                                        placeholder="Seu nãome"
-                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
+                                        placeholder="Seu nome"
+                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
                                         value={newReview.name}
                                         onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Nãota (1 a 5 estrelas)</label>
+                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Nota (1 a 5 estrelas)</label>
                                     <div className="flex gap-4 p-4 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px]">
                                         {[1, 2, 3, 4, 5].map((star) => (
                                             <button
@@ -208,7 +208,7 @@ export default function Reviews() {
                                         required
                                         placeholder="Conte como foi sua experiência conãosco..."
                                         rows={4}
-                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
+                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
                                         value={newReview.comment}
                                         onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                                     />

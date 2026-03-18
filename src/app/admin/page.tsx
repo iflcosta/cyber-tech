@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     const [editingProduct, setEditingProduct] = useState<any | null>(null);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-    // Modal de ComissÃµes
+    // Modal de Comissões
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [selectedLeadForCommission, setSelectedLeadForCommission] = useState<any>(null);
     const [commissionForm, setCommissionForm] = useState({
@@ -141,26 +141,33 @@ export default function AdminDashboard() {
         let iagoServicePart = (commissionForm.executor === 'iago') ? (val * 0.03) : 0;
 
         const totalIagoEarnings = iagoEcosystemPart + iagoServicePart;
+        const updateData = {
+            status: 'converted',
+            final_value: val,
+            cost_value: cost,
+            commission_value: totalIagoEarnings,
+            commission_ecosystem: commissionForm.ecosystemCaptured,
+            commission_service: commissionForm.executor === 'iago',
+            performed_by_partner: commissionForm.executor === 'partner',
+            converted_at: new Date().toISOString()
+        };
+
+        // Determine which table to update
+        const isLead = leads.some(l => l.id === selectedLeadForCommission.id);
+        const tableName = isLead ? 'leads' : 'maintenance_orders';
 
         const { error } = await supabase
-            .from('leads')
-            .update({
-                status: 'converted',
-                final_value: val,
-                cost_value: cost,
-                commission_value: totalIagoEarnings,
-                commission_ecosystem: commissionForm.ecosystemCaptured,
-                commission_service: commissionForm.executor === 'iago',
-                performed_by_partner: commissionForm.executor === 'partner',
-                converted_at: new Date().toISOString()
-            })
+            .from(tableName)
+            .update(updateData)
             .eq('id', selectedLeadForCommission.id);
 
         if (!error) {
             setShowCommissionModal(false);
             fetchLeads();
+            fetchMaintenanceOrders();
         } else {
             console.error("Supabase Error Details:", error);
+            // If it's a maintenance_order and failed, maybe columns missing, but we assume schema parity as requested "like leads"
             alert("Erro do Banco de Dados: " + JSON.stringify(error, null, 2));
         }
     };
@@ -179,6 +186,36 @@ export default function AdminDashboard() {
             .update({ payment_status: newPaymentStatus })
             .eq('id', leadId);
         if (!error) fetchLeads();
+    };
+
+    const updateMaintenanceStatus = async (orderId: string, newStatus: string) => {
+        // Try updating in leads table first (if it's a lead)
+        const { data: leadData } = await supabase.from('leads').select('id').eq('id', orderId).single();
+        if (leadData) {
+            await updateStatus(orderId, newStatus);
+            return;
+        }
+
+        const { error } = await supabase
+            .from('maintenance_orders')
+            .update({ status: newStatus })
+            .eq('id', orderId);
+        if (!error) fetchMaintenanceOrders();
+    };
+
+    const updateMaintenancePaymentStatus = async (orderId: string, newPaymentStatus: string) => {
+        // Try updating in leads table first (if it's a lead)
+        const { data: leadData } = await supabase.from('leads').select('id').eq('id', orderId).single();
+        if (leadData) {
+            await updatePaymentStatus(orderId, newPaymentStatus);
+            return;
+        }
+
+        const { error } = await supabase
+            .from('maintenance_orders')
+            .update({ payment_status: newPaymentStatus })
+            .eq('id', orderId);
+        if (!error) fetchMaintenanceOrders();
     };
 
     const handleSaveProduct = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -216,27 +253,13 @@ export default function AdminDashboard() {
             fetchProducts();
         } catch (err: any) {
             console.error("Erro ao salvar produto:", err);
-            alert("â Erro ao salvar produto: " + (err.message || "Verifique as permissÃµes do banco."));
+            alert("❌ Erro ao salvar produto: " + (err.message || "Verifique as permissões do banco."));
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSyncProducts = async () => {
-        if (!confirm("Isso irÃ¡ atualizar o estoque e preÃ§os baseados não Tiny ERP (Olist). Prosseguir?")) return;
-        
-        setLoading(true);
-        try {
-            const result = await syncTinyProductsToSupabase();
-            alert(`â SincronizaÃ§Ã£o concluÃ­da! ${result.count} produtos atualizados/inseridos.`);
-            fetchProducts();
-        } catch (err: any) {
-            console.error("Erro na sincronizaÃ§Ã£o:", err);
-            alert("â Falha na sincronizaÃ§Ã£o: " + (err.message || "Verifique as credenciais do Tiny não .env"));
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Olist synchronization logic removed as per user request (automated stock management preferred)
 
     const deleteProduct = async (id: string) => {
         if (confirm("Tem certeza que deseja excluir este produto?")) {
@@ -276,7 +299,7 @@ export default function AdminDashboard() {
     const analyzeReviews = async () => {
         if (reviews.length === 0) return;
         setIsAnalyzing(true);
-        const comments = reviews.map(r => `[Nãota ${r.rating}/5]: ${r.comment}`).join('\n---\n');
+        const comments = reviews.map(r => `[Nota ${r.rating}/5]: ${r.comment}`).join('\n---\n');
 
         const prompt = `Como um analista de dados especialista em CX (Customer Experience), analise os seguintes depoimentos dos clientes da Cyber Informática:
         
@@ -287,7 +310,7 @@ export default function AdminDashboard() {
         1. Resuma o sentimento geral em uma frase impactante.
         2. Liste 3 pontos fortes citados.
         3. Liste 1 ponto de melhoria se houver.
-        4. DÃª um 'Score de SatisfaÃ§Ã£o' de 0 a 100.
+        4. DÃª um 'Score de Satisfação' de 0 a 100.
         
         FORMATO: Responda em Markdown curto e direto para um dashboard administrativo.`;
 
@@ -319,7 +342,7 @@ export default function AdminDashboard() {
                         <div className="glass p-4 rounded-2xl flex items-center gap-4 bg-white/5 border border-white/10">
                             <TrendingUp className="text-green-500" />
                             <div>
-                                <div className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Minhas ComissÃµes (Iago)</div>
+                                <div className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Minhas Comissões (Iago)</div>
                                 <div className="text-xl font-black">R$ {leads.filter(l => l.status === 'converted').reduce((acc, l) => acc + (l.commission_value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                             </div>
                         </div>
@@ -372,7 +395,7 @@ export default function AdminDashboard() {
                         onClick={() => (setActiveTab as any)('maintenance')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${(activeTab as string) === 'maintenance' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
                     >
-                        <RefreshCw size={18} /> ManutenÃ§Ã£o
+                        <RefreshCw size={18} /> Manutenção
                     </button>
                 </div>
 
@@ -425,7 +448,7 @@ export default function AdminDashboard() {
                                 <h3 className="text-sm font-black uppercase italic mb-6">Volume por Segmento</h3>
                                 <div className="space-y-6">
                                     {[
-                                        { label: 'ManutenÃ§Ã£o', key: 'manutencao', color: 'bg-blue-500' },
+                                        { label: 'Manutenção', key: 'manutencao', color: 'bg-blue-500' },
                                         { label: 'PC Builder', key: 'pc_build', color: 'bg-purple-500' },
                                         { label: 'Vendas Diretas', key: 'venda', color: 'bg-green-500' },
                                         { label: 'Brindes/Voucher', key: 'voucher', color: 'bg-yellow-500' }
@@ -557,7 +580,7 @@ export default function AdminDashboard() {
                                                         R$ {totalLoja.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[10px] text-white/30 mt-2">
-                                                        Bruto: R$ {totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} Â· PeÃ§as: R$ {totalCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                        Bruto: R$ {totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} Â· peças: R$ {totalCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                 </div>
                                             </div>
@@ -566,7 +589,7 @@ export default function AdminDashboard() {
                                             <div className="glass p-6 rounded-3xl bg-white/5 border border-blue-500/20 relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-blue-400/60 uppercase font-black tracking-widest mb-1">ComissÃµes Iago</div>
+                                                    <div className="text-[10px] text-blue-400/60 uppercase font-black tracking-widest mb-1">Comissões Iago</div>
                                                     <div className="text-2xl font-black text-blue-400">
                                                         R$ {totalIago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -576,11 +599,11 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
 
-                                            {/* TÃ©cnico Card */}
+                                            {/* Técnico Card */}
                                             <div className="glass p-6 rounded-3xl bg-white/5 border border-purple-500/20 relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-purple-400/60 uppercase font-black tracking-widest mb-1">Repasse TÃ©cnico</div>
+                                                    <div className="text-[10px] text-purple-400/60 uppercase font-black tracking-widest mb-1">Repasse Técnico</div>
                                                     <div className="text-2xl font-black text-purple-400">
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -624,7 +647,7 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <Users size={20} className="text-blue-500" /> HistÃ³rico de Leads
+                                <Users size={20} className="text-blue-500" /> Histórico de Leads
                             </div>
                             <button
                                 onClick={fetchLeads}
@@ -644,14 +667,14 @@ export default function AdminDashboard() {
                                         <th className="p-6">Voucher</th>
                                         <th className="p-6">Operacional</th>
                                         <th className="p-6">Financeiro</th>
-                                        <th className="p-6">AÃ§Ãµes / Valor</th>
+                                        <th className="p-6">Ações / Valor</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
-                                    {leads.length > 0 ? leads.map((lead) => (
+                                    {leads.filter(l => l.interest_type !== 'manutencao').length > 0 ? leads.filter(l => l.interest_type !== 'manutencao').map((lead) => (
                                         <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors">
                                             <td className="p-6">
-                                                <div className="font-bold">{lead.client_name || "AnÃ´nimo"}</div>
+                                                <div className="font-bold">{lead.client_name || "Anônimo"}</div>
                                                 <div className="text-xs text-white/30 mb-1">{lead.whatsapp || lead.session_id}</div>
                                                 {lead.description && (
                                                     <div className="text-[10px] bg-white/5 p-2 rounded text-blue-200 mt-2 border border-white/5 max-w-xs italic leading-relaxed">
@@ -672,13 +695,13 @@ export default function AdminDashboard() {
                                                 <div className="text-[9px] text-white/20 mt-0.5">{lead.marketing_source || 'direto'}</div>
                                                 {lead.campaign_name && <div className="text-[8px] text-blue-400/60 font-black uppercase tracking-tighter mt-1">{lead.campaign_name}</div>}
                                             </td>
-                                            <td className="p-6 font-monão text-xs text-blue-300">{lead.voucher_code}</td>
+                                            <td className="p-6 font-mono text-xs text-blue-300">{lead.voucher_code}</td>
                                             <td className="p-6">
-                                                <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">ProduÃ§Ã£o / LogÃ­stica</div>
+                                                <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Produção / Logística</div>
                                                 <select
                                                     value={lead.status}
                                                     onChange={(e) => updateStatus(lead.id, e.target.value)}
-                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-nãone transition-all ${lead.status === 'converted' ? 'text-green-400 border-green-500/20' :
+                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${lead.status === 'converted' ? 'text-green-400 border-green-500/20' :
                                                         lead.status === 'ready' ? 'text-blue-400 border-blue-500/20' :
                                                             lead.status === 'maintenance' || lead.status === 'building' ? 'text-purple-400 border-purple-500/20' :
                                                                 'text-yellow-500 border-yellow-500/20'
@@ -717,7 +740,7 @@ export default function AdminDashboard() {
                                                 <select
                                                     value={lead.payment_status || 'pending'}
                                                     onChange={(e) => updatePaymentStatus(lead.id, e.target.value)}
-                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-nãone transition-all ${lead.payment_status === 'paid' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
+                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${lead.payment_status === 'paid' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
                                                         lead.payment_status === 'awaiting_payment' ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5' :
                                                             'text-white/40 border-white/5'
                                                         }`}
@@ -743,7 +766,7 @@ export default function AdminDashboard() {
                                                         </div>
                                                         {lead.performed_by_partner && (
                                                             <div className="flex items-center justify-between gap-4">
-                                                                <span className="text-[10px] text-purple-400 font-bold">TÃ©c.:</span>
+                                                                <span className="text-[10px] text-purple-400 font-bold">Téc.:</span>
                                                                 <span className="text-[10px] font-bold text-purple-400">
                                                                     R$ {(lead.interest_type === 'manutencao'
                                                                         ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5
@@ -803,7 +826,7 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <Star size={20} className="text-yellow-500" /> ModeraÃ§Ã£o de Depoimentos
+                                <Star size={20} className="text-yellow-500" /> Moderação de Depoimentos
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -832,8 +855,8 @@ export default function AdminDashboard() {
                                     <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-400 shrink-0">
                                         <Sparkles size={20} />
                                     </div>
-                                    <div className="text-sm prose prose-invert max-w-nãone">
-                                        <div className="font-bold text-purple-400 uppercase text-[10px] tracking-widest mb-2">RelatÃ³rio de IA: Clima dos Clientes</div>
+                                    <div className="text-sm prose prose-invert max-w-none">
+                                        <div className="font-bold text-purple-400 uppercase text-[10px] tracking-widest mb-2">Relatório de IA: Clima dos Clientes</div>
                                         <div className="whitespace-pre-wrap leading-relaxed text-white/80">{sentimentAnalysis}</div>
                                     </div>
                                 </div>
@@ -847,7 +870,7 @@ export default function AdminDashboard() {
                                         <th className="p-6">AvaliaÃ§Ã£o</th>
                                         <th className="p-6">ComentÃ¡rio</th>
                                         <th className="p-6">Data</th>
-                                        <th className="p-6 text-right">AÃ§Ãµes</th>
+                                        <th className="p-6 text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
@@ -855,7 +878,7 @@ export default function AdminDashboard() {
                                         <tr key={review.id} className={`hover:bg-white/[0.02] transition-colors ${!review.is_approved ? 'bg-blue-500/5' : ''}`}>
                                             <td className="p-6">
                                                 <div className="font-bold">{review.user_name}</div>
-                                                <div className="text-[10px] font-monão text-blue-400">{review.voucher_code}</div>
+                                                <div className="text-[10px] font-mono text-blue-400">{review.voucher_code}</div>
                                             </td>
                                             <td className="p-6">
                                                 <div className="flex gap-1">
@@ -902,9 +925,9 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <RefreshCw size={20} className="text-blue-500" /> Ordens de ManutenÃ§Ã£o
+                                <RefreshCw size={20} className="text-blue-500" /> Ordens de Manutenção
                             </div>
-                            <button onClick={fetchMaintenanceOrders} className="p-2 hover:bg-white/10 rounded-full transition-all">
+                            <button onClick={() => { fetchMaintenanceOrders(); fetchLeads(); }} className="p-2 hover:bg-white/10 rounded-full transition-all">
                                 <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
                             </button>
                         </div>
@@ -914,42 +937,170 @@ export default function AdminDashboard() {
                                     <tr className="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
                                         <th className="p-6">Voucher / Cliente</th>
                                         <th className="p-6">Equipamento</th>
-                                        <th className="p-6">Status</th>
-                                        <th className="p-6">Criado em</th>
-                                        <th className="p-6 text-right">AÃ§Ãµes</th>
+                                        <th className="p-6">Operacional</th>
+                                        <th className="p-6">Financeiro</th>
+                                        <th className="p-6">Valor / Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
-                                    {maintenanceOrders.length > 0 ? maintenanceOrders.map((order) => (
-                                        <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
-                                            <td className="p-6">
-                                                <div className="font-monão text-blue-400 font-bold mb-1">{order.voucher_code}</div>
-                                                <div className="font-bold">{order.customer_name}</div>
-                                                <div className="text-[10px] text-white/40">{order.customer_phone}</div>
-                                            </td>
-                                            <td className="p-6">
-                                                <span className="text-[10px] font-black uppercase tracking-widest bg-white/5 px-2 py-1 rounded">
-                                                    {order.equipment_type}
-                                                </span>
-                                                <p className="text-[10px] text-white/40 mt-2 max-w-xs italic line-clamp-1">{order.problem_description}</p>
-                                            </td>
-                                            <td className="p-6">
-                                                <Badge variant={order.status === 'delivered' ? 'success' : 'default'} className="lowercase">
-                                                    {order.status}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-6 text-white/40 text-[10px]">
-                                                {new Date(order.created_at).toLocaleDateString('pt-BR')}
-                                            </td>
-                                            <td className="p-6 text-right">
-                                                <Button size="sm" variant="outline" className="h-8 text-[10px]">VER DETALHES</Button>
-                                            </td>
-                                        </tr>
-                                    )) : (
-                                        <tr>
-                                            <td colSpan={5} className="p-12 text-center text-white/20 italic">Nenhuma ordem encontrada.</td>
-                                        </tr>
-                                    )}
+                                    {/* Merge leads of maintenance type into this view */}
+                                    {(() => {
+                                        const merged = [
+                                            ...maintenanceOrders.map(o => ({
+                                                id: o.id,
+                                                voucher_code: o.voucher_code,
+                                                customer_name: (o as any).customer_name,
+                                                customer_phone: (o as any).customer_phone || (o as any).customer_email,
+                                                equipment_type: (o as any).equipment_type,
+                                                problem_description: (o as any).problem_description,
+                                                status: o.status,
+                                                payment_status: o.payment_status,
+                                                final_value: o.final_value,
+                                                commission_value: o.commission_value,
+                                                cost_value: o.cost_value,
+                                                performed_by_partner: o.performed_by_partner,
+                                                created_at: o.created_at,
+                                                isLead: false
+                                            })),
+                                            ...leads.filter(l => l.interest_type === 'manutencao').map(l => ({
+                                                id: l.id,
+                                                voucher_code: l.voucher_code,
+                                                customer_name: l.client_name,
+                                                customer_phone: l.whatsapp,
+                                                equipment_type: 'manutenção', // Force label for consistency
+                                                problem_description: l.description,
+                                                status: l.status,
+                                                payment_status: l.payment_status,
+                                                final_value: l.final_value,
+                                                commission_value: l.commission_value,
+                                                cost_value: l.cost_value,
+                                                performed_by_partner: l.performed_by_partner,
+                                                created_at: l.created_at,
+                                                isLead: true
+                                            }))
+                                        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                                        if (merged.length === 0) {
+                                            return (
+                                                <tr>
+                                                    <td colSpan={5} className="p-12 text-center text-white/20 italic">Nenhuma ordem encontrada.</td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        return merged.map((order) => (
+                                            <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
+                                                <td className="p-6">
+                                                    <div className="font-mono text-blue-400 font-bold mb-1">{order.voucher_code}</div>
+                                                    <div className="font-bold">{order.customer_name || "Anônimo"}</div>
+                                                    <div className="text-[10px] text-white/40">{order.customer_phone || (order as any).customer_email}</div>
+                                                    {order.problem_description && (
+                                                        <div className="text-[10px] bg-white/5 p-2 rounded text-blue-200 mt-2 border border-white/5 max-w-xs italic leading-relaxed">
+                                                            "{order.problem_description}"
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="p-6">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest bg-white/5 px-2 py-1 rounded">
+                                                        {order.equipment_type}
+                                                    </span>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Produção</div>
+                                                    <select
+                                                        value={order.status || 'pending'}
+                                                        onChange={(e) => updateMaintenanceStatus(order.id, e.target.value)}
+                                                        className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${order.status === 'converted' ? 'text-green-400 border-green-500/20' :
+                                                            order.status === 'ready' ? 'text-blue-400 border-blue-500/20' :
+                                                                order.status === 'maintenance' || order.status === 'analysis' ? 'text-purple-400 border-purple-500/20' :
+                                                                    'text-yellow-500 border-yellow-500/20'
+                                                            }`}
+                                                    >
+                                                        <option value="pending" className="bg-black">PENDENTE</option>
+                                                        <option value="analysis" className="bg-black">EM ANÁLISE</option>
+                                                        <option value="parts" className="bg-black">AGUARD. PEÇA</option>
+                                                        <option value="maintenance" className="bg-black">MANUTENÇÃO</option>
+                                                        <option value="testing" className="bg-black">EM TESTES</option>
+                                                        <option value="ready" className="bg-black">PRONTO</option>
+                                                        <option value="converted" className="bg-black">FINALIZADO</option>
+                                                    </select>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Pagamento</div>
+                                                    <select
+                                                        value={order.payment_status || 'pending'}
+                                                        onChange={(e) => updateMaintenancePaymentStatus(order.id, e.target.value)}
+                                                        className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${order.payment_status === 'paid' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
+                                                            order.payment_status === 'awaiting_payment' ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5' :
+                                                                'text-white/40 border-white/5'
+                                                            }`}
+                                                    >
+                                                        <option value="pending" className="bg-black">PENDENTE</option>
+                                                        <option value="awaiting_payment" className="bg-black">AGUARDANDO PAGTO</option>
+                                                        <option value="paid" className="bg-black">PAGO CONFIRMADO</option>
+                                                    </select>
+                                                </td>
+                                                <td className="p-6">
+                                                    {order.status === 'converted' ? (
+                                                        <div className="space-y-4">
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center justify-between gap-4">
+                                                                    <span className="text-[10px] text-white/40 uppercase font-bold">Total:</span>
+                                                                    <span className="font-bold">R$ {(order.final_value || 0).toLocaleString('pt-BR')}</span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between gap-4 border-t border-white/5 pt-1">
+                                                                    <span className="text-[10px] text-blue-400 font-bold">Iago:</span>
+                                                                    <span className="text-[10px] font-bold text-blue-400">R$ {(order.commission_value || 0).toLocaleString('pt-BR')}</span>
+                                                                </div>
+                                                                {order.performed_by_partner && (
+                                                                    <div className="flex items-center justify-between gap-4">
+                                                                        <span className="text-[10px] text-purple-400 font-bold">Téc.:</span>
+                                                                        <span className="text-[10px] font-bold text-purple-400">
+                                                                            R$ {(((order.final_value || 0) - (order.cost_value || 0)) * 0.5).toLocaleString('pt-BR')}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex items-center justify-between gap-4 border-t border-white/5 pt-1 opacity-60 italic">
+                                                                    <span className="text-[10px] text-white/40">Loja:</span>
+                                                                    <span className="text-[10px] text-white/40">
+                                                                        R$ {((order.final_value || 0) - (order.commission_value || 0) - (order.performed_by_partner ? ((order.final_value || 0) - (order.cost_value || 0)) * 0.5 : 0)).toLocaleString('pt-BR')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <Button size="sm" variant="ghost" className="w-full h-8 text-[10px] font-bold border border-white/10" onClick={() => {
+                                                                const originalLead = leads.find(l => l.id === order.id);
+                                                                setSelectedLeadForCommission(originalLead || order);
+                                                                setCommissionForm({
+                                                                    finalValue: order.final_value?.toString() || '',
+                                                                    costValue: order.cost_value?.toString() || '',
+                                                                    ecosystemCaptured: (order as any).commission_ecosystem ?? true,
+                                                                    executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : 'owner')
+                                                                });
+                                                                setShowCommissionModal(true);
+                                                            }}>EDITAR VALORES</Button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            <Button size="sm" variant="outline" className="w-full h-8 text-[10px] font-black" onClick={() => {
+                                                                const originalLead = leads.find(l => l.id === order.id);
+                                                                setSelectedLeadForCommission(originalLead || order);
+                                                                setCommissionForm({
+                                                                    finalValue: '',
+                                                                    costValue: '',
+                                                                    ecosystemCaptured: true,
+                                                                    executor: 'owner'
+                                                                });
+                                                                setShowCommissionModal(true);
+                                                            }}>FINALIZAR VENDIDO</Button>
+                                                            <div className="text-[10px] text-white/20 text-center uppercase font-bold">
+                                                                {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ));
+                                    })()}
                                 </tbody>
                             </table>
                         </div>
@@ -958,14 +1109,6 @@ export default function AdminDashboard() {
                     <div className="space-y-6">
                         <div className="flex justify-end gap-4">
                             <button
-                                onClick={handleSyncProducts}
-                                disabled={loading}
-                                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all"
-                            >
-                                <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
-                                {loading ? 'Sincronizando...' : 'Sincronizar com Olist (Tiny)'}
-                            </button>
-                            <button
                                 onClick={() => {
                                     setEditingProduct(null);
                                     setPreviewUrls([]);
@@ -973,28 +1116,28 @@ export default function AdminDashboard() {
                                 }}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"
                             >
-                                <Plus size={20} /> Nãovo Produto
+                                <Plus size={20} /> Novo Produto
                             </button>
                         </div>
 
                         {showProductForm && (
                             <form onSubmit={handleSaveProduct} className="glass p-8 rounded-3xl border border-white/10 bg-white/5 space-y-4">
-                                <h3 className="text-xl font-bold mb-4">{editingProduct ? 'Editar Produto' : 'Nãovo Produto'}</h3>
+                                <h3 className="text-xl font-bold mb-4">{editingProduct ? 'Editar Produto' : 'Novo Produto'}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input name="name" defaultValue={editingProduct?.name} placeholder="Nãome do Produto" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" required />
-                                    <select name="category" defaultValue={editingProduct?.category || 'kit'} className="bg-black border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone">
+                                    <input name="name" defaultValue={editingProduct?.name} placeholder="Nome do Produto" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
+                                    <select name="category" defaultValue={editingProduct?.category || 'kit'} className="bg-black border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none">
                                         <option value="kit">Kit Gamer</option>
                                         <option value="smartphone">Smartphone</option>
-                                        <option value="nãotebook">Nãotebook</option>
+                                        <option value="notebook">Notebook</option>
                                         <option value="hardware">Hardware</option>
                                     </select>
-                                    <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="PreÃ§o (R$)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" required />
-                                    <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="Estoque" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" required />
-                                    <input name="sku" defaultValue={editingProduct?.sku} placeholder="SKU (Olist/Estoque)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" />
+                                    <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="Preço (R$)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
+                                    <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="Estoque" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
+                                    <input name="sku" defaultValue={editingProduct?.sku} placeholder="SKU (Olist/Estoque)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" />
                                     <div className="md:col-span-2 space-y-4">
                                         <div>
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">EspecificaÃ§Ãµes (JSON)</label>
-                                            <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='Ex: {"cpu": "i5", "ram": "16GB"}' className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone h-24 font-monão text-sm" />
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">Especificações (JSON)</label>
+                                            <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='Ex: {"cpu": "i5", "ram": "16GB"}' className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none h-24 font-mono text-sm" />
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">URLs das Imagens (Uma por linha)</label>
@@ -1006,7 +1149,7 @@ export default function AdminDashboard() {
                                                     setPreviewUrls(urls);
                                                 }}
                                                 placeholder='https://exemplo.com/imagem1.jpg'
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone h-24 font-monão text-sm"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none h-24 font-mono text-sm"
                                             />
                                         </div>
 
@@ -1053,7 +1196,7 @@ export default function AdminDashboard() {
                                     <div className="text-2xl font-black mb-4">R$ {p.price?.toLocaleString('pt-BR')}</div>
                                     <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center text-xs">
                                         <span className="text-white/40">Estoque: <span className={p.stock_quantity > 0 ? "text-green-400" : "text-red-400"}>{p.stock_quantity}</span></span>
-                                        {p.sku && <span className="text-white/20 font-monão text-[10px]">SKU: {p.sku}</span>}
+                                        {p.sku && <span className="text-white/20 font-mono text-[10px]">SKU: {p.sku}</span>}
                                     </div>
                                 </div>
                             ))}
@@ -1079,16 +1222,16 @@ export default function AdminDashboard() {
 
                             <div className="relative">
                                 {/* Logo */}
-                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Cyber Informática â¢ BraganÃ§a Paulista</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Cyber Informática â¢ Bragança Paulista</div>
 
                                 {/* Service Type Badge */}
                                 <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/20' :
                                     socialCardLead.interest_type === 'manutencao' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' :
                                         'bg-green-500/20 text-green-400 border border-green-500/20'
                                     }`}>
-                                    {socialCardLead.interest_type === 'pc_build' ? 'ð¥ï¸ Montagem ConcluÃ­da' :
-                                        socialCardLead.interest_type === 'manutencao' ? 'ð§ ManutenÃ§Ã£o ConcluÃ­da' :
-                                            'â ServiÃ§o ConcluÃ­do'}
+                                    {socialCardLead.interest_type === 'pc_build' ? 'ð¥ï¸ Montagem Concluída' :
+                                        socialCardLead.interest_type === 'manutencao' ? 'ð§ Manutenção Concluída' :
+                                            'â Serviço ConcluÃ­do'}
                                 </div>
 
                                 {/* Client */}
@@ -1118,7 +1261,7 @@ export default function AdminDashboard() {
                                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
                                     <div>
                                         <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">CÃ³digo do Cliente</div>
-                                        <div className="text-lg font-black font-monão text-blue-400">{socialCardLead.voucher_code}</div>
+                                        <div className="text-lg font-black font-mono text-blue-400">{socialCardLead.voucher_code}</div>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">Garantia</div>
@@ -1140,7 +1283,7 @@ export default function AdminDashboard() {
                 </div>
             )}
 
-            {/* Modal de ComissÃµes */}
+            {/* Modal de Comissões */}
             {showCommissionModal && selectedLeadForCommission && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
                     <form onSubmit={submitCommissionForm} className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 max-w-lg w-full relative">
@@ -1150,9 +1293,10 @@ export default function AdminDashboard() {
                             <TrendingUp className="text-green-500" size={24} />
                             <h2 className="text-2xl font-black italic uppercase tracking-tighter">Fechar Venda</h2>
                         </div>
+                        
                         <p className="text-sm text-white/50 mb-8 border-b border-white/10 pb-4">
-                            Cliente: <strong className="text-white">{selectedLeadForCommission.client_name || "AnÃ´nimo"}</strong> <br />
-                            ServiÃ§o: <span className="uppercase text-blue-400 font-bold text-xs">{selectedLeadForCommission.interest_type}</span>
+                            Cliente: <strong className="text-white">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Anônimo"}</strong> <br />
+                            Serviço: <span className="uppercase text-blue-400 font-bold text-xs">{selectedLeadForCommission.interest_type || selectedLeadForCommission.equipment_type || "Manutenção"}</span>
                         </p>
 
                         <div className="space-y-6">
@@ -1162,22 +1306,25 @@ export default function AdminDashboard() {
                                     type="number" step="0.01" required
                                     value={commissionForm.finalValue}
                                     onChange={(e) => setCommissionForm({ ...commissionForm, finalValue: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-green-500"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500"
                                     placeholder="Ex: 5000.00"
                                 />
                             </div>
 
-                            {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.interest_type === 'pc_build') && (
+                            {(selectedLeadForCommission.interest_type === 'manutencao' || 
+                              selectedLeadForCommission.interest_type === 'pc_build' || 
+                              selectedLeadForCommission.equipment_type ||
+                              !selectedLeadForCommission.isLead) && (
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Custo de PeÃ§as/Componentes (R$)</label>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Custo de peças/Componentes (R$)</label>
                                     <input
                                         type="number" step="0.01"
                                         value={commissionForm.costValue}
                                         onChange={(e) => setCommissionForm({ ...commissionForm, costValue: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-red-500/50"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-500/50"
                                         placeholder="Ex: 800.00 (opcional)"
                                     />
-                                    <p className="text-[10px] text-white/30 mt-1">* Descontado do lucro lÃ­quido da loja. NÃ£o afeta as comissÃµes do Iago.</p>
+                                    <p className="text-[10px] text-white/30 mt-1">* Descontado do lucro líquido da loja. Não afeta as comissões do Iago.</p>
                                 </div>
                             )}
 
@@ -1193,14 +1340,14 @@ export default function AdminDashboard() {
                                         {commissionForm.ecosystemCaptured && <CheckCircle2 size={16} className="text-blue-500 mx-auto" />}
                                     </div>
                                     <div>
-                                        <div className="text-sm font-bold">CaptaÃ§Ã£o via Ecossistema (+5%)</div>
+                                        <div className="text-sm font-bold">Captação via Ecossistema (+5%)</div>
                                         <div className="text-[10px] text-white/40">O lead veio pelo Site ou Redes Sociais administradas pelo Iago.</div>
                                     </div>
                                 </label>
                             </div>
 
                             <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-4">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Quem executou o serviÃ§o?</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Quem executou o serviço?</div>
 
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
@@ -1209,10 +1356,10 @@ export default function AdminDashboard() {
                                         onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                         className="w-4 h-4 accent-blue-500"
                                     />
-                                    <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Donão da Loja (JoÃ£o) <span className="font-nãormal text-[10px] text-white/30 ml-2">Sem taxa</span></div>
+                                    <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Dono da Loja (João) <span className="font-normal text-[10px] text-white/30 ml-2">Sem taxa</span></div>
                                 </label>
 
-                                {selectedLeadForCommission.interest_type !== 'manutencao' && (
+                                {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
                                     <label className="flex items-center gap-3 cursor-pointer group">
                                         <input
                                             type="radio" name="executor" value="iago"
@@ -1220,7 +1367,7 @@ export default function AdminDashboard() {
                                             onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                             className="w-4 h-4 accent-blue-500"
                                         />
-                                        <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Iago Lopes <span className="font-nãormal text-[10px] text-blue-400/50 bg-blue-500/10 px-2 py-0.5 rounded ml-2">+3% Faturamento Bruto</span></div>
+                                        <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Iago Lopes <span className="font-normal text-[10px] text-blue-400/50 bg-blue-500/10 px-2 py-0.5 rounded ml-2">+3% Faturamento Bruto</span></div>
                                     </label>
                                 )}
 
@@ -1232,9 +1379,9 @@ export default function AdminDashboard() {
                                         className="w-4 h-4 accent-blue-500"
                                     />
                                     <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">
-                                        TÃ©cnico Parceiro
-                                        <span className="font-nãormal text-[10px] text-purple-400/50 bg-purple-500/10 px-2 py-0.5 rounded ml-2">
-                                            {selectedLeadForCommission.interest_type === 'manutencao' ? '50% Lucro LÃ­quido' : '+3% Faturamento Bruto'}
+                                        Técnico Parceiro
+                                        <span className="font-normal text-[10px] text-purple-400/50 bg-purple-500/10 px-2 py-0.5 rounded ml-2">
+                                            {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Lucro Líquido' : '+3% Faturamento Bruto'}
                                         </span>
                                     </div>
                                 </label>

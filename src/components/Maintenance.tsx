@@ -12,12 +12,12 @@ const features = [
 
 export default function Maintenance() {
   return (
-    <section id="manutencao" className="py-24 bg-[#F8F7F5] relative overflow-hidden border-y border-[#D4D2CF]">
+    <section id="assistencia" className="py-24 bg-[#F8F7F5] relative overflow-hidden border-y border-[#D4D2CF]">
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
             <Badge variant="secondary" className="mb-6">SERVIÇOS TÉCNICOS</Badge>
-            <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
+            <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-none uppercase">
               ASSISTÊNCIA <br />
               <span className="text-outline">ULTRA RÁPIDA</span>
             </h2>

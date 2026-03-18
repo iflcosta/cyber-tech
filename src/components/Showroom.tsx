@@ -144,7 +144,7 @@ function ShowroomContent() {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
         <div>
-          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
+          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-none uppercase">
             SHOWROOM <br />
             <span className="text-outline">PERFORMANCE</span>
           </h2>
@@ -190,7 +190,7 @@ function ShowroomContent() {
 
 export default function Showroom() {
   return (
-    <section id="showroom" className="py-24 bg-[#F0EFED] relative overflow-hidden">
+    <section id="kits-gamer" className="py-24 bg-[#F0EFED] relative overflow-hidden">
       <Suspense fallback={
         <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[#1A1A1A]">
           <Loader2 className="h-12 w-12 animate-spin" />

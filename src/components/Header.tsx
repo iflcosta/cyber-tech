@@ -15,7 +15,7 @@ export default function Header() {
 
     const menuItems = [
         { label: "Assistência", href: "#assistencia" },
-        { label: "Kits Gamer", href: "#kits" },
+        { label: "Kits Gamer", href: "#kits-gamer" },
         { label: "Monte seu PC", href: "#monte-seu-pc" },
         { label: "Consultar Status", href: "#consultar-status" },
     ];
@@ -23,11 +23,6 @@ export default function Header() {
     return (
         <>
         <header className="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-xl border-b border-[#D4D2CF]">
-            <LeadModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                interestType="voucher"
-            />
 
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -39,7 +34,7 @@ export default function Header() {
                         />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xl font-display font-bold tracking-[0.1em] text-[#1A1A1A] leading-nãone">CYBER</span>
+                        <span className="text-xl font-display font-bold tracking-[0.1em] text-[#1A1A1A] leading-none">CYBER</span>
                         <span className="text-[10px] font-light tracking-[0.22em] text-[#555555] uppercase">Informática</span>
                     </div>
                 </div>
@@ -49,13 +44,6 @@ export default function Header() {
                     {menuItems.map((item) => (
                         <a key={item.label} href={item.href} className="hover:text-[#1A1A1A] transition-colors">{item.label}</a>
                     ))}
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 text-[#1A1A1A] hover:text-[#333333] font-bold transition-colors py-1 px-2 border border-transparent hover:border-[#D4D2CF]"
-                    >
-                        <Ticket size={14} />
-                        <span>Resgatar Brinde</span>
-                    </button>
 
                     <button
                         onClick={() => setIsCartOpen(true)}
@@ -138,13 +126,6 @@ export default function Header() {
                                 </a>
                             ))}
 
-                            <button
-                                onClick={() => { setIsModalOpen(true); toggleMenu(); }}
-                                className="flex items-center justify-center gap-3 text-[#1A1A1A] font-bold py-4 mt-4 bg-white border border-[#D4D2CF]"
-                            >
-                                <Ticket size={18} />
-                                RESGATAR BRINDE
-                            </button>
                         </nav>
 
                         <div className="mt-auto pt-6 border-t border-[#D4D2CF]">

@@ -9,8 +9,6 @@ interface WhatsAppMessage {
 
 /**
  * WhatsApp Business API Integration Stub
- * In a real scenario, this would call Meta's Graph API
- * or a service like Twilio/Z-API.
  */
 export async function sendWhatsAppMessage({ to, body, templateName, variables }: WhatsAppMessage) {
   console.log(`[WhatsApp API] Sending message to ${to}`);
@@ -32,15 +30,15 @@ export async function sendWhatsAppMessage({ to, body, templateName, variables }:
 }
 
 /**
- * Formats a message for the "Service Ready" nãotification
+ * Formats a message for the "Service Ready" notification
  */
 export function formatReadyMessage(customerName: string, voucherCode: string, equipment: string) {
-  return `Olá ${customerName}! 🚀 Seu ${equipment} (Voucher: ${voucherCode}) está pronto para retirada na Cyber Inform�tica.\n\nHorário de funcionamento: ${brand.openingHours}\nLocal: ${brand.address.street}, ${brand.address.number}`;
+  return `Olá ${customerName}! Tudo bem? Seu ${equipment} (Voucher: ${voucherCode}) está pronto para retirada na Cyber Informática.\n\nHorário de funcionamento: ${brand.openingHours}\nLocal: ${brand.address.street}, ${brand.address.number}`;
 }
 
 /**
  * Formats a message for "New Maintenance Request" (Internal/Owner)
  */
 export function formatInternalOrderMessage(order: any) {
-  return `🔧 *NOVA ORDEM DE MANUTENÇÃO*\n\n*Voucher:* ${order.voucher_code}\n*Cliente:* ${order.customer_name}\n*Equipamento:* ${order.equipment_type}\n*Problema:* ${order.problem_description}\n\nVerifique o painel administrativo para mais detalhes.`;
+  return `🚀 *NOVA ORDEM DE MANUTENÇÃO*\n\n*Voucher:* ${order.voucher_code}\n*Cliente:* ${order.customer_name}\n*Equipamento:* ${order.equipment_type}\n*Problema:* ${order.problem_description}\n\nVerifique o painel administrativo para mais detalhes.`;
 }

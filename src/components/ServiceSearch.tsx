@@ -20,26 +20,93 @@ export default function ServiceSearch() {
     const [error, setError] = useState('');
     const [copiedPix, setCopiedPix] = useState(false);
 
+    // Mapeamento Unificado de Status para os 5 passos da UI
+    const unifiedStatusMap: Record<string, string> = {
+        // Status Comuns e de Manutenção
+        'pending': 'pending',
+        'analysis': 'analyzing',
+        'parts': 'analyzing',
+        'maintenance': 'in_progress',
+        'testing': 'testing',
+        'ready': 'ready',
+        'converted': 'ready',
+        // Status de Vendas/Leads
+        'separating': 'analyzing',
+        'building': 'in_progress',
+        'shipping': 'testing'
+    };
+
+    const formatDate = (dateString: any) => {
+        if (!dateString) return 'Informação indisponível';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Informação indisponível';
+            return date.toLocaleString('pt-BR');
+        } catch {
+            return 'Informação indisponível';
+        }
+    };
+
     const handleSearch = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        if (!orderId.trim()) return;
+        const searchId = orderId.trim().toUpperCase();
+        if (!searchId) return;
 
         setLoading(true);
         setError('');
         setResult(null);
 
         try {
-            const { data, error } = await supabase
+            // 1. Tenta buscar em manutenção
+            const { data: maintenanceData } = await supabase
                 .from('maintenance_orders')
                 .select('*')
-                .eq('order_id', orderId.trim().toUpperCase())
+                .eq('order_id', searchId)
                 .single();
 
-            if (error) throw error;
-            if (!data) setError('Pedido não encontrado.');
-            else setResult(data);
+            if (maintenanceData) {
+                setResult({
+                    ...maintenanceData,
+                    id: maintenanceData.order_id,
+                    customer_name: maintenanceData.customer_name,
+                    type: 'maintenance',
+                    status: unifiedStatusMap[maintenanceData.status] || 'pending',
+                    display_status: maintenanceData.status,
+                    description: maintenanceData.problem_description || maintenanceData.description,
+                    updated_at: maintenanceData.updated_at || maintenanceData.created_at
+                });
+                return;
+            }
+
+            // 2. Tenta buscar em leads (vouchers/vendas)
+            const { data: leadData } = await supabase
+                .from('leads')
+                .select('*')
+                .eq('voucher_code', searchId)
+                .single();
+
+            if (leadData) {
+                setResult({
+                    ...leadData,
+                    id: leadData.voucher_code,
+                    customer_name: leadData.client_name,
+                    type: leadData.interest_type,
+                    status: unifiedStatusMap[leadData.status] || 'pending',
+                    display_status: leadData.status,
+                    description: leadData.description || "Pedido em processamento.",
+                    updated_at: leadData.updated_at || leadData.created_at,
+                    payment_info: leadData.payment_info || (leadData.payment_status === 'awaiting_payment' ? {
+                        pixCode: '00020126360014br.gov.bcb.pix0114+55119999999995204000053039865802BR5915Nexus Tech6009Sao Paulo62070503***6304A1B2',
+                        checkoutUrl: '#'
+                    } : null)
+                });
+                return;
+            }
+
+            setError('Pedido não encontrado.');
         } catch (err) {
-            setError('Pedido não encontrado. Verifique o código e tente nãovamente.');
+            console.error("Erro na busca:", err);
+            setError('Pedido não encontrado. Verifique o código e tente novamente.');
         } finally {
             setLoading(false);
         }
@@ -49,10 +116,10 @@ export default function ServiceSearch() {
     const paymentInfo = result?.payment_info;
 
     return (
-        <section id="rastreio" className="py-24 bg-[#F8F7F5] border-y border-[#D4D2CF]">
+        <section id="consultar-status" className="py-24 bg-[#F8F7F5] border-y border-[#D4D2CF]">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
+                    <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-none uppercase">
                         RASTREIO DE <br />
                         <span className="text-outline">MANUTENÇÃO</span>
                     </h2>
@@ -67,10 +134,10 @@ export default function ServiceSearch() {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#AAAAAA]" size={20} />
                             <input
                                 type="text"
-                                placeholder="DIGITE O CÓDIGO DO PEDIDO (EX: CYB-1234)"
+                                placeholder="CÓDIGO DO PEDIDO OU VOUCHER (EX: CYB-1234, CYBER-R8N0JT)"
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value.toUpperCase())}
-                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-4 pl-12 pr-4 text-[#1A1A1A] font-display font-bold uppercase tracking-tight focus:outline-nãone focus:border-[#1A1A1A] transition-all"
+                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-4 pl-12 pr-4 text-[#1A1A1A] font-display font-bold uppercase tracking-tight focus:outline-none focus:border-[#1A1A1A] transition-all"
                             />
                         </div>
                         <button
@@ -96,12 +163,18 @@ export default function ServiceSearch() {
                             <div className="absolute top-0 left-0 w-full h-[2px] bg-[#1A1A1A]" />
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-b border-[#ECEAE6] pb-8">
                                 <div>
-                                    <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">CÓDIGO DO ATENDIMENTO</div>
-                                    <h3 className="text-3xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">{result.order_id}</h3>
+                                    <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">
+                                        {result.type === 'maintenance' ? 'ORDEM DE SERVIÇO' : 'CÓDIGO DO PEDIDO'}
+                                    </div>
+                                    <h3 className="text-3xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">{result.id}</h3>
                                 </div>
                                 <div className="text-right">
+                                    <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">CLIENTE</div>
+                                    <div className="text-sm font-bold text-[#1A1A1A] uppercase mb-2">{result.customer_name}</div>
                                     <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mb-1">ÚLTIMA ATUALIZAÇÃO</div>
-                                    <div className="text-sm font-bold text-[#555555] uppercase">{new Date(result.updated_at).toLocaleString('pt-BR')}</div>
+                                    <div className="text-[10px] font-bold text-[#555555] uppercase">
+                                        {formatDate(result.updated_at)}
+                                    </div>
                                 </div>
                             </div>
 
@@ -154,7 +227,7 @@ export default function ServiceSearch() {
                                                     <h4 className="font-display font-bold uppercase tracking-tight text-[#1A1A1A]">PIX COPIA E COLA</h4>
                                                 </div>
                                                 <div className="bg-[#F8F7F5] p-4 rounded-[2px] flex items-center gap-3 border border-[#ECEAE6] overflow-hidden group">
-                                                    <span className="text-xs font-monão text-[#555555] truncate flex-1">{paymentInfo.pixCode}</span>
+                                                    <span className="text-xs font-mono text-[#555555] truncate flex-1">{paymentInfo.pixCode}</span>
                                                     <button
                                                         onClick={() => { navigator.clipboard.writeText(paymentInfo.pixCode); setCopiedPix(true); setTimeout(() => setCopiedPix(false), 2000); }}
                                                         className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors p-2"
@@ -172,7 +245,7 @@ export default function ServiceSearch() {
                                             </div>
                                             <a
                                                 href={paymentInfo.checkoutUrl}
-                                                target="_blank" rel="nãoreferrer"
+                                                target="_blank" rel="noreferrer"
                                                 className="btn-primary w-full py-5 text-center"
                                             >
                                                 PAGAR ONLINE
@@ -185,7 +258,7 @@ export default function ServiceSearch() {
                                             <strong>Prefere pagar na retirada?</strong><br />
                                             Aceitamos dinheiro e cartão maquininha direto na nãossa loja.
                                         </p>
-                                        <a href={`https://wa.me/5511999999999?text=Oi, estou indo retirar meu pedido ${result.order_id}!`} target="_blank" rel="nãoreferrer" className="text-[10px] text-[#1A1A1A] font-bold uppercase tracking-[0.2em] border-b border-[#1A1A1A] pb-1 hover:border-transparent transition-all">
+                                        <a href={`https://wa.me/5511999999999?text=Oi, estou indo retirar meu pedido ${result.id}!`} target="_blank" rel="noreferrer" className="text-[10px] text-[#1A1A1A] font-bold uppercase tracking-[0.2em] border-b border-[#1A1A1A] pb-1 hover:border-transparent transition-all">
                                             AVISAR NO WHATSAPP &rarr;
                                         </a>
                                     </div>

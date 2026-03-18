@@ -90,7 +90,7 @@ export default function PCBuilder() {
           <div className="flex-1 space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
-                <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-[#1A1A1A] leading-nãone mb-4">
+                <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-[#1A1A1A] leading-none mb-4">
                   SIMULADOR <br />
                   <span className="text-outline">DE MONTAGEM</span>
                 </h2>
@@ -130,7 +130,7 @@ export default function PCBuilder() {
                           }`}
                         >
                           <div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest leading-nãone mb-1">{tier.label}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest leading-none mb-1">{tier.label}</div>
                             <div className="text-xs font-medium">{tier.model}</div>
                           </div>
                           <div className="text-xs font-bold">R$ {tier.price}</div>
@@ -146,7 +146,7 @@ export default function PCBuilder() {
           {/* Sidebar Summary */}
           <div className="lg:w-96">
             <div className="sticky top-24 space-y-4">
-              <Card className="border-[#1A1A1A] shadow-nãone">
+              <Card className="border-[#1A1A1A] shadow-none">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-display font-bold tracking-tight mb-8">
                     RESUMO DO ORÇAMENTO
@@ -186,7 +186,7 @@ export default function PCBuilder() {
                     href={generateWhatsAppLink()}
                     target="_blank"
                     className={`w-full mt-8 btn-primary flex items-center justify-center gap-2 py-4 ${
-                      Object.keys(build).length === 0 ? "opacity-30 pointer-events-nãone" : ""
+                      Object.keys(build).length === 0 ? "opacity-30 pointer-events-none" : ""
                     }`}
                   >
                     <MessageSquare size={18} /> CONSULTAR DISPONIBILIDADE

@@ -159,7 +159,7 @@ ${productsString || "Nenhum produto cadastrado não momento."}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                     placeholder="Como posso ajudar?"
-                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-3 pl-4 pr-12 text-sm focus:outline-nãone focus:border-[#1A1A1A] text-[#1A1A1A] transition-all"
+                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[#1A1A1A] text-[#1A1A1A] transition-all"
                                 />
                                 <button
                                     onClick={handleSend}

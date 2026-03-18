@@ -11,7 +11,7 @@ export async function GET() {
         if (error) throw error;
 
         // Formatação para o padrão de catálogo da Meta (Facebook/Instagram)
-        // Nãota: O padrão oficial aceita CSV, XML ou JSON. JSON é mais robusto para Next.js.
+        // Nota: O padrão oficial aceita CSV, XML ou JSON. JSON é mais robusto para Next.js.
         const catalog = products.map(p => ({
             id: p.id,
             title: p.name,

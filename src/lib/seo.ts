@@ -17,7 +17,7 @@ export function getLocalBusinessSchema() {
       "streetAddress": `${brand.address.street}, ${brand.address.number}`,
       "addressLocality": brand.address.city,
       "addressRegion": "SP",
-      "postalCode": "12900-000", // Example
+      "postalCode": "12900-000",
       "addressCountry": "BR"
     },
     "geo": {
@@ -62,10 +62,10 @@ export function getProductSchema(product: any) {
     "@type": "Product",
     "name": product.name,
     "image": product.image_urls?.[0] || `${brand.url}/placeholder.jpg`,
-    "description": `${product.name} - ${product.category}. Disponível na Cyber Inform�tica Bragança.`,
+    "description": `${product.name} - ${product.category}. Disponível na Cyber Informática Bragança.`,
     "brand": {
       "@type": "Brand",
-      "name": product.brand || "Cyber Inform�tica"
+      "name": product.brand || "Cyber Informática"
     },
     "offers": {
       "@context": "https://schema.org",

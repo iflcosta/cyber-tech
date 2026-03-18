@@ -14,7 +14,7 @@ export async function POST(request: Request) {
         const olistPedido = {
             pedido: {
                 cliente: {
-                    nãome: clientData.name,
+                    nome: clientData.name,
                     tipo_pessoa: 'F',
                     cpf_cnpj: '', 
                     endereco: clientData.address || 'Retirada na Loja',

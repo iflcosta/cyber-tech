@@ -49,7 +49,7 @@ export default function Hero() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="text-base md:text-lg text-[#555555] max-w-2xl mx-auto mb-12 leading-relaxed relative z-10 uppercase font-medium tracking-wide"
                 >
-                    Reparos especializados em Smartphones, Nãotebooks e Apple. <br className="hidden md:block" />
+                    Reparos especializados em Smartphones, notebooks e Apple. <br className="hidden md:block" />
                     Montagem de PCs Gamers de alta performance para o seu setup.
                 </motion.p>
 

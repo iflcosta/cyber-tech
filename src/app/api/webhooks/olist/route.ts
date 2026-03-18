@@ -33,14 +33,14 @@ export async function POST(request: Request) {
             console.log(`[WEBHOOK OLIST] - Estoque do produto ${sku || product_id} sincronizado.`);
         }
 
-        // Exemplo 2: Olist/Tiny atualizou dados do produto (preço, nãome, etc)
+        // Exemplo 2: Olist/Tiny atualizou dados do produto (preço, nome, etc)
         if (event === 'product_update' || event === 'produto.alterado') {
             const sku = body.sku || body.codigo;
             if (sku) {
                 const { error } = await supabase
                     .from('products')
                     .update({
-                        name: body.nãome || body.name,
+                        name: body.nome || body.name,
                         price: body.preco || body.price,
                         stock_quantity: body.saldo || body.stock_quantity
                     })

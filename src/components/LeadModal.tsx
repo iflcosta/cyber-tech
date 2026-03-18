@@ -78,11 +78,11 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                         initial={{ opacity: 0, scale: 0.9, y: 40 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                        className="bg-white w-full max-w-md my-auto rounded-[2px] overflow-hidden border border-[#D4D2CF] shadow-2xl relative"
+                        className="bg-white/95 backdrop-blur-xl w-full max-w-md my-auto rounded-3xl overflow-hidden border border-[#D4D2CF] shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative"
                     >
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 text-[#AAAAAA] hover:text-[#1A1A1A] z-20 p-2 hover:bg-[#F8F7F5] transition-all"
+                            className="absolute top-4 right-4 text-[#AAAAAA] hover:text-[#1A1A1A] z-20 p-2 hover:bg-[#F8F7F5] rounded-full transition-all"
                         >
                             <X size={24} />
                         </button>
@@ -91,21 +91,21 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                             {step === 'form' ? (
                                 <>
                                     <div className="mb-8">
-                                        <div className="inline-flex p-3 rounded-[2px] bg-[#F8F7F5] text-[#1A1A1A] mb-6 border border-[#ECEAE6]">
+                                        <div className="inline-flex p-3 rounded-xl bg-[#F8F7F5] text-[#1A1A1A] mb-6 border border-[#ECEAE6]">
                                             <Smartphone size={24} />
                                         </div>
-                                        <h2 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] leading-nãone">
+                                        <h2 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] leading-none">
                                             {interestType === 'voucher' ? (
-                                                <>GARANTA SEU <span className="text-outline">BRINDE</span></>
+                                                <>GARANTA SEU <span className="text-outline text-[#AAAAAA]">BRINDE</span></>
                                             ) : interestType === 'manutencao' ? (
-                                                <>SOLICITAR <span className="text-outline">ORÇAMENTO</span></>
+                                                <>SOLICITAR <span className="text-outline text-[#AAAAAA]">ORÇAMENTO</span></>
                                             ) : interestType === 'pc_build' ? (
-                                                <>ENVIAR <span className="text-outline">SETUP</span></>
+                                                <>ENVIAR <span className="text-outline text-[#AAAAAA]">SETUP</span></>
                                             ) : (
-                                                <>TENHO <span className="text-outline">INTERESSE</span></>
+                                                <>TENHO <span className="text-outline text-[#AAAAAA]">INTERESSE</span></>
                                             )}
                                         </h2>
-                                        <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest mt-4">
+                                        <p className="text-[#888888] text-[10px] font-black uppercase tracking-widest mt-4">
                                             {interestType === 'voucher'
                                                 ? "Contato para resgate de voucher exclusivo."
                                                 : interestType === 'pc_build'
@@ -115,51 +115,55 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                     </div>
 
                                     <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div>
-                                            <label className="text-[10px] font-display font-bold uppercase tracking-[0.2em] text-[#888888] mb-2 block">Nãome Completo</label>
-                                            <input
-                                                required
-                                                type="text"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                placeholder="Ex: Iago Lopes"
-                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-display font-bold uppercase tracking-[0.2em] text-[#888888] mb-2 block">WhatsApp</label>
-                                            <input
-                                                required
-                                                type="tel"
-                                                value={whatsapp}
-                                                onChange={(e) => setWhatsapp(e.target.value)}
-                                                placeholder="(11) 99999-9999"
-                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
-                                            />
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">nome Completo</label>
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    value={name}
+                                                    onChange={(e) => setName(e.target.value)}
+                                                    placeholder="Ex: Iago Lopes"
+                                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">WhatsApp</label>
+                                                <input
+                                                    required
+                                                    type="tel"
+                                                    value={whatsapp}
+                                                    onChange={(e) => setWhatsapp(e.target.value)}
+                                                    placeholder="(11) 99999-9999"
+                                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
+                                                />
+                                            </div>
                                         </div>
 
                                         {interestType === 'manutencao' && (
                                             <>
-                                                <div>
-                                                    <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Modelo do Aparelho</label>
-                                                    <input
-                                                        required
-                                                        type="text"
-                                                        value={model}
-                                                        onChange={(e) => setModel(e.target.value)}
-                                                        placeholder="Ex: iPhone 13, Dell G15"
-                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-blue-500 transition-all font-medium"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Descreva o Problema</label>
-                                                    <textarea
-                                                        required
-                                                        value={problem}
-                                                        onChange={(e) => setProblem(e.target.value)}
-                                                        placeholder="O que está acontecendo?"
-                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-blue-500 transition-all h-24 font-medium"
-                                                    />
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">Modelo do Aparelho</label>
+                                                        <input
+                                                            required
+                                                            type="text"
+                                                            value={model}
+                                                            onChange={(e) => setModel(e.target.value)}
+                                                            placeholder="Ex: iPhone 13, Dell G15"
+                                                            className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium placeholder:text-[#CCCCCC]"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-[#888888] ml-1">Descreva o Problema</label>
+                                                        <textarea
+                                                            required
+                                                            value={problem}
+                                                            onChange={(e) => setProblem(e.target.value)}
+                                                            placeholder="O que está acontecendo?"
+                                                            className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-xl px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all h-24 font-medium placeholder:text-[#CCCCCC]"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </>
                                         )}
@@ -191,7 +195,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                                             value={deliveryAddress}
                                                             onChange={(e) => setDeliveryAddress(e.target.value)}
                                                             placeholder="Endereço Completo e Bairro"
-                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-blue-500 transition-all font-medium"
+                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-medium"
                                                         />
                                                     </div>
                                                 )}
@@ -201,7 +205,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                         <button
                                             disabled={loading}
                                             type="submit"
-                                            className="w-full btn-primary py-5 mt-6 flex items-center justify-center gap-3 disabled:opacity-50"
+                                            className="w-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-black uppercase tracking-widest py-5 mt-6 flex items-center justify-center gap-3 disabled:opacity-50 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-all font-display"
                                         >
                                             {loading ? 'PROCESSANDO...' : (
                                                 <>
@@ -232,12 +236,12 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                             : "Obrigado! Um consultor entrará em contato via WhatsApp em breve."}
                                     </p>
 
-                                    <div className="bg-[#F8F7F5] border border-dashed border-[#D4D2CF] rounded-[2px] p-6 mb-8 relative group overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-[#1A1A1A]" />
-                                        <div className="text-3xl font-display font-bold tracking-widest text-[#1A1A1A] mb-2">{voucher}</div>
+                                    <div className="bg-[#1A1A1A] border border-dashed border-white/10 rounded-2xl p-8 mb-8 relative group overflow-hidden shadow-2xl">
+                                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+                                        <div className="text-3xl font-display font-bold tracking-widest text-white mb-2">{voucher}</div>
                                         <button
                                             onClick={() => navigator.clipboard.writeText(voucher)}
-                                            className="inline-flex items-center gap-2 text-[10px] text-[#888888] font-bold hover:text-[#1A1A1A] transition-colors uppercase tracking-widest"
+                                            className="inline-flex items-center gap-2 text-[10px] text-white/30 font-black hover:text-white transition-colors uppercase tracking-widest"
                                         >
                                             <Copy size={12} /> COPIAR CÓDIGO
                                         </button>
@@ -246,16 +250,16 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                     <div className="space-y-3">
                                         <button
                                             onClick={onClose}
-                                            className="w-full py-4 border border-[#ECEAE6] rounded-[2px] text-[#888888] text-[10px] font-bold uppercase tracking-widest hover:text-[#1A1A1A] hover:bg-[#F8F7F5] transition-all"
+                                            className="w-full py-4 border border-[#ECEAE6] rounded-xl text-[#AAAAAA] text-[10px] font-black uppercase tracking-widest hover:text-[#1A1A1A] hover:bg-[#F8F7F5] transition-all"
                                         >
                                             FECHAR JANELA
                                         </button>
 
                                         <a
-                                            href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de fazer uma solicitação não site (Código: ${voucher}). Gostaria de mais informações!`)}`}
+                                            href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de fazer uma solicitação no site (Código: ${voucher}). Gostaria de mais informações!`)}`}
                                             target="_blank"
-                                            rel="nãoreferrer"
-                                            className="w-full btn-primary py-5 flex items-center justify-center gap-3"
+                                            rel="noreferrer"
+                                            className="w-full bg-[#1A1A1A] hover:bg-[#333333] text-white font-black py-5 flex items-center justify-center gap-3 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.1)] transition-all font-display"
                                             onClick={onClose}
                                         >
                                             <Smartphone size={16} /> INICIAR NEGOCIAÇÃO

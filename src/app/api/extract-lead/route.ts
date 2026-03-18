@@ -12,9 +12,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Mensagens não fornecidas' }, { status: 400 });
         }
 
-        // 1. Pedir ao Gemini para extrair nãome e telefone
+        // 1. Pedir ao Gemini para extrair nome e telefone
         const prompt = `Analise este histórico de conversa entre um cliente e um assistente de loja de informática.
-Extraia APENAS um objeto JSON válido (com as chaves "name" e "phone") com o nãome e número de telefone (WhatsApp) do cliente, SE ELE TIVER INFORMADO. 
+Extraia APENAS um objeto JSON válido (com as chaves "name" e "phone") com o nome e número de telefone (WhatsApp) do cliente, SE ELE TIVER INFORMADO. 
 Se ele não informou, retorne null para os valores correspondentes. Não inclua Markdown, apenas o JSON.
 
 Histórico:
@@ -53,7 +53,7 @@ ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n')}`;
                 return NextResponse.json({ status: 'lead_already_exists' }, { status: 200 });
             }
 
-            // 3. Inserir não Supabase se for nãovo
+            // 3. Inserir não Supabase se for novo
             // O voucher será gerado por um trigger não Supabase ou podemos gerar aqui
             const { error } = await supabase
                 .from('leads')
