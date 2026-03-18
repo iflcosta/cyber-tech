@@ -1,20 +1,20 @@
-# ⚡ Cyber Tech: Ecossistema de Performance & Tecnologia
+# ⚡ Cyber Informática: Ecossistema de Performance & Tecnologia
 
-Este documento apresenta o estado atual do projeto **Cyber Tech**, uma plataforma de e-commerce e gestão de assistência técnica de alta performance, desenvolvida com as tecnologias mais modernas do mercado.
+Este documento apresenta o estado atual do projeto **Cyber Informática**, uma plataforma de e-commerce e gestão de assistência técnica de alta performance, desenvolvida com as tecnologias mais modernas do mercado.
 
 ---
 
 ## 🚀 Visão Geral
-O Cyber Tech nasceu da necessidade de unir um showroom de produtos gamer a um sistema de atendimento inteligente e uma área administrativa robusta. O projeto foca em **UX (Experiência do Usuário)**, **Velocidade de Conversão** e **Segurança de Dados**.
+O Cyber Informática nasceu da necessidade de unir um showroom de produtos gamer a um sistema de atendimento inteligente e uma área administrativa robusta. O projeto foca em **UX (Experiência do Usuário)**, **Velocidade de Conversão** e **Segurança de Dados**.
 
 ---
 
 ## 🎨 Design & Interface (UI/UX)
-O projeto utiliza um design futurista baseado no conceito de *Cyberpunk Moderno*:
-- **Glassmorphism:** Interfaces translúcidas com desfoque de fundo (Backdrop Blur).
-- **Interatividade:** Micro-animações integradas via *Framer Motion* para uma navegação fluida.
+O projeto utiliza uma identidade visual **Industrial Light**, focada em profissionalismo e precisão:
+- **Estética Industrial:** Paleta neutra (Off-white, Grafite, Prata) com foco em legibilidade.
+- **Bordas Sharp:** Aplicação rigorosa de `border-radius: 2px` para um visual técnico e robusto.
+- **Tipografia:** Uso da família *Barlow* (Condensed para títulos e Regular para corpo) para um toque moderno e funcional.
 - **Responsividade:** Totalmente adaptado para Mobile, Tablet e Desktop.
-- **Portals:** Modais de conversão renderizados via *React Portals* para garantir que nada bloqueie a ação do usuário.
 
 ---
 
@@ -25,15 +25,15 @@ Uma inteligência artificial baseada no modelo **Google Gemini 1.5 Pro**, que at
 - **Conhecimento Local:** Sabe exatamente o que há no estoque da loja em Bragança Paulista.
 - **Empatia Técnica:** Identifica a dor do cliente (ex: tela quebrada) e sugere a solução ideal sem ser invasiva.
 
-### 2. Monte seu Setup (PC Builder)
-Ferramenta interativa onde o cliente pode simular a montagem de um PC.
-- **Scoring de Performance:** Mostra em tempo real quais jogos o setup rodará (ex: Cyberpunk 2077, Warzone).
-- **Conversão Direta:** Integração com WhatsApp para envio da configuração desejada.
+### 2. Monte seu Setup (Simulador Industrial)
+Ferramenta interativa onde o cliente pode simular a montagem de um PC baseado em tiers de performance.
+- **Simulador Educativo:** Foca na experiência de escolha de componentes sem a barreira da compatibilidade técnica.
+- **Conversão Direta:** Integração com WhatsApp para envio da configuração desejada conforme o template da loja.
 
 ### 3. Ecossistema de Leads & Vouchers
 Fluxo de captação de clientes otimizado:
 - **Resgate de Brindes:** Geração de códigos únicos de desconto/brinde para atrair fluxo para a loja física.
-- **Orçamentos Rápidos:** Formulários específicos para manutenção de hardware.
+- **Orçamentos Rápidos:** Formulários específicos para manutenção de celular, notebook e desktops.
 
 ---
 
@@ -48,19 +48,20 @@ Um painel exclusivo para o proprietário gerir o negócio:
 
 ## 🛠️ Stack Tecnológica
 - **Frontend:** Next.js 16 (App Router) + React 19.
-- **Estilização:** Tailwind CSS 4 (Custom Design System).
+- **Estilização:** Tailwind CSS 4 (Custom Industrial Design System).
 - **Backend & Database:** Supabase (PostgreSQL + Realtime + Edge Functions).
 - **Autenticação:** Supabase Auth + SSR Middleware Integration.
 - **AI Engine:** Google Gemini AI API.
-- **Animations:** Framer Motion.
+- **Animations:** Framer Motion (Micro-interações sutis).
 
 ---
 
 ## 🟢 Status do Projeto
-- **Showroom:** 100% Funcional.
+- **Showroom:** 100% Funcional (Industrial Style).
 - **IA/Chatbot:** 100% Funcional.
 - **Admin/Segurança:** 100% Funcional.
+- **PC Builder:** 100% Funcional (Versão V3 Simulator).
 - **Estabilidade:** Alta (Otimizado para produção).
 
 ---
-**Desenvolvido com foco em inovação e resultados para a Cyber Tech.**
+**Rebranding para "Industrial Light" concluído com sucesso.**
