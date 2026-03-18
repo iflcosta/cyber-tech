@@ -9,7 +9,7 @@ import Reviews from "@/components/Reviews";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-[#F0EFED]">
       <Header />
       <Hero />
       <Maintenance />
@@ -19,9 +19,10 @@ export default function Home() {
       <Reviews />
       <CyberIA />
 
-      {/* Footer Simples */}
-      <footer className="py-8 md:py-12 border-t border-white/5 text-center text-white/20 text-sm">
-        <p>&copy; 2026 Cyber Tech - Bragança Paulista. Todos os direitos reservados.</p>
+      <footer className="py-12 border-t border-[#D4D2CF] bg-white text-center">
+        <p className="text-[#AAAAAA] text-[10px] font-bold uppercase tracking-[0.2em]">
+          &copy; 2026 CYBER INFORMÁTICA - BRAGANÇA PAULISTA. TODOS OS DIREITOS RESERVADOS.
+        </p>
       </footer>
     </main>
   );

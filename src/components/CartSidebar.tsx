@@ -1,7 +1,7 @@
 "use client";
 import { useCart } from '@/contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, ShoppingBag, CreditCard } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, CreditCard, Package } from 'lucide-react';
 
 export default function CartSidebar() {
     const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, totalPrice } = useCart();
@@ -31,17 +31,16 @@ export default function CartSidebar() {
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-[#050505] shadow-[-20px_0_40px_rgba(0,0,0,0.8)] border-l border-white/5 z-[210] flex flex-col"
+                        className="fixed right-0 top-0 h-full w-full sm:w-[400px] bg-[#FFFFFF] shadow-[-20px_0_40px_rgba(31,31,31,0.1)] border-l border-[#D4D2CF] z-[210] flex flex-col"
                     >
                         {/* Header do Carrinho */}
-                        <div className="flex justify-between items-center p-6 border-b border-white/10">
-                            <h2 className="text-xl font-black italic flex items-center gap-3">
-                                <ShoppingBag className="text-blue-500" />
-                                SEU <span className="text-blue-500">CARRINHO</span>
+                        <div className="flex justify-between items-center p-6 border-b border-[#ECEAE6]">
+                            <h2 className="text-xl font-display font-bold tracking-tight text-[#1A1A1A] uppercase">
+                                SEU <span className="text-outline">CARRINHO</span>
                             </h2>
                             <button
                                 onClick={() => setIsCartOpen(false)}
-                                className="w-10 h-10 bg-white/5 rounded-full flex justify-center items-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                                className="w-10 h-10 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] flex justify-center items-center text-[#AAAAAA] hover:text-[#1A1A1A] hover:border-[#1A1A1A] transition-all"
                             >
                                 <X size={20} />
                             </button>
@@ -56,40 +55,42 @@ export default function CartSidebar() {
                                 </div>
                             ) : (
                                 items.map((item) => (
-                                    <div key={item.product.id} className="flex gap-4 p-4 rounded-xl bg-white/5 border border-white/5 relative group">
+                                    <div key={item.product.id} className="flex gap-4 p-4 rounded-[2px] bg-white border border-[#ECEAE6] relative group transition-all hover:border-[#D4D2CF]">
                                         {/* Imagem do Produto */}
-                                        <div className="w-20 h-20 rounded-lg bg-black/50 overflow-hidden flex-shrink-0">
+                                        <div className="w-20 h-20 rounded-[2px] bg-[#F8F7F5] overflow-hidden flex-shrink-0 border border-[#ECEAE6]">
                                             {item.product.image_urls && item.product.image_urls.length > 0 ? (
                                                 <img src={item.product.image_urls[0]} alt={item.product.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full bg-blue-900/20" />
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <Package className="text-[#D4D2CF]" size={24} />
+                                                </div>
                                             )}
                                         </div>
 
                                         {/* Detalhes do Produto */}
                                         <div className="flex-1 flex flex-col justify-between">
                                             <div>
-                                                <h3 className="font-bold text-sm line-clamp-2 leading-tight pr-6">{item.product.name}</h3>
-                                                <div className="text-xs text-white/40 mt-1 uppercase tracking-wider">{item.product.category}</div>
+                                                <h3 className="font-display font-bold text-xs uppercase tracking-tight text-[#1A1A1A] line-clamp-2 leading-tight pr-6">{item.product.name}</h3>
+                                                <div className="text-[10px] text-[#888888] mt-1 font-bold uppercase tracking-widest">{item.product.category}</div>
                                             </div>
 
                                             <div className="flex items-center justify-between mt-2">
-                                                <div className="font-black text-blue-400">
+                                                <div className="font-display font-bold text-[#1A1A1A]">
                                                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.product.price)}
                                                 </div>
 
                                                 {/* Controles de Quantidade */}
-                                                <div className="flex items-center gap-3 bg-black/50 rounded-lg border border-white/10 px-2 py-1">
+                                                <div className="flex items-center gap-3 bg-[#F8F7F5] rounded-[2px] border border-[#ECEAE6] px-2 py-1">
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                                                        className="text-white/50 hover:text-white transition-colors"
+                                                        className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors"
                                                     >
                                                         <Minus size={14} />
                                                     </button>
-                                                    <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                                                    <span className="text-[10px] font-bold w-4 text-center text-[#1A1A1A]">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                                                        className="text-white/50 hover:text-white transition-colors"
+                                                        className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors"
                                                     >
                                                         <Plus size={14} />
                                                     </button>
@@ -100,7 +101,7 @@ export default function CartSidebar() {
                                         {/* Botão de Remover Lixeira */}
                                         <button
                                             onClick={() => removeFromCart(item.product.id)}
-                                            className="absolute top-3 right-3 text-white/20 hover:text-red-500 transition-colors"
+                                            className="absolute top-3 right-3 text-[#CCCCCC] hover:text-red-600 transition-colors"
                                         >
                                             <Trash2 size={16} />
                                         </button>
@@ -111,27 +112,27 @@ export default function CartSidebar() {
 
                         {/* Footer (Resumo e Botão Checkout) */}
                         {items.length > 0 && (
-                            <div className="p-6 border-t border-white/10 bg-[#0a0a0a]">
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="text-white/50 font-bold uppercase tracking-wider text-sm">Subtotal</span>
-                                    <span className="text-2xl font-black text-white">
+                            <div className="p-8 border-t border-[#ECEAE6] bg-[#F8F7F5]">
+                                <div className="flex justify-between items-center mb-8">
+                                    <span className="text-[#888888] font-bold uppercase tracking-[0.2em] text-[10px]">Total Estimado</span>
+                                    <span className="text-3xl font-display font-bold text-[#1A1A1A]">
                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}
                                     </span>
                                 </div>
 
                                 <button
                                     onClick={handleCheckout}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                                    className="w-full btn-primary py-5 flex items-center justify-center gap-3"
                                 >
                                     <CreditCard size={20} />
-                                    FINALIZAR COMPRA
+                                    FINALIZAR SOLICITAÇÃO
                                 </button>
 
                                 <button
                                     onClick={() => setIsCartOpen(false)}
-                                    className="w-full mt-3 text-white/50 font-bold text-sm py-2 hover:text-white transition-colors"
+                                    className="w-full mt-4 text-[#AAAAAA] font-bold text-[10px] uppercase tracking-widest py-2 hover:text-[#1A1A1A] transition-colors"
                                 >
-                                    Continuar Comprando
+                                    Continuar Navegando
                                 </button>
                             </div>
                         )}

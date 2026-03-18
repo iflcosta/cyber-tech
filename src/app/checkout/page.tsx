@@ -1,7 +1,22 @@
 "use client";
-import { useState, useEffect } from 'react';
+
 import { useCart } from '@/contexts/CartContext';
-import { CreditCard, Truck, ShieldCheck, MapPin, QrCode, Lock, ChevronLeft, Loader2, CheckCircle2, Copy, Smartphone } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+    ChevronRight, 
+    ShieldCheck, 
+    Truck, 
+    Store, 
+    CreditCard, 
+    QrCode, 
+    Smartphone, 
+    Loader2, 
+    CheckCircle2, 
+    Copy, 
+    ArrowRight,
+    ShoppingBag,
+    Package
+} from 'lucide-react';
 import Header from '@/components/Header';
 import { createOrder } from '@/lib/orders';
 import { getProducts } from '@/lib/products';
@@ -20,8 +35,8 @@ export default function CheckoutPage() {
     const [clientName, setClientName] = useState('');
     const [clientWhatsapp, setClientWhatsapp] = useState('');
     const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+    const [copiedPix, setCopiedPix] = useState(false);
 
-    // Redireciona para home se o carrinho estiver vazio ou processa o Magic Link (Google Ads)
     useEffect(() => {
         if (!isLoaded) return;
 
@@ -37,7 +52,6 @@ export default function CheckoutPage() {
                 if (targetProduct) {
                     clearCart();
                     addToCart(targetProduct, qty);
-                    // Limpa a URL para evitar loops ao atualizar a página
                     window.history.replaceState(null, '', '/checkout');
                 }
             } else if (items.length === 0 && !isSuccess) {
@@ -47,7 +61,6 @@ export default function CheckoutPage() {
 
         handleMagicLink();
 
-        // Track InitiateCheckout
         if (items.length > 0 && typeof window !== 'undefined' && (window as any).fbq) {
             (window as any).fbq('track', 'InitiateCheckout', {
                 num_items: items.length,
@@ -57,7 +70,6 @@ export default function CheckoutPage() {
         }
     }, [isLoaded, items.length, isSuccess, clearCart, addToCart, totalPrice]);
 
-    // Ao mudar para retirada na loja, limpa frete e seta pagamento para loja por padrão
     useEffect(() => {
         if (deliveryType === 'store') {
             setShippingCost(0);
@@ -68,12 +80,11 @@ export default function CheckoutPage() {
         }
     }, [deliveryType]);
 
-    // Captura de Lead (Abandono de Carrinho)
     useEffect(() => {
         if (clientName.length > 3 && clientWhatsapp.length > 10 && !isSuccess) {
             const timer = setTimeout(() => {
                 saveCheckoutLead(clientName, clientWhatsapp, items);
-            }, 2000); // 2 segundos de debounce para não sobrecarregar o banco
+            }, 2000);
             return () => clearTimeout(timer);
         }
     }, [clientName, clientWhatsapp, items, isSuccess]);
@@ -81,31 +92,26 @@ export default function CheckoutPage() {
     const handleCalculateShipping = async () => {
         if (cep.length < 8) return;
         setCalculatingShipping(true);
-        // Simulação de chamada na API dos Correios/Melhor Envio
         await new Promise(resolve => setTimeout(resolve, 1500));
-        setShippingCost(Math.random() * 50 + 20); // Frete fictício entre R$ 20 e R$ 70
+        setShippingCost(Math.random() * 50 + 20);
         setCalculatingShipping(false);
     };
 
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!clientName || !clientWhatsapp) {
             alert('Preencha seu Nome e WhatsApp de contato.');
             return;
         }
-
         if (deliveryType === 'delivery' && !shippingCost) {
             alert('Por favor, calcule o frete para entrega em casa.');
             return;
         }
 
         setIsProcessing(true);
-
         const totalOrderValue = totalPrice + (shippingCost || 0);
         const finalTotal = paymentMethod === 'pix' ? totalOrderValue * 0.95 : totalOrderValue;
 
-        // 1. Salvar no Supabase
         const orderId = await createOrder({
             client_name: clientName,
             client_whatsapp: clientWhatsapp,
@@ -123,9 +129,8 @@ export default function CheckoutPage() {
             return;
         }
 
-        // 2. Integrar com Olist ERP via API Interna
         try {
-            const apiResponse = await fetch('/api/checkout', {
+            await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -140,16 +145,10 @@ export default function CheckoutPage() {
                     items
                 })
             });
-
-            const apiResult = await apiResponse.json();
-            if (!apiResult.success) {
-                console.warn('[Checkout] Erro na integração Olist:', apiResult.error);
-            }
         } catch (error) {
             console.error('[Checkout] Erro ao chamar API de Checkout:', error);
         }
 
-        // 3. Simular delay do Gateway (Olist Pay / PagSeguro / MercadoPago)
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         if (orderId) {
@@ -157,7 +156,6 @@ export default function CheckoutPage() {
             setIsSuccess(true);
             clearCart();
 
-            // Track Purchase
             if (typeof window !== 'undefined' && (window as any).fbq) {
                 (window as any).fbq('track', 'Purchase', {
                     value: finalTotal,
@@ -177,255 +175,210 @@ export default function CheckoutPage() {
 
     if (!isLoaded) {
         return (
-            <main className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
-                <Loader2 size={48} className="animate-spin text-blue-500" />
+            <main className="min-h-screen bg-[#F0EFED] flex items-center justify-center">
+                <Loader2 size={48} className="animate-spin text-[#1A1A1A]" />
             </main>
         );
     }
 
     if (isSuccess) {
-        // Gerador de Pix Fictício Baseado no UID do Pedido
-        const mockPixCode = `00020126440014br.gov.bcb.pix0122cybertech@braganca.com5204000053039865406${(totalOrderValue * 0.95).toFixed(2).replace('.', '')}5802BR5910CYBER TECH6008BRAGANCA62070503***6304${createdOrderId?.slice(0, 4).toUpperCase() || 'ABCD'}`;
+        const mockPixCode = `00020126440014br.gov.bcb.pix0122cybertech@braganca.com5204000053039865406${(totalOrderValue * 0.95).toFixed(2).replace('.', '')}5802BR5910Cyber Informática6008BRAGANCA62070503***6304${createdOrderId?.slice(0, 4).toUpperCase() || 'ABCD'}`;
 
         return (
-            <main className="min-h-screen bg-black text-white pt-24 pb-12 flex items-center justify-center">
+            <main className="min-h-screen bg-[#F0EFED] pt-32 pb-12 flex items-center justify-center">
                 <Header />
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="max-w-md w-full mx-auto p-8 rounded-3xl border border-blue-500/20 bg-blue-500/5 text-center shadow-[0_0_50px_rgba(37,99,235,0.1)]"
+                    className="max-w-xl w-full mx-auto p-12 bg-white rounded-[2px] border border-[#D4D2CF] text-center shadow-2xl relative overflow-hidden"
                 >
-                    {paymentMethod === 'pay_at_store' ? (
-                        <>
-                            <div className="flex justify-center mb-6">
-                                <div className="bg-purple-500/20 text-purple-500 p-4 rounded-full border border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                                    <MapPin size={48} />
-                                </div>
-                            </div>
-                            <h2 className="text-2xl font-black italic mb-2 uppercase">PEDIDO <span className="text-purple-500">RESERVADO!</span></h2>
-                            <p className="text-white/60 mb-6 text-sm">
-                                Pedido #{createdOrderId?.slice(0, 8)} gerado! Mostre este número no balcão da Cyber Tech em Bragança Paulista para retirar seu produto e realizar o pagamento.
-                            </p>
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
-                                <p className="text-xs text-white/40 mb-1 font-bold uppercase tracking-widest text-left">Onde Retirar:</p>
-                                <p className="text-sm font-bold text-left italic">Rua da Tecnologia, 123 - Centro<br/>Bragança Paulista - SP</p>
-                                <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                                    <span className="text-xs text-white/40">Total Original:</span>
-                                    <span className="font-bold text-white text-lg">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue)}</span>
-                                </div>
-                            </div>
-                        </>
-                    ) : paymentMethod === 'pix' ? (
-                        <>
-                            <div className="flex justify-center mb-6">
-                                <div className="bg-blue-500/20 text-blue-500 p-4 rounded-full border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.4)]">
-                                    <QrCode size={48} />
-                                </div>
-                            </div>
-                            <h2 className="text-2xl font-black italic mb-2">PAGAMENTO <span className="text-blue-500">PIX</span></h2>
-                            <p className="text-white/60 mb-6 text-sm">
-                                Pedido #{createdOrderId?.slice(0, 8)} gerado! Escaneie o QR Code ou cole o código Pix Copia e Cola em seu banco para garantir o pedido.
-                            </p>
+                    <div className="absolute top-0 left-0 w-full h-[2px] bg-[#1A1A1A]" />
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-[#F8F7F5] p-6 rounded-[2px] text-[#1A1A1A] border border-[#ECEAE6]">
+                            <CheckCircle2 size={64} />
+                        </div>
+                    </div>
+                    
+                    <h2 className="text-4xl font-display font-bold text-[#1A1A1A] mb-4 uppercase tracking-tight">PEDIDO RECEBIDO!</h2>
+                    <p className="text-[#888888] font-bold text-[10px] uppercase tracking-widest mb-10 max-w-sm mx-auto">
+                        Seu pedido foi registrado com o código <span className="text-[#1A1A1A]">#{createdOrderId?.slice(0, 8).toUpperCase()}</span>.
+                    </p>
 
-                            <div className="bg-white/5 border border-dashed border-white/20 rounded-2xl p-6 mb-8 relative group overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-blue-500" />
-                                <div className="text-xs break-all font-mono text-white/80 mb-4">{mockPixCode}</div>
-                                <button
-                                    onClick={() => navigator.clipboard.writeText(mockPixCode)}
-                                    className="inline-flex py-3 px-6 bg-blue-600 hover:bg-blue-700 rounded-full font-bold uppercase items-center justify-center gap-2 text-xs text-white transition-all w-full"
+                    {paymentMethod === 'pix' && (
+                        <div className="bg-[#F8F7F5] border border-dashed border-[#D4D2CF] p-8 mb-10 text-left">
+                            <h4 className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest mb-4">Pague com Pix Copia e Cola:</h4>
+                            <div className="bg-white p-4 border border-[#ECEAE6] rounded-[2px] flex items-center gap-3 overflow-hidden group">
+                                <span className="text-xs font-mono text-[#555555] truncate flex-1">{mockPixCode}</span>
+                                <button 
+                                    onClick={() => { navigator.clipboard.writeText(mockPixCode); setCopiedPix(true); setTimeout(() => setCopiedPix(false), 2000); }}
+                                    className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors p-2"
                                 >
-                                    <Copy size={16} /> Copiar Linha Digitável
+                                    {copiedPix ? <CheckCircle2 size={18} className="text-green-600" /> : <Copy size={18} />}
                                 </button>
                             </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="flex justify-center mb-6">
-                                <div className="bg-green-500/20 text-green-500 p-4 rounded-full border border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.4)]">
-                                    <CheckCircle2 size={48} />
-                                </div>
-                            </div>
-                            <h2 className="text-2xl font-black italic mb-2 text-green-500 uppercase">PAGAMENTO APROVADO!</h2>
-                            <p className="text-white/60 mb-8 text-sm">
-                                Pedido #{createdOrderId?.slice(0, 8)} processado com sucesso via Cartão de Crédito Online. Você receberá as atualizações em breve.
+                            <p className="text-[9px] text-[#AAAAAA] mt-4 font-bold uppercase tracking-widest">
+                                O status será atualizado automaticamente após o pagamento.
                             </p>
-                        </>
+                        </div>
                     )}
 
-                    <button
-                        onClick={() => window.location.href = '/'}
-                        className="bg-white/5 text-white/70 px-8 py-4 rounded-xl font-bold uppercase transition-all hover:bg-white/10 hover:text-white border border-white/10 w-full"
-                    >
-                        Voltar para a Loja
-                    </button>
+                    <div className="space-y-4">
+                        <a href={`/rastreio?id=${createdOrderId}`} className="btn-primary w-full py-5 flex items-center justify-center gap-3">
+                            ACOMPANHAR PEDIDO <ArrowRight size={18} />
+                        </a>
+                        <a href="/" className="btn-ghost w-full py-5">VOLTAR PARA A HOME</a>
+                    </div>
                 </motion.div>
             </main>
         );
     }
 
     return (
-        <main className="min-h-screen bg-[#050505] text-white pt-24 pb-12">
+        <main className="min-h-screen bg-[#F0EFED] pt-32 pb-24">
             <Header />
-
             <div className="container mx-auto px-4 max-w-6xl">
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
-                    <button
-                        onClick={() => window.history.back()}
-                        className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"
-                    >
-                        <ChevronLeft size={16} /> Voltar
-                    </button>
-                    <div className="flex items-center gap-2 text-green-400 text-sm font-bold bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                        <Lock size={14} /> Checkout Seguro
-                    </div>
+                <div className="flex items-center gap-3 text-[#AAAAAA] text-[10px] font-bold uppercase tracking-widest mb-12">
+                    <a href="/" className="hover:text-[#1A1A1A]">HOME</a>
+                    <ChevronRight size={12} />
+                    <span className="text-[#1A1A1A]">CHECKOUT SEGURO</span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-                    <div className="lg:col-span-7 space-y-8">
-                        {/* Seção 1: Recebimento */}
-                        <div className="bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl">
-                            <h2 className="text-xl font-black italic flex items-center gap-3 mb-6 uppercase">
-                                <span className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">1</span>
-                                MODO DE RECEBIMENTO
-                            </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    <div className="lg:col-span-7 space-y-12">
+                        {/* Seção 1: Entrega */}
+                        <div className="bg-white p-10 rounded-[2px] border border-[#D4D2CF] shadow-xl">
+                            <div className="flex items-center gap-4 mb-10">
+                                <div className="w-10 h-10 bg-[#1A1A1A] text-white flex items-center justify-center rounded-[2px] font-display text-xl">1</div>
+                                <h2 className="text-2xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">OPÇÕES DE ENTREGA</h2>
+                            </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <button
-                                    type="button"
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                <button 
                                     onClick={() => setDeliveryType('delivery')}
-                                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${deliveryType === 'delivery' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                    className={`flex items-center gap-6 p-6 rounded-[2px] border transition-all text-left ${deliveryType === 'delivery' ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white' : 'bg-[#F8F7F5] border-[#ECEAE6] text-[#555555] hover:border-[#1A1A1A]'}`}
                                 >
-                                    <Truck size={24} />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Receber em Casa</span>
+                                    <Truck size={32} className={deliveryType === 'delivery' ? 'text-white' : 'text-[#AAAAAA]'} />
+                                    <div>
+                                        <div className="font-display font-bold uppercase tracking-tight text-sm">Receber em Casa</div>
+                                        <div className="text-[10px] opacity-60 font-bold uppercase tracking-widest mt-1">Via Motoboy ou Correios</div>
+                                    </div>
                                 </button>
-                                <button
-                                    type="button"
+                                <button 
                                     onClick={() => setDeliveryType('store')}
-                                    className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${deliveryType === 'store' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                    className={`flex items-center gap-6 p-6 rounded-[2px] border transition-all text-left ${deliveryType === 'store' ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white' : 'bg-[#F8F7F5] border-[#ECEAE6] text-[#555555] hover:border-[#1A1A1A]'}`}
                                 >
-                                    <MapPin size={24} />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Retirar na Loja</span>
+                                    <Store size={32} className={deliveryType === 'store' ? 'text-white' : 'text-[#AAAAAA]'} />
+                                    <div>
+                                        <div className="font-display font-bold uppercase tracking-tight text-sm">Retirar na Loja</div>
+                                        <div className="text-[10px] opacity-60 font-bold uppercase tracking-widest mt-1">Grátis - Bragança Pta</div>
+                                    </div>
                                 </button>
                             </div>
 
-                            {deliveryType === 'delivery' ? (
-                                <div className="space-y-4">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Cálculo de Frete</label>
+                            {deliveryType === 'delivery' && (
+                                <div className="p-6 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px]">
+                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-4">CALCULAR FRETE (CEP):</label>
                                     <div className="flex gap-4">
-                                        <div className="relative flex-1">
-                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
-                                            <input
-                                                type="text"
-                                                value={cep}
-                                                onChange={(e) => setCep(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                                                placeholder="00000-000"
-                                                className="w-full bg-black border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white focus:outline-none focus:border-blue-500 transition-all font-medium font-mono"
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
+                                        <input 
+                                            type="text" 
+                                            value={cep}
+                                            onChange={(e) => setCep(e.target.value)}
+                                            placeholder="00000-000"
+                                            className="flex-1 bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-none focus:border-[#1A1A1A]" 
+                                        />
+                                        <button 
                                             onClick={handleCalculateShipping}
                                             disabled={calculatingShipping || cep.length < 8}
-                                            className="bg-white/5 hover:bg-white/10 text-white font-bold px-6 rounded-xl border border-white/10 transition-colors disabled:opacity-50"
+                                            className="btn-primary px-8"
                                         >
-                                            {calculatingShipping ? <Loader2 size={20} className="animate-spin" /> : 'CALCULAR'}
+                                            {calculatingShipping ? <Loader2 className="animate-spin" /> : 'CALCULAR'}
                                         </button>
                                     </div>
-
-                                    <AnimatePresence>
-                                        {shippingCost !== null && shippingCost > 0 && (
-                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-4">
-                                                <label className="flex items-center justify-between p-4 border border-blue-500 bg-blue-500/10 rounded-xl cursor-pointer">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-5 h-5 rounded-full border-4 border-blue-500 flex items-center justify-center">
-                                                            <div className="w-2 h-2 bg-white rounded-full" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-bold">Correios PAC</div>
-                                                            <div className="text-xs text-white/50">Entrega em até 5 dias úteis</div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="font-black text-blue-400">
-                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(shippingCost)}
-                                                    </div>
-                                                </label>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            ) : (
-                                <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex items-center gap-4">
-                                    <div className="bg-blue-500/20 p-3 rounded-full text-blue-500">
-                                        <MapPin size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-sm text-blue-400">Ponto de Retirada Oficial:</p>
-                                        <p className="text-sm font-bold mt-1 uppercase italic">Cyber Tech Bragança - Unidade Centro</p>
-                                        <p className="text-xs text-white/50 mt-1">Rua da Tecnologia, 123 - Centro, Bragança Paulista - SP</p>
-                                    </div>
+                                    {shippingCost !== null && shippingCost > 0 && (
+                                        <div className="mt-6 p-4 bg-white border border-[#ECEAE6] flex justify-between items-center text-sm font-bold text-[#1A1A1A] uppercase tracking-widest">
+                                            <span>Frete Estimado:</span>
+                                            <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(shippingCost)}</span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
 
                         {/* Seção 2: Seus Dados */}
-                        <div className="bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border border-white/5 shadow-2xl">
-                            <h2 className="text-xl font-black italic flex items-center gap-3 mb-6">
-                                <span className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">2</span>
-                                SEUS DADOS
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white p-10 rounded-[2px] border border-[#D4D2CF] shadow-xl">
+                            <div className="flex items-center gap-4 mb-10">
+                                <div className="w-10 h-10 bg-[#1A1A1A] text-white flex items-center justify-center rounded-[2px] font-display text-xl">2</div>
+                                <h2 className="text-2xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">DADOS PESSOAIS</h2>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <input required type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Nome Completo" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-medium" />
+                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Nome Completo</label>
+                                    <input 
+                                        required 
+                                        type="text" 
+                                        value={clientName}
+                                        onChange={(e) => setClientName(e.target.value)}
+                                        placeholder="EX: JOÃO SILVA" 
+                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-none focus:border-[#1A1A1A]" 
+                                    />
                                 </div>
                                 <div>
-                                    <input required type="text" value={clientWhatsapp} onChange={(e) => setClientWhatsapp(e.target.value)} placeholder="WhatsApp" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-medium" />
+                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">WhatsApp de Contato</label>
+                                    <input 
+                                        required 
+                                        type="tel" 
+                                        value={clientWhatsapp}
+                                        onChange={(e) => setClientWhatsapp(e.target.value)}
+                                        placeholder="(11) 99999-9999" 
+                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-none focus:border-[#1A1A1A]" 
+                                    />
                                 </div>
                             </div>
                         </div>
 
                         {/* Seção 3: Pagamento */}
-                        <div className={`bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border shadow-2xl transition-all ${(deliveryType === 'delivery' && !shippingCost) || !clientName || !clientWhatsapp ? 'border-white/5 opacity-50 pointer-events-none' : 'border-white/10'}`}>
-                            <h2 className="text-xl font-black italic flex items-center gap-3 mb-6">
-                                <span className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-[0_0_15px_rgba(37,99,235,0.5)]">3</span>
-                                PAGAMENTO
-                            </h2>
+                        <div className={`bg-white p-10 rounded-[2px] border shadow-xl transition-all ${(deliveryType === 'delivery' && !shippingCost) || !clientName || !clientWhatsapp ? 'border-[#ECEAE6] opacity-40 pointer-events-none' : 'border-[#D4D2CF]'}`}>
+                            <div className="flex items-center gap-4 mb-10">
+                                <div className="w-10 h-10 bg-[#1A1A1A] text-white flex items-center justify-center rounded-[2px] font-display text-xl">3</div>
+                                <h2 className="text-2xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">MÉTODO DE PAGAMENTO</h2>
+                            </div>
 
                             <form onSubmit={handlePayment}>
-                                <div className={`grid ${deliveryType === 'store' ? 'grid-cols-3' : 'grid-cols-2'} gap-4 mb-8`}>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-12">
                                     <button
                                         type="button"
                                         onClick={() => setPaymentMethod('credit_card')}
-                                        className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${paymentMethod === 'credit_card' ? 'border-blue-500 bg-blue-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                        className={`flex flex-col items-center justify-center gap-4 p-6 rounded-[2px] border transition-all ${paymentMethod === 'credit_card' ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white' : 'bg-[#F8F7F5] border-[#ECEAE6] text-[#555555] hover:border-[#1A1A1A]'}`}
                                     >
                                         <CreditCard size={24} />
-                                        <span className="text-[10px] font-black uppercase tracking-wider">Cartão Online</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">Cartão Online</span>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setPaymentMethod('pix')}
-                                        className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${paymentMethod === 'pix' ? 'border-green-500 bg-green-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                        className={`flex flex-col items-center justify-center gap-4 p-6 rounded-[2px] border transition-all ${paymentMethod === 'pix' ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white' : 'bg-[#F8F7F5] border-[#ECEAE6] text-[#555555] hover:border-[#1A1A1A]'}`}
                                     >
                                         <QrCode size={24} />
-                                        <span className="text-[10px] font-black uppercase tracking-wider">Pix (Desconto)</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">Pix (5% OFF)</span>
                                     </button>
                                     {deliveryType === 'store' && (
                                         <button
                                             type="button"
                                             onClick={() => setPaymentMethod('pay_at_store')}
-                                            className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all ${paymentMethod === 'pay_at_store' ? 'border-purple-500 bg-purple-500/10 text-white' : 'border-white/10 text-white/50 hover:bg-white/5'}`}
+                                            className={`flex flex-col items-center justify-center gap-4 p-6 rounded-[2px] border transition-all ${paymentMethod === 'pay_at_store' ? 'bg-[#1A1A1A] border-[#1A1A1A] text-white' : 'bg-[#F8F7F5] border-[#ECEAE6] text-[#555555] hover:border-[#1A1A1A]'}`}
                                         >
                                             <Smartphone size={24} />
-                                            <span className="text-[10px] font-black uppercase tracking-wider">Pagar na Loja</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest">Pagar na Loja</span>
                                         </button>
                                     )}
                                 </div>
 
                                 {paymentMethod === 'credit_card' && (
-                                    <div className="space-y-4 mb-8">
-                                        <input required type="text" placeholder="Número do Cartão" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <input required type="text" placeholder="MM/AA" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
-                                            <input required type="text" placeholder="CVV" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 font-mono" />
+                                    <div className="space-y-6 mb-12 p-8 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px]">
+                                        <input required type="text" placeholder="NÚMERO DO CARTÃO" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-none focus:border-[#1A1A1A]" />
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <input required type="text" placeholder="MM/AA" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-none focus:border-[#1A1A1A]" />
+                                            <input required type="text" placeholder="CVV" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-none focus:border-[#1A1A1A]" />
                                         </div>
                                     </div>
                                 )}
@@ -433,35 +386,57 @@ export default function CheckoutPage() {
                                 <button
                                     type="submit"
                                     disabled={isProcessing}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-3 text-lg disabled:opacity-70"
+                                    className="btn-primary w-full py-6 text-xl flex items-center justify-center gap-4 disabled:opacity-50"
                                 >
                                     {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <><ShieldCheck size={24} /> {paymentMethod === 'pay_at_store' ? 'RESERVAR PRODUTO' : 'FINALIZAR E PAGAR'}</>}
                                 </button>
+                                <p className="text-center text-[10px] text-[#AAAAAA] mt-6 font-bold uppercase tracking-[0.2em]">Pagamento Seguro & Criptografado</p>
                             </form>
                         </div>
                     </div>
 
-                    {/* Resumo */}
-                    <div className="lg:col-span-5 h-fit sticky top-28 bg-[#0a0a0a] rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl">
-                        <h2 className="text-xl font-black italic mb-6">RESUMO DO PEDIDO</h2>
-                        <div className="space-y-4 mb-6">
+                    {/* Resumo lateral */}
+                    <div className="lg:col-span-5 h-fit sticky top-32 bg-white p-10 rounded-[2px] border border-[#D4D2CF] shadow-2xl overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-[#1A1A1A]" />
+                        <h2 className="text-2xl font-display font-bold text-[#1A1A1A] mb-10 uppercase tracking-tight">RESUMO DO PEDIDO</h2>
+                        <div className="space-y-8 mb-10">
                             {items.map((item) => (
-                                <div key={item.product.id} className="flex gap-4">
-                                    <div className="flex-1">
-                                        <h4 className="font-bold text-sm line-clamp-2 leading-tight uppercase italic">{item.product.name}</h4>
-                                        <div className="text-xs text-white/50 mt-1">Qtd: {item.quantity}</div>
+                                <div key={item.product.id} className="flex gap-6 items-start">
+                                    <div className="w-12 h-12 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] flex items-center justify-center text-[#1A1A1A] shrink-0">
+                                        <Package size={20} />
                                     </div>
-                                    <div className="font-bold">
+                                    <div className="flex-1">
+                                        <h4 className="font-display font-bold text-xs text-[#1A1A1A] leading-tight uppercase">{item.product.name}</h4>
+                                        <div className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest mt-2">{item.quantity} UNIDADE(S)</div>
+                                    </div>
+                                    <div className="font-display font-bold text-[#1A1A1A]">
                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.product.price * item.quantity)}
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <div className="pt-6 mt-6 border-t border-white/10 flex justify-between items-end">
-                            <span className="font-bold uppercase tracking-widest text-white/50 text-xs">Total Final</span>
-                            <span className="text-3xl font-black text-blue-500">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paymentMethod === 'pix' ? totalOrderValue * 0.95 : totalOrderValue)}
-                            </span>
+
+                        <div className="pt-10 border-t border-[#ECEAE6] space-y-4">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-[#888888] uppercase tracking-widest">
+                                <span>Subtotal</span>
+                                <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] font-bold text-[#888888] uppercase tracking-widest">
+                                <span>Frete Estimado</span>
+                                <span>{shippingCost !== null ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(shippingCost) : '--'}</span>
+                            </div>
+                            {paymentMethod === 'pix' && (
+                                <div className="flex justify-between items-center text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                                    <span>Desconto Pix (5%)</span>
+                                    <span>-{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalOrderValue * 0.05)}</span>
+                                </div>
+                            )}
+                            <div className="pt-6 mt-6 border-t border-[#ECEAE6] flex justify-between items-end">
+                                <span className="font-display font-bold uppercase tracking-tight text-[#AAAAAA]">TOTAL FINAL</span>
+                                <span className="text-4xl font-display font-bold text-[#1A1A1A]">
+                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paymentMethod === 'pix' ? totalOrderValue * 0.95 : totalOrderValue)}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, X, Bot, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getGeminiResponse } from '@/lib/gemini';
-import { supabase } from '@/lib/supabase';
-import { getProducts } from '@/lib/products';
+
+import { useState, useEffect, useRef } from "react";
+import { Send, X, Bot, Sparkles, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { getGeminiResponse } from "@/lib/gemini";
+import { getProducts } from "@/lib/products";
 
 export default function CyberIA() {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,24 +12,24 @@ export default function CyberIA() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [productsString, setProductsString] = useState('');
-
     const scrollRef = useRef<HTMLDivElement>(null);
     const lastMessageRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         async function preloadProducts() {
-            const products = await getProducts();
-            const str = products.map(p =>
-                `- ${p.name}: R$ ${p.price} (${p.category})`
-            ).join('\n');
-            setProductsString(str);
+            try {
+                const data = await getProducts();
+                const simplified = data.map((p: any) => `- ${p.name}: R$ ${p.price} (${p.category})`).join('\n');
+                setProductsString(simplified);
+            } catch (e) {
+                console.error("Erro ao carregar produtos para a IA", e);
+            }
         }
 
-        // Carregar histórico do LocalStorage
-        const savedMessages = localStorage.getItem('cyber_ia_messages');
-        if (savedMessages) {
+        const saved = localStorage.getItem('cyber_ia_messages');
+        if (saved) {
             try {
-                setMessages(JSON.parse(savedMessages));
+                setMessages(JSON.parse(saved));
             } catch (e) {
                 console.error("Erro ao carregar histórico da IA", e);
                 setMessages([{ role: 'ai', content: 'Olá! Sou o Cyber IA. Como posso ajudar você a montar seu setup ou consertar seu aparelho hoje?' }]);
@@ -41,7 +41,6 @@ export default function CyberIA() {
         preloadProducts();
     }, []);
 
-    // Salvar no LocalStorage sempre que as mensagens mudarem
     useEffect(() => {
         if (messages.length > 0) {
             localStorage.setItem('cyber_ia_messages', JSON.stringify(messages));
@@ -52,10 +51,8 @@ export default function CyberIA() {
         if (messages.length > 0) {
             const lastMsg = messages[messages.length - 1];
             if (lastMsg.role === 'ai' && lastMessageRef.current) {
-                // Scrolla para o topo da última mensagem da IA
                 lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else if (scrollRef.current) {
-                // Caso contrário (mensagem do usuário), scrolla para o final normal
                 scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
             }
         }
@@ -69,31 +66,28 @@ export default function CyberIA() {
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setLoading(true);
 
-        // Contexto para a IA
         const recentMessages = messages.slice(-4);
-        const context = `Você é o consultor Cyber IA da Cyber Tech em Bragança Paulista. 
+        const context = `Você é o consultor Cyber IA da Cyber Informática em Bragança Paulista. 
 Seu objetivo principal é ser amigável e resolver o problema do cliente.
 
 HISTÓRICO DA CONVERSA:
 ${recentMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'Você'}: ${m.content}`).join('\n')}
 
-ESTOQUE ATUAL (Para consulta se o cliente perguntar por produtos):
+ESTOQUE ATUAL:
 ${productsString || "Nenhum produto cadastrado no momento."}
 
-    Instruções de Personalidade e Comportamento:
-    1. FOCO NA DOR: Se o cliente fala de manutenção, foque APENAS em como ajudá-lo com o conserto. Não tente vender PCs ou Smartphones se ele está preocupado com um aparelho quebrado.
-    2. MENÇÃO AO VOUCHER: Mencione o brinde/voucher SOMENTE UMA VEZ em toda a conversa, de preferência no final quando o atendimento estiver sendo concluído, ou se ele demonstrar interesse em comprar algo. Não repita isso em todas as mensagens.
-    3. RECOMENDAÇÕES: Só recomende produtos do estoque se o cliente demonstrar interesse em COMPRAR ou em UPGRADES. 
-    4. NATURALIDADE: Responda como um técnico humano de Bragança. Seja direto, empático e evite textos que pareçam propaganda de rádio.
+    Instruções:
+    1. FOCO NA DOR: Se o cliente fala de manutenção, foque APENAS em como ajudá-lo com o conserto.
+    2. MENÇÃO AO VOUCHER: Mencione o voucher SOMENTE UMA VEZ, preferencialmente no final.
+    3. RECOMENDAÇÕES: Recomende produtos se o cliente demonstrar interesse.
+    4. NATURALIDADE: Responda como um técnico humano. Seja direto e empático.
     5. LIMITE: Respostas curtas (max 2-3 parágrafos).
 
-    Pergunta atual do cliente: ${userMsg}`;
+    Pergunta atual: ${userMsg}`;
 
         const aiResponse = await getGeminiResponse(context);
         setMessages(prev => {
             const newMessages = [...prev, { role: 'ai', content: aiResponse }];
-
-            // Disparar extração de lead em background (não bloqueia a UI)
             try {
                 fetch('/api/extract-lead', {
                     method: 'POST',
@@ -103,7 +97,6 @@ ${productsString || "Nenhum produto cadastrado no momento."}
             } catch (e) {
                 console.error("Erro ao disparar extração de lead", e);
             }
-
             return newMessages as { role: 'user' | 'ai', content: string }[];
         });
         setLoading(false);
@@ -117,21 +110,19 @@ ${productsString || "Nenhum produto cadastrado no momento."}
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="mb-4 w-[350px] h-[500px] glass rounded-3xl flex flex-col overflow-hidden border-white/20 shadow-2xl"
+                        className="mb-4 w-[350px] h-[550px] bg-white rounded-[2px] flex flex-col overflow-hidden border border-[#D4D2CF] shadow-2xl"
                     >
-                        {/* Header Chat */}
-                        <div className="p-4 bg-blue-600 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-white font-bold">
+                        <div className="p-6 bg-[#1A1A1A] flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-white font-display font-bold uppercase tracking-tight">
                                 <Bot size={20} />
                                 Cyber IA
                             </div>
-                            <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white">
+                            <button onClick={() => setIsOpen(false)} className="text-white/50 hover:text-white transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        {/* Messages */}
-                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/80">
+                        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#F8F7F5]">
                             {messages.map((msg, i) => {
                                 const isLastMessage = i === messages.length - 1;
                                 return (
@@ -140,7 +131,11 @@ ${productsString || "Nenhum produto cadastrado no momento."}
                                         ref={isLastMessage && msg.role === 'ai' ? lastMessageRef : null}
                                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                     >
-                                        <div className={`max-w-[80%] p-3 rounded-2xl text-sm whitespace-pre-wrap ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white/10 text-white/90 rounded-tl-none border border-white/5'}`}>
+                                        <div className={`max-w-[85%] p-4 rounded-[2px] text-sm whitespace-pre-wrap font-medium leading-relaxed ${
+                                            msg.role === 'user' 
+                                            ? 'bg-[#1A1A1A] text-white' 
+                                            : 'bg-white text-[#1A1A1A] border border-[#ECEAE6]'
+                                        }`}>
                                             {msg.content}
                                         </div>
                                     </div>
@@ -148,13 +143,15 @@ ${productsString || "Nenhum produto cadastrado no momento."}
                             })}
                             {loading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white/10 p-3 rounded-2xl animate-pulse text-white/40 text-xs">Pensando...</div>
+                                    <div className="bg-white p-4 rounded-[2px] border border-[#ECEAE6] flex items-center gap-2">
+                                        <Loader2 size={14} className="animate-spin text-[#AAAAAA]" />
+                                        <span className="text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest">PROCESSANDO...</span>
+                                    </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* Input */}
-                        <div className="p-4 border-t border-white/10 bg-black">
+                        <div className="p-6 border-t border-[#D4D2CF] bg-white">
                             <div className="relative">
                                 <input
                                     type="text"
@@ -162,11 +159,11 @@ ${productsString || "Nenhum produto cadastrado no momento."}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                     placeholder="Como posso ajudar?"
-                                    className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:border-blue-500 text-white"
+                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[#1A1A1A] text-[#1A1A1A] transition-all"
                                 />
                                 <button
                                     onClick={handleSend}
-                                    className="absolute right-1 top-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-all"
+                                    className="absolute right-2 top-2 w-8 h-8 bg-[#1A1A1A] rounded-[2px] flex items-center justify-center text-white hover:bg-black transition-all"
                                 >
                                     <Send size={14} />
                                 </button>
@@ -178,9 +175,9 @@ ${productsString || "Nenhum produto cadastrado no momento."}
 
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:scale-110 active:scale-95 transition-all animate-float"
+                className="w-16 h-16 bg-[#1A1A1A] rounded-[2px] flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all group"
             >
-                {isOpen ? <X className="text-white" /> : <Sparkles className="text-white" />}
+                {isOpen ? <X className="text-white" /> : <Sparkles className="text-white group-hover:animate-pulse" />}
             </button>
         </div>
     );

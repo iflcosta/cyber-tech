@@ -4,6 +4,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Copy, Send, Smartphone } from 'lucide-react';
 import { trackLead } from '@/lib/leads';
+import { brand } from '@/lib/brand';
+import { cn } from './ui/Button';
 
 interface LeadModalProps {
     isOpen: boolean;
@@ -76,11 +78,11 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                         initial={{ opacity: 0, scale: 0.9, y: 40 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                        className="glass w-full max-w-md my-auto rounded-3xl overflow-hidden border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative"
+                        className="bg-white w-full max-w-md my-auto rounded-[2px] overflow-hidden border border-[#D4D2CF] shadow-2xl relative"
                     >
                         <button
                             onClick={onClose}
-                            className="absolute top-4 right-4 text-white/40 hover:text-white z-20 p-2 hover:bg-white/5 rounded-full transition-all"
+                            className="absolute top-4 right-4 text-[#AAAAAA] hover:text-[#1A1A1A] z-20 p-2 hover:bg-[#F8F7F5] transition-all"
                         >
                             <X size={24} />
                         </button>
@@ -88,51 +90,51 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                         <div className="p-6 md:p-8">
                             {step === 'form' ? (
                                 <>
-                                    <div className="mb-4 md:mb-6">
-                                        <div className="inline-flex p-3 rounded-2xl bg-blue-500/10 text-blue-500 mb-4 border border-blue-500/20">
+                                    <div className="mb-8">
+                                        <div className="inline-flex p-3 rounded-[2px] bg-[#F8F7F5] text-[#1A1A1A] mb-6 border border-[#ECEAE6]">
                                             <Smartphone size={24} />
                                         </div>
-                                        <h2 className="text-2xl font-black italic uppercase">
+                                        <h2 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] leading-none">
                                             {interestType === 'voucher' ? (
-                                                <>GARANTA SEU <span className="text-blue-500">BRINDE</span></>
+                                                <>GARANTA SEU <span className="text-outline">BRINDE</span></>
                                             ) : interestType === 'manutencao' ? (
-                                                <>SOLICITAR <span className="text-blue-500">ORÇAMENTO</span></>
+                                                <>SOLICITAR <span className="text-outline">ORÇAMENTO</span></>
                                             ) : interestType === 'pc_build' ? (
-                                                <>ENVIAR <span className="text-blue-500">SETUP</span></>
+                                                <>ENVIAR <span className="text-outline">SETUP</span></>
                                             ) : (
-                                                <>TENHO <span className="text-blue-500">INTERESSE</span></>
+                                                <>TENHO <span className="text-outline">INTERESSE</span></>
                                             )}
                                         </h2>
-                                        <p className="text-white/40 text-sm mt-2">
+                                        <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest mt-4">
                                             {interestType === 'voucher'
-                                                ? "Deixe seu contato para resgatar seu voucher de brinde exclusivo."
+                                                ? "Contato para resgate de voucher exclusivo."
                                                 : interestType === 'pc_build'
-                                                    ? "Deixe seu contato para enviarmos o orçamento do seu PC Gamer."
-                                                    : "Deixe seu contato para que um de nossos especialistas entre em contato com você."}
+                                                    ? "Contato para orçamento do seu PC Gamer."
+                                                    : "Contato para atendimento especializado."}
                                         </p>
                                     </div>
 
                                     <form onSubmit={handleSubmit} className="space-y-4">
                                         <div>
-                                            <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">Nome Completo</label>
+                                            <label className="text-[10px] font-display font-bold uppercase tracking-[0.2em] text-[#888888] mb-2 block">Nome Completo</label>
                                             <input
                                                 required
                                                 type="text"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
                                                 placeholder="Ex: Iago Lopes"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-medium"
+                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2 block">WhatsApp</label>
+                                            <label className="text-[10px] font-display font-bold uppercase tracking-[0.2em] text-[#888888] mb-2 block">WhatsApp</label>
                                             <input
                                                 required
                                                 type="tel"
                                                 value={whatsapp}
                                                 onChange={(e) => setWhatsapp(e.target.value)}
                                                 placeholder="(11) 99999-9999"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-medium"
+                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
                                             />
                                         </div>
 
@@ -199,12 +201,12 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                         <button
                                             disabled={loading}
                                             type="submit"
-                                            className="w-full bg-white text-black font-black py-4 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-50 mt-4"
+                                            className="w-full btn-primary py-5 mt-6 flex items-center justify-center gap-3 disabled:opacity-50"
                                         >
                                             {loading ? 'PROCESSANDO...' : (
                                                 <>
                                                     {interestType === 'voucher' ? 'GERAR MEU VOUCHER' : 'ENVIAR SOLICITAÇÃO'}
-                                                    <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                                    <Send size={18} />
                                                 </>
                                             )}
                                         </button>
@@ -230,12 +232,12 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                             : "Obrigado! Um consultor entrará em contato via WhatsApp em breve."}
                                     </p>
 
-                                    <div className="bg-white/5 border border-dashed border-white/20 rounded-2xl p-6 mb-8 relative group overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
-                                        <div className="text-3xl font-black tracking-widest text-white mb-2">{voucher}</div>
+                                    <div className="bg-[#F8F7F5] border border-dashed border-[#D4D2CF] rounded-[2px] p-6 mb-8 relative group overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-[2px] bg-[#1A1A1A]" />
+                                        <div className="text-3xl font-display font-bold tracking-widest text-[#1A1A1A] mb-2">{voucher}</div>
                                         <button
                                             onClick={() => navigator.clipboard.writeText(voucher)}
-                                            className="inline-flex items-center gap-2 text-xs text-blue-400 font-bold hover:text-blue-300 transition-colors"
+                                            className="inline-flex items-center gap-2 text-[10px] text-[#888888] font-bold hover:text-[#1A1A1A] transition-colors uppercase tracking-widest"
                                         >
                                             <Copy size={12} /> COPIAR CÓDIGO
                                         </button>
@@ -244,16 +246,16 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                     <div className="space-y-3">
                                         <button
                                             onClick={onClose}
-                                            className="w-full py-4 bg-white/5 border border-white/10 rounded-xl text-white/60 text-xs font-bold uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all font-black"
+                                            className="w-full py-4 border border-[#ECEAE6] rounded-[2px] text-[#888888] text-[10px] font-bold uppercase tracking-widest hover:text-[#1A1A1A] hover:bg-[#F8F7F5] transition-all"
                                         >
                                             FECHAR JANELA
                                         </button>
 
                                         <a
-                                            href={`https://wa.me/5511999999999?text=${encodeURIComponent(whatsappMessage || `Olá Iago, acabei de fazer uma solicitação no site (Código: ${voucher}). Gostaria de mais informações!`)}`}
+                                            href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de fazer uma solicitação no site (Código: ${voucher}). Gostaria de mais informações!`)}`}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="w-full flex items-center justify-center gap-2 py-4 bg-green-500 hover:bg-green-600 rounded-xl text-white text-xs font-bold uppercase tracking-widest transition-all font-black shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                                            className="w-full btn-primary py-5 flex items-center justify-center gap-3"
                                             onClick={onClose}
                                         >
                                             <Smartphone size={16} /> INICIAR NEGOCIAÇÃO

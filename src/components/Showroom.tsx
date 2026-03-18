@@ -1,265 +1,203 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Cpu, Gamepad2, Loader2, Eye, X, ChevronLeft, ChevronRight, ShoppingBag, Smartphone } from "lucide-react";
-import { getProducts, Product } from "@/lib/products";
-import { supabase } from "@/lib/supabase";
-import { useCart } from "@/contexts/CartContext";
-import { motion, AnimatePresence } from "framer-motion";
 
+import { useState, useEffect, Suspense } from "react";
+import { X, Zap, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { getProducts } from "@/lib/products";
+import { ProductCard, Product } from "./ProductCard";
+import { FilterBar } from "./FilterBar";
+import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import LeadModal from "./LeadModal";
+import { AnimatePresence, motion } from "framer-motion";
+
+function ShowroomContent() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedGallery, setSelectedGallery] = useState<{ images: string[], index: number } | null>(null);
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category") || "all";
+
+  useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      const data = await getProducts();
+      const mapped = data.map((p: any) => ({
+        ...p,
+        category: p.category === 'kit' ? 'gamer' : p.category, 
+        price_estimate: p.price,
+        performance_score: p.performance_score || 0,
+        in_stock: (p.stock_quantity || 0) > 0,
+        image_url: p.image_urls?.[0]
+      }));
+      setProducts(mapped);
+      setLoading(false);
+    }
+    loadProducts();
+  }, []);
+
+  const handleInterest = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'ViewContent', {
+        content_name: product.name,
+        content_category: product.category,
+        content_ids: [product.id],
+        content_type: 'product',
+        value: product.price,
+        currency: 'BRL'
+      });
+    }
+  };
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedGallery) return;
+    setSelectedGallery({
+      ...selectedGallery,
+      index: (selectedGallery.index + 1) % selectedGallery.images.length
+    });
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedGallery) return;
+    setSelectedGallery({
+      ...selectedGallery,
+      index: (selectedGallery.index - 1 + selectedGallery.images.length) % selectedGallery.images.length
+    });
+  };
+
+  const filteredProducts = products.filter((p) => 
+    category === "all" ? true : p.category === category
+  );
+
+  return (
+    <div className="container mx-auto px-4">
+      <LeadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        interestType="venda"
+        customDescription={selectedProduct ? `Interesse no Produto: ${selectedProduct.name} (R$ ${selectedProduct.price.toLocaleString('pt-BR')})` : undefined}
+        whatsappMessage={selectedProduct ? `Olá, tenho interesse no *${selectedProduct.name}* que vi no site por *R$ ${selectedProduct.price.toLocaleString('pt-BR')}*. Pode me ajudar?` : undefined}
+      />
+
+      <AnimatePresence>
+        {selectedGallery && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-10"
+            onClick={() => setSelectedGallery(null)}
+          >
+            <button
+              className="absolute top-6 right-6 text-white/50 hover:text-white z-50 p-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-[2px] transition-all"
+              onClick={() => setSelectedGallery(null)}
+            >
+              <X size={24} />
+            </button>
+
+            {selectedGallery.images.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-[2px] transition-all"
+                  onClick={prevImage}
+                >
+                  <ChevronLeft size={32} />
+                </button>
+                <button
+                  className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-[2px] transition-all"
+                  onClick={nextImage}
+                >
+                  <ChevronRight size={32} />
+                </button>
+              </>
+            )}
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative max-w-5xl w-full h-full flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedGallery.images[selectedGallery.index]}
+                alt="Product View"
+                className="max-w-full max-h-full object-contain rounded-[2px] shadow-2xl border border-white/10"
+              />
+
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 pb-6">
+                {selectedGallery.images.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-4 h-1 rounded-[2px] transition-all ${i === selectedGallery.index ? 'bg-white' : 'bg-white/20'}`}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+        <div>
+          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-none uppercase">
+            SHOWROOM <br />
+            <span className="text-outline">PERFORMANCE</span>
+          </h2>
+          <p className="text-[#888888] max-w-xl text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+            Workstations de IA e setups de alto desempenho configurados para máxima produtividade.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-[#1A1A1A] font-display font-bold tracking-tight uppercase">
+          <Zap className="h-5 w-5" />
+          <span>CYBER INFORMÁTICA PRECISION</span>
+        </div>
+      </div>
+
+      <FilterBar />
+
+      {loading ? (
+        <div className="flex h-96 items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-[#1A1A1A]" />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProducts.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
+                onInterest={() => handleInterest(product)}
+              />
+            ))}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[#D4D2CF] rounded-[2px] bg-white/50 text-[#AAAAAA]">
+              <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado nesta categoria.</p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Showroom() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [selectedGallery, setSelectedGallery] = useState<{ images: string[], index: number } | null>(null);
-    const { addToCart } = useCart();
-
-    useEffect(() => {
-        async function loadProducts() {
-            const data = await getProducts();
-            setProducts(data);
-            setLoading(false);
-
-            if (data.length > 0) {
-                for (const product of data) {
-                    supabase.from('products')
-                        .update({ views: (product.views || 0) + 1 })
-                        .eq('id', product.id)
-                        .then();
-                }
-            }
-        }
-        loadProducts();
-    }, []);
-
-    const handleInterest = (product: Product) => {
-        setSelectedProduct(product);
-        setIsModalOpen(true);
-
-        // Disparar evento do Meta Pixel se disponível
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'ViewContent', {
-                content_name: product.name,
-                content_category: product.category,
-                content_ids: [product.id],
-                content_type: 'product',
-                value: product.price,
-                currency: 'BRL'
-            });
-        }
-    };
-
-    const nextImage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!selectedGallery) return;
-        setSelectedGallery({
-            ...selectedGallery,
-            index: (selectedGallery.index + 1) % selectedGallery.images.length
-        });
-    };
-
-    const prevImage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!selectedGallery) return;
-        setSelectedGallery({
-            ...selectedGallery,
-            index: (selectedGallery.index - 1 + selectedGallery.images.length) % selectedGallery.images.length
-        });
-    };
-
-    const getGradient = (category: string) => {
-        switch (category) {
-            case 'kit': return "from-blue-600 to-cyan-500";
-            case 'smartphone': return "from-purple-600 to-pink-500";
-            case 'notebook': return "from-orange-500 to-red-500";
-            default: return "from-gray-500 to-slate-700";
-        }
-    };
-
-    const formatSpecs = (specs: any) => {
-        if (!specs) return "";
-        if (typeof specs === 'string') return specs;
-        return Object.values(specs).join(" + ");
-    };
-
-    return (
-        <section id="kits" className="py-12 md:py-24">
-            <LeadModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                interestType="venda"
-                customDescription={selectedProduct ? `Interesse no Produto: ${selectedProduct.name} (R$ ${selectedProduct.price.toLocaleString('pt-BR')})` : undefined}
-                whatsappMessage={selectedProduct ? `Olá Iago, tenho interesse no *${selectedProduct.name}* que vi no site por *R$ ${selectedProduct.price.toLocaleString('pt-BR')}*. Pode me ajudar?` : undefined}
-            />
-
-            {/* Gallery Modal */}
-            <AnimatePresence>
-                {selectedGallery && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
-                        onClick={() => setSelectedGallery(null)}
-                    >
-                        <button
-                            className="absolute top-6 right-6 text-white/50 hover:text-white z-50 p-2 glass rounded-full"
-                            onClick={() => setSelectedGallery(null)}
-                        >
-                            <X size={24} />
-                        </button>
-
-                        {selectedGallery.images.length > 1 && (
-                            <>
-                                <button
-                                    className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-3 glass rounded-full transition-all"
-                                    onClick={prevImage}
-                                >
-                                    <ChevronLeft size={32} />
-                                </button>
-                                <button
-                                    className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-3 glass rounded-full transition-all"
-                                    onClick={nextImage}
-                                >
-                                    <ChevronRight size={32} />
-                                </button>
-                            </>
-                        )}
-
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="relative max-w-5xl w-full h-full flex items-center justify-center"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <img
-                                src={selectedGallery.images[selectedGallery.index]}
-                                alt="Gallery Insight"
-                                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/10"
-                            />
-
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-2 pb-6">
-                                {selectedGallery.images.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className={`w-2 h-2 rounded-full transition-all ${i === selectedGallery.index ? 'bg-blue-500 w-6' : 'bg-white/20'}`}
-                                    />
-                                ))}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <div className="container mx-auto px-4">
-                <div className="text-center mb-8 md:mb-16">
-                    <h2 className="text-3xl md:text-4xl font-black mb-3 md:mb-4 tracking-tighter uppercase italic">
-                        SHOWROOM <span className="text-blue-500 italic">DINÂMICO</span>
-                    </h2>
-                    <p className="text-sm md:text-base text-white/40 max-w-xl mx-auto">Produtos e setups disponíveis em tempo real diretamente do nosso estoque.</p>
-                </div>
-
-                {loading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="animate-spin text-blue-500" size={48} />
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-                        {products.map((product) => (
-                            <div key={product.id} className="group relative glass rounded-3xl overflow-hidden border-white/5 card-hover flex flex-col h-full">
-                                {product.image_urls && product.image_urls.length > 0 ? (
-                                    <div
-                                        className="relative w-full h-40 md:h-56 bg-black/50 overflow-hidden cursor-zoom-in"
-                                        onClick={() => setSelectedGallery({ images: product.image_urls || [], index: 0 })}
-                                    >
-                                        <img
-                                            src={product.image_urls[0]}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <div className="bg-blue-600/20 backdrop-blur-md border border-blue-500/30 p-2 md:p-3 rounded-full text-blue-400">
-                                                <Eye size={20} className="w-4 h-4 md:w-5 md:h-5" />
-                                            </div>
-                                        </div>
-                                        {product.image_urls.length > 1 && (
-                                            <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 bg-black/80 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-1 rounded text-[8px] md:text-[10px] uppercase font-bold text-white/80 border border-white/10 shadow-lg">
-                                                + {product.image_urls.length - 1} FOTOS
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className={`h-2 md:h-3 w-full bg-gradient-to-r ${getGradient(product.category)}`} />
-                                )}
-                                <div className="p-4 md:p-8 flex-1 flex flex-col">
-                                    <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
-                                        <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest bg-white/5 border border-white/10 px-1.5 py-0.5 md:px-2 rounded">
-                                            {product.category}
-                                        </span>
-                                        {product.stock_quantity > 0 ? (
-                                            <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest bg-green-500/20 text-green-400 border border-green-500/20 px-1.5 py-0.5 md:px-2 rounded">
-                                                Em Estoque
-                                            </span>
-                                        ) : (
-                                            <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 md:px-2 rounded">
-                                                Esgotado
-                                            </span>
-                                        )}
-                                    </div>
-                                    <h3 className="text-xl md:text-2xl font-black mb-1.5 md:mb-2 leading-tight">{product.name}</h3>
-                                    <p className="text-xs md:text-sm text-white/50 mb-4 md:mb-6 flex items-center gap-1.5 md:gap-2 line-clamp-2 md:line-clamp-none">
-                                        <Cpu size={12} className="md:w-[14px] md:h-[14px] text-blue-400 flex-shrink-0" />
-                                        <span className="truncate md:whitespace-normal">{formatSpecs(product.specs)}</span>
-                                    </p>
-                                    <div className="mt-auto pt-4 flex flex-col gap-3">
-                                        <div className="text-xl md:text-2xl font-black text-white">
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    handleInterest(product);
-                                                    if (typeof window !== 'undefined' && (window as any).fbq) {
-                                                        (window as any).fbq('track', 'Contact', { content_name: product.name });
-                                                    }
-                                                }}
-                                                className="bg-white/5 text-white/70 px-2 py-2 md:py-2.5 rounded-xl font-bold text-[10px] md:text-xs uppercase hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-1.5 border border-white/10"
-                                            >
-                                                <Smartphone className="w-3 h-3 md:w-4 md:h-4" />
-                                                <span className="hidden sm:inline">RETIRAR LOJA</span>
-                                                <span className="sm:hidden">LOJA</span>
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    addToCart(product);
-                                                    if (typeof window !== 'undefined' && (window as any).fbq) {
-                                                        (window as any).fbq('track', 'AddToCart', { 
-                                                            content_name: product.name,
-                                                            value: product.price,
-                                                            currency: 'BRL'
-                                                        });
-                                                    }
-                                                }}
-                                                className="bg-blue-600 text-white px-2 py-2 md:py-2.5 rounded-xl font-bold text-[10px] md:text-xs uppercase hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-blue-600/20"
-                                            >
-                                                <ShoppingBag className="w-3 h-3 md:w-4 md:h-4" />
-                                                <span className="hidden sm:inline">ENVIAR FRETE</span>
-                                                <span className="sm:hidden">FRETE</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {!loading && products.length === 0 && (
-                    <p className="text-center text-white/20 italic">Nenhum produto cadastrado no momento.</p>
-                )}
-            </div>
-        </section>
-    );
+  return (
+    <section id="showroom" className="py-24 bg-[#F0EFED] relative overflow-hidden">
+      <Suspense fallback={
+        <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[#1A1A1A]">
+          <Loader2 className="h-12 w-12 animate-spin" />
+        </div>
+      }>
+        <ShowroomContent />
+      </Suspense>
+    </section>
+  );
 }

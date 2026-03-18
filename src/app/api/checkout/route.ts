@@ -36,7 +36,7 @@ export async function POST(request: Request) {
                 })),
                 meio_pagamento: paymentMethod === 'pix' ? 'Pix' : 
                                 paymentMethod === 'pay_at_store' ? 'A combinar' : 'Cartão de Crédito',
-                vendedor: 'Site Cyber Tech'
+                vendedor: 'Site Cyber Inform�tica'
             }
         };
 

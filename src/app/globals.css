@@ -1,13 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;600&family=Barlow+Condensed:wght@700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 100%;
+  --background: #F0EFED;
+  --foreground: #1A1A1A;
+  --surface: #FFFFFF;
+  --surface-2: #F8F7F5;
+  --border: #D4D2CF;
+  --border-sub: #ECEAE6;
+  --ink: #1A1A1A;
+  --ink-mid: #555555;
+  --muted: #888888;
+  --ghost: #AAAAAA;
+  --radius: 2px;
 }
 
 body {
-  background-color: rgb(0, 0, 0);
-  color: rgb(255, 255, 255);
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Barlow', sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+@utility font-display {
+  font-family: 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
 }
 
 @layer base {
@@ -18,29 +39,52 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95;
+    @apply bg-[#1A1A1A] hover:bg-[#333333] text-white font-bold py-3 px-6 transition-all duration-[130ms] ease-linear tracking-[0.15em];
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    border-radius: var(--radius);
   }
   
+  .btn-ghost {
+    @apply bg-transparent border border-[#D4D2CF] text-[#666666] hover:border-[#888888] hover:text-[#1A1A1A] font-bold py-3 px-6 transition-all duration-[130ms] ease-linear tracking-[0.15em];
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+  }
+
   .glass {
-    @apply bg-black/40 backdrop-blur-md border border-white/10;
+    @apply bg-white/80 backdrop-blur-md border border-[#D4D2CF];
+    border-radius: var(--radius);
   }
   
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500;
+  .text-outline {
+    -webkit-text-stroke: 1px #AAAAAA;
+    color: transparent;
   }
-  
-  .card-hover {
-    @apply transition-all duration-300 hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(37,99,235,0.2)];
+
+  .hero-texture {
+    background-image: repeating-linear-gradient(90deg, transparent, transparent 48px, 
+      rgba(0,0,0,.03) 48px, rgba(0,0,0,.03) 49px),
+      repeating-linear-gradient(0deg, transparent, transparent 48px, 
+      rgba(0,0,0,.03) 48px, rgba(0,0,0,.03) 49px);
+  }
+
+  .card-industrial {
+    @apply bg-white border border-[#D4D2CF] transition-all duration-[130ms] ease-linear;
+    border-radius: var(--radius);
+  }
+
+  .card-industrial:hover {
+    @apply border-[#888888];
   }
 }
 
 /* Animations */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }

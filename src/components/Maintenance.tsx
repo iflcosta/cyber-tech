@@ -1,78 +1,56 @@
 "use client";
-import { useState } from "react";
-import { Smartphone, Laptop, Monitor, CheckCircle2 } from "lucide-react";
-import LeadModal from "./LeadModal";
 
-const services = [
-    {
-        title: "Smartphones",
-        icon: <Smartphone className="text-blue-500" size={32} />,
-        desc: "Troca de tela, bateria e reparos em placa (Android/iOS).",
-        price: "A partir de R$ 150"
-    },
-    {
-        title: "Notebooks",
-        icon: <Laptop className="text-blue-500" size={32} />,
-        desc: "Formatação, upgrade de SSD/RAM e limpeza preventiva.",
-        price: "A partir de R$ 120"
-    },
-    {
-        title: "Computadores",
-        icon: <Monitor className="text-blue-500" size={32} />,
-        desc: "Diagnóstico, limpeza, troca de peças e upgrades em desktops.",
-        price: "A partir de R$ 100"
-    }
+import { CheckCircle2, ShieldCheck, Clock, MapPin } from "lucide-react";
+import { MaintenanceForm } from "./MaintenanceForm";
+import { Badge } from "./ui/Badge";
+
+const features = [
+  { icon: <ShieldCheck className="text-[#1A1A1A]" />, text: "Garantia de 90 dias em todos os reparos" },
+  { icon: <Clock className="text-[#1A1A1A]" />, text: "Orçamento rápido em até 15 minutos" },
+  { icon: <MapPin className="text-[#1A1A1A]" />, text: "Localização central em Bragança Paulista" },
 ];
 
 export default function Maintenance() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  return (
+    <section id="manutencao" className="py-24 bg-[#F8F7F5] relative overflow-hidden border-y border-[#D4D2CF]">
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          <div>
+            <Badge variant="secondary" className="mb-6">SERVIÇOS TÉCNICOS</Badge>
+            <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-none uppercase">
+              ASSISTÊNCIA <br />
+              <span className="text-outline">ULTRA RÁPIDA</span>
+            </h2>
+            <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest mb-10 max-w-lg leading-relaxed">
+              De smartphones a workstations complexas, nossa equipe certificada resolve problemas com precisão cirúrgica e agilidade digital.
+            </p>
 
-    return (
-        <section id="assistencia" className="py-12 md:py-24 bg-zinc-950/50">
-            <LeadModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                interestType="manutencao"
-            />
-            <div className="container mx-auto px-4">
-                <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
-                    <div className="flex-1">
-                        <h2 className="text-4xl font-black mb-6 italic tracking-tight uppercase">
-                            ASSISTÊNCIA <span className="text-blue-500">EXPRESSA</span>
-                        </h2>
-                        <p className="text-white/60 text-lg mb-8">
-                            Reparos rápidos com garantia Cyber. Seu dispositivo pronto para o jogo em tempo recorde.
-                        </p>
-
-                        <ul className="space-y-4 mb-10">
-                            {["Peças Originais", "Garantia de 90 dias", "Técnicos Certificados", "Orçamento em 5 minutos"].map((item) => (
-                                <li key={item} className="flex items-center gap-3 text-white/80 font-medium">
-                                    <CheckCircle2 size={18} className="text-blue-500" />
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
-
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-white text-black font-black px-8 py-4 rounded-lg hover:bg-blue-500 hover:text-white transition-all w-full md:w-auto"
-                        >
-                            SOLICITAR ORÇAMENTO AGORA
-                        </button>
-                    </div>
-
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                        {services.map((service) => (
-                            <div key={service.title} className="glass p-8 rounded-2xl card-hover border-white/5">
-                                <div className="mb-4">{service.icon}</div>
-                                <h3 className="text-xl font-bold mb-2">{service.title}</h3>
-                                <p className="text-white/40 text-sm mb-4">{service.desc}</p>
-                                <div className="text-blue-400 font-black">{service.price}</div>
-                            </div>
-                        ))}
-                    </div>
+            <div className="space-y-4 mb-12">
+              {features.map((f, i) => (
+                <div key={i} className="flex items-center gap-4 text-[#555555] font-display font-bold uppercase tracking-tight text-sm">
+                  <div className="bg-white p-2 rounded-[2px] border border-[#ECEAE6]">{f.icon}</div>
+                  {f.text}
                 </div>
+              ))}
             </div>
-        </section>
-    );
+
+            <div className="p-10 bg-white rounded-[2px] border border-[#D4D2CF] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-[2px] h-full bg-[#1A1A1A]" />
+              <h4 className="font-display font-bold text-[#1A1A1A] mb-4 uppercase tracking-tight">PROVA DE ENTREGA DIGITAL</h4>
+              <p className="text-[10px] text-[#888888] font-bold uppercase tracking-widest leading-relaxed">
+                Segurança total: cada entrega é registrada com fotos e checkout digital, garantindo que seu equipamento volte exatamente como deveria.
+              </p>
+            </div>
+          </div>
+
+          <div className="lg:sticky lg:top-24">
+            <MaintenanceForm />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
+
+
+

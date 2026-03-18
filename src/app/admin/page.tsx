@@ -5,10 +5,13 @@ import { supabase } from '@/lib/supabase';
 import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { syncTinyProductsToSupabase } from '@/lib/tiny';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'products' | 'reviews'>('dashboard');
     const [leads, setLeads] = useState<any[]>([]);
+    const [maintenanceOrders, setMaintenanceOrders] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,6 +38,14 @@ export default function AdminDashboard() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [installable, setInstallable] = useState(false);
     const router = useRouter();
+
+    async function fetchMaintenanceOrders() {
+        const { data } = await supabase
+            .from('maintenance_orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (data) setMaintenanceOrders(data);
+    }
 
     async function fetchLeads() {
         setLoading(true);
@@ -78,6 +89,7 @@ export default function AdminDashboard() {
         }
         checkUser();
         fetchLeads();
+        fetchMaintenanceOrders();
         fetchProducts();
         fetchReviews();
 
@@ -266,7 +278,7 @@ export default function AdminDashboard() {
         setIsAnalyzing(true);
         const comments = reviews.map(r => `[Nota ${r.rating}/5]: ${r.comment}`).join('\n---\n');
 
-        const prompt = `Como um analista de dados especialista em CX (Customer Experience), analise os seguintes depoimentos dos clientes da Cyber Tech:
+        const prompt = `Como um analista de dados especialista em CX (Customer Experience), analise os seguintes depoimentos dos clientes da Cyber Inform�tica:
         
         DEPOIMENTOS:
         ${comments}
@@ -295,7 +307,7 @@ export default function AdminDashboard() {
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>
                         <h1 className="text-3xl font-black italic tracking-tighter">CYBER <span className="text-blue-500">ADMIN</span></h1>
-                        <p className="text-white/40">Controle total da Cyber Tech</p>
+                        <p className="text-white/40">Controle total da Cyber Inform�tica</p>
                     </div>
 
                     <div className="flex items-center gap-6">
@@ -355,6 +367,12 @@ export default function AdminDashboard() {
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'reviews' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
                     >
                         <Star size={18} /> Depoimentos
+                    </button>
+                    <button
+                        onClick={() => (setActiveTab as any)('maintenance')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${(activeTab as string) === 'maintenance' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                    >
+                        <RefreshCw size={18} /> Manutenção
                     </button>
                 </div>
 
@@ -880,6 +898,62 @@ export default function AdminDashboard() {
                             </table>
                         </div>
                     </div>
+                ) : (activeTab as any) === 'maintenance' ? (
+                    <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
+                        <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
+                            <div className="flex items-center gap-2">
+                                <RefreshCw size={20} className="text-blue-500" /> Ordens de Manutenção
+                            </div>
+                            <button onClick={fetchMaintenanceOrders} className="p-2 hover:bg-white/10 rounded-full transition-all">
+                                <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+                            </button>
+                        </div>
+                        <div className="overflow-x-auto text-sm">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
+                                        <th className="p-6">Voucher / Cliente</th>
+                                        <th className="p-6">Equipamento</th>
+                                        <th className="p-6">Status</th>
+                                        <th className="p-6">Criado em</th>
+                                        <th className="p-6 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/10">
+                                    {maintenanceOrders.length > 0 ? maintenanceOrders.map((order) => (
+                                        <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
+                                            <td className="p-6">
+                                                <div className="font-mono text-blue-400 font-bold mb-1">{order.voucher_code}</div>
+                                                <div className="font-bold">{order.customer_name}</div>
+                                                <div className="text-[10px] text-white/40">{order.customer_phone}</div>
+                                            </td>
+                                            <td className="p-6">
+                                                <span className="text-[10px] font-black uppercase tracking-widest bg-white/5 px-2 py-1 rounded">
+                                                    {order.equipment_type}
+                                                </span>
+                                                <p className="text-[10px] text-white/40 mt-2 max-w-xs italic line-clamp-1">{order.problem_description}</p>
+                                            </td>
+                                            <td className="p-6">
+                                                <Badge variant={order.status === 'delivered' ? 'success' : 'default'} className="lowercase">
+                                                    {order.status}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-6 text-white/40 text-[10px]">
+                                                {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                                            </td>
+                                            <td className="p-6 text-right">
+                                                <Button size="sm" variant="outline" className="h-8 text-[10px]">VER DETALHES</Button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={5} className="p-12 text-center text-white/20 italic">Nenhuma ordem encontrada.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 ) : (
                     <div className="space-y-6">
                         <div className="flex justify-end gap-4">
@@ -1005,7 +1079,7 @@ export default function AdminDashboard() {
 
                             <div className="relative">
                                 {/* Logo */}
-                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">CYBER TECH • Bragança Paulista</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Cyber Inform�tica • Bragança Paulista</div>
 
                                 {/* Service Type Badge */}
                                 <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/20' :

@@ -13,13 +13,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { brand } from "@/lib/brand";
+
 export const metadata: Metadata = {
-  title: "Cyber Tech | Assistência e PC Gamer em Bragança Paulista",
-  description: "Especialistas em manutenção de smartphones e montagem de setups gamers de alta performance.",
-  keywords: ["Manutenção de Celular Bragança Paulista", "PC Gamer Bragança", "Assistência Técnica Notebook", "Cyber Tech"],
-  authors: [{ name: "Cyber Tech" }],
+  title: brand.name + " | " + brand.slogan,
+  description: brand.seo.description,
+  keywords: brand.seo.keywords,
+  authors: [{ name: brand.name }],
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
+  alternates: { canonical: "https://cyberinformatica.com.br" },
 };
 
 export default function RootLayout({
@@ -28,10 +31,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#1A1A1A" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Meta Pixel Code */}
@@ -85,7 +88,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
+        className="antialiased"
       >
         <Providers>
           {children}

@@ -1,205 +1,208 @@
 "use client";
-import { useState } from 'react';
-import { Cpu, CircuitBoard, Smartphone, MonitorPlay, Check, Rocket, HelpCircle } from 'lucide-react';
+
+import { useState, useEffect } from 'react';
+import { Cpu, CircuitBoard, MonitorPlay, Zap, HardDrive, Package, MessageSquare, RefreshCcw, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
-import LeadModal from './LeadModal';
+import { BuildSlot } from './BuildSlot';
+import { Button } from './ui/Button';
+import { Card, CardContent } from './ui/Card';
+import { brand } from '@/lib/brand';
+import { BUILDER_TIERS } from '@/lib/builder/tiers';
 
-const CPUS = [
-    { id: 'start', label: 'Básico (Home/Office)', desc: 'Intel i3 ou Ryzen 3', price: 800, score: 1 },
-    { id: 'mid', label: 'Intermediário (Gamer)', desc: 'Intel i5 ou Ryzen 5', price: 1400, score: 2 },
-    { id: 'high', label: 'Profissional (Stream/Edit)', desc: 'Intel i7 ou Ryzen 7', price: 2200, score: 3 },
-    { id: 'ultra', label: 'Extremo (Workstation)', desc: 'Intel i9 ou Ryzen 9', price: 3500, score: 4 },
-];
-
-const GPUS = [
-    { id: 'integrated', label: 'Integrada (Somente Vídeo)', desc: 'Gráficos do Processador', price: 0, score: 0 },
-    { id: 'entry', label: 'Entrada (Jogos Leves)', desc: 'GTX 1650 / RX 6400', price: 1100, score: 1 },
-    { id: 'mid', label: 'Performance (Full HD/2K)', desc: 'RTX 3060 / 4060', price: 2300, score: 2 },
-    { id: 'high', label: 'Ultra (4K/Competitivo)', desc: 'RTX 4070 / 4080', price: 4500, score: 3 },
-];
-
-const RAMS = [
-    { id: '8gb', label: '8GB (Básico)', price: 150, score: 1 },
-    { id: '16gb', label: '16GB (Padrão Gamer)', price: 300, score: 2 },
-    { id: '32gb', label: '32GB (Profissional)', price: 600, score: 3 },
-];
-
-const GAMES = [
-    { name: 'LoL / Valorant', minScore: 1 },
-    { name: 'Fortnite / CS2', minScore: 2 },
-    { name: 'GTA V / FIFA', minScore: 2 },
-    { name: 'Warzone 2.0', minScore: 3 },
-    { name: 'Cyberpunk 2077', minScore: 4 },
-    { name: 'Renderização 3D', minScore: 5 },
+const SLOTS = [
+  { id: 'cpu', label: 'Processador', icon: <Cpu size={14} />, tiers: BUILDER_TIERS.cpu },
+  { id: 'gpu', label: 'Placa de Vídeo', icon: <MonitorPlay size={14} />, tiers: BUILDER_TIERS.gpu },
+  { id: 'mobo', label: 'Placa-Mãe', icon: <CircuitBoard size={14} />, tiers: BUILDER_TIERS.mobo },
+  { id: 'ram', label: 'Memória RAM', icon: <Zap size={14} />, tiers: BUILDER_TIERS.ram },
+  { id: 'storage', label: 'Armazenamento', icon: <HardDrive size={14} />, tiers: BUILDER_TIERS.storage },
+  { id: 'psu', label: 'Fonte (PSU)', icon: <Zap size={14} />, tiers: BUILDER_TIERS.psu },
+  { id: 'case', label: 'Gabinete', icon: <Package size={14} />, tiers: BUILDER_TIERS.case },
 ];
 
 export default function PCBuilder() {
-    const [cpu, setCpu] = useState(CPUS[1]);
-    const [gpu, setGpu] = useState(GPUS[1]);
-    const [ram, setRam] = useState(RAMS[1]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [build, setBuild] = useState<Record<string, any>>({});
+  const [mounted, setMounted] = useState(false);
+  const [activeSlot, setActiveSlot] = useState<string | null>(null);
 
-    const calculateTotal = () => {
-        // Base cost (Case, PSU, SSD, Mobo estimate)
-        const baseCost = 1500;
-        return baseCost + cpu.price + gpu.price + ram.price;
-    };
+  useEffect(() => {
+    const saved = localStorage.getItem('cyber-builder-v3');
+    if (saved) {
+      try {
+        setBuild(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load build", e);
+      }
+    }
+    setMounted(true);
+  }, []);
 
-    const calculateScore = () => {
-        return cpu.score + gpu.score + (ram.score >= 2 ? 1 : 0);
-    };
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('cyber-builder-v3', JSON.stringify(build));
+    }
+  }, [build, mounted]);
 
-    const totalScore = calculateScore();
-    const totalPrice = calculateTotal();
-    const pcDescription = `Processador: ${cpu.desc}\nVídeo: ${gpu.desc}\nRAM: ${ram.label}\nEstimativa: R$ ${totalPrice.toLocaleString('pt-BR')}`;
-    const selectedDescription = `Olá Iago, gostaria de um orçamento para este setup:\n\n- *Processador:* ${cpu.desc}\n- *Vídeo:* ${gpu.desc}\n- *RAM:* ${ram.label}\n\n*Estimativa:* R$ ${totalPrice.toLocaleString('pt-BR')}\n\nPode verificar a disponibilidade?`;
+  const handleSelect = (slotId: string, tier: any) => {
+    setBuild(prev => ({ ...prev, [slotId]: tier }));
+    setActiveSlot(null);
+  };
 
-    return (
-        <section id="monte-seu-pc" className="py-12 md:py-20 bg-black relative overflow-hidden">
-            <LeadModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                interestType="pc_build"
-                customDescription={pcDescription}
-                whatsappMessage={selectedDescription}
-            />
-            {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_rgba(37,99,235,0.1),_transparent_70%)] pointer-events-none" />
+  const handleClear = (slotId: string) => {
+    const newBuild = { ...build };
+    delete newBuild[slotId];
+    setBuild(newBuild);
+  };
 
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-10 md:mb-16">
-                    <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase italic">
-                        MONTE SEU <span className="text-blue-500">SETUP</span>
-                    </h2>
-                    <p className="text-white/40 max-w-xl mx-auto">
-                        Escolha o nível de performance que você deseja e receba uma estimativa personalizada.
-                    </p>
+  const resetBuild = () => {
+    setBuild({});
+    localStorage.removeItem('cyber-builder-v3');
+  };
+
+  const laborCost = brand.builder?.laborCost || 150;
+  const partsTotal = Object.values(build).reduce((acc, comp) => acc + (comp.price || 0), 0);
+  const estimatedTotal = partsTotal + (partsTotal > 0 ? laborCost : 0);
+
+  const generateWhatsAppLink = () => {
+    let message = "Olá! Gostaria de um orçamento para montagem de PC:\n\n*Componentes selecionados:*\n";
+    
+    SLOTS.forEach(slot => {
+      const selected = build[slot.id];
+      if (selected) {
+        message += `• ${slot.label}: ${selected.model} (~R$ ${selected.price})\n`;
+      }
+    });
+
+    message += `\n*Estimativa de peças:* R$ ${partsTotal.toFixed(2)}`;
+    message += `\n*Mão de obra:* ~R$ ${laborCost}`;
+    message += `\n*Total estimado:* R$ ${estimatedTotal.toFixed(2)}`;
+    message += `\n\nPodem verificar disponibilidade?`;
+
+    return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`;
+  };
+
+  if (!mounted) return null;
+
+  return (
+    <section id="monte-seu-pc" className="py-24 bg-[#F0EFED] relative min-h-screen hero-texture">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row gap-12">
+          {/* Builder Grid */}
+          <div className="flex-1 space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-[#1A1A1A] leading-none mb-4">
+                  SIMULADOR <br />
+                  <span className="text-outline">DE MONTAGEM</span>
+                </h2>
+                <div className="flex items-center gap-2 text-[#888888] text-[10px] font-bold uppercase tracking-widest">
+                  <Info size={14} />
+                  <span>Configuração educativa para estimativa de mercado</span>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    {/* Selectors */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* CPU Selection */}
-                        <div className="space-y-3 sm:space-y-4">
-                            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                                <CircuitBoard className="text-blue-500" /> Processador (O Cérebro)
-                            </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                {CPUS.map((option) => (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => setCpu(option)}
-                                        className={`p-3 sm:p-4 rounded-xl border text-left transition-all relative overflow-hidden group ${cpu.id === option.id
-                                            ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]'
-                                            : 'bg-white/5 border-white/10 hover:border-white/30 text-white/60'
-                                            }`}
-                                    >
-                                        <div className="font-bold text-base sm:text-lg">{option.label}</div>
-                                        <div className={`text-xs sm:text-sm ${cpu.id === option.id ? 'text-blue-200' : 'text-white/40'}`}>{option.desc}</div>
-                                        {cpu.id === option.id && <div className="absolute top-2 right-2"><Check size={16} /></div>}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* GPU Selection */}
-                        <div className="space-y-3 sm:space-y-4">
-                            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                                <MonitorPlay className="text-purple-500" /> Placa de Vídeo (Os Gráficos)
-                            </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                {GPUS.map((option) => (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => setGpu(option)}
-                                        className={`p-3 sm:p-4 rounded-xl border text-left transition-all relative overflow-hidden group ${gpu.id === option.id
-                                            ? 'bg-purple-600 border-purple-500 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)]'
-                                            : 'bg-white/5 border-white/10 hover:border-white/30 text-white/60'
-                                            }`}
-                                    >
-                                        <div className="font-bold text-base sm:text-lg">{option.label}</div>
-                                        <div className={`text-xs sm:text-sm ${gpu.id === option.id ? 'text-purple-200' : 'text-white/40'}`}>{option.desc}</div>
-                                        {gpu.id === option.id && <div className="absolute top-2 right-2"><Check size={16} /></div>}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* RAM Selection */}
-                        <div className="space-y-3 sm:space-y-4">
-                            <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
-                                <Cpu className="text-green-500" /> Memória RAM (Velocidade)
-                            </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                                {RAMS.map((option) => (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => setRam(option)}
-                                        className={`p-3 sm:p-4 rounded-xl border text-left transition-all relative overflow-hidden group ${ram.id === option.id
-                                            ? 'bg-green-600 border-green-500 text-white shadow-[0_0_20px_rgba(22,163,74,0.3)]'
-                                            : 'bg-white/5 border-white/10 hover:border-white/30 text-white/60'
-                                            }`}
-                                    >
-                                        <div className="font-bold text-base sm:text-lg">{option.label}</div>
-                                        {ram.id === option.id && <div className="absolute top-2 right-2"><Check size={16} /></div>}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Summary Panel */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-20 md:top-24 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 backdrop-blur-xl">
-                            <h3 className="text-xl md:text-2xl font-black italic mb-4 md:mb-6 border-b border-white/10 pb-3 md:pb-4">
-                                RESUMO DO <span className="text-blue-500">SETUP</span>
-                            </h3>
-
-                            <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
-                                <div className="flex justify-between items-center text-xs md:text-sm">
-                                    <span className="text-white/60">Processador</span>
-                                    <span className="font-bold text-white text-right max-w-[60%]">{cpu.desc}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs md:text-sm">
-                                    <span className="text-white/60">VGA</span>
-                                    <span className="font-bold text-white text-right max-w-[60%]">{gpu.desc}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs md:text-sm">
-                                    <span className="text-white/60">RAM</span>
-                                    <span className="font-bold text-white">{ram.label}</span>
-                                </div>
-                            </div>
-
-                            <div className="bg-black/40 rounded-xl p-4 mb-6 md:mb-8">
-                                <div className="text-[10px] md:text-xs text-white/40 uppercase font-bold tracking-widest mb-1">Estimativa de Investimento</div>
-                                <div className="text-2xl md:text-3xl font-black text-white">
-                                    ~ R$ {totalPrice.toLocaleString('pt-BR')}
-                                </div>
-                                <div className="text-[10px] md:text-xs text-white/30 mt-2 leading-tight">*Valor aproximado. Pode variar.</div>
-                            </div>
-
-                            <div className="space-y-3 mb-6 md:mb-8">
-                                <div className="text-[10px] md:text-xs text-white/40 uppercase font-bold tracking-widest mb-2">Performance:</div>
-                                <div className="flex flex-wrap gap-1.5 md:gap-2">
-                                    {GAMES.filter(g => totalScore >= g.minScore).map((game, idx) => (
-                                        <span key={idx} className="bg-green-500/20 text-green-400 text-[10px] md:text-xs font-bold px-2 py-1 rounded border border-green-500/20 flex items-center gap-1">
-                                            <Check size={10} /> {game.name}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                className="w-full bg-green-500 hover:bg-green-600 text-white font-black py-3 md:py-4 rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 text-sm md:text-base mb-1"
-                            >
-                                <Rocket size={18} />
-                                ENVIAR PARA ORÇAMENTO
-                            </button>
-                        </div>
-                    </div>
-                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={resetBuild} className="gap-2 self-start">
+                <RefreshCcw size={14} /> RECOMECAR
+              </Button>
             </div>
-        </section>
-    );
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {SLOTS.map((slot) => (
+                <div key={slot.id} className="space-y-4">
+                  <BuildSlot
+                    label={slot.label}
+                    icon={slot.icon}
+                    selected={build[slot.id]}
+                    onSelect={() => setActiveSlot(activeSlot === slot.id ? null : slot.id)}
+                    onClear={() => handleClear(slot.id)}
+                  />
+                  
+                  {activeSlot === slot.id && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="grid grid-cols-1 gap-2 pl-4 border-l-2 border-[#D4D2CF] overflow-hidden"
+                    >
+                      {slot.tiers.map((tier: any) => (
+                        <button
+                          key={tier.id}
+                          onClick={() => handleSelect(slot.id, tier)}
+                          className={`flex items-center justify-between p-3 text-left transition-all duration-130 border hover:border-[#1A1A1A] ${
+                            build[slot.id]?.id === tier.id ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#555555] border-[#ECEAE6]"
+                          }`}
+                        >
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest leading-none mb-1">{tier.label}</div>
+                            <div className="text-xs font-medium">{tier.model}</div>
+                          </div>
+                          <div className="text-xs font-bold">R$ {tier.price}</div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar Summary */}
+          <div className="lg:w-96">
+            <div className="sticky top-24 space-y-4">
+              <Card className="border-[#1A1A1A] shadow-none">
+                <CardContent className="p-8">
+                  <h3 className="text-xl font-display font-bold tracking-tight mb-8">
+                    RESUMO DO ORÇAMENTO
+                  </h3>
+
+                  <div className="space-y-4 mb-8">
+                    {SLOTS.map(slot => build[slot.id] && (
+                      <div key={slot.id} className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
+                        <span className="text-[#888888]">{slot.label}</span>
+                        <span className="text-[#1A1A1A]">R$ {build[slot.id].price}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-4 pt-6 border-t border-[#D4D2CF]">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#555555] font-bold uppercase tracking-widest">Subtotal Peças</span>
+                      <span className="font-bold text-[#1A1A1A]">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(partsTotal)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#555555] font-bold uppercase tracking-widest">Mão de Obra</span>
+                      <span className="font-bold text-[#1A1A1A]">
+                        ~ {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(laborCost)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-end pt-4">
+                      <span className="text-[10px] font-bold text-[#888888] uppercase tracking-widest">Estimativa total</span>
+                      <span className="text-3xl font-display font-bold text-[#1A1A1A]">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(estimatedTotal)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <a 
+                    href={generateWhatsAppLink()}
+                    target="_blank"
+                    className={`w-full mt-8 btn-primary flex items-center justify-center gap-2 py-4 ${
+                      Object.keys(build).length === 0 ? "opacity-30 pointer-events-none" : ""
+                    }`}
+                  >
+                    <MessageSquare size={18} /> CONSULTAR DISPONIBILIDADE
+                  </a>
+                </CardContent>
+              </Card>
+
+              <div className="p-6 bg-[#F8F7F5] border border-[#D4D2CF] rounded-[2px] border-dashed">
+                 <p className="text-[10px] text-[#888888] leading-relaxed uppercase font-light tracking-wide">
+                   Valores estimados de mercado. Sujeito a disponibilidade na loja. Confirme preço final via WhatsApp ou presencialmente.
+                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
