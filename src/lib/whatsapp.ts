@@ -32,10 +32,10 @@ export async function sendWhatsAppMessage({ to, body, templateName, variables }:
 }
 
 /**
- * Formats a message for the "Service Ready" notification
+ * Formats a message for the "Service Ready" nãotification
  */
 export function formatReadyMessage(customerName: string, voucherCode: string, equipment: string) {
-  return `Olá ${customerName}! 🚀 Seu ${equipment} (Voucher: ${voucherCode}) está pronto para retirada na Cyber Inform�tica.\n\nHorário de funcionamento: ${brand.openingHours}\nLocal: ${brand.address.street}, ${brand.address.number}`;
+  return `Olá ${customerName}! 🚀 Seu ${equipment} (Voucher: ${voucherCode}) está pronto para retirada na Cyber Inform�tica.\n\nHorário de funcionamento: ${brand.openingHours}\nLocal: ${brand.address.street}, ${brand.address.number}`;
 }
 
 /**

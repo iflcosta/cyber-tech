@@ -11,7 +11,7 @@ import { brand } from "@/lib/brand";
 
 const equipmentTypes = [
   { id: "smartphone", label: "Smartphone", icon: <Smartphone size={16} /> },
-  { id: "notebook", label: "Notebook", icon: <Laptop size={16} /> },
+  { id: "nãotebook", label: "Nãotebook", icon: <Laptop size={16} /> },
   { id: "pc", label: "Desktop/PC", icon: <Monitor size={16} /> },
 ];
 
@@ -40,7 +40,7 @@ export function MaintenanceForm() {
   };
 
   const handleWhatsAppRedirect = () => {
-    const message = `Olá! Acabei de gerar o voucher *${voucher}* no site.\n\n*Equipamento:* ${formData.equipment}\n*Problema:* ${formData.problem}\n\nPodem me orientar sobre os próximos passos?`;
+    const message = `Olá! Acabei de gerar o voucher *${voucher}* não site.\n\n*Equipamento:* ${formData.equipment}\n*Problema:* ${formData.problem}\n\nPodem me orientar sobre os próximos passos?`;
     window.open(`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
@@ -69,7 +69,7 @@ export function MaintenanceForm() {
                   <div className={`${formData.equipment === type.id ? "text-white" : "text-[#1A1A1A] group-hover:scale-110 transition-transform"}`}>
                     {type.icon}
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] leading-none">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] leading-nãone">
                     {type.label}
                   </span>
                 </button>
@@ -92,10 +92,10 @@ export function MaintenanceForm() {
               <input
                 required
                 type="text"
-                placeholder="Qual seu nome?"
+                placeholder="Qual seu nãome?"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
+                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
               />
               <input
                 required
@@ -103,12 +103,12 @@ export function MaintenanceForm() {
                 placeholder="WhatsApp (com DDD)"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
+                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
               />
               <textarea
                 required
                 placeholder="Descreva brevemente o que aconteceu..."
-                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium min-h-[120px]"
+                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium min-h-[120px]"
                 value={formData.problem}
                 onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
               />
@@ -132,7 +132,7 @@ export function MaintenanceForm() {
               VOUCHER <span className="text-outline">GERADO!</span>
             </h3>
             <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest mb-10">
-              Apresente este código na nossa loja para atendimento prioritário.
+              Apresente este código na nãossa loja para atendimento prioritário.
             </p>
 
             <div className="bg-[#F8F7F5] border border-dashed border-[#D4D2CF] rounded-[2px] p-8 mb-10 relative group overflow-hidden">

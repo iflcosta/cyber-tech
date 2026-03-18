@@ -80,8 +80,8 @@ function ShowroomContent() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         interestType="venda"
-        customDescription={selectedProduct ? `Interesse no Produto: ${selectedProduct.name} (R$ ${selectedProduct.price.toLocaleString('pt-BR')})` : undefined}
-        whatsappMessage={selectedProduct ? `Olá, tenho interesse no *${selectedProduct.name}* que vi no site por *R$ ${selectedProduct.price.toLocaleString('pt-BR')}*. Pode me ajudar?` : undefined}
+        customDescription={selectedProduct ? `Interesse não Produto: ${selectedProduct.name} (R$ ${selectedProduct.price.toLocaleString('pt-BR')})` : undefined}
+        whatsappMessage={selectedProduct ? `Olá, tenho interesse não *${selectedProduct.name}* que vi não site por *R$ ${selectedProduct.price.toLocaleString('pt-BR')}*. Pode me ajudar?` : undefined}
       />
 
       <AnimatePresence>
@@ -144,7 +144,7 @@ function ShowroomContent() {
 
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
         <div>
-          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-none uppercase">
+          <h2 className="text-4xl md:text-7xl font-display font-bold mb-4 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
             SHOWROOM <br />
             <span className="text-outline">PERFORMANCE</span>
           </h2>

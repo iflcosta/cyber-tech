@@ -5,7 +5,7 @@ import { cn } from "./ui/Button";
 
 interface BuildSlotProps {
   label: string;
-  icon: React.ReactNode;
+  icon: React.ReactNãode;
   selected?: any;
   onSelect: () => void;
   onClear: () => void;

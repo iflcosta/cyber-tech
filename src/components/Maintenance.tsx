@@ -17,12 +17,12 @@ export default function Maintenance() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
             <Badge variant="secondary" className="mb-6">SERVIÇOS TÉCNICOS</Badge>
-            <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-none uppercase">
+            <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
               ASSISTÊNCIA <br />
               <span className="text-outline">ULTRA RÁPIDA</span>
             </h2>
             <p className="text-[#888888] text-[10px] font-bold uppercase tracking-widest mb-10 max-w-lg leading-relaxed">
-              De smartphones a workstations complexas, nossa equipe certificada resolve problemas com precisão cirúrgica e agilidade digital.
+              De smartphones a workstations complexas, nãossa equipe certificada resolve problemas com precisão cirúrgica e agilidade digital.
             </p>
 
             <div className="space-y-4 mb-12">

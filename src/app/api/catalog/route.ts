@@ -11,7 +11,7 @@ export async function GET() {
         if (error) throw error;
 
         // Formatação para o padrão de catálogo da Meta (Facebook/Instagram)
-        // Nota: O padrão oficial aceita CSV, XML ou JSON. JSON é mais robusto para Next.js.
+        // Nãota: O padrão oficial aceita CSV, XML ou JSON. JSON é mais robusto para Next.js.
         const catalog = products.map(p => ({
             id: p.id,
             title: p.name,
@@ -21,7 +21,7 @@ export async function GET() {
             price: `${p.price} BRL`,
             link: `https://cyber-tech.vercel.app/showroom`, // Idealmente seria o link direto do produto
             image_link: p.image_urls?.[0] || 'https://placehold.co/600x600?text=Cyber+Tech',
-            brand: 'Cyber Inform�tica',
+            brand: 'Cyber Inform�tica',
             google_product_category: p.category === 'smartphone' ? 'Electronics > Communications > Telephony > Mobile Phones' : 'Electronics > Computers',
             content_type: 'product'
         }));

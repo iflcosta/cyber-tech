@@ -21,7 +21,7 @@ export interface TinyOrderData {
 export async function createTinyOrder(data: TinyOrderData) {
     if (!TINY_API_TOKEN) {
         console.warn('TINY_API_TOKEN não configurado. Simulando criação de pedido.');
-        return { status: 'simulated', id: `TINY-SIM-${Date.now()}` };
+        return { status: 'simulated', id: `TINY-SIM-${Date.nãow()}` };
     }
 
     try {
@@ -60,7 +60,7 @@ export async function createTinyOrder(data: TinyOrderData) {
             <pedidos>
                 <pedido>
                     <cliente>
-                        <nome><![CDATA[${data.client_name}]]></nome>
+                        <nãome><![CDATA[${data.client_name}]]></nãome>
                         <tipo_pessoa>F</tipo_pessoa>
                         <fone><![CDATA[${data.whatsapp}]]></fone>
                     </cliente>
@@ -97,15 +97,15 @@ export async function createTinyOrder(data: TinyOrderData) {
 
         const result = await response.json();
 
-        if (result.retorno.status === 'Erro') {
-            console.error('Erro na API Tiny:', result.retorno.erros);
-            throw new Error(`Tiny API Error: ${result.retorno.erros[0]?.erro}`);
+        if (result.retornão.status === 'Erro') {
+            console.error('Erro na API Tiny:', result.retornão.erros);
+            throw new Error(`Tiny API Error: ${result.retornão.erros[0]?.erro}`);
         }
 
         return {
             status: 'success',
-            id: result.retorno.registros.registro.numero,
-            tinyInfo: result.retorno.registros.registro
+            id: result.retornão.registros.registro.numero,
+            tinyInfo: result.retornão.registros.registro
         };
 
     } catch (error) {
@@ -125,7 +125,7 @@ export async function getTinyPaymentLink(orderId: string) {
 
     try {
         // Em um cenário real, você faria um POST para obter os dados do contas a receber / link de pagamento
-        // Essa é uma simulação do payload retornado pelo gateway configurado no Tiny
+        // Essa é uma simulação do payload retornado pelo gateway configurado não Tiny
         return {
             pixCode: '00020126360014br.gov.bcb.pix0114+55119999999995204000053039865802BR5915Nexus Tech6009Sao Paulo62070503***6304A1B2',
             checkoutUrl: '#'
@@ -137,7 +137,7 @@ export async function getTinyPaymentLink(orderId: string) {
 }
 
 /**
- * Busca a lista de produtos ativos no Tiny ERP
+ * Busca a lista de produtos ativos não Tiny ERP
  */
 export async function fetchTinyProducts() {
     if (!TINY_API_TOKEN) throw new Error("TINY_API_TOKEN não configurado.");
@@ -155,14 +155,14 @@ export async function fetchTinyProducts() {
 
         const result = await response.json();
 
-        if (result.retorno.status === 'Erro') {
-            if (result.retorno.erros[0]?.erro.includes('não encontrou')) return [];
-            throw new Error(`Tiny API Error: ${result.retorno.erros[0]?.erro}`);
+        if (result.retornão.status === 'Erro') {
+            if (result.retornão.erros[0]?.erro.includes('não encontrou')) return [];
+            throw new Error(`Tiny API Error: ${result.retornão.erros[0]?.erro}`);
         }
 
-        return result.retorno.produtos.map((p: any) => p.produto);
+        return result.retornão.produtos.map((p: any) => p.produto);
     } catch (error) {
-        console.error('Erro ao buscar produtos no Tiny:', error);
+        console.error('Erro ao buscar produtos não Tiny:', error);
         throw error;
     }
 }
@@ -177,14 +177,14 @@ export async function syncTinyProductsToSupabase() {
 
         const productsToUpsert = tinyProducts.map((tp: any) => ({
             sku: tp.codigo,
-            name: tp.nome,
+            name: tp.nãome,
             price: tp.preco,
             stock_quantity: tp.saldo,
             category: 'hardware', // Categoria padrão, pode ser ajustada via mapeamento
             olist_product_id: tp.id?.toString()
         }));
 
-        // Upsert no Supabase usando o SKU como chave de conflito
+        // Upsert não Supabase usando o SKU como chave de conflito
         const { data, error } = await supabase
             .from('products')
             .upsert(productsToUpsert, { onConflict: 'sku' });

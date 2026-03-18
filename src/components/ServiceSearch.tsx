@@ -39,7 +39,7 @@ export default function ServiceSearch() {
             if (!data) setError('Pedido não encontrado.');
             else setResult(data);
         } catch (err) {
-            setError('Pedido não encontrado. Verifique o código e tente novamente.');
+            setError('Pedido não encontrado. Verifique o código e tente nãovamente.');
         } finally {
             setLoading(false);
         }
@@ -52,7 +52,7 @@ export default function ServiceSearch() {
         <section id="rastreio" className="py-24 bg-[#F8F7F5] border-y border-[#D4D2CF]">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-none uppercase">
+                    <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[#1A1A1A] leading-nãone uppercase">
                         RASTREIO DE <br />
                         <span className="text-outline">MANUTENÇÃO</span>
                     </h2>
@@ -70,7 +70,7 @@ export default function ServiceSearch() {
                                 placeholder="DIGITE O CÓDIGO DO PEDIDO (EX: CYB-1234)"
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value.toUpperCase())}
-                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-4 pl-12 pr-4 text-[#1A1A1A] font-display font-bold uppercase tracking-tight focus:outline-none focus:border-[#1A1A1A] transition-all"
+                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-4 pl-12 pr-4 text-[#1A1A1A] font-display font-bold uppercase tracking-tight focus:outline-nãone focus:border-[#1A1A1A] transition-all"
                             />
                         </div>
                         <button
@@ -154,7 +154,7 @@ export default function ServiceSearch() {
                                                     <h4 className="font-display font-bold uppercase tracking-tight text-[#1A1A1A]">PIX COPIA E COLA</h4>
                                                 </div>
                                                 <div className="bg-[#F8F7F5] p-4 rounded-[2px] flex items-center gap-3 border border-[#ECEAE6] overflow-hidden group">
-                                                    <span className="text-xs font-mono text-[#555555] truncate flex-1">{paymentInfo.pixCode}</span>
+                                                    <span className="text-xs font-monão text-[#555555] truncate flex-1">{paymentInfo.pixCode}</span>
                                                     <button
                                                         onClick={() => { navigator.clipboard.writeText(paymentInfo.pixCode); setCopiedPix(true); setTimeout(() => setCopiedPix(false), 2000); }}
                                                         className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors p-2"
@@ -172,7 +172,7 @@ export default function ServiceSearch() {
                                             </div>
                                             <a
                                                 href={paymentInfo.checkoutUrl}
-                                                target="_blank" rel="noreferrer"
+                                                target="_blank" rel="nãoreferrer"
                                                 className="btn-primary w-full py-5 text-center"
                                             >
                                                 PAGAR ONLINE
@@ -183,9 +183,9 @@ export default function ServiceSearch() {
                                     <div className="mt-10 pt-10 border-t border-[#ECEAE6] flex flex-col md:flex-row items-center justify-between gap-6">
                                         <p className="text-[10px] text-[#AAAAAA] font-bold uppercase tracking-widest max-w-sm leading-relaxed">
                                             <strong>Prefere pagar na retirada?</strong><br />
-                                            Aceitamos dinheiro e cartão maquininha direto na nossa loja.
+                                            Aceitamos dinheiro e cartão maquininha direto na nãossa loja.
                                         </p>
-                                        <a href={`https://wa.me/5511999999999?text=Oi, estou indo retirar meu pedido ${result.order_id}!`} target="_blank" rel="noreferrer" className="text-[10px] text-[#1A1A1A] font-bold uppercase tracking-[0.2em] border-b border-[#1A1A1A] pb-1 hover:border-transparent transition-all">
+                                        <a href={`https://wa.me/5511999999999?text=Oi, estou indo retirar meu pedido ${result.order_id}!`} target="_blank" rel="nãoreferrer" className="text-[10px] text-[#1A1A1A] font-bold uppercase tracking-[0.2em] border-b border-[#1A1A1A] pb-1 hover:border-transparent transition-all">
                                             AVISAR NO WHATSAPP &rarr;
                                         </a>
                                     </div>

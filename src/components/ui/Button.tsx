@@ -18,8 +18,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children as React.ReactElement<any>, {
         className: cn(
-          "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none duration-[130ms] ease-linear",
-          "bg-[#1A1A1A] text-white hover:bg-[#333333]", // Default variant if not passed
+          "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-nãone duration-[130ms] ease-linear",
+          "bg-[#1A1A1A] text-white hover:bg-[#333333]", // Default variant if nãot passed
           className,
           (children as React.ReactElement<any>).props.className
         ),
@@ -48,7 +48,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none duration-[130ms] ease-linear",
+          "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-nãone duration-[130ms] ease-linear",
           variants[variant],
           sizes[size],
           className

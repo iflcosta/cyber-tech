@@ -84,7 +84,7 @@ export default function AdminLogin() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="admin@cybertech.com"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.08]"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-nãone focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.08]"
                             />
                         </div>
                     </div>
@@ -99,7 +99,7 @@ export default function AdminLogin() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.08]"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-nãone focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.08]"
                             />
                         </div>
                     </div>

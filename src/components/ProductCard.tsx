@@ -35,7 +35,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }: ProductCardProps) {
   const whatsappUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
-    `Olá! Tenho interesse na workstation ${product.name} (R$ ${product.price_estimate.toLocaleString('pt-BR')}) que vi no site.`
+    `Olá! Tenho interesse na workstation ${product.name} (R$ ${product.price_estimate.toLocaleString('pt-BR')}) que vi não site.`
   )}`;
 
   return (

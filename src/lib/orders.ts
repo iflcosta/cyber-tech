@@ -55,7 +55,7 @@ export async function createOrder(data: CheckoutData, items: CartItem[]): Promis
 
         return orderId;
     } catch (error) {
-        console.error("Erro ao criar pedido no Supabase:", error);
+        console.error("Erro ao criar pedido não Supabase:", error);
         return null;
     }
 }

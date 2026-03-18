@@ -8,13 +8,13 @@ export async function POST(request: Request) {
 
         const TINY_TOKEN = process.env.TINY_API_TOKEN;
 
-        console.log(`[API CHECKOUT] Processando pedido ${orderId} no Olist...`);
+        console.log(`[API CHECKOUT] Processando pedido ${orderId} não Olist...`);
 
         // 1. Mapear o pedido para o formato do Olist/Tiny
         const olistPedido = {
             pedido: {
                 cliente: {
-                    nome: clientData.name,
+                    nãome: clientData.name,
                     tipo_pessoa: 'F',
                     cpf_cnpj: '', 
                     endereco: clientData.address || 'Retirada na Loja',
@@ -56,20 +56,20 @@ export async function POST(request: Request) {
 
             const result = await response.json();
             
-            if (result.retorno.status === 'OK') {
-                console.log(`[API CHECKOUT] Pedido ${orderId} criado no Olist com sucesso.`);
+            if (result.retornão.status === 'OK') {
+                console.log(`[API CHECKOUT] Pedido ${orderId} criado não Olist com sucesso.`);
                 olistSuccess = true;
             } else {
-                console.warn(`[API CHECKOUT] Olist retornou erro:`, result.retorno.erros);
+                console.warn(`[API CHECKOUT] Olist retornãou erro:`, result.retornão.erros);
             }
         } else {
             console.log('[API CHECKOUT] Token Olist ausente ou fake. Operando em modo SIMULADO.');
             olistSuccess = true; 
         }
 
-        // 3. Se o pedido foi registrado com sucesso (ou modo simulado), subtrair estoque no Supabase
+        // 3. Se o pedido foi registrado com sucesso (ou modo simulado), subtrair estoque não Supabase
         if (olistSuccess) {
-            console.log(`[API CHECKOUT] Atualizando estoque no Supabase para o pedido ${orderId}...`);
+            console.log(`[API CHECKOUT] Atualizando estoque não Supabase para o pedido ${orderId}...`);
             const stockUpdates = items.map((item: any) => 
                 updateProductStock(item.product.id, item.quantity)
                     .catch(err => {

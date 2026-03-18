@@ -74,13 +74,13 @@ HISTÓRICO DA CONVERSA:
 ${recentMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'Você'}: ${m.content}`).join('\n')}
 
 ESTOQUE ATUAL:
-${productsString || "Nenhum produto cadastrado no momento."}
+${productsString || "Nenhum produto cadastrado não momento."}
 
     Instruções:
     1. FOCO NA DOR: Se o cliente fala de manutenção, foque APENAS em como ajudá-lo com o conserto.
-    2. MENÇÃO AO VOUCHER: Mencione o voucher SOMENTE UMA VEZ, preferencialmente no final.
+    2. MENÇÃO AO VOUCHER: Mencione o voucher SOMENTE UMA VEZ, preferencialmente não final.
     3. RECOMENDAÇÕES: Recomende produtos se o cliente demonstrar interesse.
-    4. NATURALIDADE: Responda como um técnico humano. Seja direto e empático.
+    4. NATURALIDADE: Responda como um técnico humanão. Seja direto e empático.
     5. LIMITE: Respostas curtas (max 2-3 parágrafos).
 
     Pergunta atual: ${userMsg}`;
@@ -159,7 +159,7 @@ ${productsString || "Nenhum produto cadastrado no momento."}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                     placeholder="Como posso ajudar?"
-                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[#1A1A1A] text-[#1A1A1A] transition-all"
+                                    className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] py-3 pl-4 pr-12 text-sm focus:outline-nãone focus:border-[#1A1A1A] text-[#1A1A1A] transition-all"
                                 />
                                 <button
                                     onClick={handleSend}

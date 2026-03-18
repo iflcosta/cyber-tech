@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     const [editingProduct, setEditingProduct] = useState<any | null>(null);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-    // Modal de Comissões
+    // Modal de ComissÃµes
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [selectedLeadForCommission, setSelectedLeadForCommission] = useState<any>(null);
     const [commissionForm, setCommissionForm] = useState({
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error("Erro ao buscar leads no Admin:", error.message);
+            console.error("Erro ao buscar leads não Admin:", error.message);
         }
         if (data) {
             console.log("Leads carregados:", data.length);
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
         fetchProducts();
         fetchReviews();
 
-        // Inscreve para atualizações em tempo real nos leads
+        // Inscreve para atualizaÃ§Ãµes em tempo real nãos leads
         const channel = supabase
             .channel('db-leads-changes')
             .on('postgres_changes',
@@ -210,29 +210,29 @@ export default function AdminDashboard() {
 
             if (error) throw error;
 
-            alert("✅ Produto salvo com sucesso!");
+            alert("â Produto salvo com sucesso!");
             setShowProductForm(false);
             setEditingProduct(null);
             fetchProducts();
         } catch (err: any) {
             console.error("Erro ao salvar produto:", err);
-            alert("❌ Erro ao salvar produto: " + (err.message || "Verifique as permissões do banco."));
+            alert("â Erro ao salvar produto: " + (err.message || "Verifique as permissÃµes do banco."));
         } finally {
             setLoading(false);
         }
     };
 
     const handleSyncProducts = async () => {
-        if (!confirm("Isso irá atualizar o estoque e preços baseados no Tiny ERP (Olist). Prosseguir?")) return;
+        if (!confirm("Isso irÃ¡ atualizar o estoque e preÃ§os baseados não Tiny ERP (Olist). Prosseguir?")) return;
         
         setLoading(true);
         try {
             const result = await syncTinyProductsToSupabase();
-            alert(`✅ Sincronização concluída! ${result.count} produtos atualizados/inseridos.`);
+            alert(`â SincronizaÃ§Ã£o concluÃ­da! ${result.count} produtos atualizados/inseridos.`);
             fetchProducts();
         } catch (err: any) {
-            console.error("Erro na sincronização:", err);
-            alert("❌ Falha na sincronização: " + (err.message || "Verifique as credenciais do Tiny no .env"));
+            console.error("Erro na sincronizaÃ§Ã£o:", err);
+            alert("â Falha na sincronizaÃ§Ã£o: " + (err.message || "Verifique as credenciais do Tiny não .env"));
         } finally {
             setLoading(false);
         }
@@ -244,11 +244,11 @@ export default function AdminDashboard() {
             try {
                 const { error } = await supabase.from('products').delete().eq('id', id);
                 if (error) throw error;
-                alert("✅ Produto excluído!");
+                alert("â Produto excluÃ­do!");
                 fetchProducts();
             } catch (err: any) {
                 console.error("Erro ao excluir produto:", err);
-                alert("❌ Erro ao excluir: " + (err.message || "Erro desconhecido."));
+                alert("â Erro ao excluir: " + (err.message || "Erro desconhecido."));
             } finally {
                 setLoading(false);
             }
@@ -276,9 +276,9 @@ export default function AdminDashboard() {
     const analyzeReviews = async () => {
         if (reviews.length === 0) return;
         setIsAnalyzing(true);
-        const comments = reviews.map(r => `[Nota ${r.rating}/5]: ${r.comment}`).join('\n---\n');
+        const comments = reviews.map(r => `[Nãota ${r.rating}/5]: ${r.comment}`).join('\n---\n');
 
-        const prompt = `Como um analista de dados especialista em CX (Customer Experience), analise os seguintes depoimentos dos clientes da Cyber Inform�tica:
+        const prompt = `Como um analista de dados especialista em CX (Customer Experience), analise os seguintes depoimentos dos clientes da Cyber Informática:
         
         DEPOIMENTOS:
         ${comments}
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
         1. Resuma o sentimento geral em uma frase impactante.
         2. Liste 3 pontos fortes citados.
         3. Liste 1 ponto de melhoria se houver.
-        4. Dê um 'Score de Satisfação' de 0 a 100.
+        4. DÃª um 'Score de SatisfaÃ§Ã£o' de 0 a 100.
         
         FORMATO: Responda em Markdown curto e direto para um dashboard administrativo.`;
 
@@ -296,7 +296,7 @@ export default function AdminDashboard() {
             const response = await getGeminiResponse(prompt);
             setSentimentAnalysis(response);
         } catch (e) {
-            console.error("Erro na análise de sentimento:", e);
+            console.error("Erro na anÃ¡lise de sentimento:", e);
         }
         setIsAnalyzing(false);
     };
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>
                         <h1 className="text-3xl font-black italic tracking-tighter">CYBER <span className="text-blue-500">ADMIN</span></h1>
-                        <p className="text-white/40">Controle total da Cyber Inform�tica</p>
+                        <p className="text-white/40">Controle total da Cyber Informática</p>
                     </div>
 
                     <div className="flex items-center gap-6">
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
                         <div className="glass p-4 rounded-2xl flex items-center gap-4 bg-white/5 border border-white/10">
                             <TrendingUp className="text-green-500" />
                             <div>
-                                <div className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Minhas Comissões (Iago)</div>
+                                <div className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Minhas ComissÃµes (Iago)</div>
                                 <div className="text-xl font-black">R$ {leads.filter(l => l.status === 'converted').reduce((acc, l) => acc + (l.commission_value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
                             </div>
                         </div>
@@ -372,7 +372,7 @@ export default function AdminDashboard() {
                         onClick={() => (setActiveTab as any)('maintenance')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${(activeTab as string) === 'maintenance' ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
                     >
-                        <RefreshCw size={18} /> Manutenção
+                        <RefreshCw size={18} /> ManutenÃ§Ã£o
                     </button>
                 </div>
 
@@ -393,11 +393,11 @@ export default function AdminDashboard() {
                             <div className="glass p-6 rounded-3xl bg-white/5 border border-white/10">
                                 <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Total de Leads</div>
                                 <div className="text-3xl font-black text-white">{leads.length}</div>
-                                <div className="text-[10px] text-blue-400 font-bold mt-2 uppercase tracking-tight">Captação em tempo real</div>
+                                <div className="text-[10px] text-blue-400 font-bold mt-2 uppercase tracking-tight">CaptaÃ§Ã£o em tempo real</div>
                             </div>
 
                             <div className="glass p-6 rounded-3xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Taxa de Conversão</div>
+                                <div className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-1">Taxa de ConversÃ£o</div>
                                 <div className="text-3xl font-black text-white">
                                     {leads.length > 0 ? ((leads.filter(l => l.status === 'converted').length / leads.length) * 100).toFixed(1) : 0}%
                                 </div>
@@ -425,7 +425,7 @@ export default function AdminDashboard() {
                                 <h3 className="text-sm font-black uppercase italic mb-6">Volume por Segmento</h3>
                                 <div className="space-y-6">
                                     {[
-                                        { label: 'Manutenção', key: 'manutencao', color: 'bg-blue-500' },
+                                        { label: 'ManutenÃ§Ã£o', key: 'manutencao', color: 'bg-blue-500' },
                                         { label: 'PC Builder', key: 'pc_build', color: 'bg-purple-500' },
                                         { label: 'Vendas Diretas', key: 'venda', color: 'bg-green-500' },
                                         { label: 'Brindes/Voucher', key: 'voucher', color: 'bg-yellow-500' }
@@ -453,19 +453,19 @@ export default function AdminDashboard() {
                             {/* Marketing Channels */}
                             <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
                                 <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
-                                    📡 Canais de Marketing
+                                    ð¡ Canais de Marketing
                                 </h3>
                                 <div className="space-y-4">
                                     {(() => {
                                         const channelMap: Record<string, { label: string; color: string; emoji: string }> = {
-                                            instagram: { label: 'Instagram', color: 'bg-pink-500', emoji: '📸' },
-                                            facebook: { label: 'Facebook', color: 'bg-blue-600', emoji: '👥' },
-                                            google_ads: { label: 'Google Ads', color: 'bg-yellow-500', emoji: '🔍' },
-                                            google_organico: { label: 'Google Orgânico', color: 'bg-green-500', emoji: '🌱' },
-                                            whatsapp: { label: 'WhatsApp', color: 'bg-green-400', emoji: '💬' },
-                                            tiktok: { label: 'TikTok', color: 'bg-cyan-400', emoji: '🎵' },
-                                            direto: { label: 'Acesso Direto', color: 'bg-white/40', emoji: '🔗' },
-                                            outros: { label: 'Outros', color: 'bg-white/20', emoji: '🌐' },
+                                            instagram: { label: 'Instagram', color: 'bg-pink-500', emoji: 'ð¸' },
+                                            facebook: { label: 'Facebook', color: 'bg-blue-600', emoji: 'ð¥' },
+                                            google_ads: { label: 'Google Ads', color: 'bg-yellow-500', emoji: 'ð' },
+                                            google_organico: { label: 'Google OrgÃ¢nico', color: 'bg-green-500', emoji: 'ð±' },
+                                            whatsapp: { label: 'WhatsApp', color: 'bg-green-400', emoji: 'ð¬' },
+                                            tiktok: { label: 'TikTok', color: 'bg-cyan-400', emoji: 'ðµ' },
+                                            direto: { label: 'Acesso Direto', color: 'bg-white/40', emoji: 'ð' },
+                                            outros: { label: 'Outros', color: 'bg-white/20', emoji: 'ð' },
                                         };
 
                                         const channels = leads.reduce((acc: Record<string, number>, l) => {
@@ -481,7 +481,7 @@ export default function AdminDashboard() {
                                         }
 
                                         return sorted.map(([key, count]) => {
-                                            const ch = channelMap[key] || { label: key, color: 'bg-white/20', emoji: '📌' };
+                                            const ch = channelMap[key] || { label: key, color: 'bg-white/20', emoji: 'ð' };
                                             const pct = leads.length > 0 ? (count / leads.length) * 100 : 0;
                                             return (
                                                 <div key={key}>
@@ -502,7 +502,7 @@ export default function AdminDashboard() {
                             {/* Inventory Alerts List */}
                             <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
                                 <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
-                                    <Package size={16} className="text-blue-500" /> Alertas de Reposição
+                                    <Package size={16} className="text-blue-500" /> Alertas de ReposiÃ§Ã£o
                                 </h3>
                                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                     {products.filter(p => p.stock_quantity <= 3).length > 0 ? (
@@ -519,7 +519,7 @@ export default function AdminDashboard() {
                                         ))
                                     ) : (
                                         <div className="h-full flex items-center justify-center text-white/20 italic text-sm">
-                                            Estoque saudável em todos os itens.
+                                            Estoque saudÃ¡vel em todos os itens.
                                         </div>
                                     )}
                                 </div>
@@ -552,12 +552,12 @@ export default function AdminDashboard() {
                                             <div className="glass p-6 rounded-3xl bg-white/5 border border-green-500/20 relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-green-400/60 uppercase font-black tracking-widest mb-1">Lucro da Loja (João)</div>
+                                                    <div className="text-[10px] text-green-400/60 uppercase font-black tracking-widest mb-1">Lucro da Loja (JoÃ£o)</div>
                                                     <div className="text-2xl font-black text-green-400">
                                                         R$ {totalLoja.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[10px] text-white/30 mt-2">
-                                                        Bruto: R$ {totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} · Peças: R$ {totalCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                        Bruto: R$ {totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} Â· PeÃ§as: R$ {totalCusto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                 </div>
                                             </div>
@@ -566,21 +566,21 @@ export default function AdminDashboard() {
                                             <div className="glass p-6 rounded-3xl bg-white/5 border border-blue-500/20 relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-blue-400/60 uppercase font-black tracking-widest mb-1">Comissões Iago</div>
+                                                    <div className="text-[10px] text-blue-400/60 uppercase font-black tracking-widest mb-1">ComissÃµes Iago</div>
                                                     <div className="text-2xl font-black text-blue-400">
                                                         R$ {totalIago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[10px] text-white/30 mt-2 line-clamp-1">
-                                                        {convertedLeads.filter(l => l.commission_ecosystem).length} via Eco · {convertedLeads.filter(l => l.commission_service).length} Exec.
+                                                        {convertedLeads.filter(l => l.commission_ecosystem).length} via Eco Â· {convertedLeads.filter(l => l.commission_service).length} Exec.
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Técnico Card */}
+                                            {/* TÃ©cnico Card */}
                                             <div className="glass p-6 rounded-3xl bg-white/5 border border-purple-500/20 relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent" />
                                                 <div className="relative">
-                                                    <div className="text-[10px] text-purple-400/60 uppercase font-black tracking-widest mb-1">Repasse Técnico</div>
+                                                    <div className="text-[10px] text-purple-400/60 uppercase font-black tracking-widest mb-1">Repasse TÃ©cnico</div>
                                                     <div className="text-2xl font-black text-purple-400">
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -624,7 +624,7 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <Users size={20} className="text-blue-500" /> Histórico de Leads
+                                <Users size={20} className="text-blue-500" /> HistÃ³rico de Leads
                             </div>
                             <button
                                 onClick={fetchLeads}
@@ -644,14 +644,14 @@ export default function AdminDashboard() {
                                         <th className="p-6">Voucher</th>
                                         <th className="p-6">Operacional</th>
                                         <th className="p-6">Financeiro</th>
-                                        <th className="p-6">Ações / Valor</th>
+                                        <th className="p-6">AÃ§Ãµes / Valor</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
                                     {leads.length > 0 ? leads.map((lead) => (
                                         <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors">
                                             <td className="p-6">
-                                                <div className="font-bold">{lead.client_name || "Anônimo"}</div>
+                                                <div className="font-bold">{lead.client_name || "AnÃ´nimo"}</div>
                                                 <div className="text-xs text-white/30 mb-1">{lead.whatsapp || lead.session_id}</div>
                                                 {lead.description && (
                                                     <div className="text-[10px] bg-white/5 p-2 rounded text-blue-200 mt-2 border border-white/5 max-w-xs italic leading-relaxed">
@@ -667,18 +667,18 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="p-6 text-center" title={lead.marketing_source || 'direto'}>
                                                 <span className="text-lg">
-                                                    {({ 'instagram': '📸', 'facebook': '👥', 'google_ads': '🔍', 'google_organico': '🌱', 'whatsapp': '💬', 'tiktok': '🎵', 'direto': '🔗', 'outros': '🌐' } as Record<string, string>)[lead.marketing_source] || '🔗'}
+                                                    {({ 'instagram': 'ð¸', 'facebook': 'ð¥', 'google_ads': 'ð', 'google_organico': 'ð±', 'whatsapp': 'ð¬', 'tiktok': 'ðµ', 'direto': 'ð', 'outros': 'ð' } as Record<string, string>)[lead.marketing_source] || 'ð'}
                                                 </span>
                                                 <div className="text-[9px] text-white/20 mt-0.5">{lead.marketing_source || 'direto'}</div>
                                                 {lead.campaign_name && <div className="text-[8px] text-blue-400/60 font-black uppercase tracking-tighter mt-1">{lead.campaign_name}</div>}
                                             </td>
-                                            <td className="p-6 font-mono text-xs text-blue-300">{lead.voucher_code}</td>
+                                            <td className="p-6 font-monão text-xs text-blue-300">{lead.voucher_code}</td>
                                             <td className="p-6">
-                                                <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Produção / Logística</div>
+                                                <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">ProduÃ§Ã£o / LogÃ­stica</div>
                                                 <select
                                                     value={lead.status}
                                                     onChange={(e) => updateStatus(lead.id, e.target.value)}
-                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${lead.status === 'converted' ? 'text-green-400 border-green-500/20' :
+                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-nãone transition-all ${lead.status === 'converted' ? 'text-green-400 border-green-500/20' :
                                                         lead.status === 'ready' ? 'text-blue-400 border-blue-500/20' :
                                                             lead.status === 'maintenance' || lead.status === 'building' ? 'text-purple-400 border-purple-500/20' :
                                                                 'text-yellow-500 border-yellow-500/20'
@@ -687,9 +687,9 @@ export default function AdminDashboard() {
                                                     {lead.interest_type === 'manutencao' ? (
                                                         <>
                                                             <option value="pending" className="bg-black">PENDENTE</option>
-                                                            <option value="analysis" className="bg-black">EM ANÁLISE</option>
-                                                            <option value="parts" className="bg-black">AGUARD. PEÇA</option>
-                                                            <option value="maintenance" className="bg-black">MANUTENÇÃO</option>
+                                                            <option value="analysis" className="bg-black">EM ANÃLISE</option>
+                                                            <option value="parts" className="bg-black">AGUARD. PEÃA</option>
+                                                            <option value="maintenance" className="bg-black">MANUTENÃÃO</option>
                                                             <option value="testing" className="bg-black">EM TESTES</option>
                                                             <option value="ready" className="bg-black">PRONTO</option>
                                                             <option value="converted" className="bg-black">FINALIZADO</option>
@@ -717,7 +717,7 @@ export default function AdminDashboard() {
                                                 <select
                                                     value={lead.payment_status || 'pending'}
                                                     onChange={(e) => updatePaymentStatus(lead.id, e.target.value)}
-                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${lead.payment_status === 'paid' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
+                                                    className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-nãone transition-all ${lead.payment_status === 'paid' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
                                                         lead.payment_status === 'awaiting_payment' ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5' :
                                                             'text-white/40 border-white/5'
                                                         }`}
@@ -743,7 +743,7 @@ export default function AdminDashboard() {
                                                         </div>
                                                         {lead.performed_by_partner && (
                                                             <div className="flex items-center justify-between gap-4">
-                                                                <span className="text-[10px] text-purple-400 font-bold">Téc.:</span>
+                                                                <span className="text-[10px] text-purple-400 font-bold">TÃ©c.:</span>
                                                                 <span className="text-[10px] font-bold text-purple-400">
                                                                     R$ {(lead.interest_type === 'manutencao'
                                                                         ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5
@@ -783,7 +783,7 @@ export default function AdminDashboard() {
                                                         onClick={() => { setSocialCardLead(lead); setShowSocialCard(true); }}
                                                         className="w-full bg-pink-600/20 hover:bg-pink-600/40 border border-pink-500/20 text-pink-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all block"
                                                     >
-                                                        📸 GERAR CARD
+                                                        ð¸ GERAR CARD
                                                     </button>
                                                 )}
                                             </td>
@@ -803,7 +803,7 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <Star size={20} className="text-yellow-500" /> Moderação de Depoimentos
+                                <Star size={20} className="text-yellow-500" /> ModeraÃ§Ã£o de Depoimentos
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -832,8 +832,8 @@ export default function AdminDashboard() {
                                     <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-400 shrink-0">
                                         <Sparkles size={20} />
                                     </div>
-                                    <div className="text-sm prose prose-invert max-w-none">
-                                        <div className="font-bold text-purple-400 uppercase text-[10px] tracking-widest mb-2">Relatório de IA: Clima dos Clientes</div>
+                                    <div className="text-sm prose prose-invert max-w-nãone">
+                                        <div className="font-bold text-purple-400 uppercase text-[10px] tracking-widest mb-2">RelatÃ³rio de IA: Clima dos Clientes</div>
                                         <div className="whitespace-pre-wrap leading-relaxed text-white/80">{sentimentAnalysis}</div>
                                     </div>
                                 </div>
@@ -844,10 +844,10 @@ export default function AdminDashboard() {
                                 <thead>
                                     <tr className="text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
                                         <th className="p-6">Cliente / Voucher</th>
-                                        <th className="p-6">Avaliação</th>
-                                        <th className="p-6">Comentário</th>
+                                        <th className="p-6">AvaliaÃ§Ã£o</th>
+                                        <th className="p-6">ComentÃ¡rio</th>
                                         <th className="p-6">Data</th>
-                                        <th className="p-6 text-right">Ações</th>
+                                        <th className="p-6 text-right">AÃ§Ãµes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
@@ -855,7 +855,7 @@ export default function AdminDashboard() {
                                         <tr key={review.id} className={`hover:bg-white/[0.02] transition-colors ${!review.is_approved ? 'bg-blue-500/5' : ''}`}>
                                             <td className="p-6">
                                                 <div className="font-bold">{review.user_name}</div>
-                                                <div className="text-[10px] font-mono text-blue-400">{review.voucher_code}</div>
+                                                <div className="text-[10px] font-monão text-blue-400">{review.voucher_code}</div>
                                             </td>
                                             <td className="p-6">
                                                 <div className="flex gap-1">
@@ -902,7 +902,7 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <RefreshCw size={20} className="text-blue-500" /> Ordens de Manutenção
+                                <RefreshCw size={20} className="text-blue-500" /> Ordens de ManutenÃ§Ã£o
                             </div>
                             <button onClick={fetchMaintenanceOrders} className="p-2 hover:bg-white/10 rounded-full transition-all">
                                 <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
@@ -916,14 +916,14 @@ export default function AdminDashboard() {
                                         <th className="p-6">Equipamento</th>
                                         <th className="p-6">Status</th>
                                         <th className="p-6">Criado em</th>
-                                        <th className="p-6 text-right">Ações</th>
+                                        <th className="p-6 text-right">AÃ§Ãµes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
                                     {maintenanceOrders.length > 0 ? maintenanceOrders.map((order) => (
                                         <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
                                             <td className="p-6">
-                                                <div className="font-mono text-blue-400 font-bold mb-1">{order.voucher_code}</div>
+                                                <div className="font-monão text-blue-400 font-bold mb-1">{order.voucher_code}</div>
                                                 <div className="font-bold">{order.customer_name}</div>
                                                 <div className="text-[10px] text-white/40">{order.customer_phone}</div>
                                             </td>
@@ -973,28 +973,28 @@ export default function AdminDashboard() {
                                 }}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2"
                             >
-                                <Plus size={20} /> Novo Produto
+                                <Plus size={20} /> Nãovo Produto
                             </button>
                         </div>
 
                         {showProductForm && (
                             <form onSubmit={handleSaveProduct} className="glass p-8 rounded-3xl border border-white/10 bg-white/5 space-y-4">
-                                <h3 className="text-xl font-bold mb-4">{editingProduct ? 'Editar Produto' : 'Novo Produto'}</h3>
+                                <h3 className="text-xl font-bold mb-4">{editingProduct ? 'Editar Produto' : 'Nãovo Produto'}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input name="name" defaultValue={editingProduct?.name} placeholder="Nome do Produto" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
-                                    <select name="category" defaultValue={editingProduct?.category || 'kit'} className="bg-black border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none">
+                                    <input name="name" defaultValue={editingProduct?.name} placeholder="Nãome do Produto" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" required />
+                                    <select name="category" defaultValue={editingProduct?.category || 'kit'} className="bg-black border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone">
                                         <option value="kit">Kit Gamer</option>
                                         <option value="smartphone">Smartphone</option>
-                                        <option value="notebook">Notebook</option>
+                                        <option value="nãotebook">Nãotebook</option>
                                         <option value="hardware">Hardware</option>
                                     </select>
-                                    <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="Preço (R$)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
-                                    <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="Estoque" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" required />
-                                    <input name="sku" defaultValue={editingProduct?.sku} placeholder="SKU (Olist/Estoque)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none" />
+                                    <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="PreÃ§o (R$)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" required />
+                                    <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="Estoque" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" required />
+                                    <input name="sku" defaultValue={editingProduct?.sku} placeholder="SKU (Olist/Estoque)" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone" />
                                     <div className="md:col-span-2 space-y-4">
                                         <div>
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">Especificações (JSON)</label>
-                                            <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='Ex: {"cpu": "i5", "ram": "16GB"}' className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none h-24 font-mono text-sm" />
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">EspecificaÃ§Ãµes (JSON)</label>
+                                            <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='Ex: {"cpu": "i5", "ram": "16GB"}' className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone h-24 font-monão text-sm" />
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2 block">URLs das Imagens (Uma por linha)</label>
@@ -1006,7 +1006,7 @@ export default function AdminDashboard() {
                                                     setPreviewUrls(urls);
                                                 }}
                                                 placeholder='https://exemplo.com/imagem1.jpg'
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none h-24 font-mono text-sm"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-nãone h-24 font-monão text-sm"
                                             />
                                         </div>
 
@@ -1053,7 +1053,7 @@ export default function AdminDashboard() {
                                     <div className="text-2xl font-black mb-4">R$ {p.price?.toLocaleString('pt-BR')}</div>
                                     <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center text-xs">
                                         <span className="text-white/40">Estoque: <span className={p.stock_quantity > 0 ? "text-green-400" : "text-red-400"}>{p.stock_quantity}</span></span>
-                                        {p.sku && <span className="text-white/20 font-mono text-[10px]">SKU: {p.sku}</span>}
+                                        {p.sku && <span className="text-white/20 font-monão text-[10px]">SKU: {p.sku}</span>}
                                     </div>
                                 </div>
                             ))}
@@ -1067,11 +1067,11 @@ export default function AdminDashboard() {
                 <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
                     <div className="max-w-sm w-full space-y-4">
                         <div className="flex items-center justify-between text-white/40 text-xs font-bold uppercase">
-                            <span>📸 Card para Redes Sociais</span>
+                            <span>ð¸ Card para Redes Sociais</span>
                             <button onClick={() => setShowSocialCard(false)} className="hover:text-white"><X size={18} /></button>
                         </div>
 
-                        {/* The Card — screenshot this! */}
+                        {/* The Card â screenshot this! */}
                         <div className="bg-gradient-to-br from-[#0a0a0a] via-[#111] to-black border border-white/10 rounded-3xl p-8 relative overflow-hidden">
                             {/* Glow */}
                             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-blue-500/10 blur-3xl" />
@@ -1079,16 +1079,16 @@ export default function AdminDashboard() {
 
                             <div className="relative">
                                 {/* Logo */}
-                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Cyber Inform�tica • Bragança Paulista</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-6">Cyber Informática â¢ BraganÃ§a Paulista</div>
 
                                 {/* Service Type Badge */}
                                 <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/20' :
                                     socialCardLead.interest_type === 'manutencao' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20' :
                                         'bg-green-500/20 text-green-400 border border-green-500/20'
                                     }`}>
-                                    {socialCardLead.interest_type === 'pc_build' ? '🖥️ Montagem Concluída' :
-                                        socialCardLead.interest_type === 'manutencao' ? '🔧 Manutenção Concluída' :
-                                            '✅ Serviço Concluído'}
+                                    {socialCardLead.interest_type === 'pc_build' ? 'ð¥ï¸ Montagem ConcluÃ­da' :
+                                        socialCardLead.interest_type === 'manutencao' ? 'ð§ ManutenÃ§Ã£o ConcluÃ­da' :
+                                            'â ServiÃ§o ConcluÃ­do'}
                                 </div>
 
                                 {/* Client */}
@@ -1117,8 +1117,8 @@ export default function AdminDashboard() {
                                 {/* Voucher */}
                                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
                                     <div>
-                                        <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">Código do Cliente</div>
-                                        <div className="text-lg font-black font-mono text-blue-400">{socialCardLead.voucher_code}</div>
+                                        <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">CÃ³digo do Cliente</div>
+                                        <div className="text-lg font-black font-monão text-blue-400">{socialCardLead.voucher_code}</div>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-[9px] text-white/30 uppercase font-black tracking-widest">Garantia</div>
@@ -1128,19 +1128,19 @@ export default function AdminDashboard() {
 
                                 {/* Footer */}
                                 <div className="mt-6 text-[9px] text-white/20 text-center uppercase tracking-widest">
-                                    cybertech.com.br • @cybertechbraganca
+                                    cybertech.com.br â¢ @cybertechbraganca
                                 </div>
                             </div>
                         </div>
 
                         <p className="text-center text-white/30 text-xs italic">
-                            Tire um print do card acima para postar! 📱
+                            Tire um print do card acima para postar! ð±
                         </p>
                     </div>
                 </div>
             )}
 
-            {/* Modal de Comissões */}
+            {/* Modal de ComissÃµes */}
             {showCommissionModal && selectedLeadForCommission && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
                     <form onSubmit={submitCommissionForm} className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 max-w-lg w-full relative">
@@ -1151,8 +1151,8 @@ export default function AdminDashboard() {
                             <h2 className="text-2xl font-black italic uppercase tracking-tighter">Fechar Venda</h2>
                         </div>
                         <p className="text-sm text-white/50 mb-8 border-b border-white/10 pb-4">
-                            Cliente: <strong className="text-white">{selectedLeadForCommission.client_name || "Anônimo"}</strong> <br />
-                            Serviço: <span className="uppercase text-blue-400 font-bold text-xs">{selectedLeadForCommission.interest_type}</span>
+                            Cliente: <strong className="text-white">{selectedLeadForCommission.client_name || "AnÃ´nimo"}</strong> <br />
+                            ServiÃ§o: <span className="uppercase text-blue-400 font-bold text-xs">{selectedLeadForCommission.interest_type}</span>
                         </p>
 
                         <div className="space-y-6">
@@ -1162,22 +1162,22 @@ export default function AdminDashboard() {
                                     type="number" step="0.01" required
                                     value={commissionForm.finalValue}
                                     onChange={(e) => setCommissionForm({ ...commissionForm, finalValue: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-green-500"
                                     placeholder="Ex: 5000.00"
                                 />
                             </div>
 
                             {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.interest_type === 'pc_build') && (
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Custo de Peças/Componentes (R$)</label>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Custo de PeÃ§as/Componentes (R$)</label>
                                     <input
                                         type="number" step="0.01"
                                         value={commissionForm.costValue}
                                         onChange={(e) => setCommissionForm({ ...commissionForm, costValue: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-red-500/50"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-red-500/50"
                                         placeholder="Ex: 800.00 (opcional)"
                                     />
-                                    <p className="text-[10px] text-white/30 mt-1">* Descontado do lucro líquido da loja. Não afeta as comissões do Iago.</p>
+                                    <p className="text-[10px] text-white/30 mt-1">* Descontado do lucro lÃ­quido da loja. NÃ£o afeta as comissÃµes do Iago.</p>
                                 </div>
                             )}
 
@@ -1193,14 +1193,14 @@ export default function AdminDashboard() {
                                         {commissionForm.ecosystemCaptured && <CheckCircle2 size={16} className="text-blue-500 mx-auto" />}
                                     </div>
                                     <div>
-                                        <div className="text-sm font-bold">Captação via Ecossistema (+5%)</div>
+                                        <div className="text-sm font-bold">CaptaÃ§Ã£o via Ecossistema (+5%)</div>
                                         <div className="text-[10px] text-white/40">O lead veio pelo Site ou Redes Sociais administradas pelo Iago.</div>
                                     </div>
                                 </label>
                             </div>
 
                             <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-4">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Quem executou o serviço?</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Quem executou o serviÃ§o?</div>
 
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
@@ -1209,7 +1209,7 @@ export default function AdminDashboard() {
                                         onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                         className="w-4 h-4 accent-blue-500"
                                     />
-                                    <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Dono da Loja (João) <span className="font-normal text-[10px] text-white/30 ml-2">Sem taxa</span></div>
+                                    <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Donão da Loja (JoÃ£o) <span className="font-nãormal text-[10px] text-white/30 ml-2">Sem taxa</span></div>
                                 </label>
 
                                 {selectedLeadForCommission.interest_type !== 'manutencao' && (
@@ -1220,7 +1220,7 @@ export default function AdminDashboard() {
                                             onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                             className="w-4 h-4 accent-blue-500"
                                         />
-                                        <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Iago Lopes <span className="font-normal text-[10px] text-blue-400/50 bg-blue-500/10 px-2 py-0.5 rounded ml-2">+3% Faturamento Bruto</span></div>
+                                        <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">Iago Lopes <span className="font-nãormal text-[10px] text-blue-400/50 bg-blue-500/10 px-2 py-0.5 rounded ml-2">+3% Faturamento Bruto</span></div>
                                     </label>
                                 )}
 
@@ -1232,9 +1232,9 @@ export default function AdminDashboard() {
                                         className="w-4 h-4 accent-blue-500"
                                     />
                                     <div className="text-sm font-bold group-hover:text-blue-400 transition-colors">
-                                        Técnico Parceiro
-                                        <span className="font-normal text-[10px] text-purple-400/50 bg-purple-500/10 px-2 py-0.5 rounded ml-2">
-                                            {selectedLeadForCommission.interest_type === 'manutencao' ? '50% Lucro Líquido' : '+3% Faturamento Bruto'}
+                                        TÃ©cnico Parceiro
+                                        <span className="font-nãormal text-[10px] text-purple-400/50 bg-purple-500/10 px-2 py-0.5 rounded ml-2">
+                                            {selectedLeadForCommission.interest_type === 'manutencao' ? '50% Lucro LÃ­quido' : '+3% Faturamento Bruto'}
                                         </span>
                                     </div>
                                 </label>

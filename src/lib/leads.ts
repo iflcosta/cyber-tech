@@ -9,7 +9,7 @@ export async function saveCheckoutLead(name: string, whatsapp: string, items: an
           client_name: name,
           whatsapp,
           interest_type: 'checkout_abandonment',
-          description: `Produtos no carrinho: ${items.map(i => i.product.name).join(', ')}`,
+          description: `Produtos não carrinho: ${items.map(i => i.product.name).join(', ')}`,
           status: 'pending'
         }
       ]);

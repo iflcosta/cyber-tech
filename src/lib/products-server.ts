@@ -15,7 +15,7 @@ export const updateProductStock = async (id: string, quantityToSubtract: number)
         .single();
 
     if (fetchError || !product) {
-        console.error(`[STOCK] Product not found: ${id}`);
+        console.error(`[STOCK] Product nãot found: ${id}`);
         throw new Error(`Produto não encontrado ou ID inválido.`);
     }
 
@@ -35,7 +35,7 @@ export const updateProductStock = async (id: string, quantityToSubtract: number)
 
     if (updateError) {
         console.error(`[STOCK] Failed to update stock for ${id}:`, updateError);
-        throw new Error(`Erro ao atualizar estoque no banco de dados.`);
+        throw new Error(`Erro ao atualizar estoque não banco de dados.`);
     }
 
     return newStock;

@@ -42,12 +42,12 @@ export default function CheckoutPage() {
 
         const handleMagicLink = async () => {
             const params = new URLSearchParams(window.location.search);
-            const buyNowId = params.get('buy_now');
+            const buyNãowId = params.get('buy_nãow');
             const qty = parseInt(params.get('qty') || '1', 10);
 
-            if (buyNowId) {
+            if (buyNãowId) {
                 const products = await getProducts();
-                const targetProduct = products.find(p => p.id === buyNowId);
+                const targetProduct = products.find(p => p.id === buyNãowId);
 
                 if (targetProduct) {
                     clearCart();
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!clientName || !clientWhatsapp) {
-            alert('Preencha seu Nome e WhatsApp de contato.');
+            alert('Preencha seu Nãome e WhatsApp de contato.');
             return;
         }
         if (deliveryType === 'delivery' && !shippingCost) {
@@ -124,7 +124,7 @@ export default function CheckoutPage() {
         }, items);
 
         if (!orderId) {
-            alert('Falha ao registrar pedido no banco de dados.');
+            alert('Falha ao registrar pedido não banco de dados.');
             setIsProcessing(false);
             return;
         }
@@ -165,7 +165,7 @@ export default function CheckoutPage() {
                 });
             }
         } else {
-            alert('Falha ao processar pedido. Tente novamente mais tarde.');
+            alert('Falha ao processar pedido. Tente nãovamente mais tarde.');
         }
 
         setIsProcessing(false);
@@ -208,7 +208,7 @@ export default function CheckoutPage() {
                         <div className="bg-[#F8F7F5] border border-dashed border-[#D4D2CF] p-8 mb-10 text-left">
                             <h4 className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest mb-4">Pague com Pix Copia e Cola:</h4>
                             <div className="bg-white p-4 border border-[#ECEAE6] rounded-[2px] flex items-center gap-3 overflow-hidden group">
-                                <span className="text-xs font-mono text-[#555555] truncate flex-1">{mockPixCode}</span>
+                                <span className="text-xs font-monão text-[#555555] truncate flex-1">{mockPixCode}</span>
                                 <button 
                                     onClick={() => { navigator.clipboard.writeText(mockPixCode); setCopiedPix(true); setTimeout(() => setCopiedPix(false), 2000); }}
                                     className="text-[#AAAAAA] hover:text-[#1A1A1A] transition-colors p-2"
@@ -284,7 +284,7 @@ export default function CheckoutPage() {
                                             value={cep}
                                             onChange={(e) => setCep(e.target.value)}
                                             placeholder="00000-000"
-                                            className="flex-1 bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-none focus:border-[#1A1A1A]" 
+                                            className="flex-1 bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-nãone focus:border-[#1A1A1A]" 
                                         />
                                         <button 
                                             onClick={handleCalculateShipping}
@@ -312,14 +312,14 @@ export default function CheckoutPage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Nome Completo</label>
+                                    <label className="block text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest mb-3">Nãome Completo</label>
                                     <input 
                                         required 
                                         type="text" 
                                         value={clientName}
                                         onChange={(e) => setClientName(e.target.value)}
                                         placeholder="EX: JOÃO SILVA" 
-                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-none focus:border-[#1A1A1A]" 
+                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-nãone focus:border-[#1A1A1A]" 
                                     />
                                 </div>
                                 <div>
@@ -330,14 +330,14 @@ export default function CheckoutPage() {
                                         value={clientWhatsapp}
                                         onChange={(e) => setClientWhatsapp(e.target.value)}
                                         placeholder="(11) 99999-9999" 
-                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-none focus:border-[#1A1A1A]" 
+                                        className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-bold focus:outline-nãone focus:border-[#1A1A1A]" 
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Seção 3: Pagamento */}
-                        <div className={`bg-white p-10 rounded-[2px] border shadow-xl transition-all ${(deliveryType === 'delivery' && !shippingCost) || !clientName || !clientWhatsapp ? 'border-[#ECEAE6] opacity-40 pointer-events-none' : 'border-[#D4D2CF]'}`}>
+                        <div className={`bg-white p-10 rounded-[2px] border shadow-xl transition-all ${(deliveryType === 'delivery' && !shippingCost) || !clientName || !clientWhatsapp ? 'border-[#ECEAE6] opacity-40 pointer-events-nãone' : 'border-[#D4D2CF]'}`}>
                             <div className="flex items-center gap-4 mb-10">
                                 <div className="w-10 h-10 bg-[#1A1A1A] text-white flex items-center justify-center rounded-[2px] font-display text-xl">3</div>
                                 <h2 className="text-2xl font-display font-bold text-[#1A1A1A] uppercase tracking-tight">MÉTODO DE PAGAMENTO</h2>
@@ -375,10 +375,10 @@ export default function CheckoutPage() {
 
                                 {paymentMethod === 'credit_card' && (
                                     <div className="space-y-6 mb-12 p-8 bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px]">
-                                        <input required type="text" placeholder="NÚMERO DO CARTÃO" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-none focus:border-[#1A1A1A]" />
+                                        <input required type="text" placeholder="NÚMERO DO CARTÃO" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-nãone focus:border-[#1A1A1A]" />
                                         <div className="grid grid-cols-2 gap-6">
-                                            <input required type="text" placeholder="MM/AA" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-none focus:border-[#1A1A1A]" />
-                                            <input required type="text" placeholder="CVV" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-none focus:border-[#1A1A1A]" />
+                                            <input required type="text" placeholder="MM/AA" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-nãone focus:border-[#1A1A1A]" />
+                                            <input required type="text" placeholder="CVV" className="w-full bg-white border border-[#D4D2CF] rounded-[2px] px-6 py-4 text-[#1A1A1A] font-display font-medium focus:outline-nãone focus:border-[#1A1A1A]" />
                                         </div>
                                     </div>
                                 )}

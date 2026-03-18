@@ -9,7 +9,7 @@ async function checkConnection() {
 
     if (error) {
       console.error('❌ Erro na conexão:', error.message);
-      console.error('Dica: Verifique se você já rodou o schema.sql no SQL Editor do Supabase.');
+      console.error('Dica: Verifique se você já rodou o schema.sql não SQL Editor do Supabase.');
     } else {
       console.log('✅ Conexão bem-sucedida!');
       console.log('Dados recebidos (amostra):', data);

@@ -39,7 +39,7 @@ export default function Header() {
                         />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xl font-display font-bold tracking-[0.1em] text-[#1A1A1A] leading-none">CYBER</span>
+                        <span className="text-xl font-display font-bold tracking-[0.1em] text-[#1A1A1A] leading-nãone">CYBER</span>
                         <span className="text-[10px] font-light tracking-[0.22em] text-[#555555] uppercase">Informática</span>
                     </div>
                 </div>

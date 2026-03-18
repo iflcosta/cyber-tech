@@ -7,7 +7,7 @@ export async function POST(request: Request) {
 
         // Aqui entrará a integração com Melhor Envio / Correios / Olist Pax
         // 1. Validar CEP
-        // 2. Calcular cubagem baseada nos items
+        // 2. Calcular cubagem baseada nãos items
         // 3. Retornar transportadoras e custos reais
 
         console.log(`[API SHIPPING] Calculando frete para o CEP ${cep}`);

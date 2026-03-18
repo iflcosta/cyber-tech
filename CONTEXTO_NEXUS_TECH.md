@@ -4,7 +4,7 @@
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🛠️ Stack Tecnãológica
 - **Framework:** Next.js (App Router) + TypeScript
 - **Estilização:** CSS Vanilla + TailwindCSS
 - **Banco de Dados & Auth:** Supabase (PostgreSQL + Auth + RLS)
@@ -63,5 +63,5 @@
 
 ## ⚡ Próximos Passos Sugeridos
 1.  **Dashboard de Leads Avançado:** Filtros por período e canal de marketing.
-2.  **Automação de WhatsApp:** Integração com API (ex: Twilio) para notificar status pro cliente.
-3.  **Site como App (PWA):** Instalação direta no celular do cliente.
+2.  **Automação de WhatsApp:** Integração com API (ex: Twilio) para nãotificar status pro cliente.
+3.  **Site como App (PWA):** Instalação direta não celular do cliente.

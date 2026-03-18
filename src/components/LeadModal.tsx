@@ -94,7 +94,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                         <div className="inline-flex p-3 rounded-[2px] bg-[#F8F7F5] text-[#1A1A1A] mb-6 border border-[#ECEAE6]">
                                             <Smartphone size={24} />
                                         </div>
-                                        <h2 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] leading-none">
+                                        <h2 className="text-3xl font-display font-bold tracking-tight text-[#1A1A1A] leading-nãone">
                                             {interestType === 'voucher' ? (
                                                 <>GARANTA SEU <span className="text-outline">BRINDE</span></>
                                             ) : interestType === 'manutencao' ? (
@@ -116,14 +116,14 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
 
                                     <form onSubmit={handleSubmit} className="space-y-4">
                                         <div>
-                                            <label className="text-[10px] font-display font-bold uppercase tracking-[0.2em] text-[#888888] mb-2 block">Nome Completo</label>
+                                            <label className="text-[10px] font-display font-bold uppercase tracking-[0.2em] text-[#888888] mb-2 block">Nãome Completo</label>
                                             <input
                                                 required
                                                 type="text"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
                                                 placeholder="Ex: Iago Lopes"
-                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
+                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
                                             />
                                         </div>
                                         <div>
@@ -134,7 +134,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                                 value={whatsapp}
                                                 onChange={(e) => setWhatsapp(e.target.value)}
                                                 placeholder="(11) 99999-9999"
-                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-none focus:border-[#1A1A1A] transition-all font-medium"
+                                                className="w-full bg-[#F8F7F5] border border-[#ECEAE6] rounded-[2px] px-4 py-4 text-[#1A1A1A] focus:outline-nãone focus:border-[#1A1A1A] transition-all font-medium"
                                             />
                                         </div>
 
@@ -148,7 +148,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                                         value={model}
                                                         onChange={(e) => setModel(e.target.value)}
                                                         placeholder="Ex: iPhone 13, Dell G15"
-                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-medium"
+                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-blue-500 transition-all font-medium"
                                                     />
                                                 </div>
                                                 <div>
@@ -158,7 +158,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                                         value={problem}
                                                         onChange={(e) => setProblem(e.target.value)}
                                                         placeholder="O que está acontecendo?"
-                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all h-24 font-medium"
+                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-blue-500 transition-all h-24 font-medium"
                                                     />
                                                 </div>
                                             </>
@@ -191,7 +191,7 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                                             value={deliveryAddress}
                                                             onChange={(e) => setDeliveryAddress(e.target.value)}
                                                             placeholder="Endereço Completo e Bairro"
-                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all font-medium"
+                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-nãone focus:border-blue-500 transition-all font-medium"
                                                         />
                                                     </div>
                                                 )}
@@ -252,9 +252,9 @@ export default function LeadModal({ isOpen, onClose, interestType, customDescrip
                                         </button>
 
                                         <a
-                                            href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de fazer uma solicitação no site (Código: ${voucher}). Gostaria de mais informações!`)}`}
+                                            href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de fazer uma solicitação não site (Código: ${voucher}). Gostaria de mais informações!`)}`}
                                             target="_blank"
-                                            rel="noreferrer"
+                                            rel="nãoreferrer"
                                             className="w-full btn-primary py-5 flex items-center justify-center gap-3"
                                             onClick={onClose}
                                         >

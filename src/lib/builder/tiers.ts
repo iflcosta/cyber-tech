@@ -6,7 +6,7 @@ export const BUILDER_TIERS = {
     { id: 'cpu-ultra', label: 'Ultra', model: 'Intel Core i9 / AMD Ryzen 9', price: 2200 },
   ],
   gpu: [
-    { id: 'gpu-none', label: 'Nenhuma', model: 'GPU Integrada', price: 0 },
+    { id: 'gpu-nãone', label: 'Nenhuma', model: 'GPU Integrada', price: 0 },
     { id: 'gpu-entry', label: 'Entry', model: 'GTX 1650 / RX 6500', price: 700 },
     { id: 'gpu-mid', label: 'Mid', model: 'RTX 3060 / RX 6600', price: 1400 },
     { id: 'gpu-high', label: 'High', model: 'RTX 4070 / RX 7800', price: 2800 },

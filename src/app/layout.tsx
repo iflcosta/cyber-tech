@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Monão } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 
@@ -8,8 +8,8 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const geistMonão = Geist_Monão({
+  variable: "--font-geist-monão",
   subsets: ["latin"],
 });
 
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
   authors: [{ name: brand.name }],
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
-  alternates: { canonical: "https://cyberinformatica.com.br" },
+  alternates: { canãonical: "https://cyberinformatica.com.br" },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNãode;
 }>) {
   return (
     <html lang="pt-BR">
@@ -47,21 +47,21 @@ export default function RootLayout({
               if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
               n.queue=[];t=b.createElement(e);t.async=!0;
               t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              s.parentNãode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
               fbq('init', '${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || ''}');
               fbq('track', 'PageView');
             `,
           }}
         />
-        <noscript>
+        <nãoscript>
           <img
             height="1"
             width="1"
-            style={{ display: 'none' }}
-            src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || ''}&ev=PageView&noscript=1`}
+            style={{ display: 'nãone' }}
+            src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || ''}&ev=PageView&nãoscript=1`}
           />
-        </noscript>
+        </nãoscript>
         <script
           dangerouslySetInnerHTML={{
             __html: `

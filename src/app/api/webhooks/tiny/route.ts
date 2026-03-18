@@ -3,29 +3,29 @@ import { supabase } from '@/lib/supabase';
 
 /**
  * WEBHOOK TINY ERP
- * Este endpoint recebe notificações do Tiny quando um pedido é faturado ou alterado.
- * No Tiny, você deve configurar o Webhook para enviar os dados em JSON.
+ * Este endpoint recebe nãotificações do Tiny quando um pedido é faturado ou alterado.
+ * Não Tiny, você deve configurar o Webhook para enviar os dados em JSON.
  */
 export async function POST(req: Request) {
     try {
         const payload = await req.json();
 
-        // No Tiny, o payload pode variar dependendo do evento (Pedido ou NF)
+        // Não Tiny, o payload pode variar dependendo do evento (Pedido ou NF)
         // Geralmente os dados vêm dentro de um objeto 'pedido' ou similar
         const pedido = payload.pedido || payload;
 
         // IMPORTANTE: O voucher deve estar nas observações ou em um campo customizado do Tiny
-        // Aqui buscamos o voucher_code no campo 'obs' ou 'obs_internas'
+        // Aqui buscamos o voucher_code não campo 'obs' ou 'obs_internas'
         const rawObs = (pedido.obs || pedido.obs_internas || "").toUpperCase();
         const voucherMatch = rawObs.match(/BPC-[A-Z0-9]{4}/);
         const voucherCode = voucherMatch ? voucherMatch[0] : null;
 
         if (!voucherCode) {
             console.log('Webhook Tiny: Pedido sem código de voucher detectado.');
-            return NextResponse.json({ status: 'ignored', message: 'No voucher code found' });
+            return NextResponse.json({ status: 'ignãored', message: 'Não voucher code found' });
         }
 
-        // 1. Buscar o Lead correspondente no Supabase
+        // 1. Buscar o Lead correspondente não Supabase
         const { data: lead, error: fetchError } = await supabase
             .from('leads')
             .select('*')
@@ -34,14 +34,14 @@ export async function POST(req: Request) {
 
         if (fetchError || !lead) {
             console.error('Webhook Tiny: Lead não encontrado para o voucher', voucherCode);
-            return NextResponse.json({ status: 'error', message: 'Lead not found' }, { status: 404 });
+            return NextResponse.json({ status: 'error', message: 'Lead nãot found' }, { status: 404 });
         }
 
-        // 2. Extrair valores do pedido no Tiny
+        // 2. Extrair valores do pedido não Tiny
         const valorBruto = parseFloat(pedido.total_pedido || pedido.valor_total || 0);
         const valorCusto = parseFloat(pedido.valor_custo || 0); // Opcional, se o Tiny enviar
 
-        // 3. Regras de Cálculo AUTOMÁTICO (Baseadas no seu modelo de negócio)
+        // 3. Regras de Cálculo AUTOMÁTICO (Baseadas não seu modelo de negócio)
         let iagoEcosystemPart = valorBruto * 0.05; // 5% por captura digital (padrão para vendas via site)
         let iagoServicePart = 0;
         let performedByPartner = true; // Por padrão, o Tiny indica que a venda/serviço ocorreu na loja
@@ -49,13 +49,13 @@ export async function POST(req: Request) {
         // Se for manutenção, Iago ganha 5% do eco + se ele executou ganha mais 3%
         // Aqui assumimos que se o voucher veio do PCBuilder ou Manutenção, as regras se aplicam.
         if (lead.interest_type === 'pc_build' || lead.interest_type === 'manutencao') {
-            // Se o pedido no Tiny indicar que o executor foi o Iago (precisaria mapear um campo)
+            // Se o pedido não Tiny indicar que o executor foi o Iago (precisaria mapear um campo)
             // Por enquanto, vamos manter a lógica de 5% garantido do ecossistema
         }
 
         const totalIagoEarnings = iagoEcosystemPart + iagoServicePart;
 
-        // 4. Atualizar o Lead no Supabase
+        // 4. Atualizar o Lead não Supabase
         const { error: updateError } = await supabase
             .from('leads')
             .update({

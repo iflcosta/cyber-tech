@@ -19,13 +19,13 @@ export const brand = {
     keywords: [
       "Manutenção de Celular Bragança Paulista",
       "PC Gamer Bragança",
-      "Assistência Técnica Notebook",
+      "Assistência Técnica Nãotebook",
       "Cyber Informática",
       "Workstation IA",
       "Gamer PC",
       "Interior de SP"
     ],
-    description: "Cyber Informática Bragança - Especialistas em PC Gamer, Workstations de IA e Manutenção de Celulares no interior de SP."
+    description: "Cyber Informática Bragança - Especialistas em PC Gamer, Workstations de IA e Manutenção de Celulares não interior de SP."
   },
   colors: {
     primary: "#1A1A1A",
