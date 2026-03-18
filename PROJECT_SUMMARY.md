@@ -60,8 +60,10 @@ Um painel exclusivo para o proprietário gerir o negócio:
 - **Showroom:** 100% Funcional (Industrial Style).
 - **IA/Chatbot:** 100% Funcional.
 - **Admin/Segurança:** 100% Funcional.
-- **PC Builder:** 100% Funcional (Versão V3 Simulator).
+- [x] Olist (Tiny) Integration: 100% Funcional (Faturamento & Pagamentos).
+- [x] Supabase Stock: 100% Funcional (Source of Truth).
+- [x] PC Builder: 100% Funcional (Versão V3 Simulator).
 - **Estabilidade:** Alta (Otimizado para produção).
 
 ---
-**Rebranding para "Industrial Light" concluído com sucesso.**
+**Rebranding e Integração ERP Olist (Tiny) concluídos com sucesso.**

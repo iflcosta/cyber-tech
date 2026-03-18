@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { updateProductStock } from '@/lib/products';
 
 export async function POST(request: Request) {
     try {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
                 cliente: {
                     nome: clientData.name,
                     tipo_pessoa: 'F',
-                    cpf_cnpj: '', // Opcional no primeiro momento
+                    cpf_cnpj: '', 
                     endereco: clientData.address || 'Retirada na Loja',
                     numero: '',
                     bairro: '',
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
                 },
                 itens: items.map((item: any) => ({
                     item: {
-                        codigo: item.product.id,
+                        codigo: item.product.sku || item.product.id,
                         descricao: item.product.name,
                         unidade: 'un',
                         quantidade: item.quantity,
@@ -36,11 +36,13 @@ export async function POST(request: Request) {
                 })),
                 meio_pagamento: paymentMethod === 'pix' ? 'Pix' : 
                                 paymentMethod === 'pay_at_store' ? 'A combinar' : 'Cartão de Crédito',
-                vendedor: 'Site Cyber Inform�tica'
+                vendedor: 'Site Cyber Informática',
+                obs: `Venda via Site - Identificador: ${orderId}`
             }
         };
 
         // 2. Enviar para o Olist se o Token existir
+        let olistSuccess = false;
         if (TINY_TOKEN && TINY_TOKEN !== 'token_fake' && TINY_TOKEN !== '') {
             const formData = new URLSearchParams();
             formData.append('token', TINY_TOKEN);
@@ -56,22 +58,40 @@ export async function POST(request: Request) {
             
             if (result.retorno.status === 'OK') {
                 console.log(`[API CHECKOUT] Pedido ${orderId} criado no Olist com sucesso.`);
+                olistSuccess = true;
             } else {
                 console.warn(`[API CHECKOUT] Olist retornou erro:`, result.retorno.erros);
             }
         } else {
             console.log('[API CHECKOUT] Token Olist ausente ou fake. Operando em modo SIMULADO.');
+            olistSuccess = true; 
+        }
+
+        // 3. Se o pedido foi registrado com sucesso (ou modo simulado), subtrair estoque no Supabase
+        if (olistSuccess) {
+            console.log(`[API CHECKOUT] Atualizando estoque no Supabase para o pedido ${orderId}...`);
+            const stockUpdates = items.map((item: any) => 
+                updateProductStock(item.product.id, item.quantity)
+                    .catch(err => {
+                        console.error(`[API CHECKOUT] Erro crítico ao atualizar estoque para ${item.product.id}:`, err);
+                        return null;
+                    })
+            );
+            await Promise.all(stockUpdates);
         }
 
         return NextResponse.json({
             success: true,
-            message: "Pedido integrado ao ecossistema Olist.",
+            message: olistSuccess ? "Pedido integrado e estoque atualizado." : "Pedido processado localmente.",
             transaction_id: `tx_${Math.random().toString(36).substring(7)}`,
-            status: "pending_payment"
+            status: olistSuccess ? "integrated" : "pending_sync"
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("[API CHECKOUT] Erro ao processar pedido:", error);
-        return NextResponse.json({ success: false, error: "Falha ao processar checkout" }, { status: 500 });
+        return NextResponse.json({ 
+            success: false, 
+            error: error.message || "Falha ao processar checkout" 
+        }, { status: 500 });
     }
 }
