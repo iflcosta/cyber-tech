@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { updateProductStock } from '@/lib/products';
+import { updateProductStock } from '@/lib/products-server';
 
 export async function POST(request: Request) {
     try {
