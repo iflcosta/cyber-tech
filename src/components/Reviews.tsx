@@ -18,15 +18,9 @@ export default function Reviews() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [newReview, setNewReview] = useState({ name: '', comment: '', rating: 5 });
+    const [newReview, setNewReview] = useState({ name: '', comment: '', rating: 5, voucher: '' });
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
-
-    const MOCK_REVIEWS: Review[] = [
-        { id: '1', user_name: 'Thiago Almeida', rating: 5, comment: 'Setup montado com perfeição. O atendimento da Cyber Informática é o melhor da região!', created_at: new Date().toISOString() },
-        { id: '2', user_name: 'Juliana Costa', rating: 5, comment: 'Excelente assistência técnica. Arrumaram meu iPhone em menãos de 1 hora.', created_at: new Date().toISOString() },
-        { id: '3', user_name: 'Marcos Oliveira', rating: 5, comment: 'PC Gamer rodando tudo não ultra. Recomendo demais!', created_at: new Date().toISOString() }
-    ];
 
     useEffect(() => {
         fetchReviews();
@@ -37,18 +31,18 @@ export default function Reviews() {
             const { data, error } = await supabase
                 .from('reviews')
                 .select('*')
-                .eq('approved', true)
+                .eq('is_approved', true)
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.warn('Supabase fetch failed, using fallback reviews.');
-                setReviews(MOCK_REVIEWS);
+                console.warn('Erro ao carregar reviews do Supabase.');
+                setReviews([]);
             } else {
-                setReviews(data && data.length > 0 ? data : MOCK_REVIEWS);
+                setReviews(data || []);
             }
         } catch (err) {
             console.error('Erro ao carregar reviews:', err);
-            setReviews(MOCK_REVIEWS);
+            setReviews([]);
         } finally {
             setLoading(false);
         }
@@ -66,13 +60,14 @@ export default function Reviews() {
                     user_name: newReview.name,
                     comment: newReview.comment,
                     rating: newReview.rating,
-                    approved: false
+                    voucher_code: newReview.voucher,
+                    is_approved: false
                 }]);
 
             if (error) throw error;
 
             setMessage({ type: 'success', text: 'Avaliação enviada com sucesso! Ela será exibida após moderação.' });
-            setNewReview({ name: '', comment: '', rating: 5 });
+            setNewReview({ name: '', comment: '', rating: 5, voucher: '' });
             setTimeout(() => setIsModalOpen(false), 3000);
         } catch (err) {
             setMessage({ type: 'error', text: 'Erro ao enviar avaliação. Tente nãovamente mais tarde.' });
@@ -173,6 +168,18 @@ export default function Reviews() {
                             ) : null}
 
                             <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="relative z-10">
+                                    <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Código do Voucher</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="Digite o código (ex: BPC-XXXX)"
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-6 py-4 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-medium placeholder:opacity-20 uppercase"
+                                        value={newReview.voucher}
+                                        onChange={(e) => setNewReview({ ...newReview, voucher: e.target.value.toUpperCase() })}
+                                    />
+                                </div>
+
                                 <div className="relative z-10">
                                     <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3">Como devemos te chamar?</label>
                                     <input

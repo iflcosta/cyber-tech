@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getGeminiResponse } from "@/lib/gemini";
 import { getProducts } from "@/lib/products";
 import { useLeadModal } from "@/contexts/LeadModalContext";
+import { brand } from "@/lib/brand";
 
 type Message = { role: 'user' | 'ai', content: string };
 type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
@@ -138,6 +139,37 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
         setLoading(false);
     };
 
+    const handleDirectWhatsApp = (aiContent: string) => {
+        const voucher = `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        const text = `Olá! Vi sua Cyber IA no site e gostaria de aproveitar meu voucher de desconto: ${voucher}\n\nAssunto: ${aiContent.slice(0, 150)}...`;
+        window.open(`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    const renderContent = (content: string) => {
+        return content.split('\n\n').map((paragraph, pIndex) => {
+            const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+            return (
+                <p key={pIndex} className={pIndex > 0 ? 'mt-3' : ''}>
+                    {parts.map((part, index) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                            return (
+                                <strong key={index} className="text-[var(--accent-primary)] font-black">
+                                    {part.slice(2, -2)}
+                                </strong>
+                            );
+                        }
+                        return part.split('\n').map((line, lIndex) => (
+                            <span key={lIndex}>
+                                {line}
+                                {lIndex < part.split('\n').length - 1 && <br />}
+                            </span>
+                        ));
+                    })}
+                </p>
+            );
+        });
+    };
+
     return (
         <div className="fixed bottom-6 right-6 z-[100] font-sans">
             <AnimatePresence>
@@ -175,7 +207,18 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                         ? 'bg-[var(--accent-glow)] text-[var(--bg-primary)] font-bold border border-[var(--accent-primary)]/30' 
                                         : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]'
                                     }`}>
-                                        {msg.content}
+                                        {renderContent(msg.content)}
+                                        {msg.role === 'ai' && (msg.content.toLowerCase().includes('whatsapp') || msg.content.toLowerCase().includes('chama no')) && (
+                                            <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]/30">
+                                                <button 
+                                                    onClick={() => handleDirectWhatsApp(msg.content)}
+                                                    className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-[var(--bg-primary)] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_4px_10px_rgba(255,107,0,0.2)]"
+                                                >
+                                                    <Sparkles size={12} fill="currentColor" />
+                                                    Gerar Voucher & Chamar WhatsApp
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

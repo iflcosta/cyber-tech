@@ -4,6 +4,7 @@ import { Menu, X as CloseIcon, MessageSquare, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { brand } from "@/lib/brand";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,10 +14,11 @@ export default function Header() {
 
     const menuItems = [
         { label: "Produtos", href: "/#produtos" },
-        { label: "Manutenção", href: "/manutencao" },
+        { label: "Manutenção", href: "/#assistencia" },
         { label: "PC Builder", href: "/#pc-builder" },
-        { label: "Calculadora", href: "/calculadora" },
     ];
+
+    const pathname = usePathname();
 
     useEffect(() => {
         const checkStatus = () => {
@@ -76,9 +78,29 @@ export default function Header() {
     };
 
     const scrollToTop = (e: React.MouseEvent) => {
-        if (window.location.pathname === '/') {
+        if (pathname === '/') {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleNavClick = (e: React.MouseEvent, href: string) => {
+        if (href.startsWith('/#') && pathname === '/') {
+            const id = href.replace('/#', '');
+            const element = document.getElementById(id);
+            if (element) {
+                e.preventDefault();
+                const offset = 80;
+                const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+                
+                if (isMenuOpen) setIsMenuOpen(false);
+            }
         }
     };
 
@@ -86,16 +108,12 @@ export default function Header() {
         <>
         <header className="fixed top-0 w-full z-[100] bg-[var(--bg-primary)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
-                <Link href="/" onClick={scrollToTop} className="flex items-center gap-3 group">
+                <Link href="/" onClick={scrollToTop} className="flex items-center">
                     <img 
-                        src="/logo.png" 
-                        alt="Cyber Informática" 
-                        className="w-10 h-10 object-contain brightness-110 contrast-125"
+                      src="/logo.png" 
+                      alt="Cyber Informática" 
+                      className="h-10 md:h-12 w-auto object-contain mix-blend-multiply contrast-125"
                     />
-                    <div className="flex flex-col">
-                        <span className="text-xl font-display font-bold tracking-[0.05em] text-[var(--text-primary)] leading-none chrome-text">CYBER</span>
-                        <span className="text-[10px] font-mono tracking-[0.2em] text-[var(--text-secondary)] uppercase">Informática</span>
-                    </div>
                 </Link>
 
                 {/* Desktop Nav */}
@@ -104,6 +122,7 @@ export default function Header() {
                         <Link 
                             key={item.label} 
                             href={item.href} 
+                            onClick={(e) => handleNavClick(e, item.href)}
                             className="text-[12px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase tracking-wider transition-colors relative group"
                         >
                             {item.label}
@@ -176,7 +195,10 @@ export default function Header() {
                                 <Link
                                     key={item.label}
                                     href={item.href}
-                                    onClick={toggleMenu}
+                                    onClick={(e) => {
+                                        handleNavClick(e, item.href);
+                                        if (!item.href.startsWith('/#')) toggleMenu();
+                                    }}
                                     className="text-[14px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-elevated)] px-5 py-4 rounded-md border border-[var(--border-subtle)] transition-all flex items-center justify-between uppercase tracking-wider"
                                 >
                                     {item.label}

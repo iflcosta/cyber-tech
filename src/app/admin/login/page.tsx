@@ -59,7 +59,7 @@ export default function AdminLogin() {
                     <h1 className="text-3xl font-black italic tracking-tighter uppercase italic">
                         Cyber <span className="text-blue-500 text-shadow-glow">Access</span>
                     </h1>
-                    <p className="text-white/40 mt-2 text-sm font-medium">Área Restrita Administrativa</p>
+                    <p className="text-white/80 mt-2 text-sm font-medium">Área Restrita Administrativa</p>
                 </div>
 
                 {error && (
@@ -75,31 +75,31 @@ export default function AdminLogin() {
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">E-mail Administrativo</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/90 ml-4">E-mail Administrativo</label>
                         <div className="relative group">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-blue-500 transition-colors" size={18} />
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 group-focus-within:text-blue-500 transition-colors" size={18} />
                             <input
                                 required
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="admin@cybertech.com"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.08]"
+                                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.15] text-white placeholder:text-white/30"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-4">Senha</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/90 ml-4">Senha</label>
                         <div className="relative group">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-blue-500 transition-colors" size={18} />
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 group-focus-within:text-blue-500 transition-colors" size={18} />
                             <input
                                 required
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.08]"
+                                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.15] text-white placeholder:text-white/30"
                             />
                         </div>
                     </div>
@@ -117,7 +117,7 @@ export default function AdminLogin() {
                     </button>
                 </form>
 
-                <p className="text-center text-white/20 text-xs mt-10 font-bold uppercase tracking-widest">
+                <p className="text-center text-white/40 text-xs mt-10 font-bold uppercase tracking-widest">
                     Authorized Personnel Only
                 </p>
             </motion.div>

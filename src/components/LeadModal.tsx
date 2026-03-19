@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Copy, Send, Monitor, Smartphone, Wrench, HelpCircle, ArrowRight } from 'lucide-react';
 import { trackLead } from '@/lib/leads';
 import { brand } from '@/lib/brand';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { useLeadModal } from '@/contexts/LeadModalContext';
 
 type LeadStep = 'intent' | 'details' | 'success';
@@ -21,6 +21,7 @@ export default function LeadModal() {
     const [name, setName] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
     const [description, setDescription] = useState('');
+    const [deviceModel, setDeviceModel] = useState('');
     const [budget, setBudget] = useState('');
     const [usage, setUsage] = useState('');
 
@@ -29,8 +30,34 @@ export default function LeadModal() {
     const [mounted, setMounted] = useState(false);
     
     const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const [redirectTimer, setRedirectTimer] = useState<number | null>(null);
 
-    // Sync context goal and reset state when opening/closing
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const [countdown, setCountdown] = useState(5);
+
+    useEffect(() => {
+        if (step === 'success') {
+            const timer = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        const url = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida'}.`)}`;
+                        window.open(url, '_blank');
+                        closeModal();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            return () => clearInterval(timer);
+        } else {
+            setCountdown(5);
+        }
+    }, [step, voucher, brand.whatsapp, whatsappMessage, goal, closeModal]);
     useEffect(() => {
         if (isOpen) {
             if (initialGoal) {
@@ -47,7 +74,8 @@ export default function LeadModal() {
     }, [isOpen, initialGoal]);
 
     useEffect(() => {
-        setMounted(true);
+        if (!mounted || pathname.startsWith('/admin')) return;
+
         const hasUTM = searchParams.get('utm_source') || searchParams.get('utm_medium');
         const expiry = localStorage.getItem('lead_modal_expiry');
         const isExpired = !expiry || new Date().getTime() > parseInt(expiry);
@@ -68,7 +96,7 @@ export default function LeadModal() {
                 document.removeEventListener('mouseleave', handleMouseLeave);
             };
         }
-    }, [searchParams, openModal]);
+    }, [searchParams, openModal, mounted, pathname]);
 
     useEffect(() => {
         if (isOpen) {
@@ -108,7 +136,9 @@ export default function LeadModal() {
         
         // Merge descriptions
         let finalDescription = description;
-        if (goal === 'compra') {
+        if (goal === 'manutencao') {
+            finalDescription = `Modelo: ${deviceModel} | Problema: ${description}`;
+        } else if (goal === 'compra') {
             finalDescription = `Orçamento: ${budget} | Uso: ${usage}${description ? ' | Obs: ' + description : ''}`;
             if (budget === 'acima de R$3.000') {
                 currentIntent = 'compra_imediata';
@@ -139,6 +169,8 @@ export default function LeadModal() {
         if (code) {
             setVoucher(code);
             setStep('success');
+            // Inform the user we are redirecting? Or just let them click.
+            // Let's stick to the button first but make it EXTREMELY prominent.
         }
         setLoading(false);
     };
@@ -208,9 +240,15 @@ export default function LeadModal() {
                                         </div>
 
                                         {goal === 'manutencao' ? (
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que está acontecendo?</label>
-                                                <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva brevemente o problema..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
+                                            <div className="space-y-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Modelo do Dispositivo</label>
+                                                    <input required type="text" value={deviceModel} onChange={(e) => setDeviceModel(e.target.value)} placeholder="Ex: iPhone 13, Notebook Dell G15..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que está acontecendo?</label>
+                                                    <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva brevemente o problema..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
+                                                </div>
                                             </div>
                                         ) : goal === 'compra' ? (
                                             <>
@@ -256,8 +294,11 @@ export default function LeadModal() {
                                             </div>
                                         </div>
                                         <h2 className="text-2xl font-display font-bold uppercase mb-2 chrome-text">VOUCHER LIBERADO!</h2>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-8 px-4">
-                                            Seu código <span className="text-[var(--text-primary)] font-bold">BPC</span> foi gerado com sucesso. Use-o para prioridade no atendimento.
+                                        <p className="text-[var(--text-secondary)] text-sm mb-4 px-4">
+                                            Seu código <span className="text-[var(--text-primary)] font-bold">BPC</span> foi gerado com sucesso.
+                                        </p>
+                                        <p className="text-[var(--accent-success)] text-[10px] font-mono font-bold uppercase tracking-widest mb-6">
+                                            Redirecionando para o WhatsApp em {countdown}s...
                                         </p>
 
                                         <div className="bg-[var(--bg-elevated)] border border-dashed border-[var(--border-subtle)] rounded-xl p-8 mb-8 relative group overflow-hidden shadow-inner">

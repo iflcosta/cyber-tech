@@ -33,6 +33,7 @@ export default function AdminDashboard() {
         finalValue: '',
         costValue: '',
         ecosystemCaptured: true,
+        isAssembly: false,
         executor: 'owner' // 'owner', 'iago', 'partner'
     });
 
@@ -143,17 +144,33 @@ export default function AdminDashboard() {
         const val = parseFloat(commissionForm.finalValue) || 0;
         const cost = parseFloat(commissionForm.costValue) || 0;
 
-        let iagoEcosystemPart = commissionForm.ecosystemCaptured ? (val * 0.05) : 0;
-        let iagoServicePart = (commissionForm.executor === 'iago') ? (val * 0.03) : 0;
+        const digitalSources = ['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'];
+        const isDigital = digitalSources.includes(selectedLeadForCommission.marketing_source?.toLowerCase());
+        
+        // Base Protocol: 8% standard, 5% if > 7500 for Digital Leads
+        let baseRate = 0;
+        if (isDigital) {
+            baseRate = val > 7500 ? 0.05 : 0.08;
+        } else if (commissionForm.ecosystemCaptured) {
+            // Manual leads still use the old 5% "Ecosystem Bounty" if checked, 
+            // unless we want to apply the 8%/5% rule to everyone.
+            // But the user was specific about "conversões que vem do site, instagram ou facebook".
+            baseRate = 0.05;
+        }
 
-        const totalIagoEarnings = iagoEcosystemPart + iagoServicePart;
+        // Assembly Protocol: +3% strictly for PC Builds
+        const isPCBuild = selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly;
+        let assemblyRate = isPCBuild ? 0.03 : 0;
+
+        const totalIagoEarnings = (val * baseRate) + (val * assemblyRate);
+
         const updateData = {
             status: 'converted',
             final_value: val,
             cost_value: cost,
             commission_value: totalIagoEarnings,
-            commission_ecosystem: commissionForm.ecosystemCaptured,
-            commission_service: commissionForm.executor === 'iago',
+            commission_ecosystem: isDigital || commissionForm.ecosystemCaptured,
+            commission_service: isPCBuild,
             performed_by_partner: commissionForm.executor === 'partner',
             converted_at: new Date().toISOString()
         };
@@ -823,6 +840,7 @@ export default function AdminDashboard() {
                                                                 finalValue: '',
                                                                 costValue: '',
                                                                 ecosystemCaptured: true,
+                                                                isAssembly: false,
                                                                 executor: 'owner'
                                                             });
                                                             setShowCommissionModal(true);
@@ -1111,6 +1129,7 @@ export default function AdminDashboard() {
                                                                         finalValue: order.final_value?.toString() || '',
                                                                         costValue: order.cost_value?.toString() || '',
                                                                         ecosystemCaptured: (order as any).commission_ecosystem ?? true,
+                                                                        isAssembly: (order as any).commission_service ?? false,
                                                                         executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : 'owner')
                                                                     });
                                                                     setShowCommissionModal(true);
@@ -1130,6 +1149,7 @@ export default function AdminDashboard() {
                                                                         finalValue: '',
                                                                         costValue: '',
                                                                         ecosystemCaptured: true,
+                                                                        isAssembly: false,
                                                                         executor: 'owner'
                                                                     });
                                                                     setShowCommissionModal(true);
@@ -1463,20 +1483,61 @@ export default function AdminDashboard() {
                                 </div>
                             )}
 
+                            {/* Digital Protocol Check */}
+                            {['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'].includes(selectedLeadForCommission.marketing_source?.toLowerCase()) ? (
+                                <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(var(--accent-primary-rgb),0.05)]">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-6 h-6 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center border border-[var(--accent-primary)]/20">
+                                            <CheckCircle2 size={14} className="text-[var(--accent-primary)]" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Digital Protocol Active</div>
+                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
+                                                Automated Commission Applied: {parseFloat(commissionForm.finalValue) > 7500 ? '5% (>7.5k)' : '8% (Standard)'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
+                                    <label className="flex items-start gap-4 cursor-pointer group">
+                                        <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
+                                            <input
+                                                type="checkbox"
+                                                checked={commissionForm.ecosystemCaptured}
+                                                onChange={(e) => setCommissionForm({ ...commissionForm, ecosystemCaptured: e.target.checked })}
+                                                className="opacity-0 absolute inset-0 cursor-pointer z-10"
+                                            />
+                                            {commissionForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Ecosystem Bounty (+5%)</div>
+                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Manual/External Lead referral protocol.</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            )}
+
+                            {/* Assembly Protocol Check */}
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
                                 <label className="flex items-start gap-4 cursor-pointer group">
                                     <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
                                         <input
                                             type="checkbox"
-                                            checked={commissionForm.ecosystemCaptured}
-                                            onChange={(e) => setCommissionForm({ ...commissionForm, ecosystemCaptured: e.target.checked })}
-                                            className="opacity-0 absolute inset-0 cursor-pointer z-10"
+                                            checked={selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly}
+                                            disabled={selectedLeadForCommission.interest_type === 'pc_build'}
+                                            onChange={(e) => setCommissionForm({ ...commissionForm, isAssembly: e.target.checked })}
+                                            className="opacity-0 absolute inset-0 cursor-pointer z-10 disabled:cursor-not-allowed"
                                         />
-                                        {commissionForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                        {(selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly) && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                     </div>
                                     <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Ecosystem Bounty (+5%)</div>
-                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Lead captured via automated digital interfaces (Site/ADS).</div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Assembly Protocol (+3%)</div>
+                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
+                                            {selectedLeadForCommission.interest_type === 'pc_build' 
+                                                ? 'Automatically applied for PC Build interest.' 
+                                                : 'Manual trigger for PC building/mounting service.'}
+                                        </div>
                                     </div>
                                 </label>
                             </div>
