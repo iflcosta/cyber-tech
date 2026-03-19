@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { brand } from "@/lib/brand";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "./Logo";
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -109,11 +110,7 @@ export default function Header() {
         <header className="fixed top-0 w-full z-[100] bg-[var(--bg-primary)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
                 <Link href="/" onClick={scrollToTop} className="flex items-center">
-                    <img 
-                      src="/logo.png" 
-                      alt="Cyber Informática" 
-                      className="h-10 md:h-12 w-auto object-contain mix-blend-multiply contrast-125"
-                    />
+                    <Logo className="h-10 md:h-12 w-auto" />
                 </Link>
 
                 {/* Desktop Nav */}
