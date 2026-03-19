@@ -70,16 +70,23 @@ export default function Header() {
     };
 
     const statusBg = {
-        open: "bg-[var(--accent-success)]/10",
-        closing: "bg-amber-500/10",
-        closed: "bg-[var(--accent-hot)]/10"
+        open: "bg-[var(--accent-success)]/20",
+        closing: "bg-amber-500/20",
+        closed: "bg-[var(--accent-hot)]/20"
+    };
+
+    const scrollToTop = (e: React.MouseEvent) => {
+        if (window.location.pathname === '/') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     return (
         <>
         <header className="fixed top-0 w-full z-[100] bg-[var(--bg-primary)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
-                <Link href="/" className="flex items-center gap-3 group">
+                <Link href="/" onClick={scrollToTop} className="flex items-center gap-3 group">
                     <img 
                         src="/logo.png" 
                         alt="Cyber Informática" 

@@ -1,33 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  /* Cromados — extraídos do logo */
-  --chrome-light: #E8E8E8;
-  --chrome-mid: #C0C0C0;
-  --chrome-dark: #8A8A8A;
-  --chrome-shadow: #2A2A2A;
+  /* Cromados — escurecidos para contraste no fundo claro */
+  --chrome-light: #B8B8B8;
+  --chrome-mid: #666666;
+  --chrome-dark: #333333;
+  --chrome-shadow: rgba(0, 0, 0, 0.1);
 
-  /* Background — dark industrial */
-  --bg-primary: #0D0D0F;
-  --bg-secondary: #141416;
-  --bg-surface: #1A1A1E;
-  --bg-elevated: #222228;
+  /* Background — light industrial */
+  --bg-primary: #F2F2F5;
+  --bg-secondary: #E8E8EB;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F8F8FA;
 
   /* Acentos */
-  --accent-primary: #C0C0C0;      /* Prata cromado */
-  --accent-glow: #D8D8E8;         /* Brilho metálico suave */
-  --accent-hot: #E84C4C;          /* Vermelho para urgência/estoque baixo */
-  --accent-success: #4CAF7D;      /* Verde para confirmações */
+  --accent-primary: #8A8A8A;      /* Titânio escuro para contraste */
+  --accent-glow: rgba(138, 138, 138, 0.15);
+  --accent-hot: #E84C4C;
+  --accent-success: #3A8F66;
 
   /* Texto */
-  --text-primary: #F0F0F2;
-  --text-secondary: #9090A0;
-  --text-muted: #505060;
+  --text-primary: #1A1A1E;
+  --text-secondary: #505060;
+  --text-muted: #8A8A9A;
 
   /* Bordas */
-  --border-subtle: rgba(192, 192, 192, 0.12);
-  --border-active: rgba(192, 192, 192, 0.35);
-  --border-glow: rgba(216, 216, 232, 0.6);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-active: rgba(0, 0, 0, 0.15);
+  --border-glow: rgba(0, 0, 0, 0.05);
 
   --radius: 4px;
 }
@@ -99,6 +99,7 @@ code, .mono {
 
   .chrome-text {
     @apply bg-gradient-to-b from-[var(--chrome-light)] via-[var(--chrome-mid)] to-[var(--chrome-dark)] bg-clip-text text-transparent;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1)); /* Sombra escura sutil para contraste no fundo claro */
   }
 }
 

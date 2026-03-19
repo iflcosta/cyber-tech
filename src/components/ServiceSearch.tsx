@@ -139,7 +139,7 @@ export default function ServiceSearch() {
                                 placeholder="CÓDIGO DO PEDIDO OU VOUCHER..."
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value.toUpperCase())}
-                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg py-4 pl-12 pr-4 text-[var(--text-primary)] font-display font-bold uppercase tracking-tight focus:outline-none focus:border-[var(--accent-primary)] transition-all placeholder:opacity-30"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-lg py-4 pl-12 pr-4 text-[var(--text-primary)] font-display font-bold uppercase tracking-tight focus:outline-none focus:border-[var(--text-muted)] transition-all placeholder:opacity-40"
                             />
                         </div>
                         <button

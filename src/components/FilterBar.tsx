@@ -38,8 +38,8 @@ export function FilterBar() {
           className={cn(
             "px-4 py-1.5 rounded-lg text-[10px] font-display font-bold uppercase tracking-[0.15em] transition-all duration-300",
             currentCategory === cat.id
-              ? "bg-[var(--accent-primary)] text-[var(--bg-primary)] shadow-[0_0_15px_var(--border-glow)]"
-              : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]"
+              ? "bg-[var(--text-primary)] text-[var(--bg-primary)] shadow-md"
+              : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]"
           )}
         >
           {cat.label}

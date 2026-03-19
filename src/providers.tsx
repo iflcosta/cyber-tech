@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { CartProvider } from "@/contexts/CartContext";
 import { LeadModalProvider } from "@/contexts/LeadModalContext";
 import CartSidebar from "@/components/CartSidebar";
@@ -9,7 +10,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <CartProvider>
                 {children}
                 <CartSidebar />
-                <LeadModal />
+                <Suspense fallback={null}>
+                    <LeadModal />
+                </Suspense>
             </CartProvider>
         </LeadModalProvider>
     );

@@ -135,8 +135,8 @@ export default function Reviews() {
                                 </div>
                             </motion.div>
                         )) : (
-                            <div className="md:col-span-3 text-center py-24 bg-white/50 rounded-[2px] border border-dashed border-[#D4D2CF] text-[#AAAAAA] font-bold uppercase tracking-widest text-[10px]">
-                                Nenhuma avaliação aprovada não momento. Seja o primeiro!
+                            <div className="md:col-span-3 text-center py-24 bg-[var(--bg-secondary)] rounded-lg border border-dashed border-[var(--border-subtle)] text-[var(--text-muted)] font-bold uppercase tracking-widest text-[10px]">
+                                Nenhuma avaliação aprovada no momento. Seja o primeiro!
                             </div>
                         )}
                     </div>

@@ -68,7 +68,7 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
           className="mb-3 cursor-zoom-in"
           onClick={() => product.image_urls && onOpenGallery?.(product.image_urls)}
         >
-          <Badge variant="secondary" className="text-[8px] font-display tracking-widest rounded-lg bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-subtle)]">
+          <Badge variant="secondary" className="text-[8px] font-display tracking-widest rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-subtle)]">
             {product.category.replace('_', ' ')}
           </Badge>
         </div>
@@ -77,18 +77,18 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
         </h3>
         
         <div className="space-y-2 mb-8" onClick={onInterest}>
-          <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
-            <Cpu size={12} className="text-[var(--accent-primary)]" />
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+            <Cpu size={12} className="text-[var(--text-primary)]" />
             <span>{product.specs.cpu}</span>
           </div>
           {product.specs.gpu && (
-            <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
-              <Zap size={12} className="text-[var(--accent-primary)]" />
+            <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+              <Zap size={12} className="text-[var(--text-primary)]" />
               <span>{product.specs.gpu}</span>
             </div>
           )}
-          <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">
-            <span className="text-[var(--text-primary)]">{product.specs.ram} RAM</span> • 
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+            <span className="text-[var(--text-primary)] font-black">{product.specs.ram} RAM</span> • 
             <span>{product.specs.storage}</span>
           </div>
         </div>
