@@ -425,11 +425,11 @@ export default function AdminDashboard() {
 
                 <nav className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-4 custom-scrollbar">
                     {[
-                        { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
-                        { id: 'leads', label: 'Triage & Leads', icon: Users },
-                        { id: 'products', label: 'Showroom Stock', icon: Package },
-                        { id: 'maintenance', label: 'Technicals', icon: RefreshCw },
-                        { id: 'reviews', label: 'CX / Feedback', icon: Star },
+                        { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
+                        { id: 'leads', label: 'Leads', icon: Users },
+                        { id: 'products', label: 'Produtos', icon: Package },
+                        { id: 'maintenance', label: 'Manução', icon: RefreshCw },
+                        { id: 'reviews', label: 'Depoimentos', icon: Star },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -466,7 +466,7 @@ export default function AdminDashboard() {
                         {/* Secondary View: Types Breakdown, Marketing Channels and Inventory Alerts */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Breakdown by Type */}
-                            <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
+                            <div className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)]">
                                 <h3 className="text-sm font-black uppercase italic mb-6">Volume por Segmento</h3>
                                 <div className="space-y-6">
                                     {[
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Marketing Channels */}
-                            <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
+                            <div className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)]">
                                 <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
                                     📡 Canais de Marketing
                                 </h3>
@@ -521,7 +521,7 @@ export default function AdminDashboard() {
                                         const sorted = Object.entries(channels).sort((a: any, b: any) => b[1] - a[1]);
 
                                         if (sorted.length === 0) {
-                                            return <div className="text-[var(--text-muted)] italic text-[10px] font-mono uppercase tracking-widest text-center py-12 border-2 border-dashed border-[var(--border-subtle)] rounded-2xl">No Data Stream Detected</div>;
+                                            return <div className="text-slate-500 italic text-[10px] font-mono uppercase tracking-widest text-center py-12 border-2 border-dashed border-[var(--border-subtle)] rounded-2xl">Sem dados ainda</div>;
                                         }
 
                                         return sorted.map(([key, count]: [string, any]) => {
@@ -566,7 +566,7 @@ export default function AdminDashboard() {
                                         ))
                                     ) : (
                                         <div className="h-full flex items-center justify-center py-10">
-                                            <div className="text-[10px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] italic opacity-40">System Nominal // All Modules Stocked</div>
+                                            <div className="text-[10px] font-mono font-black uppercase tracking-widest text-slate-500 italic opacity-60">Estoque normal — todos os produtos OK</div>
                                         </div>
                                     )}
                                 </div>
@@ -593,14 +593,14 @@ export default function AdminDashboard() {
                                     <div className="lg:col-span-2 bg-[var(--bg-elevated)] p-10 rounded-3xl border border-[var(--border-subtle)] relative overflow-hidden group">
                                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-10" />
                                         <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-10 flex items-center gap-3">
-                                            <TrendingUp size={14} className="text-green-500" /> Ledger Settlement (Aggregate)
+                                            <TrendingUp size={14} className="text-green-500" /> Resumo Financeiro
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                             {/* Loja Card */}
                                             <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-green-500/20 relative overflow-hidden group/card hover:border-green-500/40 transition-all">
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-green-500 opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[9px] font-mono font-black text-green-400 opacity-60 uppercase tracking-widest mb-3">Store Net Yield</div>
+                                                    <div className="text-[9px] font-mono font-black text-green-400 opacity-60 uppercase tracking-widest mb-3">Loja (Líquido)</div>
                                                     <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalLoja.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -614,7 +614,7 @@ export default function AdminDashboard() {
                                             <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-[var(--accent-primary)]/20 relative overflow-hidden group/card hover:border-[var(--accent-primary)]/40 transition-all">
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--accent-primary)] opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] opacity-60 uppercase tracking-widest mb-3">Consultant Bounty</div>
+                                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] opacity-60 uppercase tracking-widest mb-3">Comissão Iago</div>
                                                     <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalIago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -628,7 +628,7 @@ export default function AdminDashboard() {
                                             <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-purple-500/20 relative overflow-hidden group/card hover:border-purple-500/40 transition-all">
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500 opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[9px] font-mono font-black text-purple-400 opacity-60 uppercase tracking-widest mb-3">Technical Partition</div>
+                                                    <div className="text-[9px] font-mono font-black text-purple-400 opacity-60 uppercase tracking-widest mb-3">Técnico Parceiro</div>
                                                     <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -686,20 +686,20 @@ export default function AdminDashboard() {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
-                                        <th className="p-6">Client / Bio</th>
-                                        <th className="p-6">Diagnosis</th>
-                                        <th className="p-6">Source</th>
+                                        <th className="p-6">Cliente / Dados</th>
+                                        <th className="p-6">Tipo</th>
+                                        <th className="p-6">Origem</th>
                                         <th className="p-6 text-center">Voucher</th>
-                                        <th className="p-6">Production</th>
-                                        <th className="p-6">Financial</th>
-                                        <th className="p-6 text-right">Yield</th>
+                                        <th className="p-6">Status</th>
+                                        <th className="p-6">Pagamento</th>
+                                        <th className="p-6 text-right">Resultado</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
                                     {leads.filter(l => l.interest_type !== 'manutencao').length > 0 ? leads.filter(l => l.interest_type !== 'manutencao').map((lead) => (
                                         <tr key={lead.id} className="hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group">
                                             <td className="p-6">
-                                                <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{lead.client_name || "Nexus Guest"}</div>
+                                                <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{lead.client_name || "Cliente"}</div>
                                                 <div className="font-mono text-[10px] text-[var(--accent-primary)] mb-3">{lead.whatsapp || lead.session_id}</div>
                                                 {lead.description && (
                                                     <div className="text-[10px] font-medium bg-[var(--bg-primary)] p-3 rounded-xl text-[var(--text-secondary)] border border-[var(--border-subtle)] max-w-xs italic leading-relaxed relative overflow-hidden">
@@ -745,7 +745,7 @@ export default function AdminDashboard() {
                                                 ) : <span className="opacity-20">—</span>}
                                             </td>
                                             <td className="p-6">
-                                                <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Produção / Logística</div>
+                                                <div className="text-[10px] text-slate-400 uppercase mb-1 font-bold tracking-widest">Progresso</div>
                                                 <select
                                                     value={lead.status}
                                                     onChange={(e) => updateStatus(lead.id, e.target.value)}
@@ -784,7 +784,7 @@ export default function AdminDashboard() {
                                                 </select>
                                             </td>
                                             <td className="p-6">
-                                                <div className="text-[10px] text-white/40 uppercase mb-1 font-bold tracking-widest">Pagamento</div>
+                                                <div className="text-[10px] text-slate-400 uppercase mb-1 font-bold tracking-widest">Pagamento</div>
                                                 <select
                                                     value={lead.payment_status || 'pending'}
                                                     onChange={(e) => updatePaymentStatus(lead.id, e.target.value)}
@@ -845,7 +845,7 @@ export default function AdminDashboard() {
                                                             });
                                                             setShowCommissionModal(true);
                                                         }}
-                                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-4 py-2 rounded-lg transition-all block"
+                                                        className="w-full bg-white hover:bg-slate-200 text-[#121216] text-[10px] font-black px-4 py-2 rounded-lg transition-all block"
                                                     >
                                                         FINALIZAR COMO VENDIDO
                                                     </button>
@@ -862,7 +862,7 @@ export default function AdminDashboard() {
                                         </tr>
                                     )) : (
                                         <tr>
-                                            <td colSpan={7} className="p-12 text-center text-white/20 italic">
+                                            <td colSpan={7} className="p-12 text-center text-slate-500 italic">
                                                 {loading ? "Carregando dados..." : "Nenhum lead encontrado."}
                                             </td>
                                         </tr>
@@ -988,11 +988,11 @@ export default function AdminDashboard() {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
-                                        <th className="p-6">Ticket / Identity</th>
-                                        <th className="p-6">Device</th>
-                                        <th className="p-6">Workflow</th>
-                                        <th className="p-6">Treasury</th>
-                                        <th className="p-6 text-right">Settlement</th>
+                                        <th className="p-6">Ordem / Cliente</th>
+                                        <th className="p-6">Equipamento</th>
+                                        <th className="p-6">Progresso</th>
+                                        <th className="p-6">Pagamento</th>
+                                        <th className="p-6 text-right">Finalização</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -1036,7 +1036,7 @@ export default function AdminDashboard() {
                                         if (merged.length === 0) {
                                             return (
                                                 <tr>
-                                                    <td colSpan={5} className="p-12 text-center text-white/20 italic">Nenhuma ordem encontrada.</td>
+                                                    <td colSpan={5} className="p-12 text-center text-slate-500 italic">Nenhuma ordem encontrada.</td>
                                                 </tr>
                                             );
                                         }
@@ -1045,7 +1045,7 @@ export default function AdminDashboard() {
                                             <tr key={order.id} className="hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group">
                                                 <td className="p-6">
                                                     <div className="font-mono text-[var(--accent-primary)] font-black text-xs mb-1 tracking-tight">{order.voucher_code}</div>
-                                                    <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{order.customer_name || "Nexus Client"}</div>
+                                                    <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{order.customer_name || "Cliente"}</div>
                                                     <div className="font-mono text-[10px] text-[var(--text-muted)] mb-3">{order.customer_phone || (order as any).customer_email}</div>
                                                     {order.problem_description && (
                                                         <div className="text-[10px] font-medium bg-[var(--bg-primary)] p-3 rounded-xl text-[var(--text-secondary)] border border-[var(--border-subtle)] max-w-xs italic leading-relaxed relative overflow-hidden">
@@ -1060,7 +1060,7 @@ export default function AdminDashboard() {
                                                     </span>
                                                 </td>
                                                 <td className="p-6">
-                                                    <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Operation Mode</div>
+                                                    <div className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest mb-2">Status da Ordem</div>
                                                     <select
                                                         value={order.status || 'pending'}
                                                         onChange={(e) => updateMaintenanceStatus(order.id, e.target.value)}
@@ -1079,7 +1079,7 @@ export default function AdminDashboard() {
                                                     </select>
                                                 </td>
                                                 <td className="p-6">
-                                                    <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-2">Treasury Status</div>
+                                                    <div className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest mb-2">Status de Pagamento</div>
                                                     <select
                                                         value={order.payment_status || 'pending'}
                                                         onChange={(e) => updateMaintenancePaymentStatus(order.id, e.target.value)}
@@ -1155,7 +1155,7 @@ export default function AdminDashboard() {
                                                                     setShowCommissionModal(true);
                                                                 }}
                                                             >
-                                                                Finalize Order
+                                                                Finalizar Ordem
                                                             </button>
                                                             <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] text-center uppercase tracking-widest mt-2">
                                                                 Opened: {new Date(order.created_at).toLocaleDateString('pt-BR')}
@@ -1181,7 +1181,7 @@ export default function AdminDashboard() {
                                 }}
                                 className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-8 py-4 rounded-xl font-display font-black uppercase tracking-widest text-xs flex items-center gap-3 transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(var(--accent-primary-rgb),0.2)]"
                             >
-                                <Plus size={18} strokeWidth={3} /> Register Component
+                                <Plus size={18} strokeWidth={3} /> Cadastrar Produto
                             </button>
                         </div>
 
@@ -1190,20 +1190,20 @@ export default function AdminDashboard() {
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-xl font-display font-black italic uppercase tracking-tighter chrome-text">
-                                        {editingProduct ? 'Update System Interface' : 'Initialize New Entry'}
+                                        {editingProduct ? 'Editar Produto' : 'Cadastrar Produto'}
                                     </h3>
                                     <div className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest bg-[var(--bg-primary)] px-3 py-1 rounded-full border border-[var(--border-subtle)]">
-                                        {editingProduct ? `UUID: ${editingProduct.id.slice(0,8)}` : 'Draft Mode'}
+                                        {editingProduct ? `ID: ${editingProduct.id.slice(0,8)}` : 'Rascunho'}
                                     </div>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Component Name</label>
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Nome do produto</label>
                                         <input name="name" defaultValue={editingProduct?.name} placeholder="Ex: RTX 4070 SUPER" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Registry Category</label>
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Categoria</label>
                                         <select name="category" defaultValue={editingProduct?.category || 'kit'} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all uppercase appearance-none">
                                             <option value="kit">Kit Gamer</option>
                                             <option value="smartphone">Smartphone</option>
@@ -1212,24 +1212,24 @@ export default function AdminDashboard() {
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Base Valuation (R$)</label>
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Preço (R$)</label>
                                         <input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} placeholder="0.00" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Inventory Count</label>
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Estoque</label>
                                         <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="0" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Stock Keeping Unit (SKU)</label>
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">SKU (ID no ERP)</label>
                                         <input name="sku" defaultValue={editingProduct?.sku} placeholder="ERP-SYNC-ID" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-xs font-mono font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" />
                                     </div>
                                     <div className="md:col-span-2 space-y-6">
                                         <div className="space-y-2">
-                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">System Specifications (JSON)</label>
+                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Especificações (JSON)</label>
                                             <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='{"key": "value"}' className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 focus:border-[var(--accent-primary)]/50 outline-none h-32 font-mono text-xs font-bold leading-relaxed transition-all" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Asset Catalogs (URL per line)</label>
+                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">URLs das Imagens (uma por linha)</label>
                                             <textarea
                                                 name="image_urls"
                                                 defaultValue={editingProduct?.image_urls?.join('\n') || ''}
@@ -1255,8 +1255,8 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
-                                    <button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold">Salvar</button>
-                                    <button type="button" onClick={() => setShowProductForm(false)} className="bg-white/10 text-white/60 px-8 py-3 rounded-xl font-bold">Cancelar</button>
+                                    <button type="submit" className="bg-white hover:bg-slate-200 text-[#121216] px-8 py-3 rounded-xl font-black">Salvar</button>
+                                    <button type="button" onClick={() => setShowProductForm(false)} className="bg-white/10 text-slate-300 px-8 py-3 rounded-xl font-bold">Cancelar</button>
                                 </div>
                             </form>
                         )}
@@ -1292,12 +1292,12 @@ export default function AdminDashboard() {
                                         <div className="flex flex-col">
                                             <span className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">Status</span>
                                             <span className={`text-[10px] font-black uppercase tracking-widest ${p.stock_quantity > 0 ? "text-green-500" : "text-red-500"}`}>
-                                                {p.stock_quantity > 0 ? `Stock: ${p.stock_quantity}` : 'Depleted'}
+                                                {p.stock_quantity > 0 ? `Em estoque: ${p.stock_quantity}` : 'Esgotado'}
                                             </span>
                                         </div>
                                         {p.sku && (
                                             <div className="text-right">
-                                                <div className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1 text-right">Identifier</div>
+                                                <div className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1 text-right">SKU</div>
                                                 <div className="text-[10px] font-mono font-bold text-[var(--text-muted)] opacity-60">#{p.sku}</div>
                                             </div>
                                         )}
@@ -1437,26 +1437,26 @@ export default function AdminDashboard() {
                                 <TrendingUp className="text-green-500" size={24} />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-display font-black italic uppercase tracking-tighter chrome-text leading-tight">Closing Protocol</h2>
-                                <p className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest">Financial Settlement Interface</p>
+                                <h2 className="text-2xl font-display font-black italic uppercase tracking-tighter chrome-text leading-tight">Finalizar Venda</h2>
+                                <p className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest">Registro financeiro da conversão</p>
                             </div>
                         </div>
                         
                         <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-4 my-8 space-y-2">
                             <div className="flex justify-between items-center text-xs">
-                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Origin Client</span>
-                                <span className="font-display font-bold uppercase italic tracking-tighter text-[var(--text-primary)]">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Nexus Unit"}</span>
+                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Cliente</span>
+                                <span className="font-display font-bold uppercase italic tracking-tighter text-[var(--text-primary)]">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Cliente"}</span>
                             </div>
                             <div className="h-px bg-[var(--border-subtle)] opacity-50" />
                             <div className="flex justify-between items-center text-xs">
-                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Service Class</span>
+                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Tipo de Serviço</span>
                                 <span className="font-mono font-black text-[var(--accent-primary)] uppercase tracking-tighter">{selectedLeadForCommission.interest_type || selectedLeadForCommission.equipment_type || "Generic_Manutencao"}</span>
                             </div>
                         </div>
 
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Gross Revenue (R$)</label>
+                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Valor Total Cobrado (R$)</label>
                                 <input
                                     type="number" step="0.01" required
                                     value={commissionForm.finalValue}
@@ -1471,7 +1471,7 @@ export default function AdminDashboard() {
                               selectedLeadForCommission.equipment_type ||
                               !selectedLeadForCommission.isLead) && (
                                 <div className="space-y-2">
-                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 text-red-400/80">Material Costs / Parts (R$)</label>
+                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 text-red-400/80">Custo de Peças / Material (R$)</label>
                                     <input
                                         type="number" step="0.01"
                                         value={commissionForm.costValue}
@@ -1543,7 +1543,7 @@ export default function AdminDashboard() {
                             </div>
 
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
-                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Operational Executor</div>
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Ordem</div>
 
                                 <div className="grid grid-cols-1 gap-3">
                                     <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
@@ -1553,7 +1553,7 @@ export default function AdminDashboard() {
                                             onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                             className="w-4 h-4 accent-[var(--accent-primary)]"
                                         />
-                                        <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">Nexus Chief (João) <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Base Protocol</span></div>
+                                        <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">João (Dono) <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Padrão</span></div>
                                     </label>
 
                                     {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
@@ -1576,7 +1576,7 @@ export default function AdminDashboard() {
                                             className="w-4 h-4 accent-[var(--accent-primary)]"
                                         />
                                         <div className="text-xs font-black uppercase tracking-widest text-purple-400">
-                                            External Technician
+                                            Técnico Externo
                                             <span className="ml-2 font-mono text-[8px] bg-purple-500/10 px-2 py-0.5 rounded">
                                                 {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Net Profit' : '+3% Total Revenue'}
                                             </span>
@@ -1585,8 +1585,8 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full bg-[var(--accent-primary)] hover:opacity-90 text-[var(--bg-primary)] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all shadow-[0_10px_30px_rgba(var(--accent-primary-rgb),0.3)] hover:scale-[1.01]">
-                                Confirm Settlement
+                            <button type="submit" className="w-full bg-white hover:bg-slate-200 text-[#121216] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all hover:scale-[1.01]">
+                                Confirmar Finalização
                             </button>
                         </div>
                     </form>

@@ -53,11 +53,11 @@ export default function AdminLogin() {
                 className="glass w-full max-w-md p-8 md:p-12 rounded-[40px] border-white/10 shadow-2xl relative"
             >
                 <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(37,99,235,0.4)]">
-                        <Lock className="text-white" size={32} />
+                    <div className="w-16 h-16 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(192,192,192,0.15)]">
+                        <Lock className="text-[var(--accent-primary)]" size={32} />
                     </div>
-                    <h1 className="text-3xl font-black italic tracking-tighter uppercase italic">
-                        Cyber <span className="text-blue-500 text-shadow-glow">Access</span>
+                    <h1 className="text-3xl font-black italic tracking-tighter uppercase">
+                        Cyber <span className="text-[var(--accent-primary)]">Access</span>
                     </h1>
                     <p className="text-white/80 mt-2 text-sm font-medium">Área Restrita Administrativa</p>
                 </div>
@@ -84,7 +84,7 @@ export default function AdminLogin() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="admin@cybertech.com"
-                                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.15] text-white placeholder:text-white/30"
+                                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-[var(--accent-primary)]/50 transition-all font-bold group-hover:bg-white/[0.15] text-white placeholder:text-white/30"
                             />
                         </div>
                     </div>
@@ -99,7 +99,7 @@ export default function AdminLogin() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-500/50 transition-all font-bold group-hover:bg-white/[0.15] text-white placeholder:text-white/30"
+                                className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-[var(--accent-primary)]/50 transition-all font-bold group-hover:bg-white/[0.15] text-white placeholder:text-white/30"
                             />
                         </div>
                     </div>
@@ -107,7 +107,7 @@ export default function AdminLogin() {
                     <button
                         disabled={loading}
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 group disabled:opacity-50"
+                        className="w-full bg-white hover:bg-slate-200 text-[#121216] font-black py-4 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 group disabled:opacity-50"
                     >
                         {loading ? (
                             <Loader2 className="animate-spin" size={20} />
