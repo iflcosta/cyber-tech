@@ -14,9 +14,10 @@ export default function Header() {
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
     const menuItems = [
-        { label: "Produtos", href: "/#produtos" },
         { label: "Manutenção", href: "/#assistencia" },
+        { label: "Produtos", href: "/#produtos" },
         { label: "PC Builder", href: "/#pc-builder" },
+        { label: "Calculadora", href: "/calculadora" },
     ];
 
     const pathname = usePathname();
@@ -107,7 +108,7 @@ export default function Header() {
 
     return (
         <>
-        <header className="fixed top-0 w-full z-[100] bg-[var(--bg-primary)]/80 backdrop-blur-md border-b border-[var(--border-subtle)]">
+        <header className="fixed top-0 w-full z-[100] bg-[#0A0A0C]/80 backdrop-blur-md border-b border-white/5">
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
                 <Link href="/" onClick={scrollToTop} className="flex items-center">
                     <Logo className="h-10 md:h-12 w-auto" />
@@ -120,7 +121,7 @@ export default function Header() {
                             key={item.label} 
                             href={item.href} 
                             onClick={(e) => handleNavClick(e, item.href)}
-                            className="text-[12px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] uppercase tracking-wider transition-colors relative group"
+                            className="text-[12px] font-display font-bold text-slate-400 hover:text-white uppercase tracking-wider transition-colors relative group"
                         >
                             {item.label}
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] transition-all group-hover:w-full" />

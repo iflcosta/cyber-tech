@@ -48,13 +48,13 @@ export default function Logo({ className = "" }: { className?: string }) {
       </g>
 
       {/* Technical Vertical Divider */}
-      <rect x="75" y="15" width="1.5" height="30" fill="#1A1A1E" fillOpacity="0.15" />
+      <rect x="75" y="15" width="1.5" height="30" fill="white" fillOpacity="0.1" />
 
       {/* Typography - High Impact Performance Brand */}
       <g transform="translate(92, 38)">
         {/* 'cyber' - Bold Display Sans (Matches Site Heading Font) */}
         <text 
-          fill="#1A1A1E"
+          fill="#E2E2E7"
           fontFamily="Rajdhani, Inter, system-ui, -apple-system, sans-serif"
           fontWeight="700"
           fontSize="36"
@@ -70,7 +70,7 @@ export default function Logo({ className = "" }: { className?: string }) {
           fontFamily="JetBrains Mono, Inter, monospace"
           fontWeight="400"
           fontSize="12.5"
-          letterSpacing="0.32em"
+          letterSpacing="0.15em"
           style={{ textTransform: 'lowercase' }}
         >
           informática

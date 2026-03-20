@@ -207,7 +207,7 @@ export default function LeadModal() {
                                 {step === 'intent' ? (
                                     <div className="space-y-6">
                                         <p className="text-[var(--text-secondary)] font-mono text-xs uppercase tracking-[0.2em] mb-4">Qual é o seu objetivo hoje?</p>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
                                                 <Monitor className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
                                                 <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar PC/Notebook</span>

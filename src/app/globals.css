@@ -100,6 +100,16 @@ code, .mono {
   .chrome-text {
     @apply bg-gradient-to-b from-[var(--chrome-light)] via-[var(--chrome-mid)] to-[var(--chrome-dark)] bg-clip-text text-transparent;
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1)); /* Sombra escura sutil para contraste no fundo claro */
+    letter-spacing: -0.02em; /* Tighter for industrial look */
+  }
+
+  @media (max-width: 640px) {
+    .chrome-text {
+      letter-spacing: -0.01em; /* Slightly less tight on mobile to prevent 'eating' */
+    }
+    .container {
+      @apply px-6; /* More gutter on mobile */
+    }
   }
 }
 
