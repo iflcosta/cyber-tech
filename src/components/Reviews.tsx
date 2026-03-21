@@ -26,6 +26,16 @@ export default function Reviews() {
         fetchReviews();
     }, []);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isModalOpen) {
+                setIsModalOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isModalOpen]);
+
     const fetchReviews = async () => {
         try {
             const { data, error } = await supabase
@@ -54,13 +64,43 @@ export default function Reviews() {
         setMessage({ type: '', text: '' });
 
         try {
+            // Formatar o voucher para garantir o padrão (opcional)
+            const voucherCode = newReview.voucher.trim().toUpperCase();
+
+            // 1. Validar se o voucher existe
+            const { data: leadData, error: leadError } = await supabase
+                .from('leads')
+                .select('id')
+                .eq('voucher_code', voucherCode)
+                .single();
+
+            if (leadError || !leadData) {
+                setMessage({ type: 'error', text: 'Código de voucher inválido ou não encontrado.' });
+                setSubmitting(false);
+                return;
+            }
+
+            // 2. Validar se a avaliação já existe para este voucher
+            const { data: existingReview } = await supabase
+                .from('reviews')
+                .select('id')
+                .eq('voucher_code', voucherCode)
+                .maybeSingle();
+
+            if (existingReview) {
+                setMessage({ type: 'error', text: 'Já existe uma avaliação com este código de voucher.' });
+                setSubmitting(false);
+                return;
+            }
+
+            // 3. Inserir a avaliação
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
                     user_name: newReview.name,
                     comment: newReview.comment,
                     rating: newReview.rating,
-                    voucher_code: newReview.voucher,
+                    voucher_code: voucherCode,
                     is_approved: false
                 }]);
 
@@ -229,7 +269,11 @@ export default function Reviews() {
                                 <div className="flex gap-4 pt-4">
                                     <button
                                         type="button"
-                                        onClick={() => setIsModalOpen(false)}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setIsModalOpen(false);
+                                        }}
                                         className="btn-ghost flex-1 py-5"
                                     >
                                         CANCELAR
