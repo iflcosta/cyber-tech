@@ -1,14 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Menu, X as CloseIcon, MessageSquare, Clock } from "lucide-react";
+import { Menu, X as CloseIcon, MessageSquare, Clock, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { brand } from "@/lib/brand";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
+import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { isLoading: waLoading, openWhatsApp } = useWhatsAppLead({ serviceType: 'outro' });
     const [storeStatus, setStoreStatus] = useState<{ status: 'open' | 'closing' | 'closed'; message: string }>({ status: 'closed', message: 'Carregando...' });
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -136,15 +137,15 @@ export default function Header() {
                         {storeStatus.message}
                     </div>
 
-                    <a
-                        href={`https://wa.me/${brand.whatsapp}`}
-                        target="_blank"
-                        className="flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px]"
+                    <button
+                        onClick={() => openWhatsApp()}
+                        disabled={waLoading}
+                        className="flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px] disabled:opacity-70"
                         style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
                     >
-                        <MessageSquare size={14} />
+                        {waLoading ? <Loader2 size={14} className="animate-spin" /> : <MessageSquare size={14} />}
                         WhatsApp
-                    </a>
+                    </button>
                 </div>
 
                 {/* Mobile Menu Icon */}
@@ -207,15 +208,15 @@ export default function Header() {
                         </nav>
 
                         <div className="mt-auto">
-                            <a
-                                href={`https://wa.me/${brand.whatsapp}`}
-                                target="_blank"
-                                className="w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all"
+                            <button
+                                onClick={() => { openWhatsApp(); toggleMenu(); }}
+                                disabled={waLoading}
+                                className="w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all disabled:opacity-70"
                                 style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
                             >
-                                <MessageSquare size={20} />
+                                {waLoading ? <Loader2 size={20} className="animate-spin" /> : <MessageSquare size={20} />}
                                 FALAR COM TÉCNICO
-                            </a>
+                            </button>
                         </div>
                     </motion.div>
                 </>

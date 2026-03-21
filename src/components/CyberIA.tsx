@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getGeminiResponse } from "@/lib/gemini";
 import { getProducts } from "@/lib/products";
 import { useLeadModal } from "@/contexts/LeadModalContext";
-import { brand } from "@/lib/brand";
+import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
 
 type Message = { role: 'user' | 'ai', content: string };
 type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
@@ -20,6 +20,7 @@ const GUIDED_PROMPTS = [
 
 export default function CyberIA() {
     const { openModal } = useLeadModal();
+    const { openWhatsApp } = useWhatsAppLead({ serviceType: 'outro' });
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -139,9 +140,8 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
     };
 
     const handleDirectWhatsApp = (aiContent: string) => {
-        const voucher = `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-        const text = `Olá! Vi sua Cyber IA no site e gostaria de aproveitar meu voucher de desconto: ${voucher}\n\nAssunto: ${aiContent.slice(0, 150)}...`;
-        window.open(`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
+        const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\nAssunto: ${aiContent.slice(0, 150)}...`;
+        openWhatsApp(text);
     };
 
     const renderContent = (content: string) => {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone, AlertTriangle } from 'lucide-react';
+import { sourceLabel } from '@/lib/tracking/sources';
 import { useRouter } from 'next/navigation';
 import { syncTinyProductsToSupabase } from '@/lib/tiny';
 import { Badge } from '@/components/ui/Badge';
@@ -990,6 +991,7 @@ export default function AdminDashboard() {
                                     <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
                                         <th className="p-6">Ordem / Cliente</th>
                                         <th className="p-6">Equipamento</th>
+                                        <th className="p-6">Origem</th>
                                         <th className="p-6">Progresso</th>
                                         <th className="p-6">Pagamento</th>
                                         <th className="p-6 text-right">Finalização</th>
@@ -1006,6 +1008,7 @@ export default function AdminDashboard() {
                                                 customer_phone: (o as any).customer_phone || (o as any).customer_email,
                                                 equipment_type: (o as any).equipment_type,
                                                 problem_description: (o as any).problem_description,
+                                                source: (o as any).source ?? 'organic',
                                                 status: o.status,
                                                 payment_status: o.payment_status,
                                                 final_value: o.final_value,
@@ -1020,8 +1023,9 @@ export default function AdminDashboard() {
                                                 voucher_code: l.voucher_code,
                                                 customer_name: l.client_name,
                                                 customer_phone: l.whatsapp,
-                                                equipment_type: 'manutenção', // Force label for consistency
+                                                equipment_type: 'manutenção',
                                                 problem_description: l.description,
+                                                source: l.marketing_source ?? 'form',
                                                 status: l.status,
                                                 payment_status: l.payment_status,
                                                 final_value: l.final_value,
@@ -1036,7 +1040,7 @@ export default function AdminDashboard() {
                                         if (merged.length === 0) {
                                             return (
                                                 <tr>
-                                                    <td colSpan={5} className="p-12 text-center text-slate-500 italic">Nenhuma ordem encontrada.</td>
+                                                    <td colSpan={6} className="p-12 text-center text-slate-500 italic">Nenhuma ordem encontrada.</td>
                                                 </tr>
                                             );
                                         }
@@ -1057,6 +1061,11 @@ export default function AdminDashboard() {
                                                 <td className="p-6">
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 px-3 py-1 rounded-full">
                                                         {order.equipment_type}
+                                                    </span>
+                                                </td>
+                                                <td className="p-6">
+                                                    <span className="text-[10px] font-mono font-black text-[var(--text-muted)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-1 rounded-full whitespace-nowrap">
+                                                        {sourceLabel(order.source)}
                                                     </span>
                                                 </td>
                                                 <td className="p-6">

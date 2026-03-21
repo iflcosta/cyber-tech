@@ -42,7 +42,7 @@ interface MaintenanceOrderRow {
 function rowToVoucherResult(row: MaintenanceOrderRow): VoucherResult {
   return {
     code: row.voucher_code,
-    source: (row.source ?? 'whatsapp_site') as VoucherSource,
+    source: (row.source ?? 'organic') as VoucherSource,
     status: row.status as VoucherStatus,
     customerPhone: row.customer_phone ?? undefined,
     customerName: row.customer_name ?? undefined,
@@ -55,15 +55,39 @@ function rowToVoucherResult(row: MaintenanceOrderRow): VoucherResult {
 
 // ---------------------------------------------------------------------------
 // createVoucher
+// Idempotent when externalId is provided: returns existing voucher if found
 // ---------------------------------------------------------------------------
 
 export async function createVoucher(
   params: CreateVoucherParams
 ): Promise<VoucherResult> {
+  // ── Idempotency: check externalId before generating a new code ──────────
+  if (params.externalId) {
+    try {
+      const { data: existing } = await supabase
+        .from('maintenance_orders')
+        .select(
+          'voucher_code, source, status, customer_phone, customer_name, equipment_type, commission_owner, commission_tech, created_at'
+        )
+        .eq('external_id', params.externalId)
+        .maybeSingle()
+
+      if (existing) {
+        console.log(
+          `[VOUCHER] Returning existing voucher for externalId=${params.externalId}`
+        )
+        return rowToVoucherResult(existing as MaintenanceOrderRow)
+      }
+    } catch (err) {
+      // Non-fatal — fall through to create a new voucher
+      console.warn('[VOUCHER] externalId lookup failed, creating new:', err)
+    }
+  }
+
+  // ── Generate a unique code — retry if collision ─────────────────────────
   let code = ''
   let attempts = 0
 
-  // Generate a unique code — retry if duplicate found
   while (attempts < MAX_GENERATION_ATTEMPTS) {
     attempts++
     const candidate = generateVoucherCode()
@@ -75,12 +99,9 @@ export async function createVoucher(
         .eq('voucher_code', candidate)
         .maybeSingle()
 
-      if (error) {
-        throw new Error(`Supabase select error: ${error.message}`)
-      }
+      if (error) throw new Error(`Supabase select error: ${error.message}`)
 
       if (!data) {
-        // No duplicate found — use this code
         code = candidate
         break
       }
@@ -96,7 +117,13 @@ export async function createVoucher(
     )
   }
 
-  // Persist to maintenance_orders
+  // ── Calculate commissions ───────────────────────────────────────────────
+  const commissionOwner =
+    params.orderValue != null ? params.orderValue * 0.05 : 0
+  const commissionTech =
+    params.orderValue != null ? params.orderValue * 0.03 : 0
+
+  // ── Persist to maintenance_orders ───────────────────────────────────────
   try {
     const insertPayload: Record<string, unknown> = {
       voucher_code: code,
@@ -105,9 +132,10 @@ export async function createVoucher(
       customer_name: params.customerName ?? 'Não informado',
       customer_phone: params.customerPhone ?? null,
       equipment_type: params.serviceType ?? null,
-      technician_id: params.technicianId ?? null,
-      commission_owner: 0,
-      commission_tech: 0,
+      commission_owner: commissionOwner,
+      commission_tech: commissionTech,
+      order_value: params.orderValue ?? null,
+      external_id: params.externalId ?? null,
     }
 
     const { data, error } = await supabase
@@ -116,9 +144,7 @@ export async function createVoucher(
       .select()
       .single()
 
-    if (error) {
-      throw new Error(`Supabase insert error: ${error.message}`)
-    }
+    if (error) throw new Error(`Supabase insert error: ${error.message}`)
 
     return rowToVoucherResult(data as MaintenanceOrderRow)
   } catch (err) {
@@ -143,10 +169,7 @@ export async function getVoucherByCode(
       .eq('voucher_code', code)
       .maybeSingle()
 
-    if (error) {
-      throw new Error(`Supabase select error: ${error.message}`)
-    }
-
+    if (error) throw new Error(`Supabase select error: ${error.message}`)
     if (!data) return null
 
     return rowToVoucherResult(data as MaintenanceOrderRow)
@@ -158,11 +181,13 @@ export async function getVoucherByCode(
 
 // ---------------------------------------------------------------------------
 // updateVoucherStatus
+// Optionally recalculates commissions when orderValue is provided
 // ---------------------------------------------------------------------------
 
 export async function updateVoucherStatus(
   code: string,
-  status: VoucherStatus
+  status: VoucherStatus,
+  orderValue?: number
 ): Promise<void> {
   try {
     const updatePayload: Record<string, unknown> = { status }
@@ -171,14 +196,18 @@ export async function updateVoucherStatus(
       updatePayload['delivered_at'] = new Date().toISOString()
     }
 
+    if (orderValue != null) {
+      updatePayload['order_value'] = orderValue
+      updatePayload['commission_owner'] = orderValue * 0.05
+      updatePayload['commission_tech'] = orderValue * 0.03
+    }
+
     const { error } = await supabase
       .from('maintenance_orders')
       .update(updatePayload)
       .eq('voucher_code', code)
 
-    if (error) {
-      throw new Error(`Supabase update error: ${error.message}`)
-    }
+    if (error) throw new Error(`Supabase update error: ${error.message}`)
   } catch (err) {
     console.error('[VOUCHER] Error updating voucher status:', err)
     throw err
@@ -199,9 +228,7 @@ export async function linkVoucherToPhone(
       .update({ customer_phone: phone })
       .eq('voucher_code', code)
 
-    if (error) {
-      throw new Error(`Supabase update error: ${error.message}`)
-    }
+    if (error) throw new Error(`Supabase update error: ${error.message}`)
   } catch (err) {
     console.error('[VOUCHER] Error linking phone to voucher:', err)
     throw err
