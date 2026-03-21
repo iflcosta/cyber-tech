@@ -155,7 +155,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                     {parts.map((part, index) => {
                         if (part.startsWith('**') && part.endsWith('**')) {
                             return (
-                                <strong key={index} className="text-[var(--accent-success)] font-black">
+                                <strong key={index} className="text-white font-black">
                                     {part.slice(2, -2)}
                                 </strong>
                             );
@@ -206,15 +206,15 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] p-3.5 rounded-xl text-sm leading-relaxed ${
                                         msg.role === 'user' 
-                                        ? 'bg-[var(--accent-primary)]/25 text-white font-bold border border-[var(--accent-primary)]/40'
-                                        : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]'
+                                        ? 'bg-white text-zinc-950 font-bold border border-zinc-200 shadow-sm'
+                                        : 'bg-zinc-800/80 text-zinc-100 border border-zinc-700/50 shadow-sm'
                                     }`}>
                                         {renderContent(msg.content)}
                                         {msg.role === 'ai' && (msg.content.toLowerCase().includes('whatsapp') || msg.content.toLowerCase().includes('chama no')) && (
-                                            <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]/30">
+                                            <div className="mt-4 pt-4 border-t border-zinc-700/30">
                                                 <button 
                                                     onClick={() => handleDirectWhatsApp(msg.content)}
-                                                    className="inline-flex items-center gap-2 bg-[var(--accent-success)] text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_4px_10px_rgba(46,204,113,0.3)]"
+                                                    className="inline-flex items-center gap-2 bg-white text-zinc-950 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-zinc-100 transition-all shadow-lg border border-zinc-200"
                                                 >
                                                     <Sparkles size={12} fill="currentColor" />
                                                     Gerar Voucher & Chamar WhatsApp
@@ -258,7 +258,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                             <div className="flex gap-2">
                                 <button 
                                     onClick={() => openModal()}
-                                    className="p-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl text-[var(--accent-success)] hover:bg-[var(--accent-glow)] hover:text-[var(--bg-primary)] transition-all flex-shrink-0"
+                                    className="p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white hover:bg-zinc-700 transition-all flex-shrink-0"
                                     title="Gerar Voucher"
                                 >
                                     <Sparkles size={20} />
@@ -275,7 +275,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                     <button
                                         onClick={() => handleSend()}
                                         disabled={loading}
-                                        className="absolute right-2 top-1.5 w-9 h-9 bg-[var(--accent-success)] rounded-lg flex items-center justify-center text-white hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                                        className="absolute right-2 top-1.5 w-9 h-9 bg-white rounded-lg flex items-center justify-center text-zinc-950 hover:bg-zinc-100 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
                                     >
                                         <Send size={16} />
                                     </button>
