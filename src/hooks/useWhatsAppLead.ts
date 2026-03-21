@@ -25,7 +25,7 @@ const SERVICE_LABELS: Record<WhatsAppServiceType, string> = {
 
 function firePixelLead(serviceType?: WhatsAppServiceType): void {
   if (typeof window === 'undefined') return
-  const fbq = (window as Record<string, unknown>).fbq
+  const fbq = (window as any).fbq
   if (typeof fbq !== 'function') return
   ;(fbq as Function)('track', 'Lead', {
     content_name:     serviceType ? SERVICE_LABELS[serviceType] : 'geral',
