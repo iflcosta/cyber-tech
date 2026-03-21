@@ -31,7 +31,7 @@ interface ProductCardProps {
   onAddToCart?: () => void;
 }
 
-export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardProps) {
+export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }: ProductCardProps) {
   return (
     <Card className="card-dark group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)]">
       <div className="relative aspect-video w-full overflow-hidden bg-[var(--bg-primary)]">
@@ -87,7 +87,7 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
           </div>
         </div>
 
-        <div className="text-2xl font-display font-bold text-[var(--text-primary)] tracking-tighter chrome-text">
+        <div className="text-2xl font-display font-bold tracking-tighter text-[var(--accent-primary)]">
           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price_estimate)}
         </div>
       </CardContent>

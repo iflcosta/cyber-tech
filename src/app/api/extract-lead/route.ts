@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "
 
 export async function POST(req: Request) {
     try {
-        const { messages, source } = await req.json();
+        const { messages, source, session_voucher_code } = await req.json();
 
         if (!messages || messages.length === 0) {
             return NextResponse.json({ error: 'Mensagens não fornecidas' }, { status: 400 });
@@ -50,12 +50,11 @@ ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n')}`;
             return NextResponse.json({ status: 'existing_lead' });
         }
 
-        // Generate voucher
-        const voucher = `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        const voucher = session_voucher_code || `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
         const { error } = await supabase
             .from('leads')
-            .insert({
+            .upsert({
                 client_name: extraction.name || 'Lead via Cyber IA',
                 whatsapp: cleanWhatsapp,
                 interest_type: extraction.interest_type || 'duvida',
@@ -63,7 +62,7 @@ ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n')}`;
                 marketing_source: 'cyber_ia',
                 voucher_code: voucher,
                 status: 'pending'
-            });
+            }, { onConflict: 'voucher_code', ignoreDuplicates: false });
 
         if (error) throw error;
 

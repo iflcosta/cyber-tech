@@ -2,14 +2,16 @@
 import { useState, useEffect } from "react";
 import { Menu, X as CloseIcon, MessageSquare, Clock, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { brand } from "@/lib/brand";
+import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "./Logo";
-import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
+import Logo from "./Logo";          // Opção A — SVG refinado
+// import Logo from "./LogoAlt";   // Opção B — wordmark HTML (troque para testar)
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { isLoading: waLoading, openWhatsApp } = useWhatsAppLead({ serviceType: 'outro' });
+    const { isLoading: waLoading, openWhatsAppLead } = useWhatsAppLead({ serviceType: 'outro' });
     const [storeStatus, setStoreStatus] = useState<{ status: 'open' | 'closing' | 'closed'; message: string }>({ status: 'closed', message: 'Carregando...' });
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -138,7 +140,7 @@ export default function Header() {
                     </div>
 
                     <button
-                        onClick={() => openWhatsApp()}
+                        onClick={() => openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Desktop)' })}
                         disabled={waLoading}
                         className="flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px] disabled:opacity-70"
                         style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
@@ -209,7 +211,7 @@ export default function Header() {
 
                         <div className="mt-auto">
                             <button
-                                onClick={() => { openWhatsApp(); toggleMenu(); }}
+                                onClick={() => { openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Mobile)' }); toggleMenu(); }}
                                 disabled={waLoading}
                                 className="w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all disabled:opacity-70"
                                 style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}

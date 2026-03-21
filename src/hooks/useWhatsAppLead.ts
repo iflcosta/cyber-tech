@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { brand } from '@/lib/brand'
+import { getOrCreateSessionVoucher, setSessionVoucher } from '@/lib/session/voucherSession'
+import { trackLead } from '@/lib/leads'
 
 export type WhatsAppServiceType =
   | 'reparo_celular'
@@ -11,8 +14,8 @@ export type WhatsAppServiceType =
   | 'outro'
 
 export interface UseWhatsAppLeadParams {
-  serviceType?: WhatsAppServiceType
-  defaultMessage?: string
+  serviceType?: WhatsAppServiceType;
+  defaultMessage?: string;
 }
 
 const SERVICE_LABELS: Record<WhatsAppServiceType, string> = {
@@ -57,35 +60,39 @@ export function useWhatsAppLead({
   defaultMessage,
 }: UseWhatsAppLeadParams = {}) {
   const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams()
+
+  // Intercepta ?voucher= na URL e salva na sessão.
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const utmVoucher = searchParams?.get('voucher')
+        if (utmVoucher && utmVoucher.startsWith('BPC-')) {
+            setSessionVoucher(utmVoucher)
+        }
+    }
+  }, [searchParams])
 
   const openWhatsApp = async (overrideMessage?: string): Promise<void> => {
     if (isLoading) return
     setIsLoading(true)
 
     try {
-      let code: string | null = null
+      const voucher = await getOrCreateSessionVoucher()
 
       try {
-        const res = await fetch('/api/vouchers/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ source: 'whatsapp_site', serviceType }),
-        })
-        if (res.ok) {
-          const data = (await res.json()) as { code: string }
-          code = data.code
-        }
-      } catch {
-        // Non-fatal — open WhatsApp without voucher
-      }
+        await trackLead({
+            voucher_code: voucher,
+            intent_type: 'duvida_tecnica',
+            description: overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
+            interest_type: serviceType?.includes('reparo') ? 'manutencao' : 'venda',
+            client_name: 'Lead Direto (WhatsApp)',
+            whatsapp: '00000000000' 
+        });
+      } catch(e) { }
 
       firePixelLead(serviceType)
 
-      const msg = code
-        ? buildMessage(code, serviceType, overrideMessage ?? defaultMessage)
-        : (overrideMessage ??
-            defaultMessage ??
-            'Olá! Vim pelo site da Cyber Informática. Pode me atender?')
+      const msg = buildMessage(voucher, serviceType, overrideMessage ?? defaultMessage)
 
       if (typeof window !== 'undefined') {
         window.open(
@@ -98,5 +105,11 @@ export function useWhatsAppLead({
     }
   }
 
-  return { isLoading, openWhatsApp }
+  // Aliased syntax to maintain backwards compatibility with the code I wrote inside components
+  const openWhatsAppLead = async (params: { intent?: string, description?: string, messageTemplate?: string, serviceType?: WhatsAppServiceType } = {}) => {
+      // Provide backwards compatibility map
+      await openWhatsApp(params.messageTemplate || params.description);
+  }
+
+  return { isLoading, openWhatsApp, openWhatsAppLead }
 }

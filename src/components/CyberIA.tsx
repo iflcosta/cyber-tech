@@ -6,6 +6,7 @@ import { getGeminiResponse } from "@/lib/gemini";
 import { getProducts } from "@/lib/products";
 import { useLeadModal } from "@/contexts/LeadModalContext";
 import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
+import { useVoucherSession } from "@/hooks/useVoucherSession";
 
 type Message = { role: 'user' | 'ai', content: string };
 type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
@@ -25,6 +26,7 @@ export default function CyberIA() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const { voucherCode } = useVoucherSession();
     const [productsString, setProductsString] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -130,7 +132,8 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                     body: JSON.stringify({ 
                         messages: newMessages, 
                         source: 'Cyber IA',
-                        intent_type: currentIntent
+                        intent_type: currentIntent,
+                        session_voucher_code: voucherCode
                     })
                 });
             } catch (e) {}
