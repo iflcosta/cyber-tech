@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rajdhani, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
@@ -21,12 +21,17 @@ const jetbrainsMono = JetBrains_Mono({
 
 import { brand } from "@/lib/brand";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1A1A1A",
+};
+
 export const metadata: Metadata = {
   title: "Cyber Informática | " + brand.slogan,
   description: brand.description,
   keywords: brand.seo.keywords,
   authors: [{ name: "Cyber Informática" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   alternates: { canonical: "https://cyberinformatica.tech" },
 };
