@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Laptop, Monitor, Zap, AlertTriangle, Wifi, Gauge, Ticket } from "lucide-react";
-import { generateVoucher } from "@/lib/voucher";
+import { generateVoucherCode } from "@/lib/voucher";
 import { trackLead } from "@/lib/leads";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -237,7 +237,7 @@ export default function CalculadoraWizard() {
     e.preventDefault();
     if (!state.device || !state.symptom || !state.age) return;
     setSubmitting(true);
-    const code = generateVoucher();
+    const code = generateVoucherCode();
     const price = getPriceRange(state.device, state.symptom);
     await trackLead({
       client_name: leadName,

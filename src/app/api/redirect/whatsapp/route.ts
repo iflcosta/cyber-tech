@@ -35,7 +35,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const voucher = await createVoucher({
       source,
       serviceType: serviceKey,
-      externalId: utmCampaign ? `${source}:${utmCampaign}:${Date.now()}` : undefined,
     })
     code = voucher.code
   } catch (err) {

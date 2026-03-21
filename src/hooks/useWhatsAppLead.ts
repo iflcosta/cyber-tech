@@ -62,38 +62,40 @@ export function useWhatsAppLead({
     if (isLoading) return
     setIsLoading(true)
 
-    let code: string | null = null
-
     try {
-      const res = await fetch('/api/vouchers/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: 'whatsapp_site', serviceType }),
-      })
-      if (res.ok) {
-        const data = (await res.json()) as { code: string }
-        code = data.code
+      let code: string | null = null
+
+      try {
+        const res = await fetch('/api/vouchers/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source: 'whatsapp_site', serviceType }),
+        })
+        if (res.ok) {
+          const data = (await res.json()) as { code: string }
+          code = data.code
+        }
+      } catch {
+        // Non-fatal — open WhatsApp without voucher
       }
-    } catch {
-      // Non-fatal — open WhatsApp without voucher
+
+      firePixelLead(serviceType)
+
+      const msg = code
+        ? buildMessage(code, serviceType, overrideMessage ?? defaultMessage)
+        : (overrideMessage ??
+            defaultMessage ??
+            'Olá! Vim pelo site da Cyber Informática. Pode me atender?')
+
+      if (typeof window !== 'undefined') {
+        window.open(
+          `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(msg)}`,
+          '_blank'
+        )
+      }
+    } finally {
+      setIsLoading(false)
     }
-
-    firePixelLead(serviceType)
-
-    const msg = code
-      ? buildMessage(code, serviceType, overrideMessage ?? defaultMessage)
-      : (overrideMessage ??
-          defaultMessage ??
-          'Olá! Vim pelo site da Cyber Informática. Pode me atender?')
-
-    if (typeof window !== 'undefined') {
-      window.open(
-        `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(msg)}`,
-        '_blank'
-      )
-    }
-
-    setIsLoading(false)
   }
 
   return { isLoading, openWhatsApp }
