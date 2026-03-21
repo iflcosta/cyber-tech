@@ -59,8 +59,8 @@ export function MaintenanceForm() {
     <div className="max-w-xl mx-auto w-full">
       {step === 1 && (
         <div className="card-dark bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
-          <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase chrome-text">
-            SINAL DE <span className="text-[var(--accent-primary)]">ENTRADA</span>
+          <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase">
+            <span className="chrome-text">SINAL DE</span> <span className="text-[var(--accent-primary)]">ENTRADA</span>
           </h3>
           <div className="grid grid-cols-1 gap-4 mb-4">
             {equipmentTypes.map((type) => (
@@ -97,8 +97,8 @@ export function MaintenanceForm() {
             <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
             <span className="border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] px-2 py-1 rounded transition-colors">VOLTAR</span>
           </button>
-          <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase chrome-text">
-            LOG DE <span className="text-[var(--accent-primary)]">DIAGNÓSTICO</span>
+          <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase">
+            <span className="chrome-text">LOG DE</span> <span className="text-[var(--accent-primary)]">DIAGNÓSTICO</span>
           </h3>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,8 +169,8 @@ export function MaintenanceForm() {
               <CheckCircle2 size={48} className="relative z-10" />
             </div>
           </div>
-          <h3 className="text-2xl font-display font-bold tracking-tight text-[var(--text-primary)] mb-4 uppercase chrome-text">
-            VOUCHER DE <span className="italic opacity-60">PRIORIDADE</span>
+          <h3 className="text-2xl font-display font-bold tracking-tight text-[var(--text-primary)] mb-4 uppercase">
+            <span className="chrome-text">VOUCHER DE</span> <span className="italic opacity-60">PRIORIDADE</span>
           </h3>
           <p className="text-[var(--text-muted)] text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-10">
             APRESENTE ESTE TOKEN PARA ATENDIMENTO ELITE
