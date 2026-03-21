@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Loader2, Package, Clock, CheckCircle2, AlertCircle, QrCode, Copy, CreditCard, Laptop, Smartphone, Monitor } from "lucide-react";
+import { Search, Loader2, Package, Clock, CheckCircle2, AlertCircle, QrCode, Copy, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { brand } from "@/lib/brand";
@@ -117,7 +117,7 @@ export default function ServiceSearch() {
     const paymentInfo = result?.payment_info;
 
     return (
-        <section id="consultar-status" className="py-24 bg-[var(--bg-primary)] border-y border-[var(--border-subtle)]">
+        <section id="consultar-status" className="py-24 bg-[var(--bg-primary)] border-y border-[var(--border-subtle)] red-line-top">
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[var(--text-primary)] leading-none uppercase">
@@ -129,7 +129,7 @@ export default function ServiceSearch() {
                     </p>
                 </div>
 
-                <div className="bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] shadow-xl mb-12 relative overflow-hidden group">
+                <div className="card-dark bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] shadow-xl mb-12 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-[var(--chrome-light)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 relative z-10">
                         <div className="relative flex-1">
@@ -145,7 +145,7 @@ export default function ServiceSearch() {
                         <button
                             type="submit"
                             disabled={loading || !orderId.trim()}
-                            className="btn-primary px-8 py-4 disabled:opacity-50 flex items-center justify-center gap-3"
+                            className="btn-primary px-8 py-4 disabled:opacity-40 disabled:grayscale flex items-center justify-center gap-3"
                         >
                             {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
                             CONSULTAR
@@ -153,7 +153,7 @@ export default function ServiceSearch() {
                     </form>
 
                     {error && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 p-6 bg-red-50 border border-red-100 text-red-600 rounded-[2px] flex items-center gap-3 text-xs font-bold uppercase tracking-widest">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 p-6 bg-red-950/50 border border-red-900/50 text-red-400 rounded-[2px] flex items-center gap-3 text-xs font-bold uppercase tracking-widest">
                             <AlertCircle size={20} /> {error}
                         </motion.div>
                     )}
@@ -161,7 +161,7 @@ export default function ServiceSearch() {
 
                 <AnimatePresence>
                     {result && (
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] shadow-2xl overflow-hidden relative">
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card-dark bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] shadow-2xl overflow-hidden relative">
                             <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-primary)]" />
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-b border-[var(--border-subtle)] pb-8">
                                 <div>
@@ -181,24 +181,25 @@ export default function ServiceSearch() {
                             </div>
 
                             <div className="mb-16 relative">
-                                <div className="absolute top-5 left-0 w-full h-[1px] bg-[var(--border-subtle)] hidden md:block" />
-                                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 relative z-10">
+                                <div className="absolute top-4 md:top-5 left-0 w-full h-[1px] bg-[var(--border-subtle)]" />
+                                <div className="grid grid-cols-5 gap-1 md:gap-8 relative z-10">
                                     {statusSteps.map((step, idx) => {
                                         const Icon = step.icon;
                                         const isActive = idx <= currentStatusIdx;
                                         const isCurrent = idx === currentStatusIdx;
 
                                         return (
-                                            <div key={step.id} className="flex flex-col items-center gap-4 relative group">
-                                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-500 border ${
-                                                    isCurrent ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--bg-primary)] shadow-[0_0_20px_var(--border-glow)]' :
-                                                    isActive ? 'bg-[var(--bg-elevated)] border-[var(--accent-primary)] text-[var(--accent-primary)]' : 
+                                            <div key={step.id} className="flex flex-col items-center gap-2 md:gap-4 relative group">
+                                                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg flex items-center justify-center transition-all duration-500 border ${
+                                                    isCurrent ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-[0_0_20px_var(--border-glow)]' :
+                                                    isActive ? 'bg-[var(--bg-elevated)] border-[var(--accent-primary)] text-[var(--accent-primary)]' :
                                                     'bg-[var(--bg-primary)] border-[var(--border-subtle)] text-[var(--text-muted)]'
                                                 }`}>
-                                                    <Icon size={20} />
+                                                    <Icon size={14} className="md:hidden" />
+                                                    <Icon size={20} className="hidden md:block" />
                                                 </div>
                                                 <div className="flex flex-col items-center">
-                                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
+                                                    <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-center leading-tight ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
                                                         {step.label}
                                                     </span>
                                                 </div>

@@ -428,7 +428,7 @@ export default function AdminDashboard() {
                         { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
                         { id: 'leads', label: 'Leads', icon: Users },
                         { id: 'products', label: 'Produtos', icon: Package },
-                        { id: 'maintenance', label: 'Manução', icon: RefreshCw },
+                        { id: 'maintenance', label: 'Manutenção', icon: RefreshCw },
                         { id: 'reviews', label: 'Depoimentos', icon: Star },
                     ].map((tab) => (
                         <button
@@ -448,9 +448,9 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
                                 { label: 'Receita Total', val: `R$ ${stats.totalLeadValue.toLocaleString('pt-BR')}`, sub: `+${stats.convertedCount} conversões`, color: 'var(--accent-primary)', icon: TrendingUp },
-                                { label: 'Active Leads', val: leads.length, sub: `${stats.pendingCount} pendentes`, color: 'var(--accent-primary)', icon: Users },
+                                { label: 'Leads Ativos', val: leads.length, sub: `${stats.pendingCount} pendentes`, color: 'var(--accent-primary)', icon: Users },
                                 { label: 'Ticket Médio', val: `R$ ${stats.avgTicket.toFixed(0)}`, sub: 'Faturamento/Conversão', color: 'var(--accent-primary)', icon: Package },
-                                { label: 'Critical Stock', val: products.filter(p => p.stock_quantity <= 3).length, sub: 'Itens < 4 unidades', color: 'red-500', icon: AlertTriangle }
+                                { label: 'Estoque Crítico', val: products.filter(p => p.stock_quantity <= 3).length, sub: 'Itens < 4 unidades', color: 'red-500', icon: AlertTriangle }
                             ].map((kpi, i) => (
                                 <div key={i} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group hover:border-[var(--accent-primary)]/30 transition-all">
                                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
                                                         <span className="flex items-center gap-2 opacity-60">
                                                             {ch.emoji} {ch.label}
                                                         </span>
-                                                        <span className="opacity-100">{count} UNITS <span className="text-[var(--text-muted)] pl-2">// {pct.toFixed(0)}%</span></span>
+                                                        <span className="opacity-100">{count} leads <span className="text-[var(--text-muted)] pl-2">// {pct.toFixed(0)}%</span></span>
                                                     </div>
                                                     <div className="w-full bg-[var(--bg-primary)] h-1.5 rounded-full overflow-hidden border border-[var(--border-subtle)] shadow-inner">
                                                         <div className={`${ch.color} h-full transition-all duration-1000 group-hover/channel:opacity-100 opacity-60`} style={{ width: `${pct}%` }} />
@@ -549,7 +549,7 @@ export default function AdminDashboard() {
                             <div className="bg-[var(--bg-elevated)] p-10 rounded-3xl border border-[var(--border-subtle)] relative overflow-hidden group">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-10" />
                                 <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-10 flex items-center gap-3">
-                                    <Package size={14} className="text-red-500" /> Inventory Delta
+                                    <Package size={14} className="text-red-500" /> Alerta de Estoque
                                 </h3>
                                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                     {products.filter(p => p.stock_quantity <= 3).length > 0 ? (
@@ -560,7 +560,7 @@ export default function AdminDashboard() {
                                                     <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1 opacity-50">{p.category}</div>
                                                 </div>
                                                 <div className={`px-4 py-1.5 rounded-full text-[9px] font-mono font-black uppercase tracking-widest border ${p.stock_quantity === 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
-                                                    {p.stock_quantity <= 0 ? 'Depleted' : `${p.stock_quantity} Left`}
+                                                    {p.stock_quantity <= 0 ? 'Esgotado' : `${p.stock_quantity} restante`}
                                                 </div>
                                             </div>
                                         ))
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
                                                         R$ {totalLoja.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
-                                                        Gross: {totalBruto.toLocaleString('pt-BR')} // Delta: {totalCusto.toLocaleString('pt-BR')}
+                                                        Bruto: {totalBruto.toLocaleString('pt-BR')} // Custo: {totalCusto.toLocaleString('pt-BR')}
                                                     </div>
                                                 </div>
                                             </div>

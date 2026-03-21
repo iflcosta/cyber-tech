@@ -70,14 +70,14 @@ export default function Reviews() {
             setNewReview({ name: '', comment: '', rating: 5, voucher: '' });
             setTimeout(() => setIsModalOpen(false), 3000);
         } catch (err) {
-            setMessage({ type: 'error', text: 'Erro ao enviar avaliação. Tente nãovamente mais tarde.' });
+            setMessage({ type: 'error', text: 'Erro ao enviar avaliação. Tente novamente mais tarde.' });
         } finally {
             setSubmitting(false);
         }
     };
 
     return (
-        <section id="reviews" className="py-24 bg-[var(--bg-primary)] border-y border-[var(--border-subtle)] relative overflow-hidden">
+        <section id="reviews" className="py-24 bg-[var(--bg-primary)] border-y border-[var(--border-subtle)] relative overflow-hidden red-line-top">
             <div className="absolute inset-0 hero-texture opacity-30" />
             <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
@@ -103,7 +103,7 @@ export default function Reviews() {
 
                 {loading ? (
                     <div className="flex h-64 items-center justify-center">
-                        <Loader2 className="h-10 w-10 animate-spin text-[#1A1A1A]" />
+                        <Loader2 className="h-10 w-10 animate-spin text-[var(--text-muted)]" />
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -113,14 +113,14 @@ export default function Reviews() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 key={review.id}
-                                className="bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] relative group h-full flex flex-col hover:border-[var(--accent-primary)] transition-all"
+                                className="card-dark bg-[var(--bg-surface)] p-10 rounded-xl border border-[var(--border-subtle)] relative group h-full flex flex-col hover:border-[var(--accent-primary)] transition-all"
                             >
                                 <div className="absolute top-8 right-10 text-[var(--accent-primary)]/5 group-hover:text-[var(--accent-primary)]/10 transition-colors">
                                     <MessageSquareQuote size={56} />
                                 </div>
                                 <div className="flex gap-1 mb-6">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} className={i < review.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--border-subtle)] fill-[var(--border-subtle)]"} />
+                                        <Star key={i} size={14} className={i < review.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--text-muted)] fill-[var(--text-muted)]"} />
                                     ))}
                                 </div>
                                 <p className="text-[var(--text-secondary)] font-medium leading-relaxed mb-8 flex-1 italic">"{review.comment}"</p>
@@ -152,7 +152,7 @@ export default function Reviews() {
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-[var(--bg-surface)] w-full max-w-xl p-10 rounded-2xl border border-[var(--border-subtle)] shadow-2xl relative z-10 overflow-hidden"
+                            className="card-dark bg-[var(--bg-surface)] w-full max-w-xl p-10 rounded-2xl border border-[var(--border-subtle)] shadow-2xl relative z-10 overflow-hidden"
                         >
                             <div className="absolute inset-0 hero-texture opacity-30" />
                             <h3 className="text-3xl font-display font-bold text-[var(--text-primary)] uppercase tracking-tight mb-8 relative z-10 chrome-text">SUA AVALIAÇÃO</h3>
@@ -160,7 +160,7 @@ export default function Reviews() {
                             {message.text ? (
                                 <div className={cn(
                                     "p-6 mb-8 rounded-[2px] border flex items-center gap-4 text-xs font-bold uppercase tracking-widest",
-                                    message.type === 'success' ? "bg-green-50 border-green-100 text-green-600" : "bg-red-50 border-red-100 text-red-600"
+                                    message.type === 'success' ? "bg-green-950/50 border-green-900/50 text-green-400" : "bg-red-950/50 border-red-900/50 text-red-400"
                                 )}>
                                     {message.type === 'success' ? <CheckCircle2 /> : <AlertCircle />}
                                     {message.text}
@@ -206,7 +206,7 @@ export default function Reviews() {
                                                     size={32}
                                                     className={cn(
                                                         "transition-colors",
-                                                        star <= newReview.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--border-subtle)]"
+                                                        star <= newReview.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--text-muted)]"
                                                     )}
                                                 />
                                             </button>
@@ -237,7 +237,7 @@ export default function Reviews() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="btn-primary flex-1 py-5 disabled:opacity-50"
+                                        className="btn-primary flex-1 py-5 disabled:opacity-40 disabled:grayscale"
                                     >
                                         {submitting ? <Loader2 className="animate-spin mx-auto" /> : 'ENVIAR AGORA'}
                                     </button>

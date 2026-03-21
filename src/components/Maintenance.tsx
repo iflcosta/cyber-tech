@@ -1,7 +1,6 @@
 "use client";
 import { ShieldCheck, Clock, MapPin, Zap } from "lucide-react";
 import { MaintenanceForm } from "./MaintenanceForm";
-import { Badge } from "./ui/Badge";
 
 const features = [
   { icon: <ShieldCheck size={20} className="text-[var(--accent-primary)]" />, text: "Garantia de 90 dias em todos os reparos" },
@@ -11,7 +10,7 @@ const features = [
 
 export default function Maintenance() {
   return (
-    <section id="assistencia" className="py-24 bg-[var(--bg-primary)] relative overflow-hidden hero-texture border-y border-[var(--border-subtle)]">
+    <section id="assistencia" className="py-24 bg-[var(--bg-primary)] relative overflow-hidden hero-texture border-y border-[var(--border-subtle)] red-line-top">
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
           <div className="space-y-12">
@@ -42,7 +41,7 @@ export default function Maintenance() {
               ))}
             </div>
 
-            <div className="p-10 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden shadow-2xl group">
+            <div className="card-dark p-10 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden shadow-2xl group">
               <div className="absolute top-0 left-0 w-1 h-full bg-[var(--accent-primary)] opacity-50" />
               <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
                 <Zap size={120} />

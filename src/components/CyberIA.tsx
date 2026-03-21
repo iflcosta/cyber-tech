@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Send, X, Bot, Sparkles, Loader2, Wrench, Monitor, Smartphone, Cpu, MessageSquare } from "lucide-react";
+import { Send, X, Bot, Sparkles, Loader2, Monitor, Smartphone, Cpu, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGeminiResponse } from "@/lib/gemini";
 import { getProducts } from "@/lib/products";
@@ -26,7 +26,6 @@ export default function CyberIA() {
     const [loading, setLoading] = useState(false);
     const [productsString, setProductsString] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
-    const lastMessageRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         async function preloadProducts() {
@@ -171,14 +170,14 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[100] font-sans">
+        <div className="card-dark fixed bottom-6 right-6 z-[100] font-sans">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="mb-4 w-[380px] h-[600px] bg-[var(--bg-surface)] rounded-2xl flex flex-col overflow-hidden border border-[var(--border-subtle)] shadow-2xl"
+                        className="mb-4 w-[calc(100vw-3rem)] max-w-[380px] h-[600px] max-h-[80vh] bg-[var(--bg-surface)] rounded-2xl flex flex-col overflow-hidden border border-[var(--border-subtle)] shadow-2xl"
                     >
                         {/* Chrome Header */}
                         <div className="p-5 bg-gradient-to-r from-[var(--bg-elevated)] to-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center justify-between">
@@ -204,7 +203,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] p-3.5 rounded-xl text-sm leading-relaxed ${
                                         msg.role === 'user' 
-                                        ? 'bg-[var(--accent-glow)] text-[var(--bg-primary)] font-bold border border-[var(--accent-primary)]/30' 
+                                        ? 'bg-[var(--accent-primary)]/25 text-white font-bold border border-[var(--accent-primary)]/40'
                                         : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)]'
                                     }`}>
                                         {renderContent(msg.content)}
@@ -212,7 +211,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                             <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]/30">
                                                 <button 
                                                     onClick={() => handleDirectWhatsApp(msg.content)}
-                                                    className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-[var(--bg-primary)] px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_4px_10px_rgba(255,107,0,0.2)]"
+                                                    className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_4px_10px_rgba(232,76,76,0.3)]"
                                                 >
                                                     <Sparkles size={12} fill="currentColor" />
                                                     Gerar Voucher & Chamar WhatsApp
@@ -266,14 +265,14 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                         type="text"
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                                         placeholder="Digite aqui sua dúvida..."
                                         className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:border-[var(--accent-primary)] text-[var(--text-primary)] font-sans"
                                     />
                                     <button
                                         onClick={() => handleSend()}
                                         disabled={loading}
-                                        className="absolute right-2 top-1.5 w-9 h-9 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center text-[var(--bg-primary)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                                        className="absolute right-2 top-1.5 w-9 h-9 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center text-white hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
                                     >
                                         <Send size={16} />
                                     </button>

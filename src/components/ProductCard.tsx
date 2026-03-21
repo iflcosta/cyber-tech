@@ -1,11 +1,9 @@
-import * as React from "react";
 import Image from "next/image";
 import { MessageSquare, Cpu, Zap, Package } from "lucide-react";
 import { Card, CardContent, CardFooter } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 import { PerformanceBadge } from "./PerformanceBadge";
-import { brand } from "@/lib/brand";
 
 export interface Product {
   id: string;
@@ -33,13 +31,9 @@ interface ProductCardProps {
   onAddToCart?: () => void;
 }
 
-export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }: ProductCardProps) {
-  const whatsappUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
-    `Olá! Tenho interesse na workstation ${product.name} (R$ ${product.price_estimate.toLocaleString('pt-BR')}) que vi não site.`
-  )}`;
-
+export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardProps) {
   return (
-    <Card className="group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)]">
+    <Card className="card-dark group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)]">
       <div className="relative aspect-video w-full overflow-hidden bg-[var(--bg-primary)]">
         {product.image_url ? (
           <Image

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { CheckCircle2, Copy, Smartphone, Laptop, Monitor, Send, ArrowRight, Zap } from "lucide-react";
 import { Button } from "./ui/Button";
-import { Card, CardContent } from "./ui/Card";
 import { trackLead } from "@/lib/leads";
 import { brand } from "@/lib/brand";
 
@@ -55,7 +54,7 @@ export function MaintenanceForm() {
   return (
     <div className="max-w-xl mx-auto w-full">
       {step === 1 && (
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
+        <div className="card-dark bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
           <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase chrome-text">
             SINAL DE <span className="text-[var(--accent-primary)]">ENTRADA</span>
           </h3>
@@ -69,7 +68,7 @@ export function MaintenanceForm() {
                 }}
                 className={`flex items-center justify-between p-6 rounded-2xl border transition-all group ${
                   formData.equipment === type.id
-                    ? "bg-[var(--accent-glow)] border-[var(--accent-primary)] text-[var(--bg-primary)]"
+                    ? "bg-[var(--accent-glow)] border-[var(--accent-primary)] text-white"
                     : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)]"
                 }`}
               >
@@ -89,7 +88,7 @@ export function MaintenanceForm() {
       )}
 
       {step === 2 && (
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
+        <div className="card-dark bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
           <button onClick={() => setStep(1)} className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase mb-6 hover:text-[var(--accent-primary)] transition-colors tracking-widest flex items-center gap-2">
             <span>[ BACK ]</span>
           </button>
@@ -154,7 +153,7 @@ export function MaintenanceForm() {
       )}
 
       {step === 3 && voucher && (
-        <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-10 shadow-2xl text-center relative overflow-hidden">
+        <div className="card-dark bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-10 shadow-2xl text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <Zap size={100} />
           </div>

@@ -19,7 +19,7 @@ export default function Home() {
       <Reviews />
       <CyberIA />
 
-      <footer className="py-20 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center relative overflow-hidden">
+      <footer className="py-20 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center relative overflow-hidden red-line-top">
         <div className="absolute inset-0 hero-texture opacity-50" />
         <div className="container mx-auto px-4 relative z-10">
           <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-[0.3em] mb-4">

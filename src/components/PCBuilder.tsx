@@ -1,10 +1,8 @@
 "use client";
 import { useState, useEffect, useMemo } from 'react';
-import { Cpu, CircuitBoard, MonitorPlay, Zap, HardDrive, Package, MessageSquare, RefreshCcw, Info, ArrowRight } from 'lucide-react';
+import { Cpu, CircuitBoard, MonitorPlay, Zap, HardDrive, Package, RefreshCcw, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BuildSlot } from './BuildSlot';
-import { Button } from './ui/Button';
-import { Card, CardContent } from './ui/Card';
 import { brand } from '@/lib/brand';
 import { getProducts, Product } from '@/lib/products';
 import { useLeadModal } from '@/contexts/LeadModalContext';
@@ -25,7 +23,6 @@ export default function PCBuilder() {
   const [build, setBuild] = useState<Record<string, Product>>({});
   const [mounted, setMounted] = useState(false);
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
@@ -45,7 +42,6 @@ export default function PCBuilder() {
           setBuild(validBuild);
         }
       } finally {
-        setLoading(false);
         setMounted(true);
       }
     }
@@ -94,7 +90,7 @@ export default function PCBuilder() {
   if (!mounted) return null;
 
   return (
-    <section id="pc-builder" className="py-24 bg-[var(--bg-primary)] relative min-h-screen hero-texture">
+    <section id="pc-builder" className="py-24 bg-[var(--bg-primary)] relative min-h-screen hero-texture red-line-top">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Builder Grid */}
@@ -120,7 +116,7 @@ export default function PCBuilder() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
               {SLOTS.map((slot) => (
-                <div key={slot.id} className="relative">
+                <div key={slot.id} className="card-dark relative">
                   <BuildSlot
                     label={slot.label}
                     icon={slot.icon}
@@ -139,7 +135,7 @@ export default function PCBuilder() {
                         initial={{ opacity: 0, scale: 0.95, y: -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                        className="absolute left-0 right-0 top-full mt-4 z-40 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl shadow-2xl p-2 max-h-[300px] overflow-y-auto scrollbar-thin overflow-x-hidden"
+                        className="absolute left-0 right-0 top-full mt-4 z-40 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-2xl p-2 max-h-[300px] overflow-y-auto scrollbar-thin overflow-x-hidden"
                       >
                         {filteredParts.length === 0 ? (
                             <div className="p-8 text-center text-[var(--text-muted)] font-mono text-[10px] uppercase tracking-widest">
@@ -151,7 +147,7 @@ export default function PCBuilder() {
                               onClick={() => handleSelect(slot.id, part)}
                               className={`w-full flex items-center justify-between p-4 mb-1 text-left rounded-lg transition-all border ${
                                 build[slot.id]?.id === part.id 
-                                ? "bg-[var(--accent-glow)] border-[var(--accent-primary)] text-[var(--bg-primary)]" 
+                                ? "bg-[var(--accent-glow)] border-[var(--accent-primary)] text-white"
                                 : "bg-[var(--bg-surface)] text-[var(--text-primary)] border-transparent hover:border-[var(--border-active)] hover:bg-[var(--bg-elevated)]"
                               }`}
                             >
@@ -175,8 +171,10 @@ export default function PCBuilder() {
           {/* Sidebar Summary */}
           <div className="lg:w-[400px]">
             <div className="sticky top-32">
-              <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="p-8 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+              <div className="card-dark bg-[var(--bg-surface)] rounded-2xl overflow-hidden shadow-2xl">
+                {/* Barra de acento vermelha */}
+                <div className="h-[3px] bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent" />
+                <div className="p-8 border-b border-[var(--border-subtle)]">
                   <h3 className="text-lg font-display font-bold tracking-[0.1em] uppercase chrome-text">
                     RELATÓRIO DE MONTAGEM
                   </h3>

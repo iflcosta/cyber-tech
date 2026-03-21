@@ -1,7 +1,6 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { Badge } from "./ui/Badge";
 import { cn } from "./ui/Button";
 
 const categories = [
@@ -27,7 +26,7 @@ export function FilterBar() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 md:gap-4 p-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl mb-8 shadow-sm">
+    <div className="card-dark flex flex-wrap items-center gap-2 md:gap-4 p-4 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl mb-8 shadow-sm">
       <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-[0.2em] mr-2">
         Filtrar por:
       </span>

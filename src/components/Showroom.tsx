@@ -6,7 +6,6 @@ import { getProducts } from "@/lib/products";
 import { ProductCard, Product } from "./ProductCard";
 import { FilterBar } from "./FilterBar";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { useLeadModal } from "@/contexts/LeadModalContext";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -14,7 +13,6 @@ function ShowroomContent() {
   const { openModal } = useLeadModal();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedGallery, setSelectedGallery] = useState<{ images: string[], index: number } | null>(null);
   const searchParams = useSearchParams();
   const category = searchParams.get("category") || "all";
@@ -38,8 +36,7 @@ function ShowroomContent() {
   }, []);
 
   const handleInterest = (product: Product) => {
-    setSelectedProduct(product);
-    openModal('compra', 
+    openModal('compra',
       `Interesse no Produto: ${product.name} (R$ ${product.price.toLocaleString('pt-BR')})`,
       `Olá, tenho interesse no *${product.name}* que vi no site por *R$ ${product.price.toLocaleString('pt-BR')}*. Pode me ajudar?`
     );
@@ -161,7 +158,7 @@ function ShowroomContent() {
 
       {loading ? (
         <div className="flex h-96 items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-[#1A1A1A]" />
+          <Loader2 className="h-12 w-12 animate-spin text-[var(--text-muted)]" />
         </div>
       ) : (
         <>
@@ -189,7 +186,7 @@ function ShowroomContent() {
 
 export default function Showroom() {
   return (
-    <section id="produtos" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative overflow-hidden">
+    <section id="produtos" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative overflow-hidden red-line-top">
       <Suspense fallback={
         <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[var(--text-primary)]">
           <Loader2 className="h-12 w-12 animate-spin" />

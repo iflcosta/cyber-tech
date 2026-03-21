@@ -139,7 +139,8 @@ export default function Header() {
                     <a
                         href={`https://wa.me/${brand.whatsapp}`}
                         target="_blank"
-                        className="btn-primary flex items-center gap-2 text-[11px]"
+                        className="flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px]"
+                        style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
                     >
                         <MessageSquare size={14} />
                         WhatsApp
@@ -171,7 +172,7 @@ export default function Header() {
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
-                        className="fixed right-0 top-0 h-full w-[85%] max-w-sm bg-[var(--bg-surface)] border-l border-[var(--border-subtle)] z-[120] p-6 flex flex-col"
+                        className="card-dark fixed right-0 top-0 h-full w-[85%] max-w-sm bg-[var(--bg-surface)] border-l border-[var(--border-subtle)] z-[120] p-6 flex flex-col"
                     >
                         <div className="flex justify-between items-center mb-10">
                             <span className="text-xl font-display font-bold tracking-widest text-[var(--text-primary)] chrome-text">MENU</span>
@@ -209,7 +210,8 @@ export default function Header() {
                             <a
                                 href={`https://wa.me/${brand.whatsapp}`}
                                 target="_blank"
-                                className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-[13px]"
+                                className="w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all"
+                                style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
                             >
                                 <MessageSquare size={20} />
                                 FALAR COM TÉCNICO

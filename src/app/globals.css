@@ -14,8 +14,9 @@
   --bg-elevated: #F8F8FA;
 
   /* Acentos */
-  --accent-primary: #8A8A8A;      /* Titânio escuro para contraste */
-  --accent-glow: rgba(138, 138, 138, 0.15);
+  --accent-primary: #E84C4C;      /* Vermelho industrial — CTA principal */
+  --accent-primary-dark: #B83030; /* Sombra do botão */
+  --accent-glow: rgba(232, 76, 76, 0.15);
   --accent-hot: #E84C4C;
   --accent-success: #3A8F66;
 
@@ -25,9 +26,9 @@
   --text-muted: #8A8A9A;
 
   /* Bordas */
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-active: rgba(0, 0, 0, 0.15);
-  --border-glow: rgba(0, 0, 0, 0.05);
+  --border-subtle: rgba(0, 0, 0, 0.10);
+  --border-active: rgba(0, 0, 0, 0.22);
+  --border-glow: rgba(232, 76, 76, 0.12);
 
   --radius: 4px;
 }
@@ -65,20 +66,22 @@ code, .mono {
 
 @layer components {
   .btn-primary {
-    @apply relative overflow-hidden bg-gradient-to-b from-[var(--chrome-light)] to-[var(--chrome-mid)] text-[var(--bg-primary)] font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase;
+    @apply relative overflow-hidden text-white font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase;
     font-family: var(--font-rajdhani), sans-serif;
+    background: linear-gradient(to bottom, #EF5858, var(--accent-primary));
     border-radius: var(--radius);
-    box-shadow: 0 4px 0 var(--chrome-dark);
+    box-shadow: 0 4px 0 var(--accent-primary-dark);
   }
-  
+
   .btn-primary:hover {
-    @apply brightness-110 -translate-y-[1px];
-    box-shadow: 0 5px 0 var(--chrome-dark), 0 0 15px var(--border-glow);
+    @apply -translate-y-[1px];
+    background: linear-gradient(to bottom, #F26565, #EF5050);
+    box-shadow: 0 5px 0 var(--accent-primary-dark), 0 0 20px var(--accent-glow);
   }
 
   .btn-primary:active {
     @apply translate-y-[2px];
-    box-shadow: 0 2px 0 var(--chrome-dark);
+    box-shadow: 0 2px 0 var(--accent-primary-dark);
   }
   
   .btn-ghost {
@@ -94,7 +97,7 @@ code, .mono {
 
   .card-industrial:hover {
     @apply border-[var(--border-active)];
-    box-shadow: 0 0 20px var(--border-subtle);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   }
 
   .chrome-text {
@@ -111,6 +114,65 @@ code, .mono {
       @apply px-6; /* More gutter on mobile */
     }
   }
+}
+
+/* ── Card Dark — scoping de variáveis para cards escuros no fundo claro ── */
+/* Sobrescreve as CSS vars localmente; qualquer bg-[var(--bg-surface)] filho vira escuro */
+.card-dark {
+  --bg-primary:    #262626;
+  --bg-secondary:  #2E2E2E;
+  --bg-surface:    #383838;
+  --bg-elevated:   #424242;
+  --text-primary:  #F2F2F8;
+  --text-secondary:#C8C8D0;
+  --text-muted:    #A0A0A8;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-active: rgba(255, 255, 255, 0.22);
+  --border-glow:   rgba(232, 76, 76, 0.30);
+  --chrome-light:  #F0F0F4;
+  --chrome-mid:    #C0C0C8;
+  --chrome-dark:   #909098;
+}
+
+/* ── Glass ──────────────────────────────────────────── */
+/* Para fundos escuros (hero, calculadora, admin) */
+.glass-dark {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.glass-dark:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Para fundos claros (manutenção, showroom, pc builder) */
+.glass-light {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover shadow visível em cards escuros */
+.card-dark .card-industrial:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Linha decorativa vermelha ───────────────────────── */
+.red-line-top {
+  position: relative;
+}
+.red-line-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent-primary) 30%, var(--accent-primary) 70%, transparent);
+  opacity: 0.7;
+  z-index: 1;
 }
 
 /* Custom Scrollbar */
