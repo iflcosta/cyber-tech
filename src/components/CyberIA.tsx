@@ -6,6 +6,7 @@ import { getGeminiResponse } from "@/lib/gemini";
 import { getProducts } from "@/lib/products";
 import { useLeadModal } from "@/contexts/LeadModalContext";
 import { brand } from "@/lib/brand";
+import { useVoucherSession } from "@/hooks/useVoucherSession";
 
 type Message = { role: 'user' | 'ai', content: string };
 type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
@@ -24,6 +25,7 @@ export default function CyberIA() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const { voucherCode } = useVoucherSession();
     const [productsString, setProductsString] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
     const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -130,7 +132,8 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                     body: JSON.stringify({ 
                         messages: newMessages, 
                         source: 'Cyber IA',
-                        intent_type: currentIntent
+                        intent_type: currentIntent,
+                        session_voucher_code: voucherCode
                     })
                 });
             } catch (e) {}
@@ -140,8 +143,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
     };
 
     const handleDirectWhatsApp = (aiContent: string) => {
-        const voucher = `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-        const text = `Olá! Vi sua Cyber IA no site e gostaria de aproveitar meu voucher de desconto: ${voucher}\n\nAssunto: ${aiContent.slice(0, 150)}...`;
+        const text = `Olá! Vi sua Cyber IA no site e gostaria de aproveitar meu voucher de desconto: ${voucherCode || 'SITE'}\n\nAssunto: ${aiContent.slice(0, 150)}...`;
         window.open(`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`, '_blank');
     };
 

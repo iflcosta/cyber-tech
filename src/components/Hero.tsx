@@ -37,7 +37,7 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-sm md:text-base text-[var(--text-secondary)] max-w-2xl mx-auto mb-16 leading-relaxed relative z-10 uppercase font-bold tracking-widest"
+                    className="text-sm md:text-base text-[var(--text-secondary)] max-w-2xl mx-auto mb-16 leading-relaxed relative z-10 font-medium tracking-wide"
                 >
                     Reparos especializados em Smartphones, notebooks e apple. <br className="hidden md:block" />
                     Montagem de PCs de alta performance com estoque real em Bragança Paulista.

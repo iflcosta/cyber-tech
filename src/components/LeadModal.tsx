@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Copy, Send, Monitor, Smartphone, Wrench, HelpCircle, ArrowRight } from 'lucide-react';
 import { trackLead } from '@/lib/leads';
+import { getOrCreateSessionVoucher } from '@/lib/session/voucherSession';
 import { brand } from '@/lib/brand';
 import { useSearchParams, usePathname } from 'next/navigation';
 import { useLeadModal } from '@/contexts/LeadModalContext';
@@ -156,6 +157,8 @@ export default function LeadModal() {
             campaign: searchParams.get('utm_campaign')
         };
 
+        const sessionVoucherCode = await getOrCreateSessionVoucher();
+
         const code = await trackLead({
             client_name: name,
             whatsapp: whatsapp,
@@ -163,7 +166,8 @@ export default function LeadModal() {
             intent_type: currentIntent || 'duvida_tecnica',
             description: finalDescription,
             marketing_source: utm_params.source || 'direct',
-            utm_parameters: utm_params
+            utm_parameters: utm_params,
+            voucher_code: sessionVoucherCode
         });
 
         if (code) {

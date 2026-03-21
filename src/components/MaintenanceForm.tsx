@@ -5,6 +5,7 @@ import { Button } from "./ui/Button";
 import { Card, CardContent } from "./ui/Card";
 import { trackLead } from "@/lib/leads";
 import { brand } from "@/lib/brand";
+import { getOrCreateSessionVoucher } from "@/lib/session/voucherSession";
 
 const equipmentTypes = [
   { id: "smartphone", label: "Smartphone", icon: <Smartphone size={18} /> },
@@ -29,11 +30,14 @@ export function MaintenanceForm() {
     setLoading(true);
     
     try {
+      const sessionVoucherCode = await getOrCreateSessionVoucher();
+
       const code = await trackLead({
         client_name: formData.name,
         whatsapp: formData.phone,
         interest_type: 'manutencao',
         description: `Equipamento: ${formData.equipment} | Modelo: ${formData.model} | Problema: ${formData.problem}`,
+        voucher_code: sessionVoucherCode
       });
 
       if (code) {

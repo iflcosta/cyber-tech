@@ -34,10 +34,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }: ProductCardProps) {
-  const whatsappUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
-    `Olá! Tenho interesse na workstation ${product.name} (R$ ${product.price_estimate.toLocaleString('pt-BR')}) que vi não site.`
-  )}`;
-
   return (
     <Card className="group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)]">
       <div className="relative aspect-video w-full overflow-hidden bg-[var(--bg-primary)]">
@@ -93,7 +89,7 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
           </div>
         </div>
 
-        <div className="text-2xl font-display font-bold text-[var(--text-primary)] tracking-tighter chrome-text">
+        <div className="text-2xl font-display font-bold tracking-tighter text-[var(--accent-primary)]">
           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price_estimate)}
         </div>
       </CardContent>

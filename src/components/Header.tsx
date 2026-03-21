@@ -3,12 +3,15 @@ import { useState, useEffect } from "react";
 import { Menu, X as CloseIcon, MessageSquare, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { brand } from "@/lib/brand";
+import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "./Logo";
+import Logo from "./Logo";          // Opção A — SVG refinado
+// import Logo from "./LogoAlt";   // Opção B — wordmark HTML (troque para testar)
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { openWhatsAppLead } = useWhatsAppLead();
     const [storeStatus, setStoreStatus] = useState<{ status: 'open' | 'closing' | 'closed'; message: string }>({ status: 'closed', message: 'Carregando...' });
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -135,14 +138,13 @@ export default function Header() {
                         {storeStatus.message}
                     </div>
 
-                    <a
-                        href={`https://wa.me/${brand.whatsapp}`}
-                        target="_blank"
+                    <button
+                        onClick={() => openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Desktop)' })}
                         className="btn-primary flex items-center gap-2 text-[11px]"
                     >
                         <MessageSquare size={14} />
                         WhatsApp
-                    </a>
+                    </button>
                 </div>
 
                 {/* Mobile Menu Icon */}
@@ -205,14 +207,16 @@ export default function Header() {
                         </nav>
 
                         <div className="mt-auto">
-                            <a
-                                href={`https://wa.me/${brand.whatsapp}`}
-                                target="_blank"
+                            <button
+                                onClick={() => {
+                                    openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Mobile)' });
+                                    toggleMenu();
+                                }}
                                 className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-[13px]"
                             >
                                 <MessageSquare size={20} />
                                 FALAR COM TÉCNICO
-                            </a>
+                            </button>
                         </div>
                     </motion.div>
                 </>

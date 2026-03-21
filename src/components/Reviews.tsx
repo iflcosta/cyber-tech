@@ -120,7 +120,7 @@ export default function Reviews() {
                                 </div>
                                 <div className="flex gap-1 mb-6">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} className={i < review.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--border-subtle)] fill-[var(--border-subtle)]"} />
+                                        <Star key={i} size={14} className={i < review.rating ? "text-amber-400 fill-amber-400" : "text-neutral-200 fill-neutral-200"} />
                                     ))}
                                 </div>
                                 <p className="text-[var(--text-secondary)] font-medium leading-relaxed mb-8 flex-1 italic">"{review.comment}"</p>
@@ -206,7 +206,7 @@ export default function Reviews() {
                                                     size={32}
                                                     className={cn(
                                                         "transition-colors",
-                                                        star <= newReview.rating ? "text-[var(--accent-primary)] fill-[var(--accent-primary)]" : "text-[var(--border-subtle)]"
+                                                        star <= newReview.rating ? "text-amber-400 fill-amber-400" : "text-neutral-200 fill-neutral-200"
                                                     )}
                                                 />
                                             </button>
