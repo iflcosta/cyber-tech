@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { brand } from '@/lib/brand'
 import { getOrCreateSessionVoucher, setSessionVoucher } from '@/lib/session/voucherSession'
 import { trackLead } from '@/lib/leads'
@@ -60,17 +59,17 @@ export function useWhatsAppLead({
   defaultMessage,
 }: UseWhatsAppLeadParams = {}) {
   const [isLoading, setIsLoading] = useState(false)
-  const searchParams = useSearchParams()
 
   // Intercepta ?voucher= na URL e salva na sessão.
   useEffect(() => {
     if (typeof window !== 'undefined') {
-        const utmVoucher = searchParams?.get('voucher')
+        const params = new URLSearchParams(window.location.search)
+        const utmVoucher = params.get('voucher')
         if (utmVoucher && utmVoucher.startsWith('BPC-')) {
             setSessionVoucher(utmVoucher)
         }
     }
-  }, [searchParams])
+  }, [])
 
   const openWhatsApp = async (overrideMessage?: string): Promise<void> => {
     if (isLoading) return
