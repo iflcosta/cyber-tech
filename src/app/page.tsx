@@ -1,3 +1,4 @@
+import { Instagram, Facebook } from "lucide-react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Maintenance from "@/components/Maintenance";
@@ -25,9 +26,17 @@ export default function Home() {
           <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-[0.3em] mb-4">
             &copy; 2026 CYBER INFORMÁTICA - BRAGANÇA PAULISTA
           </p>
-          <p className="text-[var(--text-secondary)] text-[9px] font-mono uppercase tracking-widest">
+          <p className="text-[var(--text-secondary)] text-[9px] font-mono uppercase tracking-widest mb-8">
             Sólida. Técnica. Confiável.
           </p>
+          <div className="flex justify-center gap-6 text-[var(--text-secondary)]">
+            <a href="https://instagram.com/cyberinformática" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">
+              <Instagram size={20} />
+            </a>
+            <a href="https://facebook.com/cyberinformática" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">
+              <Facebook size={20} />
+            </a>
+          </div>
         </div>
       </footer>
     </main>

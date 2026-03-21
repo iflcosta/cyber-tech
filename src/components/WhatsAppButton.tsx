@@ -12,8 +12,8 @@ export interface WhatsAppButtonProps {
 }
 
 const WA_STYLE: React.CSSProperties = {
-  background: 'linear-gradient(to bottom, #2ECC71, #25A55A)',
-  boxShadow: '0 4px 0 #1a7a42',
+  background: 'linear-gradient(to bottom, var(--accent-primary), var(--accent-primary-hover))',
+  boxShadow: '0 4px 0 var(--border-glow)',
   borderRadius: '4px',
 }
 

@@ -9,12 +9,12 @@ import { usePathname } from "next/navigation";
 import Logo from "./Logo";          // Opção A — SVG refinado
 // import Logo from "./LogoAlt";   // Opção B — wordmark HTML (troque para testar)
 
+import { useShopStatus } from "@/contexts/ShopStatusContext";
+
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { isLoading: waLoading, openWhatsAppLead } = useWhatsAppLead({ serviceType: 'outro' });
-    const [storeStatus, setStoreStatus] = useState<{ status: 'open' | 'closing' | 'closed'; message: string }>({ status: 'closed', message: 'Carregando...' });
-
-    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+    const { storeStatus } = useShopStatus();
 
     const menuItems = [
         { label: "Manutenção", href: "/#assistencia" },
@@ -25,50 +25,7 @@ export default function Header() {
 
     const pathname = usePathname();
 
-    useEffect(() => {
-        const checkStatus = () => {
-            const now = new Date();
-            const day = now.getDay();
-            const hour = now.getHours();
-            const minutes = now.getMinutes();
-            const time = hour + minutes / 60;
-
-            const HOURS = {
-                weekdays: { open: 9, close: 18 },
-                saturday: { open: 9, close: 13 },
-                sunday: null
-            };
-
-            let status: 'open' | 'closing' | 'closed' = 'closed';
-            let message = '';
-
-            if (day === 0) {
-                status = 'closed';
-                message = 'Fechado · Abrimos amanhã às 9h';
-            } else if (day === 6) {
-                if (time >= HOURS.saturday.open && time < HOURS.saturday.close) {
-                    status = (HOURS.saturday.close - time <= 0.5) ? 'closing' : 'open';
-                    message = status === 'closing' ? 'Fechamos em 30 min' : `Abertos · Fecha às 13h`;
-                } else {
-                    status = 'closed';
-                    message = 'Fechado · Abrimos segunda às 9h';
-                }
-            } else {
-                if (time >= HOURS.weekdays.open && time < HOURS.weekdays.close) {
-                    status = (HOURS.weekdays.close - time <= 0.5) ? 'closing' : 'open';
-                    message = status === 'closing' ? 'Fechamos em 30 min' : `Abertos · Fecha às 18h`;
-                } else {
-                    status = 'closed';
-                    message = `Fechado · Abrimos amanhã às 9h`;
-                }
-            }
-            setStoreStatus({ status, message });
-        };
-
-        checkStatus();
-        const interval = setInterval(checkStatus, 60000);
-        return () => clearInterval(interval);
-    }, []);
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
     const statusColors = {
         open: "text-[var(--accent-success)]",
@@ -142,8 +99,7 @@ export default function Header() {
                     <button
                         onClick={() => openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Desktop)' })}
                         disabled={waLoading}
-                        className="flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px] disabled:opacity-70"
-                        style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
+                        className="btn-primary flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px] disabled:opacity-70"
                     >
                         {waLoading ? <Loader2 size={14} className="animate-spin" /> : <MessageSquare size={14} />}
                         WhatsApp
@@ -208,13 +164,11 @@ export default function Header() {
                                 </Link>
                             ))}
                         </nav>
-
                         <div className="mt-auto">
                             <button
                                 onClick={() => { openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Mobile)' }); toggleMenu(); }}
                                 disabled={waLoading}
-                                className="w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all disabled:opacity-70"
-                                style={{ background: 'linear-gradient(to bottom, #2ECC71, #25A55A)', borderRadius: '4px', boxShadow: '0 4px 0 #1a7a42' }}
+                                className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all disabled:opacity-70"
                             >
                                 {waLoading ? <Loader2 size={20} className="animate-spin" /> : <MessageSquare size={20} />}
                                 FALAR COM TÉCNICO

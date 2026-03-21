@@ -30,9 +30,8 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 border border-white/20 bg-white/5 backdrop-blur-md text-white/90 text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] mb-12 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                    className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5 backdrop-blur-md text-[var(--accent-primary)] text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] mb-12 rounded-full shadow-[0_0_20px_var(--accent-glow)]"
                 >
-                    <div className="w-2 h-2 bg-[var(--accent-success)] rounded-full shadow-[0_0_10px_var(--accent-success)]" />
                     ESPECIALISTAS EM TECNOLOGIA · BRAGANÇA PAULISTA
                 </motion.div>
 

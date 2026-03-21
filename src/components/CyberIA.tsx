@@ -155,7 +155,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                     {parts.map((part, index) => {
                         if (part.startsWith('**') && part.endsWith('**')) {
                             return (
-                                <strong key={index} className="text-[var(--accent-primary)] font-black">
+                                <strong key={index} className="text-[var(--accent-success)] font-black">
                                     {part.slice(2, -2)}
                                 </strong>
                             );
@@ -185,8 +185,8 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                         {/* Chrome Header */}
                         <div className="p-5 bg-gradient-to-r from-[var(--bg-elevated)] to-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-[var(--accent-glow)] rounded-lg border border-[var(--accent-primary)]/20 shadow-[0_0_15px_rgba(255,107,0,0.2)]">
-                                    <Bot size={20} className="text-[var(--accent-primary)]" />
+                                <div className="p-2 bg-[var(--accent-glow)] rounded-lg border border-[var(--accent-success)]/20 shadow-[0_0_15px_rgba(46,204,113,0.2)]">
+                                    <Bot size={20} className="text-[var(--accent-success)]" />
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-display font-bold uppercase tracking-widest chrome-text">Cyber IA</h3>
@@ -214,7 +214,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                             <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]/30">
                                                 <button 
                                                     onClick={() => handleDirectWhatsApp(msg.content)}
-                                                    className="inline-flex items-center gap-2 bg-[var(--accent-primary)] text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_4px_10px_rgba(232,76,76,0.3)]"
+                                                    className="inline-flex items-center gap-2 bg-[var(--accent-success)] text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_4px_10px_rgba(46,204,113,0.3)]"
                                                 >
                                                     <Sparkles size={12} fill="currentColor" />
                                                     Gerar Voucher & Chamar WhatsApp
@@ -228,7 +228,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                             {loading && (
                                 <div className="flex justify-start">
                                     <div className="bg-[var(--bg-elevated)] p-3 rounded-xl border border-[var(--border-subtle)] flex items-center gap-3">
-                                        <Loader2 size={16} className="animate-spin text-[var(--accent-primary)]" />
+                                        <Loader2 size={16} className="animate-spin text-[var(--accent-success)]" />
                                         <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Diagnosticando...</span>
                                     </div>
                                 </div>
@@ -244,7 +244,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                                 onClick={() => handleSend(gp.prompt)}
                                                 className="flex items-center gap-3 p-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg hover:border-[var(--accent-primary)] transition-all text-left group"
                                             >
-                                                <gp.icon size={16} className="text-[var(--text-muted)] group-hover:text-[var(--accent-primary)]" />
+                                                <gp.icon size={16} className="text-[var(--text-muted)] group-hover:text-[var(--accent-success)]" />
                                                 <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">{gp.label}</span>
                                             </button>
                                         ))}
@@ -258,7 +258,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                             <div className="flex gap-2">
                                 <button 
                                     onClick={() => openModal()}
-                                    className="p-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl text-[var(--accent-primary)] hover:bg-[var(--accent-glow)] hover:text-[var(--bg-primary)] transition-all flex-shrink-0"
+                                    className="p-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl text-[var(--accent-success)] hover:bg-[var(--accent-glow)] hover:text-[var(--bg-primary)] transition-all flex-shrink-0"
                                     title="Gerar Voucher"
                                 >
                                     <Sparkles size={20} />
@@ -275,7 +275,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                     <button
                                         onClick={() => handleSend()}
                                         disabled={loading}
-                                        className="absolute right-2 top-1.5 w-9 h-9 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center text-white hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                                        className="absolute right-2 top-1.5 w-9 h-9 bg-[var(--accent-success)] rounded-lg flex items-center justify-center text-white hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
                                     >
                                         <Send size={16} />
                                     </button>
@@ -289,16 +289,16 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
             {/* Float Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-16 h-16 bg-[var(--bg-elevated)] rounded-2xl flex items-center justify-center shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:shadow-[0_0_20px_rgba(255,107,0,0.3)] active:scale-95 transition-all group relative overflow-hidden"
+                className="w-16 h-16 bg-[var(--bg-elevated)] rounded-2xl flex items-center justify-center shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] border border-[var(--border-subtle)] hover:border-[var(--accent-success)] hover:shadow-[0_0_20px_rgba(46,204,113,0.3)] active:scale-95 transition-all group relative overflow-hidden"
             >
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-success)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 {isOpen ? (
                     <X className="text-[var(--text-primary)]" size={24} />
                 ) : (
                     <div className="relative">
-                        <MessageSquare className="text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors" size={24} />
-                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent-primary)] rounded-full animate-ping" />
-                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
+                        <MessageSquare className="text-[var(--text-primary)] group-hover:text-[var(--accent-success)] transition-colors" size={24} />
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent-success)] rounded-full animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent-success)] rounded-full" />
                     </div>
                 )}
             </button>

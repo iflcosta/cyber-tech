@@ -15,10 +15,11 @@
 
   /* Acentos */
   --accent-primary: #E84C4C;      /* Vermelho industrial — CTA principal */
+  --accent-primary-hover: #D43B3B; /* Vermelho mais forte no hover */
   --accent-primary-dark: #B83030; /* Sombra do botão */
   --accent-glow: rgba(232, 76, 76, 0.15);
   --accent-hot: #E84C4C;
-  --accent-success: #3A8F66;
+  --accent-success: #2ECC71;      /* Verde vibrante para estados de sucesso e IA */
 
   /* Texto */
   --text-primary: #1A1A1E;
@@ -31,6 +32,15 @@
   --border-glow: rgba(232, 76, 76, 0.12);
 
   --radius: 4px;
+}
+
+:root.theme-open {
+  --accent-primary: #2ECC71;      /* Verde vibrante para loja aberta */
+  --accent-primary-hover: #27AE60; /* Verde mais forte no hover */
+  --accent-primary-dark: #1a7a42;
+  --accent-glow: rgba(46, 204, 113, 0.15);
+  --accent-hot: #2ECC71;
+  --border-glow: rgba(46, 204, 113, 0.12);
 }
 
 body {
@@ -68,14 +78,14 @@ code, .mono {
   .btn-primary {
     @apply relative overflow-hidden text-white font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase;
     font-family: var(--font-rajdhani), sans-serif;
-    background: linear-gradient(to bottom, #EF5858, var(--accent-primary));
+    background: linear-gradient(to bottom, var(--accent-primary), var(--accent-primary-dark));
     border-radius: var(--radius);
     box-shadow: 0 4px 0 var(--accent-primary-dark);
   }
 
   .btn-primary:hover {
     @apply -translate-y-[1px];
-    background: linear-gradient(to bottom, #F26565, #EF5050);
+    background: linear-gradient(to bottom, var(--accent-primary-hover), var(--accent-primary-dark));
     box-shadow: 0 5px 0 var(--accent-primary-dark), 0 0 20px var(--accent-glow);
   }
 

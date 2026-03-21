@@ -44,7 +44,7 @@ export default function Logo({ className = "" }: { className?: string }) {
           opacity="0.8"
         />
         {/* Core Accent Dot (Matches Site Hot Accent) */}
-        <rect x="23" y="23" width="4" height="4" fill="#E84C4C" rx="1" />
+        <rect x="23" y="23" width="4" height="4" fill="var(--accent-primary)" rx="1" />
       </g>
 
       {/* Technical Vertical Divider */}
