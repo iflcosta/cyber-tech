@@ -81,7 +81,7 @@ export default function Header() {
                             key={item.label} 
                             href={item.href} 
                             onClick={(e) => handleNavClick(e, item.href)}
-                            className="text-[12px] font-display font-bold text-slate-400 hover:text-white uppercase tracking-wider transition-colors relative group"
+                            className="text-[14px] font-display font-bold text-slate-400 hover:text-white uppercase tracking-wider transition-colors relative group"
                         >
                             {item.label}
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] transition-all group-hover:w-full" />
@@ -91,8 +91,8 @@ export default function Header() {
 
                 {/* Desktop Store Status & WhatsApp */}
                 <div className="hidden lg:flex items-center gap-6">
-                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full border border-current ${statusColors[storeStatus.status]} ${statusBg[storeStatus.status]} text-[10px] font-mono uppercase tracking-tight`}>
-                        <div className={`w-1.5 h-1.5 rounded-full fill-current animate-pulse ${statusBg[storeStatus.status].replace('/10', '')}`} />
+                    <div className={`flex items-center gap-2.5 px-4 py-2 rounded-full border border-current ${statusColors[storeStatus.status]} ${statusBg[storeStatus.status]} text-[13px] font-bold font-mono uppercase tracking-tight shadow-sm`}>
+                        <div className={`w-2 h-2 rounded-full fill-current animate-pulse ${statusBg[storeStatus.status].replace('/10', '')}`} />
                         {storeStatus.message}
                     </div>
 
@@ -143,8 +143,8 @@ export default function Header() {
                         <div className={`flex items-center gap-3 p-4 rounded-lg mb-8 border border-[var(--border-subtle)] ${statusBg[storeStatus.status]}`}>
                             <Clock size={20} className={statusColors[storeStatus.status]} />
                             <div className="flex flex-col">
-                                <span className={`text-[12px] font-bold ${statusColors[storeStatus.status]}`}>{storeStatus.status === 'closed' ? 'FECHADO' : 'ABERTO'}</span>
-                                <span className="text-[10px] text-[var(--text-secondary)] uppercase">{storeStatus.message}</span>
+                                <span className={`text-[16px] font-bold ${statusColors[storeStatus.status]}`}>{storeStatus.status === 'closed' ? 'FECHADO' : 'ABERTO'}</span>
+                                <span className="text-[14px] text-[var(--text-secondary)] font-bold uppercase">{storeStatus.message}</span>
                             </div>
                         </div>
 
@@ -157,10 +157,10 @@ export default function Header() {
                                         handleNavClick(e, item.href);
                                         if (!item.href.startsWith('/#')) toggleMenu();
                                     }}
-                                    className="text-[14px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-elevated)] px-5 py-4 rounded-md border border-[var(--border-subtle)] transition-all flex items-center justify-between uppercase tracking-wider"
+                                    className="text-[17px] font-display font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-elevated)] px-6 py-5 rounded-md border border-[var(--border-subtle)] transition-all flex items-center justify-between uppercase tracking-wider"
                                 >
                                     {item.label}
-                                    <span className="text-[10px] opacity-30">→</span>
+                                    <span className="text-[12px] opacity-30">→</span>
                                 </Link>
                             ))}
                         </nav>
