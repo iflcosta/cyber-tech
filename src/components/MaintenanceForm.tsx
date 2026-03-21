@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { CheckCircle2, Copy, Smartphone, Laptop, Monitor, Send, ArrowRight, Zap } from "lucide-react";
+import { CheckCircle2, Copy, Smartphone, Laptop, Monitor, Send, ArrowRight, ArrowLeft, Zap } from "lucide-react";
 import { Button } from "./ui/Button";
 import { trackLead } from "@/lib/leads";
 import { brand } from "@/lib/brand";
@@ -89,8 +89,9 @@ export function MaintenanceForm() {
 
       {step === 2 && (
         <div className="card-dark bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
-          <button onClick={() => setStep(1)} className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase mb-6 hover:text-[var(--accent-primary)] transition-colors tracking-widest flex items-center gap-2">
-            <span>[ BACK ]</span>
+          <button onClick={() => setStep(1)} className="inline-flex items-center gap-2 text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase mb-6 hover:text-[var(--accent-primary)] transition-colors tracking-widest group">
+            <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
+            <span className="border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] px-2 py-1 rounded transition-colors">VOLTAR</span>
           </button>
           <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase chrome-text">
             LOG DE <span className="text-[var(--accent-primary)]">DIAGNÓSTICO</span>
@@ -173,7 +174,7 @@ export function MaintenanceForm() {
 
           <div className="bg-[var(--bg-elevated)] border border-dashed border-[var(--border-subtle)] rounded-2xl p-8 mb-10 relative group">
             <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mb-4 block">
-              ACCESS_TOKEN / PRIORITY_CODE
+              TOKEN / CÓDIGO DE PRIORIDADE
             </span>
             <div className="text-4xl font-display font-bold tracking-[0.2em] text-[var(--text-primary)] flex items-center justify-center gap-6 chrome-text">
               {voucher}
@@ -195,7 +196,7 @@ export function MaintenanceForm() {
               <span className="text-sm font-display font-bold uppercase tracking-widest">Enviar para Técnico Digital</span>
             </button>
             <p className="text-[10px] text-[var(--text-muted)] font-mono font-bold uppercase tracking-widest">
-              STATUS: <span className="text-[var(--accent-success)]">TÉCNICO ONLINE AGUARDANDO</span>
+              SITUAÇÃO: <span className="text-[var(--accent-success)]">TÉCNICO ONLINE AGUARDANDO</span>
             </p>
           </div>
         </div>

@@ -90,3 +90,14 @@ CREATE POLICY "Public reviews are viewable by everyone" ON reviews FOR SELECT US
 CREATE POLICY "Anyone can insert reviews" ON reviews FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admin can update reviews" ON reviews FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin can delete reviews" ON reviews FOR DELETE USING (auth.role() = 'authenticated');
+
+-- Voucher system extensions
+ALTER TABLE maintenance_orders ADD COLUMN IF NOT EXISTS source text DEFAULT 'whatsapp_site';
+ALTER TABLE maintenance_orders ADD COLUMN IF NOT EXISTS commission_owner numeric(10,2) DEFAULT 0;
+ALTER TABLE maintenance_orders ADD COLUMN IF NOT EXISTS commission_tech numeric(10,2) DEFAULT 0;
+ALTER TABLE maintenance_orders ADD COLUMN IF NOT EXISTS order_value numeric(10,2);
+ALTER TABLE maintenance_orders ADD COLUMN IF NOT EXISTS technician_id uuid;
+
+CREATE INDEX IF NOT EXISTS idx_voucher_code ON maintenance_orders(voucher_code);
+CREATE INDEX IF NOT EXISTS idx_voucher_status ON maintenance_orders(status);
+CREATE INDEX IF NOT EXISTS idx_voucher_source ON maintenance_orders(source);
