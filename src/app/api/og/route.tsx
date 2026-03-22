@@ -3,7 +3,6 @@ import { NextRequest } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
-const BG_IMAGE = 'https://images.unsplash.com/photo-1771014846919-3a1cf73aeea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBwYyUyMHJnYiUyMGRhcmslMjBwcmVtaXVtfGVufDF8fHx8MTc3NDIxMTA4Mnww&ixlib=rb-4.1.0&q=80&w=1080';
 const BG = '#0d0d11';
 const RED = '#E53935';
 
@@ -38,15 +37,8 @@ export async function GET(req: NextRequest) {
         return new ImageResponse(
             <div style={{ width: 1200, height: 630, backgroundColor: BG, display: 'flex', position: 'relative', overflow: 'hidden' }}>
 
-                {/* Background image right side */}
-                <div style={{ position: 'absolute', top: 0, right: 0, width: 720, height: 630, display: 'flex' }}>
-                    <img src={BG_IMAGE} alt="" style={{ width: 720, height: 630, objectFit: 'cover', opacity: 0.9 }} />
-                    <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 460, backgroundImage: `linear-gradient(to right, ${BG} 0%, rgba(13,13,17,0.75) 55%, transparent 100%)`, display: 'flex' }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 220, backgroundImage: `linear-gradient(to top, ${BG} 0%, transparent 100%)`, display: 'flex' }} />
-                </div>
-
                 {/* Red glow bottom-left */}
-                <div style={{ position: 'absolute', bottom: -270, left: -90, width: 900, height: 900, borderRadius: 450, backgroundImage: `radial-gradient(circle, rgba(229,57,53,0.12) 0%, rgba(13,13,17,0) 65%)`, display: 'flex' }} />
+                <div style={{ position: 'absolute', bottom: -270, left: -90, width: 900, height: 900, borderRadius: 450, backgroundImage: `radial-gradient(circle, rgba(229,57,53,0.15) 0%, rgba(13,13,17,0) 65%)`, display: 'flex' }} />
 
                 {/* Content */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -65,7 +57,7 @@ export async function GET(req: NextRequest) {
                         {title ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 {category ? (
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 11, color: RED, letterSpacing: '0.3em', opacity: 0.8 }}>
+                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 11, color: RED, letterSpacing: '0.3em' }}>
                                         // {category.toUpperCase()}
                                     </span>
                                 ) : null}
@@ -73,7 +65,7 @@ export async function GET(req: NextRequest) {
                                     {title}
                                 </span>
                                 {price ? (
-                                    <span style={{ fontFamily: R, fontWeight: 700, fontSize: 48, color: RED, letterSpacing: '-0.01em' }}>
+                                    <span style={{ fontFamily: R, fontWeight: 700, fontSize: 48, color: RED }}>
                                         R$ {price}
                                     </span>
                                 ) : null}
@@ -94,8 +86,6 @@ export async function GET(req: NextRequest) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 32, position: 'relative' }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, width: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.3)', display: 'flex' }} />
                         <div style={{ position: 'absolute', top: 0, right: 0, width: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.3)', display: 'flex' }} />
-
-                        {/* Tags */}
                         <div style={{ display: 'flex', gap: 20 }}>
                             {[
                                 { id: '01', label: 'PC GAMER' },
@@ -104,17 +94,11 @@ export async function GET(req: NextRequest) {
                             ].map(tag => (
                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.1)', paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 10, backgroundColor: 'rgba(13,13,17,0.8)', position: 'relative' }}>
                                     <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: RED, display: 'flex' }} />
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 10, color: RED, opacity: 0.8 }}>
-                                        // {tag.id}
-                                    </span>
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>
-                                        {tag.label}
-                                    </span>
+                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 10, color: RED, opacity: 0.8 }}>// {tag.id}</span>
+                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>{tag.label}</span>
                                 </div>
                             ))}
                         </div>
-
-                        {/* URL */}
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, paddingRight: 8, paddingBottom: 4 }}>
                             <div style={{ width: 30, height: 1, backgroundColor: 'rgba(229,57,53,0.5)', display: 'flex' }} />
                             <span style={{ fontFamily: M, fontWeight: 400, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>
