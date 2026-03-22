@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
+// export const runtime = 'edge'; // temporariamente desabilitado para debug
 
 const BG_IMAGE = 'https://images.unsplash.com/photo-1771014846919-3a1cf73aeea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBwYyUyMHJnYiUyMGRhcmslMjBwcmVtaXVtfGVufDF8fHx8MTc3NDIxMTA4Mnww&ixlib=rb-4.1.0&q=80&w=1080';
 const BG = '#0d0d11';
