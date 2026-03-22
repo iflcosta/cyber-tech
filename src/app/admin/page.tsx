@@ -592,7 +592,7 @@ export default function AdminDashboard() {
                                         { label: 'Manutenção', key: 'manutencao', color: 'bg-blue-500' },
                                         { label: 'PC Builder', key: 'pc_build', color: 'bg-purple-500' },
                                         { label: 'Venda Balcão', key: 'venda', color: 'bg-green-500' },
-                                        { label: 'Interesse Showroom', key: 'compra', color: 'bg-orange-500' },
+                                        { label: 'Showroom', key: 'compra', color: 'bg-orange-500' },
                                         { label: 'Cyber IA / Dúvida', key: 'duvida', color: 'bg-yellow-500' },
                                         { label: 'Carrinho Abandonado', key: 'checkout_abandonment', color: 'bg-red-500' },
                                     ].map(type => {
