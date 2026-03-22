@@ -9,8 +9,8 @@ async function loadFonts() {
         const { readFile } = await import('fs/promises');
         const { join } = await import('path');
         const [r, j] = await Promise.all([
-            readFile(join(process.cwd(), 'public/fonts/Rajdhani-Bold.woff2')),
-            readFile(join(process.cwd(), 'public/fonts/JetBrainsMono-Regular.woff2')),
+            readFile(join(process.cwd(), 'public/fonts/Rajdhani-Bold.ttf')),
+            readFile(join(process.cwd(), 'public/fonts/JetBrainsMono-Regular.ttf')),
         ]);
         return { rajdhaniBold: r.buffer as ArrayBuffer, jetbrainsMono: j.buffer as ArrayBuffer };
     } catch {
