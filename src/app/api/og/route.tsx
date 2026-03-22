@@ -1,30 +1,19 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 
 const BG = '#0d0d11';
 const RED = '#E53935';
 
-async function loadLocalFont(filename: string): Promise<ArrayBuffer | null> {
-    try {
-        const buffer = await readFile(join(process.cwd(), 'public', 'fonts', filename));
-        return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-    } catch {
-        return null;
-    }
-}
-
 export async function GET(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams, origin } = new URL(req.url);
         const title = searchParams.get('title');
         const price = searchParams.get('price');
         const category = searchParams.get('category');
 
         const [rajdhaniBold, jetbrainsMono] = await Promise.all([
-            loadLocalFont('Rajdhani-Bold.woff2'),
-            loadLocalFont('JetBrainsMono-Regular.woff2'),
+            fetch(`${origin}/fonts/Rajdhani-Bold.woff2`).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null),
+            fetch(`${origin}/fonts/JetBrainsMono-Regular.woff2`).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null),
         ]);
 
         const fonts: any[] = [];
@@ -37,10 +26,9 @@ export async function GET(req: NextRequest) {
         return new ImageResponse(
             <div style={{ width: 1200, height: 630, backgroundColor: BG, display: 'flex', position: 'relative', overflow: 'hidden' }}>
 
-                {/* Red glow bottom-left */}
-                <div style={{ position: 'absolute', bottom: -270, left: -90, width: 900, height: 900, borderRadius: 450, backgroundImage: `radial-gradient(circle, rgba(229,57,53,0.15) 0%, rgba(13,13,17,0) 65%)`, display: 'flex' }} />
+                {/* Red glow */}
+                <div style={{ position: 'absolute', bottom: -270, left: -90, width: 900, height: 900, borderRadius: 450, backgroundImage: 'radial-gradient(circle, rgba(229,57,53,0.15) 0%, rgba(13,13,17,0) 65%)', display: 'flex' }} />
 
-                {/* Content */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
 
                     {/* Top */}
@@ -56,28 +44,14 @@ export async function GET(req: NextRequest) {
                         <div style={{ position: 'absolute', left: 0, top: 18, bottom: 18, width: 6, backgroundColor: RED, display: 'flex' }} />
                         {title ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                {category ? (
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 11, color: RED, letterSpacing: '0.3em' }}>
-                                        // {category.toUpperCase()}
-                                    </span>
-                                ) : null}
-                                <span style={{ fontFamily: R, fontWeight: 700, fontSize: title.length > 25 ? 62 : 78, lineHeight: 0.9, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
-                                    {title}
-                                </span>
-                                {price ? (
-                                    <span style={{ fontFamily: R, fontWeight: 700, fontSize: 48, color: RED }}>
-                                        R$ {price}
-                                    </span>
-                                ) : null}
+                                {category ? <span style={{ fontFamily: M, fontSize: 11, color: RED, letterSpacing: '0.3em' }}>// {category.toUpperCase()}</span> : null}
+                                <span style={{ fontFamily: R, fontWeight: 700, fontSize: title.length > 25 ? 62 : 78, lineHeight: 0.9, letterSpacing: '-0.02em', color: '#FFFFFF' }}>{title}</span>
+                                {price ? <span style={{ fontFamily: R, fontWeight: 700, fontSize: 48, color: RED }}>R$ {price}</span> : null}
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontFamily: R, fontWeight: 700, fontSize: 160, lineHeight: 0.8, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
-                                    cyber
-                                </span>
-                                <span style={{ fontFamily: M, fontWeight: 400, fontSize: 36, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)', marginTop: 12 }}>
-                                    informática
-                                </span>
+                                <span style={{ fontFamily: R, fontWeight: 700, fontSize: 160, lineHeight: 0.8, letterSpacing: '-0.02em', color: '#FFFFFF' }}>cyber</span>
+                                <span style={{ fontFamily: M, fontWeight: 400, fontSize: 36, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)', marginTop: 12 }}>informática</span>
                             </div>
                         )}
                     </div>
@@ -94,16 +68,14 @@ export async function GET(req: NextRequest) {
                             ].map(tag => (
                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.1)', paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 10, backgroundColor: 'rgba(13,13,17,0.8)', position: 'relative' }}>
                                     <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: RED, display: 'flex' }} />
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 10, color: RED, opacity: 0.8 }}>// {tag.id}</span>
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>{tag.label}</span>
+                                    <span style={{ fontFamily: M, fontSize: 10, color: RED, opacity: 0.8 }}>// {tag.id}</span>
+                                    <span style={{ fontFamily: M, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>{tag.label}</span>
                                 </div>
                             ))}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, paddingRight: 8, paddingBottom: 4 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                             <div style={{ width: 30, height: 1, backgroundColor: 'rgba(229,57,53,0.5)', display: 'flex' }} />
-                            <span style={{ fontFamily: M, fontWeight: 400, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>
-                                cyberinformatica.tech
-                            </span>
+                            <span style={{ fontFamily: M, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>cyberinformatica.tech</span>
                         </div>
                     </div>
                 </div>
