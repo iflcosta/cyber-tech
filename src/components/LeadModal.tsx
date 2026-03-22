@@ -221,7 +221,7 @@ export default function LeadModal() {
                                     {step === 'intent' ? 'VAMOS COMEÇAR?' : step === 'details' ? 'QUASE LÁ' : 'TUDO PRONTO!'}
                                 </h2>
                                 {selectedProduct && step !== 'success' && (
-                                    <div className="ml-auto flex items-center gap-3 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg p-2 pr-4 shadow-sm">
+                                    <div className="ml-auto mr-12 flex items-center gap-3 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg p-2 pr-4 shadow-sm">
                                         {selectedProduct.image && (
                                             <div className="w-10 h-10 relative rounded overflow-hidden border border-[var(--border-subtle)]">
                                                 <img src={selectedProduct.image} alt={selectedProduct.name} className="object-cover w-full h-full" />
