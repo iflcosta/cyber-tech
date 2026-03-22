@@ -76,22 +76,73 @@ code, .mono {
 
 @layer components {
   .btn-primary {
-    @apply relative overflow-hidden text-white font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase;
+    @apply relative overflow-hidden text-white font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase flex items-center justify-center gap-2;
     font-family: var(--font-rajdhani), sans-serif;
-    background: linear-gradient(to bottom, var(--accent-primary), var(--accent-primary-dark));
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-dark) 100%);
     border-radius: var(--radius);
-    box-shadow: 0 4px 0 var(--accent-primary-dark);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 4px 0 var(--accent-primary-dark),
+      inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-primary::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.05) 100%);
   }
 
   .btn-primary:hover {
-    @apply -translate-y-[1px];
-    background: linear-gradient(to bottom, var(--accent-primary-hover), var(--accent-primary-dark));
-    box-shadow: 0 5px 0 var(--accent-primary-dark), 0 0 20px var(--accent-glow);
+    @apply -translate-y-[2px];
+    box-shadow: 
+      0 6px 0 var(--accent-primary-dark),
+      0 0 20px var(--accent-glow),
+      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-primary:hover::before {
+    @apply opacity-100;
   }
 
   .btn-primary:active {
     @apply translate-y-[2px];
     box-shadow: 0 2px 0 var(--accent-primary-dark);
+  }
+  
+  .btn-success {
+    @apply relative overflow-hidden text-white font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase flex items-center justify-center gap-2;
+    font-family: var(--font-rajdhani), sans-serif;
+    background: linear-gradient(135deg, #2ECC71 0%, #1a7a42 100%);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 4px 0 #1a7a42,
+      inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-success::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.05) 100%);
+  }
+
+  .btn-success:hover {
+    @apply -translate-y-[2px];
+    box-shadow: 
+      0 6px 0 #1a7a42,
+      0 0 20px rgba(46, 204, 113, 0.4),
+      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-success:hover::before {
+    @apply opacity-100;
+  }
+
+  .btn-success:active {
+    @apply translate-y-[2px];
+    box-shadow: 0 2px 0 #1a7a42;
   }
   
   .btn-ghost {
