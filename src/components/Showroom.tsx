@@ -254,7 +254,7 @@ function ShowroomContent() {
                 <button
                   key={i}
                   onClick={() => setCarouselIndex(i)}
-                  className={`h-[3px] rounded-[2px] transition-all ${i === carouselIndex ? 'w-6 bg-[var(--accent-primary)]' : 'w-2 bg-white/20 hover:bg-white/40'}`}
+                  className={`h-[3px] rounded-[2px] transition-all ${i === carouselIndex ? 'w-6 bg-[var(--accent-primary)]' : 'w-2 bg-[var(--text-muted)]/40 hover:bg-[var(--text-muted)]/70'}`}
                   aria-label={`Ir para posição ${i + 1}`}
                 />
               ))}
