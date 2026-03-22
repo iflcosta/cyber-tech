@@ -1528,6 +1528,149 @@ export default function AdminDashboard() {
                 </div>
             )}
 
+            {/* Modal de PDV (Venda Balcão) */}
+            {showPdvModal && (
+                <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
+                    <form onSubmit={submitPdvForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-10 max-w-lg w-full relative overflow-hidden card-dark">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
+                        
+                        <button type="button" onClick={() => setShowPdvModal(false)} className="absolute top-8 right-8 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                            <X size={24} />
+                        </button>
+
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center border border-[var(--accent-primary)]/20">
+                                <Package className="text-[var(--accent-primary)]" size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-display font-black italic uppercase tracking-tighter chrome-text leading-tight">Nova Venda Direta</h2>
+                                <p className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest">Saída manual de estoque / balcão</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Nome do Cliente (Opcional)</label>
+                                <input
+                                    type="text"
+                                    value={pdvForm.customerName}
+                                    onChange={(e) => setPdvForm({ ...pdvForm, customerName: e.target.value })}
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                    placeholder="Cliente Balcão"
+                                />
+                            </div>
+
+                            {/* Itens do Estoque */}
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Produtos da Venda</label>
+                                </div>
+                                
+                                {pdvForm.consumedProducts.length > 0 && (
+                                    <div className="space-y-2 mb-4 max-h-[150px] overflow-y-auto custom-scrollbar">
+                                        {pdvForm.consumedProducts.map((item, idx) => (
+                                            <div key={idx} className="flex items-center justify-between bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-3 rounded-xl">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold chrome-text uppercase">{item.name}</span>
+                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} (Est: {item.current_stock})</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newArr = [...pdvForm.consumedProducts];
+                                                        newArr.splice(idx, 1);
+                                                        setPdvForm({ ...pdvForm, consumedProducts: newArr });
+                                                    }}
+                                                    className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="flex gap-2">
+                                    <select
+                                        value={manualProductSelect}
+                                        onChange={(e) => setManualProductSelect(e.target.value)}
+                                        className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all uppercase appearance-none"
+                                    >
+                                        <option value="">+ Selecionar Produto</option>
+                                        {products.filter(p => p.stock_quantity > 0).map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name} (R$ {p.price} | Est: {p.stock_quantity})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (!manualProductSelect) return;
+                                            const p = products.find(prod => prod.id === manualProductSelect);
+                                            if (!p) return;
+                                            
+                                            const existingIdx = pdvForm.consumedProducts.findIndex(item => item.product_id === p.id);
+                                            const newArr = [...pdvForm.consumedProducts];
+                                            
+                                            if (existingIdx >= 0) {
+                                                newArr[existingIdx].quantity += 1;
+                                            } else {
+                                                newArr.push({
+                                                    product_id: p.id,
+                                                    quantity: 1,
+                                                    name: p.name,
+                                                    current_stock: p.stock_quantity
+                                                });
+                                            }
+                                            
+                                            setPdvForm({ ...pdvForm, consumedProducts: newArr });
+                                            setManualProductSelect('');
+                                        }}
+                                        className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-4 py-2 rounded-xl font-bold flex items-center justify-center transition-all active:scale-95"
+                                    >
+                                        <Plus size={16} strokeWidth={3} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Valor Final da Venda (R$)</label>
+                                <input
+                                    type="number" step="0.01" required
+                                    value={pdvForm.finalValue}
+                                    onChange={(e) => setPdvForm({ ...pdvForm, finalValue: e.target.value })}
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl focus:outline-none focus:border-[var(--accent-primary)]/50 shadow-inner transition-all"
+                                    placeholder="0.00"
+                                />
+                            </div>
+
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
+                                <label className="flex items-start gap-4 cursor-pointer group">
+                                    <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
+                                        <input
+                                            type="checkbox"
+                                            checked={pdvForm.isSiteSource}
+                                            onChange={(e) => setPdvForm({ ...pdvForm, isSiteSource: e.target.checked })}
+                                            className="opacity-0 absolute inset-0 cursor-pointer z-10"
+                                        />
+                                        {pdvForm.isSiteSource && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Venda capturada pelo Site (+8% Comis.)</div>
+                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Identifica se o cliente veio pela landing page/catálogo.</div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <button type="submit" className="w-full bg-white hover:bg-slate-200 text-[#121216] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all hover:scale-[1.01]">
+                                Registrar Venda e Abater Estoque
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
             {/* Modal de Comissões */}
             {showCommissionModal && selectedLeadForCommission && (
                 <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
