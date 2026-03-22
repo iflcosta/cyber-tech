@@ -153,10 +153,7 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
       <CardFooter className="p-6 pt-0">
         <Button 
           variant="none"
-          className={cn(
-            "w-full h-12",
-            isOpen ? "btn-success" : "btn-primary"
-          )}
+          className="w-full h-12 btn-primary"
           onClick={(e) => {
             e.stopPropagation();
             onInterest?.();

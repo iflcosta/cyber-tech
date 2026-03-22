@@ -103,13 +103,17 @@ export default function LeadModal() {
 
     useEffect(() => {
         if (isOpen) {
+            if (initialGoal) {
+                setStep('details');
+                setGoal(initialGoal);
+            }
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
             // Reset form after animation
             const timer = setTimeout(() => {
                 setStep('intent');
-                setGoal(initialGoal || null);
+                setGoal(null);
                 setName('');
                 setWhatsapp('');
                 setDescription('');
@@ -142,7 +146,11 @@ export default function LeadModal() {
         if (goal === 'manutencao') {
             finalDescription = `Modelo: ${deviceModel} | Problema: ${description}`;
         } else if (goal === 'compra') {
-            finalDescription = `Orçamento: ${budget} | Uso: ${usage}${description ? ' | Obs: ' + description : ''}`;
+            const details = [];
+            if (budget) details.push(`Orçamento: ${budget}`);
+            if (usage) details.push(`Uso: ${usage}`);
+            if (description) details.push(`Obs: ${description}`);
+            finalDescription = details.join(' | ');
             if (budget === 'acima de R$3.000') {
                 currentIntent = 'compra_imediata';
                 setIntent('compra_imediata');
@@ -263,7 +271,7 @@ export default function LeadModal() {
                                             </div>
                                         </div>
 
-                                        {(goal === 'compra' && !customDescription?.startsWith('BUILD SIMULADA')) ? (
+                                        {((goal === 'compra' || goal === 'duvida') && !customDescription?.startsWith('BUILD SIMULADA') && !selectedProduct) ? (
                                             <>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Qual é o seu orçamento?</label>
