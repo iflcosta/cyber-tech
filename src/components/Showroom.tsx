@@ -147,7 +147,7 @@ function ShowroomContent() {
             <span className="opacity-40 italic">PRECISION</span>
           </h2>
           <p className="text-[var(--text-secondary)] max-w-xl text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-            Workstations de IA e setups de alto desempenho configurados para máxima produtividade.
+            Workstations de IA, PC Gamers e Smartphones de alto desempenho em Bragança Paulista.
           </p>
         </div>
         <div className="flex items-center gap-3 text-[var(--text-primary)] font-display font-bold tracking-[0.2em] uppercase text-xs">

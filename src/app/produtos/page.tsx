@@ -1,31 +1,29 @@
 import { Instagram, Facebook } from "lucide-react";
 import Header from "@/components/Header";
-import Showroom from "@/components/Showroom";
+import ProductCatalog from "@/components/ProductCatalog";
 
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Catálogo de Produtos | Cyber Informática",
-  description: "Navegue pelo nosso catálogo premium de Workstations de IA, PC Gamers de alto desempenho e Hardware Elite.",
+  description: "Navegue pelo nosso catálogo completo de Smartphones, Workstations de IA e PC Gamers em Bragança Paulista.",
   openGraph: {
     title: "Catálogo de Produtos | Cyber Informática",
-    description: "Navegue pelo nosso catálogo premium de Workstations de IA, PC Gamers de alto desempenho e Hardware Elite.",
+    description: "Navegue pelo nosso catálogo completo de Smartphones, Workstations de IA e PC Gamers em Bragança Paulista.",
     url: "https://cyberinformatica.tech/produtos",
   },
   twitter: {
     title: "Catálogo de Produtos | Cyber Informática",
-    description: "Navegue pelo nosso catálogo premium de Workstations de IA, PC Gamers de alto desempenho e Hardware Elite.",
+    description: "Navegue pelo nosso catálogo completo de Smartphones, Workstations de IA e PC Gamers em Bragança Paulista.",
   }
 };
 
 export default function ProdutosPage() {
   return (
-    <main className="min-h-screen bg-[var(--bg-primary)] pt-20">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-24 md:pt-32">
       <Header />
       
-      <div className="py-24">
-        <Showroom />
-      </div>
+      <ProductCatalog />
 
       <footer className="py-20 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center relative overflow-hidden red-line-top mt-auto">
         <div className="absolute inset-0 hero-texture opacity-50" />

@@ -10,6 +10,7 @@ const categories = [
   { id: "office", label: "OFFICE PRO" },
   { id: "hardware", label: "HARDWARE" },
   { id: "perifericos", label: "PERIFÉRICOS" },
+  { id: "smartphone", label: "SMARTPHONE" },
 ];
 
 export function FilterBar() {
