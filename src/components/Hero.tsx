@@ -63,7 +63,7 @@ export default function Hero() {
                     className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-3xl mx-auto"
                 >
                     <button
-                        onClick={() => openModal('manutencao')}
+                        onClick={() => document.getElementById('assistencia')?.scrollIntoView({ behavior: 'smooth' })}
                         className="btn-primary w-full sm:flex-1 py-6 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs"
                     >
                         <ShieldCheck size={20} />
