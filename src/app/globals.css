@@ -75,9 +75,6 @@ code, .mono {
 }
 
 @layer components {
-  .btn-primary {
-    @apply relative overflow-hidden text-white font-bold py-3 px-6 transition-all duration-300 ease-out tracking-wider uppercase flex items-center justify-center gap-2;
-    font-family: var(--font-rajdhani), sans-serif;
   .btn-primary, .btn-success {
     @apply relative overflow-hidden text-white font-bold transition-all duration-300 ease-out tracking-[0.2em] uppercase flex items-center justify-center gap-2;
     font-family: var(--font-rajdhani), sans-serif;
@@ -147,12 +144,6 @@ code, .mono {
 
   .btn-success:active {
     box-shadow: 0 2px 0 #135d33;
-  }
-  }
-
-  .btn-success:active {
-    @apply translate-y-[2px];
-    box-shadow: 0 2px 0 #1a7a42;
   }
   
   .btn-ghost {

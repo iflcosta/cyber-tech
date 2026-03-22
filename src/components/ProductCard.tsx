@@ -152,8 +152,7 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
       {/* Footer Section (Interest Button) */}
       <CardFooter className="p-6 pt-0">
         <Button 
-          variant="none"
-          className="w-full h-12 btn-primary"
+          className="w-full h-12"
           onClick={(e) => {
             e.stopPropagation();
             onInterest?.();

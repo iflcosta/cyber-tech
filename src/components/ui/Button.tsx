@@ -19,7 +19,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return React.cloneElement(children as React.ReactElement<any>, {
         className: cn(
           "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
-          "bg-[#1A1A1A] text-white hover:bg-[#333333]", // Default variant if nãot passed
           className,
           (children as React.ReactElement<any>).props.className
         ),
@@ -29,8 +28,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const variants = {
-      primary: "bg-[#1A1A1A] text-white hover:bg-[#333333] border border-[#1A1A1A]",
-      secondary: "bg-[#F8F7F5] text-[#1A1A1A] hover:bg-[#ECEAE6] border border-[#D4D2CF]",
+      primary: "btn-primary",
+      secondary: "btn-success",
       outline: "bg-transparent border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white",
       ghost: "bg-transparent border border-[#D4D2CF] text-[#666666] hover:border-[#888888] hover:text-[#1A1A1A]",
       danger: "bg-red-600 text-white hover:bg-red-700",
