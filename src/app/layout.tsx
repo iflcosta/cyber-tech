@@ -134,7 +134,7 @@ export default function RootLayout({
                "priceRange": "$$$",
                "address": {
                  "@type": "PostalAddress",
-                 "streetAddress": "Bragança Paulista",
+                 "streetAddress": "Rua Coronel Teófilo Leme, 967",
                  "addressLocality": "Bragança Paulista",
                  "addressRegion": "SP",
                  "postalCode": "12900-000",

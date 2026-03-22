@@ -6,8 +6,8 @@ export const brand = {
   url: "https://cyberinformatica.tech",
   openingHours: "Seg-Sex: 09h às 18h, Sáb: 09h às 13h",
   address: {
-    street: "Rua do Comércio",
-    number: "123",
+    street: "Rua Coronel Teófilo Leme",
+    number: "967",
     city: "Bragança Paulista",
     coords: { lat: -22.9519, lng: -46.5412 }
   },

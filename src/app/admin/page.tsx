@@ -535,7 +535,7 @@ export default function AdminDashboard() {
                 <nav className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-4 custom-scrollbar">
                     {[
                         { id: 'dashboard', label: 'Painel' , icon: LayoutDashboard },
-                        { id: 'inbox', label: `Leads ${leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda','checkout_abandonment'].includes(l.interest_type)).length > 0 ? `(${leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda','checkout_abandonment'].includes(l.interest_type)).length})` : ''}`.trim(), icon: Sparkles },
+                        { id: 'inbox', label: `Leads ${leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda'].includes(l.interest_type)).length > 0 ? `(${leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda'].includes(l.interest_type)).length})` : ''}`.trim(), icon: Sparkles },
                         { id: 'leads', label: 'Vendas', icon: Users },
                         { id: 'products', label: 'Produtos', icon: Package },
                         { id: 'maintenance', label: 'Manutenção', icon: RefreshCw },
@@ -789,7 +789,7 @@ export default function AdminDashboard() {
                     </div>
 
                 ) : activeTab === 'inbox' ? (() => {
-                    const inboxLeads = leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda','checkout_abandonment'].includes(l.interest_type));
+                    const inboxLeads = leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda'].includes(l.interest_type));
                     return (
                         <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                             <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">

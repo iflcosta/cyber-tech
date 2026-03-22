@@ -1,26 +1,5 @@
 import { supabase } from './supabase';
 
-export async function saveCheckoutLead(name: string, whatsapp: string, items: any[]) {
-  try {
-    const { error } = await supabase
-      .from('leads')
-      .insert([
-        {
-          client_name: name,
-          whatsapp,
-          interest_type: 'checkout_abandonment',
-          description: `Produtos não carrinho: ${items.map(i => i.product.name).join(', ')}`,
-          status: 'pending'
-        }
-      ]);
-
-    if (error) throw error;
-    console.log('[LEADS] Lead de checkout salvo com sucesso!');
-  } catch (error) {
-    console.error('[LEADS] Erro ao salvar lead:', error);
-  }
-}
-
 export async function trackLead(data: any) {
   try {
     const voucherCode = data.voucher_code || `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
