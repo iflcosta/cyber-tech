@@ -199,9 +199,6 @@ export function MaintenanceForm() {
               <Send size={20} /> 
               <span className="text-sm font-display font-bold uppercase tracking-widest">Enviar para Técnico Digital</span>
             </button>
-            <p className="text-[10px] text-[var(--text-muted)] font-mono font-bold uppercase tracking-widest">
-              SITUAÇÃO: <span className="text-[var(--accent-success)]">TÉCNICO ONLINE AGUARDANDO</span>
-            </p>
           </div>
         </div>
       )}

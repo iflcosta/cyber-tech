@@ -193,9 +193,12 @@ code, .mono {
   background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-surface);
+  background: var(--chrome-light);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: var(--chrome-mid);
+}
+::-webkit-scrollbar-thumb:active {
   background: var(--chrome-dark);
 }

@@ -6,8 +6,10 @@ import { cn } from "./ui/Button";
 const categories = [
   { id: "all", label: "TUDO" },
   { id: "workstation_ai", label: "WORKSTATION IA" },
-  { id: "gamer", label: "GAMER" },
-  { id: "office", label: "OFFICE" },
+  { id: "gamer", label: "PC GAMER" },
+  { id: "office", label: "OFFICE PRO" },
+  { id: "hardware", label: "HARDWARE" },
+  { id: "perifericos", label: "PERIFÉRICOS" },
 ];
 
 export function FilterBar() {

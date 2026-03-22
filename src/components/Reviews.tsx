@@ -194,7 +194,7 @@ export default function Reviews() {
                             exit={{ scale: 0.95, opacity: 0 }}
                             className="card-dark bg-[var(--bg-surface)] w-full max-w-xl p-10 rounded-2xl border border-[var(--border-subtle)] shadow-2xl relative z-10 overflow-hidden"
                         >
-                            <div className="absolute inset-0 hero-texture opacity-30" />
+                            <div className="absolute inset-0 hero-texture opacity-30 pointer-events-none" />
                             <h3 className="text-3xl font-display font-bold text-[var(--text-primary)] uppercase tracking-tight mb-8 relative z-10 chrome-text">SUA AVALIAÇÃO</h3>
 
                             {message.text ? (
@@ -266,7 +266,7 @@ export default function Reviews() {
                                     />
                                 </div>
 
-                                <div className="flex gap-4 pt-4">
+                                <div className="flex gap-4 pt-4 relative z-10">
                                     <button
                                         type="button"
                                         onClick={(e) => {

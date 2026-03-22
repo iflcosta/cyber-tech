@@ -8,7 +8,7 @@ import { PerformanceBadge } from "./PerformanceBadge";
 export interface Product {
   id: string;
   name: string;
-  category: "workstation_ai" | "gamer" | "office";
+  category: string;
   specs: {
     cpu: string;
     gpu?: string;

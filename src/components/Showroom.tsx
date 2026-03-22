@@ -70,9 +70,10 @@ function ShowroomContent() {
     });
   };
 
-  const filteredProducts = products.filter((p) => 
-    category === "all" ? true : p.category === category
-  );
+  const filteredProducts = products.filter((p) => {
+    if (p.category === 'internal_part') return false;
+    return category === "all" ? true : p.category === category;
+  });
 
   return (
     <div className="container mx-auto px-4">

@@ -2,14 +2,18 @@
 import { useCart } from '@/contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Plus, Minus, ShoppingBag, CreditCard, Package } from 'lucide-react';
+import { brand } from '@/lib/brand';
 
 export default function CartSidebar() {
     const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, totalPrice } = useCart();
 
     const handleCheckout = () => {
-        // Futura navegação para a página real de Checkout
         setIsCartOpen(false);
-        window.location.href = '/checkout';
+        const orderDetails = items.map(item => `${item.quantity}x ${item.product.name}`).join('\n');
+        const totalFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice);
+        
+        const message = `Olá! Tenho interesse nos seguintes produtos:\n\n${orderDetails}\n\n*Total Estimado: ${totalFormatted}*`;
+        window.open(`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     return (

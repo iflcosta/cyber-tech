@@ -214,7 +214,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                             <div className="mt-4 pt-4 border-t border-zinc-700/30">
                                                 <button 
                                                     onClick={() => handleDirectWhatsApp(msg.content)}
-                                                    className="inline-flex items-center gap-2 bg-white text-zinc-950 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-zinc-100 transition-all shadow-lg border border-zinc-200"
+                                                    className="inline-flex items-center gap-2 bg-white text-zinc-950 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg border border-zinc-200"
                                                 >
                                                     <Sparkles size={12} fill="currentColor" />
                                                     Gerar Voucher & Chamar WhatsApp
@@ -275,9 +275,9 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                     <button
                                         onClick={() => handleSend()}
                                         disabled={loading}
-                                        className="absolute right-2 top-1.5 w-9 h-9 bg-white rounded-lg flex items-center justify-center text-zinc-950 hover:bg-zinc-100 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white rounded-lg flex items-center justify-center text-zinc-950 hover:bg-zinc-100 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
                                     >
-                                        <Send size={16} />
+                                        <Send size={16} className="ml-0.5 -mt-0.5" />
                                     </button>
                                 </div>
                             </div>

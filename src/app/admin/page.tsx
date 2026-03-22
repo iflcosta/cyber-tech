@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone, AlertTriangle } from 'lucide-react';
 import { sourceLabel } from '@/lib/tracking/sources';
 import { useRouter } from 'next/navigation';
-import { syncTinyProductsToSupabase } from '@/lib/tiny';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
@@ -35,10 +34,19 @@ export default function AdminDashboard() {
         costValue: '',
         ecosystemCaptured: true,
         isAssembly: false,
-        executor: 'owner' // 'owner', 'iago', 'partner'
+        executor: 'owner', // 'owner', 'iago', 'partner'
+        consumedProducts: [] as {product_id: string, quantity: number}[]
     });
 
-    // Modal de Card Social
+    // PDV Modal (Venda DiretaBalcão)
+    const [showPdvModal, setShowPdvModal] = useState(false);
+    const [pdvForm, setPdvForm] = useState({
+        customerName: '',
+        finalValue: '',
+        isSiteSource: false,
+        consumedProducts: [] as {product_id: string, quantity: number}[]
+    });
+
     const [showSocialCard, setShowSocialCard] = useState(false);
     const [socialCardLead, setSocialCardLead] = useState<any>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -186,7 +194,22 @@ export default function AdminDashboard() {
             .eq('id', selectedLeadForCommission.id);
 
         if (!error) {
+            // Deduct stock for consumed products
+            if (commissionForm.consumedProducts.length > 0) {
+                for (const item of commissionForm.consumedProducts) {
+                    const product = products.find(p => p.id === item.product_id);
+                    if (product && product.stock_quantity >= item.quantity) {
+                        await supabase
+                            .from('products')
+                            .update({ stock_quantity: product.stock_quantity - item.quantity })
+                            .eq('id', item.product_id);
+                    }
+                }
+                fetchProducts();
+            }
+
             setShowCommissionModal(false);
+            setCommissionForm({ ...commissionForm, consumedProducts: [] });
             fetchLeads();
             fetchMaintenanceOrders();
         } else {
@@ -202,6 +225,51 @@ export default function AdminDashboard() {
             .update({ status: newStatus })
             .eq('id', leadId);
         if (!error) fetchLeads();
+    };
+
+    const submitPdvForm = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const val = parseFloat(pdvForm.finalValue) || 0;
+        
+        // Base commission setup for PDV
+        // "+8% se vier do site"
+        const commissionRate = pdvForm.isSiteSource ? 0.08 : 0;
+        const totalCommission = val * commissionRate;
+
+        // Create a 'converted' lead to act as a Sale Record
+        const { error, data } = await supabase.from('leads').insert([{
+            client_name: pdvForm.customerName || 'Cliente Balcão',
+            interest_type: 'venda',
+            status: 'converted',
+            marketing_source: pdvForm.isSiteSource ? 'site' : 'balcao',
+            final_value: val,
+            commission_value: totalCommission,
+            converted_at: new Date().toISOString(),
+            payment_status: 'paid'
+        }]).select();
+
+        if (!error) {
+            // Deduct stock for consumed products
+            if (pdvForm.consumedProducts.length > 0) {
+                for (const item of pdvForm.consumedProducts) {
+                    const product = products.find(p => p.id === item.product_id);
+                    if (product && product.stock_quantity >= item.quantity) {
+                        await supabase
+                            .from('products')
+                            .update({ stock_quantity: product.stock_quantity - item.quantity })
+                            .eq('id', item.product_id);
+                    }
+                }
+                fetchProducts();
+            }
+
+            setShowPdvModal(false);
+            setPdvForm({ customerName: '', finalValue: '', isSiteSource: false, consumedProducts: [] });
+            fetchLeads();
+        } else {
+            console.error("PDV Error:", error);
+            alert("Erro ao registrar PDV.");
+        }
     };
 
     const updatePaymentStatus = async (leadId: string, newPaymentStatus: string) => {
@@ -383,23 +451,13 @@ export default function AdminDashboard() {
                         <h1 className="text-4xl font-black italic tracking-tighter chrome-text uppercase leading-none">
                             CYBER <span className="text-[var(--accent-primary)]">CONTROL</span>
                         </h1>
-                        <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mt-2">Industrial Management Terminal</p>
+                        <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mt-2">Terminal de Gerenciamento Industrial</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-6">
-                        <div className="hidden lg:block text-right border-r border-[var(--border-subtle)] pr-6">
-                            <div className="text-[9px] text-[var(--text-muted)] uppercase font-black tracking-widest mb-1">Authenticated Operator</div>
+                        <div className="hidden lg:block text-right pr-6">
+                            <div className="text-[9px] text-[var(--text-muted)] uppercase font-black tracking-widest mb-1">Operador Autenticado</div>
                             <div className="text-xs font-mono font-bold text-[var(--accent-primary)]">{userEmail}</div>
-                        </div>
-
-                        <div className="bg-[var(--bg-elevated)] p-5 rounded-2xl flex items-center gap-5 border border-[var(--border-subtle)] group hover:border-[var(--accent-primary)]/30 transition-all shadow-xl">
-                            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20 group-hover:scale-110 transition-transform">
-                                <TrendingUp className="text-green-500" size={20} />
-                            </div>
-                            <div>
-                                <div className="text-[9px] text-[var(--text-muted)] uppercase font-black tracking-widest mb-0.5">Comissões Acumuladas</div>
-                                <div className="text-xl font-display font-bold chrome-text tracking-tight">R$ {leads.filter(l => l.status === 'converted').reduce((acc, l) => acc + (l.commission_value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                            </div>
                         </div>
 
                         <div className="flex gap-3">
@@ -409,14 +467,14 @@ export default function AdminDashboard() {
                                     className="p-3 bg-[var(--bg-elevated)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-xl border border-[var(--border-subtle)] transition-all shadow-lg flex items-center gap-2 group"
                                 >
                                     <Smartphone size={18} className="text-[var(--accent-primary)]" />
-                                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden sm:inline">Build PWA</span>
+                                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden sm:inline">Instalar App</span>
                                 </button>
                             )}
 
                             <button
                                 onClick={handleLogout}
                                 className="p-3 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl border border-red-500/20 transition-all group"
-                                title="Safe Logout"
+                                title="Sair com Segurança"
                             >
                                 <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
                             </button>
@@ -426,8 +484,8 @@ export default function AdminDashboard() {
 
                 <nav className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-4 custom-scrollbar">
                     {[
-                        { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
-                        { id: 'leads', label: 'Leads', icon: Users },
+                        { id: 'dashboard', label: 'Painel' , icon: LayoutDashboard },
+                        { id: 'leads', label: 'Vendas', icon: Users },
                         { id: 'products', label: 'Produtos', icon: Package },
                         { id: 'maintenance', label: 'Manutenção', icon: RefreshCw },
                         { id: 'reviews', label: 'Depoimentos', icon: Star },
@@ -445,6 +503,15 @@ export default function AdminDashboard() {
 
                 {activeTab === 'dashboard' ? (
                     <div className="space-y-10">
+                        <div className="flex justify-end">
+                            <button 
+                                onClick={() => setShowPdvModal(true)}
+                                className="px-6 py-3 bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 rounded-xl font-display font-black text-xs tracking-widest uppercase flex items-center gap-2 transition-all hover:scale-[1.02]"
+                            >
+                                <Plus size={16} />
+                                Nova Venda (PDV)
+                            </button>
+                        </div>
                         {/* KPI Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
@@ -481,10 +548,10 @@ export default function AdminDashboard() {
                                         return (
                                             <div key={type.key}>
                                                 <div className="flex justify-between text-xs font-bold mb-2">
-                                                    <span className="text-white/60">{type.label}</span>
-                                                    <span>{count} ({pct.toFixed(0)}%)</span>
+                                                    <span className="text-[var(--text-muted)]">{type.label}</span>
+                                                    <span className="text-[var(--text-primary)]">{count} ({pct.toFixed(0)}%)</span>
                                                 </div>
-                                                <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                                <div className="w-full bg-[var(--border-subtle)] h-2 rounded-full overflow-hidden">
                                                     <div
                                                         className={`${type.color} h-full transition-all duration-1000`}
                                                         style={{ width: `${pct}%` }}
@@ -620,7 +687,7 @@ export default function AdminDashboard() {
                                                         R$ {totalIago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
-                                                        Ecosystem managed commission
+                                                        Comissão de ecossistema gerenciada
                                                     </div>
                                                 </div>
                                             </div>
@@ -634,7 +701,7 @@ export default function AdminDashboard() {
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
-                                                        External partner payout stream
+                                                        Fluxo de pagamento de parceiro externo
                                                     </div>
                                                 </div>
                                             </div>
@@ -673,7 +740,7 @@ export default function AdminDashboard() {
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <Users size={20} className="text-blue-500" /> Histórico de Leads
+                                <Users size={20} className="text-blue-500" /> Histórico de Vendas
                             </div>
                             <button
                                 onClick={fetchLeads}
@@ -720,7 +787,7 @@ export default function AdminDashboard() {
                                                     </span>
                                                     {lead.intent_type && (
                                                         <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
-                                                            Intent: {lead.intent_type}
+                                                            Intenção: {lead.intent_type}
                                                         </span>
                                                     )}
                                                 </div>
@@ -759,9 +826,9 @@ export default function AdminDashboard() {
                                                     {lead.interest_type === 'manutencao' ? (
                                                         <>
                                                             <option value="pending" className="bg-black">PENDENTE</option>
-                                                            <option value="analysis" className="bg-black">EM ANÃLISE</option>
-                                                            <option value="parts" className="bg-black">AGUARD. PEÃA</option>
-                                                            <option value="maintenance" className="bg-black">MANUTENÃÃO</option>
+                                                            <option value="analysis" className="bg-black">EM ANÁLISE</option>
+                                                            <option value="parts" className="bg-black">AGUARD. PEÇA</option>
+                                                            <option value="maintenance" className="bg-black">MANUTENÇÃO</option>
                                                             <option value="testing" className="bg-black">EM TESTES</option>
                                                             <option value="ready" className="bg-black">PRONTO</option>
                                                             <option value="converted" className="bg-black">FINALIZADO</option>
@@ -842,7 +909,8 @@ export default function AdminDashboard() {
                                                                 costValue: '',
                                                                 ecosystemCaptured: true,
                                                                 isAssembly: false,
-                                                                executor: 'owner'
+                                                                executor: 'owner',
+                                                                consumedProducts: []
                                                             });
                                                             setShowCommissionModal(true);
                                                         }}
@@ -856,7 +924,7 @@ export default function AdminDashboard() {
                                                         onClick={() => { setSocialCardLead(lead); setShowSocialCard(true); }}
                                                         className="w-full bg-pink-600/20 hover:bg-pink-600/40 border border-pink-500/20 text-pink-400 text-[10px] font-black px-4 py-2 rounded-lg transition-all block"
                                                     >
-                                                        ð¸ GERAR CARD
+                                                        📸 GERAR CARD
                                                     </button>
                                                 )}
                                             </td>
@@ -916,11 +984,11 @@ export default function AdminDashboard() {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] border-b border-[var(--border-subtle)]">
-                                        <th className="p-6">Client / Voucher</th>
-                                        <th className="p-6">Rating</th>
-                                        <th className="p-6">Content</th>
-                                        <th className="p-6">Timestamp</th>
-                                        <th className="p-6 text-right">Operations</th>
+                                        <th className="p-6">Cliente / Voucher</th>
+                                        <th className="p-6">Avaliação</th>
+                                        <th className="p-6">Conteúdo</th>
+                                        <th className="p-6">Data/Hora</th>
+                                        <th className="p-6 text-right">Operações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -1107,23 +1175,23 @@ export default function AdminDashboard() {
                                                         <div className="space-y-4">
                                                             <div className="space-y-1 bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-subtle)]">
                                                                 <div className="flex items-center justify-between gap-4">
-                                                                    <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase">Gross:</span>
+                                                                    <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase">Bruto:</span>
                                                                     <span className="font-display font-bold text-sm">R$ {(order.final_value || 0).toLocaleString('pt-BR')}</span>
                                                                 </div>
                                                                 <div className="flex items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-1.5 mt-1.5">
-                                                                    <span className="text-[9px] font-mono font-black text-[var(--accent-primary)] uppercase tracking-tighter">Ops:</span>
+                                                                    <span className="text-[9px] font-mono font-black text-[var(--accent-primary)] uppercase tracking-tighter">Ope:</span>
                                                                     <span className="text-[10px] font-mono font-black text-[var(--accent-primary)]">R$ {(order.commission_value || 0).toLocaleString('pt-BR')}</span>
                                                                 </div>
                                                                 {order.performed_by_partner && (
                                                                     <div className="flex items-center justify-between gap-4">
-                                                                        <span className="text-[9px] font-mono font-black text-purple-400 uppercase tracking-tighter">Ext:</span>
+                                                                        <span className="text-[9px] font-mono font-black text-purple-400 uppercase tracking-tighter">Exter:</span>
                                                                         <span className="text-[10px] font-mono font-black text-purple-400">
                                                                             R$ {(((order.final_value || 0) - (order.cost_value || 0)) * 0.5).toLocaleString('pt-BR')}
                                                                         </span>
                                                                     </div>
                                                                 )}
                                                                 <div className="flex items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-1.5 mt-1.5 opacity-40 italic">
-                                                                    <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase">Net:</span>
+                                                                    <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase">Líq:</span>
                                                                     <span className="text-[9px] font-mono font-bold text-[var(--text-muted)]">
                                                                         R$ {((order.final_value || 0) - (order.commission_value || 0) - (order.performed_by_partner ? ((order.final_value || 0) - (order.cost_value || 0)) * 0.5 : 0)).toLocaleString('pt-BR')}
                                                                     </span>
@@ -1139,12 +1207,13 @@ export default function AdminDashboard() {
                                                                         costValue: order.cost_value?.toString() || '',
                                                                         ecosystemCaptured: (order as any).commission_ecosystem ?? true,
                                                                         isAssembly: (order as any).commission_service ?? false,
-                                                                        executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : 'owner')
+                                                                        executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : ((order as any).equipment_type === 'smartphone' || (order as any).interest_type === 'smartphone' ? 'partner' : 'owner')),
+                                                                        consumedProducts: []
                                                                     });
                                                                     setShowCommissionModal(true);
                                                                 }}
                                                             >
-                                                                Log Adjust
+                                                                Ajustar Log
                                                             </button>
                                                         </div>
                                                     ) : (
@@ -1159,7 +1228,8 @@ export default function AdminDashboard() {
                                                                         costValue: '',
                                                                         ecosystemCaptured: true,
                                                                         isAssembly: false,
-                                                                        executor: 'owner'
+                                                                        executor: ((originalLead as any)?.equipment_type === 'smartphone' || (order as any).equipment_type === 'smartphone' || originalLead?.interest_type === 'smartphone') ? 'partner' : 'owner',
+                                                                        consumedProducts: []
                                                                     });
                                                                     setShowCommissionModal(true);
                                                                 }}
@@ -1167,7 +1237,7 @@ export default function AdminDashboard() {
                                                                 Finalizar Ordem
                                                             </button>
                                                             <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] text-center uppercase tracking-widest mt-2">
-                                                                Opened: {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                                                                Aberto em: {new Date(order.created_at).toLocaleDateString('pt-BR')}
                                                             </div>
                                                         </div>
                                                     )}
@@ -1213,11 +1283,13 @@ export default function AdminDashboard() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Categoria</label>
-                                        <select name="category" defaultValue={editingProduct?.category || 'kit'} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all uppercase appearance-none">
-                                            <option value="kit">Kit Gamer</option>
-                                            <option value="smartphone">Smartphone</option>
-                                            <option value="notebook">Notebook</option>
+                                        <select name="category" defaultValue={editingProduct?.category || 'workstation_ai'} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all uppercase appearance-none">
+                                            <option value="workstation_ai">Workstation IA</option>
+                                            <option value="gamer">PC Gamer</option>
+                                            <option value="office">Office Pro</option>
                                             <option value="hardware">Hardware</option>
+                                            <option value="perifericos">Periféricos</option>
+                                            <option value="internal_part">Peça Interna (Estoque)</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
@@ -1361,14 +1433,14 @@ export default function AdminDashboard() {
                                         'bg-green-500/10 text-green-400 border border-green-500/20'
                                     }`}>
                                     <div className={`w-1.5 h-1.5 rounded-full animate-ping ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-400' : socialCardLead.interest_type === 'manutencao' ? 'bg-[var(--accent-primary)]' : 'bg-green-400'}`} />
-                                    {socialCardLead.interest_type === 'pc_build' ? 'System Assembly' :
-                                        socialCardLead.interest_type === 'manutencao' ? 'Maintenance Protocol' :
-                                            'Success Managed'}
+                                    {socialCardLead.interest_type === 'pc_build' ? 'Montagem de Sistema' :
+                                        socialCardLead.interest_type === 'manutencao' ? 'Protocolo de Manutenção' :
+                                            'Sucesso Gerenciado'}
                                 </div>
 
                                 {/* Client */}
                                 <div className="mb-4">
-                                    <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Authenticated Client</div>
+                                    <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Cliente Autenticado</div>
                                     <div className="text-4xl font-display font-black italic uppercase tracking-tighter chrome-text leading-none py-1">
                                         {socialCardLead.client_name || "Nexus Unit"}
                                     </div>
@@ -1387,12 +1459,12 @@ export default function AdminDashboard() {
                                 {/* Highlights Grid */}
                                 <div className="grid grid-cols-2 gap-6 mb-10">
                                     <div>
-                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Operational Value</div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Valor da Operação</div>
                                         <div className="text-xl font-display font-bold chrome-text">R$ {socialCardLead.final_value?.toLocaleString('pt-BR')}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Warranty Lock</div>
-                                        <div className="text-xl font-display font-bold text-[var(--text-primary)]">90 DAYS</div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Garantia Selada</div>
+                                        <div className="text-xl font-display font-bold text-[var(--text-primary)]">90 DIAS</div>
                                     </div>
                                 </div>
 
@@ -1400,11 +1472,11 @@ export default function AdminDashboard() {
                                 <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 flex items-center justify-between relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-16 h-16 bg-[var(--accent-primary)] opacity-[0.03] rotate-45 translate-x-8 -translate-y-8" />
                                     <div>
-                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Security Token</div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Token de Segurança</div>
                                         <div className="text-lg font-mono font-black text-[var(--accent-primary)] tracking-tight">{socialCardLead.voucher_code}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Verified</div>
+                                        <div className="text-[8px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Verificado</div>
                                         <CheckCircle2 size={24} className="text-green-500 ml-auto" />
                                     </div>
                                 </div>
@@ -1418,13 +1490,13 @@ export default function AdminDashboard() {
 
                         <div className="flex flex-col items-center gap-3">
                             <p className="text-center text-[var(--text-muted)] text-[10px] font-mono font-bold uppercase tracking-widest animate-pulse">
-                                Capture snapshot for broadcast
+                                Capturar tela para transmissão
                             </p>
                             <button 
                                 onClick={() => setShowSocialCard(false)}
                                 className="w-full py-4 bg-[var(--bg-elevated)] text-[var(--text-primary)] font-display font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]/40 transition-all"
                             >
-                                Close Terminal
+                                Fechar Terminal
                             </button>
                         </div>
                     </div>
@@ -1434,7 +1506,7 @@ export default function AdminDashboard() {
             {/* Modal de Comissões */}
             {showCommissionModal && selectedLeadForCommission && (
                 <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                    <form onSubmit={submitCommissionForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-10 max-w-lg w-full relative overflow-hidden">
+                    <form onSubmit={submitCommissionForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-10 max-w-lg w-full relative overflow-hidden card-dark">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
                         
                         <button type="button" onClick={() => setShowCommissionModal(false)} className="absolute top-8 right-8 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
@@ -1488,7 +1560,7 @@ export default function AdminDashboard() {
                                         className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-mono font-bold focus:outline-none focus:border-red-500/30 transition-all font-mono"
                                         placeholder="0.00"
                                     />
-                                    <p className="text-[8px] font-mono font-medium text-[var(--text-muted)] mt-1 px-1 leading-relaxed">* Deduction directly impacts store net profit. Operational commissions remain static.</p>
+                                    <p className="text-[8px] font-mono font-medium text-[var(--text-muted)] mt-1 px-1 leading-relaxed">* Dedução impacta diretamente o lucro líquido da loja. Comissões operacionais permanecem estáticas.</p>
                                 </div>
                             )}
 
@@ -1500,9 +1572,9 @@ export default function AdminDashboard() {
                                             <CheckCircle2 size={14} className="text-[var(--accent-primary)]" />
                                         </div>
                                         <div>
-                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Digital Protocol Active</div>
+                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Protocolo Digital Ativo</div>
                                             <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
-                                                Automated Commission Applied: {parseFloat(commissionForm.finalValue) > 7500 ? '5% (>7.5k)' : '8% (Standard)'}
+                                                Comissão Automatizada Aplicada: {parseFloat(commissionForm.finalValue) > 7500 ? '5% (>7.5k)' : '8% (Padrão)'}
                                             </div>
                                         </div>
                                     </div>
@@ -1520,36 +1592,38 @@ export default function AdminDashboard() {
                                             {commissionForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                         </div>
                                         <div>
-                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Ecosystem Bounty (+5%)</div>
-                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Manual/External Lead referral protocol.</div>
+                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Bônus de Ecossistema (+5%)</div>
+                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Protocolo de indicação de Lead manual/externo.</div>
                                         </div>
                                     </label>
                                 </div>
                             )}
 
                             {/* Assembly Protocol Check */}
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
-                                <label className="flex items-start gap-4 cursor-pointer group">
-                                    <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly}
-                                            disabled={selectedLeadForCommission.interest_type === 'pc_build'}
-                                            onChange={(e) => setCommissionForm({ ...commissionForm, isAssembly: e.target.checked })}
-                                            className="opacity-0 absolute inset-0 cursor-pointer z-10 disabled:cursor-not-allowed"
-                                        />
-                                        {(selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly) && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Assembly Protocol (+3%)</div>
-                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
-                                            {selectedLeadForCommission.interest_type === 'pc_build' 
-                                                ? 'Automatically applied for PC Build interest.' 
-                                                : 'Manual trigger for PC building/mounting service.'}
+                            {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
+                                <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
+                                    <label className="flex items-start gap-4 cursor-pointer group">
+                                        <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly}
+                                                disabled={selectedLeadForCommission.interest_type === 'pc_build'}
+                                                onChange={(e) => setCommissionForm({ ...commissionForm, isAssembly: e.target.checked })}
+                                                className="opacity-0 absolute inset-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                                            />
+                                            {(selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly) && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                         </div>
-                                    </div>
-                                </label>
-                            </div>
+                                        <div>
+                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Protocolo de Montagem (+3%)</div>
+                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
+                                                {selectedLeadForCommission.interest_type === 'pc_build' 
+                                                    ? 'Aplicado automaticamente para interesse em Montagem de PC.' 
+                                                    : 'Gatilho manual para serviço de montagem de PC.'}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            )}
 
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
                                 <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Ordem</div>
@@ -1562,10 +1636,16 @@ export default function AdminDashboard() {
                                             onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                             className="w-4 h-4 accent-[var(--accent-primary)]"
                                         />
-                                        <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">João (Dono) <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Padrão</span></div>
+                                        <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">
+                                            João (Dono) 
+                                            {((selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) || 
+                                              (['notebook', 'desktop'].includes(selectedLeadForCommission.equipment_type || selectedLeadForCommission.interest_type))) && (
+                                                <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Padrão</span>
+                                            )}
+                                        </div>
                                     </label>
 
-                                    {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
+                                    {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type && !['smartphone', 'notebook', 'desktop'].includes(selectedLeadForCommission.interest_type)) && (
                                         <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
                                             <input
                                                 type="radio" name="executor" value="iago"
@@ -1573,7 +1653,7 @@ export default function AdminDashboard() {
                                                 onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
                                                 className="w-4 h-4 accent-[var(--accent-primary)]"
                                             />
-                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Iago Lopes <span className="ml-2 font-mono text-[8px] bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded">+3% Total Revenue</span></div>
+                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Iago Lopes <span className="ml-2 font-mono text-[8px] bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded">+3% Faturamento Total</span></div>
                                         </label>
                                     )}
 
@@ -1586,8 +1666,11 @@ export default function AdminDashboard() {
                                         />
                                         <div className="text-xs font-black uppercase tracking-widest text-purple-400">
                                             Técnico Externo
+                                            {(selectedLeadForCommission.equipment_type === 'smartphone' || selectedLeadForCommission.interest_type === 'smartphone') && (
+                                                <span className="ml-2 font-mono text-[8px] font-bold text-purple-400/60">Padrão</span>
+                                            )}
                                             <span className="ml-2 font-mono text-[8px] bg-purple-500/10 px-2 py-0.5 rounded">
-                                                {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Net Profit' : '+3% Total Revenue'}
+                                                {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Lucro Líquido' : '+3% Faturamento Total'}
                                             </span>
                                         </div>
                                     </label>
