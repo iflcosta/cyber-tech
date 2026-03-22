@@ -227,7 +227,7 @@ export default function PCBuilder() {
                   <button 
                     onClick={handleConsultation}
                     disabled={Object.keys(build).length === 0}
-                    className="w-full btn-primary py-5 px-8 flex items-center justify-center gap-3 disabled:opacity-30 disabled:grayscale group"
+                    className="w-full btn-primary py-4 px-8 flex items-center justify-center gap-3 disabled:opacity-30 disabled:grayscale group"
                   >
                     <span className="text-sm font-display font-bold uppercase tracking-widest">Confirmar Disponibilidade</span>
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

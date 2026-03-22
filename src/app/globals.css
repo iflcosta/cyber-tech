@@ -76,74 +76,28 @@ code, .mono {
 
 @layer components {
   .btn-primary, .btn-success {
-    @apply relative overflow-hidden text-white font-bold transition-all duration-300 ease-out tracking-[0.2em] uppercase flex items-center justify-center gap-2;
+    @apply relative overflow-hidden text-white font-bold transition-all duration-300 ease-out tracking-wider uppercase flex items-center justify-center gap-2;
     font-family: var(--font-rajdhani), sans-serif;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    z-index: 1;
+    border-radius: 8px; /* Mais arredondado */
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, 
-      var(--accent-primary) 0%, 
-      var(--accent-primary-dark) 45%,
-      var(--accent-primary) 55%,
-      var(--accent-primary-dark) 100%
-    );
-    box-shadow: 
-      0 4px 0 var(--accent-primary-dark),
-      0 8px 15px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    background: linear-gradient(to bottom, var(--accent-primary), var(--accent-primary-hover));
+    box-shadow: 0 4px 12px var(--accent-glow);
   }
 
   .btn-success {
-    background: linear-gradient(135deg, 
-      #2ECC71 0%, 
-      #1a7a42 45%,
-      #2ECC71 55%,
-      #27AE60 100%
-    );
-    box-shadow: 
-      0 4px 0 #135d33,
-      0 8px 15px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-  }
-
-  .btn-primary::after, .btn-success::after {
-    content: '';
-    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent;
-    transition: transform 0.6s ease;
-    z-index: -1;
-  }
-
-  .btn-primary:hover::after, .btn-success:hover::after {
-    @apply translate-x-full;
+    background: linear-gradient(to bottom, #2ECC71, #27AE60);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
   }
 
   .btn-primary:hover, .btn-success:hover {
-    @apply -translate-y-[2px] brightness-110;
-    box-shadow: 
-      0 6px 0 var(--accent-primary-dark),
-      0 12px 25px var(--accent-glow),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  }
-
-  .btn-success:hover {
-    box-shadow: 
-      0 6px 0 #135d33,
-      0 12px 25px rgba(46, 204, 113, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    @apply -translate-y-0.5 brightness-110 shadow-lg;
   }
 
   .btn-primary:active, .btn-success:active {
-    @apply translate-y-[2px];
-    box-shadow: 0 2px 0 var(--accent-primary-dark);
-  }
-
-  .btn-success:active {
-    box-shadow: 0 2px 0 #135d33;
+    @apply translate-y-0 scale-[0.98] brightness-90;
   }
   
   .btn-ghost {

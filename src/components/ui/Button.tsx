@@ -18,7 +18,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children as React.ReactElement<any>, {
         className: cn(
-          "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
+          "inline-flex items-center justify-center rounded-lg font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
           className,
           (children as React.ReactElement<any>).props.className
         ),
@@ -48,7 +48,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          "inline-flex items-center justify-center rounded-[2px] font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
+          "inline-flex items-center justify-center rounded-lg font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
           variants[variant],
           sizes[size],
           className
