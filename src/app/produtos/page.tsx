@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     title: "Catálogo de Produtos | Cyber Informática",
     description: "Navegue pelo nosso catálogo completo de Smartphones, Workstations de IA e PC Gamers em Bragança Paulista.",
     url: "https://cyberinformatica.tech/produtos",
+    images: [{ url: "https://cyberinformatica.tech/api/og", width: 1200, height: 630 }],
   },
   twitter: {
     title: "Catálogo de Produtos | Cyber Informática",
