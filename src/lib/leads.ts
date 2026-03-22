@@ -47,7 +47,7 @@ export async function trackLead(data: any) {
 
     const { error } = await supabase
       .from('leads')
-      .upsert(cleanData, { onConflict: 'voucher_code', ignoreDuplicates: false });
+      .insert(cleanData);
 
     if (error) throw error;
     console.log('[LEADS] Lead geral atualizado/capturado com sucesso! Voucher:', voucherCode);

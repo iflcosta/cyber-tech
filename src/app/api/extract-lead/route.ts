@@ -54,7 +54,7 @@ ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n')}`;
 
         const { error } = await supabase
             .from('leads')
-            .upsert({
+            .insert({
                 client_name: extraction.name || 'Lead via Cyber IA',
                 whatsapp: cleanWhatsapp,
                 interest_type: extraction.interest_type || 'duvida',
@@ -62,7 +62,7 @@ ${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n')}`;
                 marketing_source: 'cyber_ia',
                 voucher_code: voucher,
                 status: 'pending'
-            }, { onConflict: 'voucher_code', ignoreDuplicates: false });
+            });
 
         if (error) throw error;
 
