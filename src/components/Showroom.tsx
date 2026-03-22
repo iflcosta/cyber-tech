@@ -44,15 +44,19 @@ function ShowroomContent() {
   // Reset carousel when filter changes
   useEffect(() => { setCarouselIndex(0); }, [category]);
 
-  // Measure container width
+  // Measure container width — runs after products load (carousel div only exists then)
   useEffect(() => {
-    const update = () => {
+    if (loading) return;
+    const measure = () => {
       if (containerRef.current) setContainerWidth(containerRef.current.offsetWidth);
     };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
+    requestAnimationFrame(measure);
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [loading]);
+
+  // Reset measurement on category change (products count may change, index resets)
+  useEffect(() => { setCarouselIndex(0); setContainerWidth(0); }, [category]);
 
   const handleInterest = (product: Product) => {
     openModal('compra',
@@ -264,7 +268,7 @@ function ShowroomContent() {
 
 export default function Showroom() {
   return (
-    <section id="showroom" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative overflow-hidden red-line-top">
+    <section id="showroom" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative red-line-top">
       <Suspense fallback={
         <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[var(--text-primary)]">
           <Loader2 className="h-12 w-12 animate-spin" />

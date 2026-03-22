@@ -39,7 +39,7 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.1 }}
-                    className="text-5xl sm:text-7xl md:text-[10rem] font-display font-bold mb-8 tracking-tighter relative z-10 leading-[0.8] uppercase text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                    className="text-5xl sm:text-7xl md:text-[10rem] font-display font-bold mb-8 tracking-tighter relative z-10 leading-[0.85] uppercase text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] pb-3"
                 >
                     <span className="block opacity-95">TECNOLOGIA &</span>
                     <span className="italic chrome-text !from-white !via-slate-200 !to-slate-400 brightness-110">PERFORMANCE</span>
