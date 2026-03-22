@@ -102,47 +102,47 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
       </div>
 
       {/* Content Section (Clickable for Gallery) */}
-      <div 
-        className="flex-1 p-6 cursor-pointer group/content"
+      <div
+        className="flex-1 p-4 cursor-pointer group/content"
         onClick={handleViewDetails}
       >
-        <div className="space-y-1 mb-4">
+        <div className="space-y-0.5 mb-2">
           <Badge variant="outline" className="text-[9px] uppercase tracking-[0.15em] border-[var(--accent-primary)]/30 text-[var(--accent-primary)] rounded-sm bg-[var(--accent-primary)]/5">
             {product.category.replace('_', ' ')}
           </Badge>
-          <h3 className="text-lg font-display font-bold uppercase tracking-tight text-white group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
+          <h3 className="text-base font-display font-bold uppercase tracking-tight text-white group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
             {product.name}
           </h3>
         </div>
 
-        <div className="space-y-2.5 mb-6 opacity-80 group-hover:opacity-100 transition-opacity">
+        <div className="space-y-1.5 mb-3 opacity-80 group-hover:opacity-100 transition-opacity">
           {(product.specs.cpu || product.specs.Chip) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <Cpu className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+              <Cpu className="h-3.5 w-3.5 text-[var(--accent-primary)] shrink-0" />
               <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.cpu || product.specs.Chip}</span>
             </div>
           )}
           {(product.specs.gpu || product.specs.Câmera) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <Zap className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+              <Zap className="h-3.5 w-3.5 text-[var(--accent-primary)] shrink-0" />
               <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.gpu || product.specs.Câmera}</span>
             </div>
           )}
           {(product.specs.ram || product.specs.Tela) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <div className="h-3.5 w-3.5 rounded-full border border-[var(--accent-primary)]/50 flex items-center justify-center text-[8px] font-bold text-[var(--accent-primary)]">R</div>
-              <span className="text-[var(--text-primary)] brightness-200">
+              <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-[var(--accent-primary)]/50 flex items-center justify-center text-[8px] font-bold text-[var(--accent-primary)]">R</div>
+              <span className="text-[var(--text-primary)] brightness-200 truncate">
                 {product.specs.ram || product.specs.Tela}
               </span>
-              {product.specs.storage && <span className="opacity-60">• {product.specs.storage}</span>}
+              {product.specs.storage && <span className="opacity-60 shrink-0">• {product.specs.storage}</span>}
             </div>
           )}
         </div>
 
-        <div className="pt-4 border-t border-[var(--border-subtle)]/50 flex items-end justify-between">
+        <div className="pt-2 border-t border-[var(--border-subtle)]/50 flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-[9px] text-[var(--text-muted)] uppercase tracking-widest font-bold mb-1">Preço Estimado</span>
-            <span className="text-2xl font-display font-bold text-white tracking-tighter">
+            <span className="text-[9px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Preço Estimado</span>
+            <span className="text-xl font-display font-bold text-white tracking-tighter">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price || product.price_estimate)}
             </span>
           </div>
@@ -150,9 +150,9 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
       </div>
 
       {/* Footer Section (Interest Button) */}
-      <CardFooter className="p-6 pt-0">
-        <Button 
-          className="w-full h-10"
+      <CardFooter className="p-4 pt-0">
+        <Button
+          className="w-full h-9"
           onClick={(e) => {
             e.stopPropagation();
             onInterest?.();

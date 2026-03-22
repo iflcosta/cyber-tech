@@ -110,9 +110,12 @@ export default function Header() {
                 {/* Mobile Menu Icon */}
                 <button
                     onClick={toggleMenu}
-                    className="md:hidden text-[var(--text-primary)] p-2 hover:bg-[var(--bg-surface)] rounded-md transition-colors"
+                    className="md:hidden flex items-center gap-2 text-[var(--text-primary)] px-3 py-2 border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] rounded-[2px] transition-all active:scale-95"
                 >
-                    {isMenuOpen ? <CloseIcon size={24} /> : <Menu size={24} />}
+                    {isMenuOpen ? <CloseIcon size={20} /> : <Menu size={20} />}
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest">
+                        {isMenuOpen ? 'FECHAR' : 'MENU'}
+                    </span>
                 </button>
             </div>
         </header>

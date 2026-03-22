@@ -168,14 +168,15 @@ export default function AdminDashboard() {
         const digitalSources = ['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'];
         const isDigital = digitalSources.includes(selectedLeadForCommission.marketing_source?.toLowerCase());
         
-        // Tiered Protocol: 8% padrão, ou 5% se > 7.5k (se ativado pelo checkbox Ecossistema)
+        // Ecossistema: 8% padrão, ou 5% se valor > 8000
         let baseRate = 0;
         if (commissionForm.ecosystemCaptured) {
-            baseRate = val > 7500 ? 0.05 : 0.08;
+            baseRate = val > 8000 ? 0.05 : 0.08;
         }
 
+        // Assembly: Iago (+3% vai para commission_value) ou Jefferson (+3% vai para comissão técnico)
         const qualifiesForAssembly = commissionForm.isAssembly && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner');
-        let assemblyRate = qualifiesForAssembly ? 0.03 : 0;
+        let assemblyRate = (commissionForm.isAssembly && commissionForm.executor === 'iago') ? 0.03 : 0;
 
         const totalIagoEarnings = (val * baseRate) + (val * assemblyRate);
 
@@ -242,10 +243,10 @@ export default function AdminDashboard() {
             : pdvForm.discountValue;
         const val = Math.max(0, subtotal - discountAmount);
         
-        // Tiered Commission: 5% if GROSS sale > 7500, else 8% (only if Ecossistema activated)
+        // Ecossistema: 8% padrão, ou 5% se valor bruto > 8000
         let baseRate = 0;
         if (pdvForm.ecosystemCaptured) {
-            baseRate = subtotal > 7500 ? 0.05 : 0.08;
+            baseRate = subtotal > 8000 ? 0.05 : 0.08;
         }
 
         // Assembly Commission: +3% if active AND executor is Iago OR Partner
@@ -710,7 +711,7 @@ export default function AdminDashboard() {
                                             <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-[var(--accent-primary)]/20 relative overflow-hidden group/card hover:border-[var(--accent-primary)]/40 transition-all">
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--accent-primary)] opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] opacity-60 uppercase tracking-widest mb-3">Comissão Iago</div>
+                                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] opacity-60 uppercase tracking-widest mb-3">Comissão Iago (Mkt)</div>
                                                     <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalIago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -724,7 +725,7 @@ export default function AdminDashboard() {
                                             <div className="bg-[var(--bg-primary)] p-8 rounded-2xl border border-purple-500/20 relative overflow-hidden group/card hover:border-purple-500/40 transition-all">
                                                 <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500 opacity-[0.03] blur-2xl" />
                                                 <div className="relative">
-                                                    <div className="text-[9px] font-mono font-black text-purple-400 opacity-60 uppercase tracking-widest mb-3">Técnico Parceiro</div>
+                                                    <div className="text-[9px] font-mono font-black text-purple-400 opacity-60 uppercase tracking-widest mb-3">Jefferson (Técnico)</div>
                                                     <div className="text-3xl font-display font-bold chrome-text leading-tight mb-2">
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
@@ -910,7 +911,7 @@ export default function AdminDashboard() {
                                                         </div>
                                                         {lead.performed_by_partner && (
                                                             <div className="flex items-center justify-between gap-4">
-                                                                <span className="text-[10px] text-purple-400 font-bold">Téc.:</span>
+                                                                <span className="text-[10px] text-purple-400 font-bold">Jeff.:</span>
                                                                 <span className="text-[10px] font-bold text-purple-400">
                                                                     R$ {(lead.interest_type === 'manutencao'
                                                                         ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5
@@ -1219,7 +1220,7 @@ export default function AdminDashboard() {
                                                                 </div>
                                                                 {order.performed_by_partner && (
                                                                     <div className="flex items-center justify-between gap-4">
-                                                                        <span className="text-[9px] font-mono font-black text-purple-400 uppercase tracking-tighter">Exter:</span>
+                                                                        <span className="text-[9px] font-mono font-black text-purple-400 uppercase tracking-tighter">Jeff.:</span>
                                                                         <span className="text-[10px] font-mono font-black text-purple-400">
                                                                             R$ {(((order.final_value || 0) - (order.cost_value || 0)) * 0.5).toLocaleString('pt-BR')}
                                                                         </span>
@@ -1242,7 +1243,7 @@ export default function AdminDashboard() {
                                                                         costValue: order.cost_value?.toString() || '',
                                                                         ecosystemCaptured: (order as any).commission_ecosystem ?? true,
                                                                         isAssembly: (order as any).commission_service ?? false,
-                                                                        executor: order.performed_by_partner ? 'partner' : ((order as any).commission_service ? 'iago' : ((order as any).equipment_type === 'smartphone' || (order as any).interest_type === 'smartphone' ? 'partner' : 'owner')),
+                                                                        executor: order.performed_by_partner ? 'partner' : (['smartphone', 'celular', 'tablet', 'mobile'].includes(((order as any).equipment_type || (order as any).interest_type || '').toLowerCase()) ? 'partner' : 'owner'),
                                                                         consumedProducts: []
                                                                     });
                                                                     setShowCommissionModal(true);
@@ -1263,7 +1264,7 @@ export default function AdminDashboard() {
                                                                         costValue: '',
                                                                         ecosystemCaptured: true,
                                                                         isAssembly: false,
-                                                                        executor: ((originalLead as any)?.equipment_type === 'smartphone' || (order as any).equipment_type === 'smartphone' || originalLead?.interest_type === 'smartphone') ? 'partner' : 'owner',
+                                                                        executor: ['smartphone', 'celular', 'tablet', 'mobile'].includes(((originalLead as any)?.equipment_type || (order as any).equipment_type || originalLead?.interest_type || '').toLowerCase()) ? 'partner' : 'owner',
                                                                         consumedProducts: []
                                                                     });
                                                                     setShowCommissionModal(true);
@@ -1939,7 +1940,7 @@ export default function AdminDashboard() {
                                         {pdvForm.isAssembly && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                     </div>
                                     <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Comissão de Montagem (+3% Iago/Parceiro)</div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Comissão de Montagem (+3% Iago/Jefferson)</div>
                                         <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Serviço de montagem/configuração incluso na venda.</div>
                                     </div>
                                 </label>
@@ -1949,9 +1950,9 @@ export default function AdminDashboard() {
                                         <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Montagem</div>
                                         <div className="grid grid-cols-1 gap-2">
                                             {[
-                                                { value: 'owner', label: 'João (Dono)', desc: 'Sem comissão extra', color: '' },
-                                                { value: 'iago', label: 'Iago Lopes', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
-                                                { value: 'partner', label: 'Técnico Externo', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
+                                                { value: 'owner', label: 'Felipe (Dono)', desc: 'Sem comissão extra', color: '' },
+                                                { value: 'iago', label: 'Iago (Marketing)', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
+                                                { value: 'partner', label: 'Jefferson (Técnico)', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
                                             ].map(opt => (
                                                 <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
                                                     <input type="radio" name="pdvExecutor" value={opt.value} checked={pdvForm.executor === opt.value} onChange={() => setPdvForm({ ...pdvForm, executor: opt.value })} className="w-4 h-4 accent-[var(--accent-primary)]" />
@@ -2174,6 +2175,7 @@ export default function AdminDashboard() {
                                 <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Ordem</div>
 
                                 <div className="grid grid-cols-1 gap-3">
+                                    {/* Felipe (Dono) — executa PC/notebook, sem comissão de serviço */}
                                     <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
                                         <input
                                             type="radio" name="executor" value="owner"
@@ -2182,26 +2184,28 @@ export default function AdminDashboard() {
                                             className="w-4 h-4 accent-[var(--accent-primary)]"
                                         />
                                         <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">
-                                            João (Dono) 
-                                            {((selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) || 
-                                              (['notebook', 'desktop'].includes(selectedLeadForCommission.equipment_type || selectedLeadForCommission.interest_type))) && (
+                                            Felipe (Dono)
+                                            {(['notebook', 'desktop', 'pc'].includes((selectedLeadForCommission.equipment_type || selectedLeadForCommission.interest_type || '').toLowerCase())) && (
                                                 <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Padrão</span>
                                             )}
                                         </div>
                                     </label>
 
-                                    {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type && !['smartphone', 'notebook', 'desktop'].includes(selectedLeadForCommission.interest_type)) && (
-                                        <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
-                                            <input
-                                                type="radio" name="executor" value="iago"
-                                                checked={commissionForm.executor === 'iago'}
-                                                onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                                className="w-4 h-4 accent-[var(--accent-primary)]"
-                                            />
-                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Iago Lopes <span className="ml-2 font-mono text-[8px] bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded">+3% Faturamento Total</span></div>
-                                        </label>
-                                    )}
+                                    {/* Iago (Marketing) — montagem de PC, +3% */}
+                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
+                                        <input
+                                            type="radio" name="executor" value="iago"
+                                            checked={commissionForm.executor === 'iago'}
+                                            onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
+                                            className="w-4 h-4 accent-[var(--accent-primary)]"
+                                        />
+                                        <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">
+                                            Iago (Marketing)
+                                            {commissionForm.isAssembly && <span className="ml-2 font-mono text-[8px] bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded">+3% Montagem</span>}
+                                        </div>
+                                    </label>
 
+                                    {/* Jefferson (Técnico) — manutenção mobile + montagem */}
                                     <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
                                         <input
                                             type="radio" name="executor" value="partner"
@@ -2210,12 +2214,12 @@ export default function AdminDashboard() {
                                             className="w-4 h-4 accent-[var(--accent-primary)]"
                                         />
                                         <div className="text-xs font-black uppercase tracking-widest text-purple-400">
-                                            Técnico Externo
-                                            {(selectedLeadForCommission.equipment_type === 'smartphone' || selectedLeadForCommission.interest_type === 'smartphone') && (
+                                            Jefferson (Técnico)
+                                            {(['smartphone', 'celular', 'tablet', 'mobile'].includes((selectedLeadForCommission.equipment_type || selectedLeadForCommission.interest_type || '').toLowerCase())) && (
                                                 <span className="ml-2 font-mono text-[8px] font-bold text-purple-400/60">Padrão</span>
                                             )}
                                             <span className="ml-2 font-mono text-[8px] bg-purple-500/10 px-2 py-0.5 rounded">
-                                                {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Lucro Líquido' : '+3% Faturamento Total'}
+                                                {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Lucro' : '+3% Montagem'}
                                             </span>
                                         </div>
                                     </label>

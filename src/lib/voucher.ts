@@ -118,10 +118,11 @@ export async function createVoucher(
   }
 
   // ── Calculate commissions ───────────────────────────────────────────────
+  // owner: 8% ecossistema (sem custo disponível na criação — recalculado no fechamento)
+  // tech: 50% do lucro (final - custo) — calculado no fechamento via updateVoucherStatus
   const commissionOwner =
-    params.orderValue != null ? params.orderValue * 0.05 : 0
-  const commissionTech =
-    params.orderValue != null ? params.orderValue * 0.03 : 0
+    params.orderValue != null ? params.orderValue * 0.08 : 0
+  const commissionTech = 0 // recalculado no fechamento quando custo for informado
 
   // ── Persist to maintenance_orders ───────────────────────────────────────
   try {
@@ -198,8 +199,8 @@ export async function updateVoucherStatus(
 
     if (orderValue != null) {
       updatePayload['order_value'] = orderValue
-      updatePayload['commission_owner'] = orderValue * 0.05
-      updatePayload['commission_tech'] = orderValue * 0.03
+      // 8% ecossistema (5% se > 8000); tech = 50% do lucro, calculado no admin ao fechar
+      updatePayload['commission_owner'] = orderValue > 8000 ? orderValue * 0.05 : orderValue * 0.08
     }
 
     const { error } = await supabase

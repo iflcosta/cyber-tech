@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { X, Zap, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { getProducts } from "@/lib/products";
 import { ProductCard, Product } from "./ProductCard";
@@ -9,11 +9,16 @@ import { useSearchParams } from "next/navigation";
 import { useLeadModal } from "@/contexts/LeadModalContext";
 import { AnimatePresence, motion } from "framer-motion";
 
+const GAP = 32; // gap-8
+
 function ShowroomContent() {
   const { openModal } = useLeadModal();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGallery, setSelectedGallery] = useState<{ images: string[], index: number } | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const category = searchParams.get("category") || "all";
 
@@ -24,7 +29,7 @@ function ShowroomContent() {
       const filtered = data.filter((p: any) => p.show_in_showroom);
       const mapped = filtered.map((p: any) => ({
         ...p,
-        category: p.category === 'kit' ? 'gamer' : p.category, 
+        category: p.category === 'kit' ? 'gamer' : p.category,
         price_estimate: p.price,
         performance_score: p.performance_score || 0,
         in_stock: (p.stock_quantity || 0) > 0,
@@ -36,16 +41,25 @@ function ShowroomContent() {
     loadProducts();
   }, []);
 
+  // Reset carousel when filter changes
+  useEffect(() => { setCarouselIndex(0); }, [category]);
+
+  // Measure container width
+  useEffect(() => {
+    const update = () => {
+      if (containerRef.current) setContainerWidth(containerRef.current.offsetWidth);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const handleInterest = (product: Product) => {
     openModal('compra',
       `Interesse no Produto: ${product.name} (R$ ${product.price.toLocaleString('pt-BR')})`,
       `Olá, tenho interesse no *${product.name}* que vi no site por *R$ ${product.price.toLocaleString('pt-BR')}*. Pode me ajudar?`,
       [product.id],
-      { 
-        name: product.name, 
-        price: product.price, 
-        image: product.image_url 
-      }
+      { name: product.name, price: product.price, image: product.image_url }
     );
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'ViewContent', {
@@ -59,22 +73,16 @@ function ShowroomContent() {
     }
   };
 
-  const nextImage = (e: React.MouseEvent) => {
+  const nextGalleryImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!selectedGallery) return;
-    setSelectedGallery({
-      ...selectedGallery,
-      index: (selectedGallery.index + 1) % selectedGallery.images.length
-    });
+    setSelectedGallery({ ...selectedGallery, index: (selectedGallery.index + 1) % selectedGallery.images.length });
   };
 
-  const prevImage = (e: React.MouseEvent) => {
+  const prevGalleryImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!selectedGallery) return;
-    setSelectedGallery({
-      ...selectedGallery,
-      index: (selectedGallery.index - 1 + selectedGallery.images.length) % selectedGallery.images.length
-    });
+    setSelectedGallery({ ...selectedGallery, index: (selectedGallery.index - 1 + selectedGallery.images.length) % selectedGallery.images.length });
   };
 
   const filteredProducts = products.filter((p) => {
@@ -82,9 +90,19 @@ function ShowroomContent() {
     return category === "all" ? true : p.category === category;
   });
 
+  // Carousel calculations
+  const visibleCount = containerWidth >= 1024 ? 3 : containerWidth >= 640 ? 2 : 1;
+  const cardWidth = containerWidth > 0 ? (containerWidth - GAP * (visibleCount - 1)) / visibleCount : 0;
+  const maxIndex = Math.max(0, filteredProducts.length - visibleCount);
+  const xOffset = -(carouselIndex * (cardWidth + GAP));
+
+  const prev = () => setCarouselIndex(i => Math.max(0, i - 1));
+  const next = () => setCarouselIndex(i => Math.min(maxIndex, i + 1));
+
   return (
     <div className="container mx-auto px-4">
 
+      {/* Gallery lightbox */}
       <AnimatePresence>
         {selectedGallery && (
           <motion.div
@@ -105,13 +123,13 @@ function ShowroomContent() {
               <>
                 <button
                   className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-[2px] transition-all"
-                  onClick={prevImage}
+                  onClick={prevGalleryImage}
                 >
                   <ChevronLeft size={32} />
                 </button>
                 <button
                   className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white/50 hover:text-white z-50 p-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-[2px] transition-all"
-                  onClick={nextImage}
+                  onClick={nextGalleryImage}
                 >
                   <ChevronRight size={32} />
                 </button>
@@ -129,13 +147,9 @@ function ShowroomContent() {
                 alt="Product View"
                 className="max-w-full max-h-full object-contain rounded-[2px] shadow-2xl border border-white/10"
               />
-
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 pb-6">
                 {selectedGallery.images.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-4 h-1 rounded-[2px] transition-all ${i === selectedGallery.index ? 'bg-white' : 'bg-white/20'}`}
-                  />
+                  <div key={i} className={`w-4 h-1 rounded-[2px] transition-all ${i === selectedGallery.index ? 'bg-white' : 'bg-white/20'}`} />
                 ))}
               </div>
             </motion.div>
@@ -143,6 +157,7 @@ function ShowroomContent() {
         )}
       </AnimatePresence>
 
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8 relative z-10">
         <div>
           <div className="text-[10px] font-mono text-[var(--accent-primary)] uppercase tracking-[0.4em] font-black mb-4 flex items-center gap-3">
@@ -168,22 +183,77 @@ function ShowroomContent() {
         <div className="flex h-96 items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-[var(--text-muted)]" />
         </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[var(--border-subtle)] rounded-xl bg-[var(--bg-surface)]/50 text-[var(--text-muted)]">
+          <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado nesta categoria.</p>
+        </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
-                onInterest={() => handleInterest(product)}
-              />
-            ))}
+          {/* Carousel wrapper */}
+          <div className="relative">
+            {/* Left arrow */}
+            <button
+              onClick={prev}
+              disabled={carouselIndex === 0}
+              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 p-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[2px] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all disabled:opacity-20 disabled:pointer-events-none"
+              aria-label="Anterior"
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            {/* Cards track */}
+            <div ref={containerRef} className="overflow-hidden">
+              <motion.div
+                className="flex"
+                style={{ gap: GAP }}
+                animate={{ x: xOffset }}
+                transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.12}
+                onDragEnd={(_, { offset }) => {
+                  if (offset.x < -60) next();
+                  else if (offset.x > 60) prev();
+                }}
+              >
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    style={{ minWidth: cardWidth, width: cardWidth }}
+                    className="select-none"
+                  >
+                    <ProductCard
+                      product={product}
+                      onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
+                      onInterest={() => handleInterest(product)}
+                    />
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Right arrow */}
+            <button
+              onClick={next}
+              disabled={carouselIndex >= maxIndex}
+              className="absolute -right-5 top-1/2 -translate-y-1/2 z-20 p-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[2px] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all disabled:opacity-20 disabled:pointer-events-none"
+              aria-label="Próximo"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
 
-          {filteredProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[var(--border-subtle)] rounded-xl bg-[var(--bg-surface)]/50 text-[var(--text-muted)]">
-              <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado nesta categoria.</p>
+          {/* Dot indicators */}
+          {maxIndex > 0 && (
+            <div className="flex justify-center gap-2 mt-8">
+              {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCarouselIndex(i)}
+                  className={`h-[3px] rounded-[2px] transition-all ${i === carouselIndex ? 'w-6 bg-[var(--accent-primary)]' : 'w-2 bg-white/20 hover:bg-white/40'}`}
+                  aria-label={`Ir para posição ${i + 1}`}
+                />
+              ))}
             </div>
           )}
         </>
