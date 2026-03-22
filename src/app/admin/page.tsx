@@ -1739,7 +1739,7 @@ export default function AdminDashboard() {
                                     type="text"
                                     value={pdvForm.customerName}
                                     onChange={(e) => setPdvForm({ ...pdvForm, customerName: e.target.value })}
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
                                     placeholder="Cliente Balcão"
                                 />
                             </div>
@@ -1788,12 +1788,12 @@ export default function AdminDashboard() {
                                         value={pdvProductSearch}
                                         onChange={(e) => setPdvProductSearch(e.target.value)}
                                         placeholder="Buscar nome ou SKU..."
-                                        className="col-span-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all placeholder:text-[var(--text-muted)]"
+                                        className="col-span-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all placeholder:text-[var(--text-muted)]"
                                     />
                                     <select
                                         value={pdvProductCategory}
                                         onChange={(e) => setPdvProductCategory(e.target.value)}
-                                        className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
+                                        className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
                                     >
                                         <option value="">Todas categorias</option>
                                         {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(cat => (
@@ -1807,7 +1807,7 @@ export default function AdminDashboard() {
                                             min={1}
                                             value={pdvProductQty}
                                             onChange={(e) => setPdvProductQty(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-black focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                            className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-black text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
                                         />
                                     </div>
                                 </div>
@@ -1835,9 +1835,10 @@ export default function AdminDashboard() {
                                                     const existingIdx = pdvForm.consumedProducts.findIndex(item => item.product_id === p.id);
                                                     const newArr = [...pdvForm.consumedProducts];
                                                     if (existingIdx >= 0) {
-                                                        newArr[existingIdx] = { ...newArr[existingIdx], quantity: newArr[existingIdx].quantity + qty };
+                                                        const newTotal = newArr[existingIdx].quantity + qty;
+                                                        newArr[existingIdx] = { ...newArr[existingIdx], quantity: Math.min(newTotal, p.stock_quantity) };
                                                     } else {
-                                                        newArr.push({ product_id: p.id, quantity: qty, name: p.name, current_stock: p.stock_quantity, price: p.price || 0 });
+                                                        newArr.push({ product_id: p.id, quantity: Math.min(qty, p.stock_quantity), name: p.name, current_stock: p.stock_quantity, price: p.price || 0 });
                                                     }
                                                     setPdvForm({ ...pdvForm, consumedProducts: newArr });
                                                     setPdvProductQty(1);
@@ -1845,7 +1846,7 @@ export default function AdminDashboard() {
                                                 className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)]/10 border border-transparent hover:border-[var(--accent-primary)]/30 transition-all text-left"
                                             >
                                                 <div className="flex-1">
-                                                    <div className="text-xs font-bold uppercase leading-tight">{p.name}</div>
+                                                    <div className="text-xs font-bold uppercase leading-tight text-white">{p.name}</div>
                                                     <div className="text-[9px] font-mono text-[var(--text-muted)]">{p.sku || 'SEM-SKU'} · {p.category} · Est: {p.stock_quantity}</div>
                                                 </div>
                                                 <div className="text-xs font-black text-[var(--accent-primary)] ml-3 shrink-0">R$ {p.price?.toLocaleString('pt-BR')}</div>
@@ -1882,7 +1883,7 @@ export default function AdminDashboard() {
                                                     type="number" step="0.01" min={0}
                                                     value={pdvForm.discountValue || ''}
                                                     onChange={(e) => setPdvForm({ ...pdvForm, discountValue: parseFloat(e.target.value) || 0 })}
-                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
                                                     placeholder="0.00"
                                                 />
                                             </div>
@@ -1891,7 +1892,7 @@ export default function AdminDashboard() {
                                                 <select
                                                     value={pdvForm.discountType}
                                                     onChange={(e) => setPdvForm({ ...pdvForm, discountType: e.target.value as 'fixed' | 'percentage' })}
-                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-3 text-sm font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
+                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-3 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
                                                 >
                                                     <option value="fixed">R$</option>
                                                     <option value="percentage">%</option>
