@@ -8,22 +8,24 @@ export default function Hero() {
     const { openModal } = useLeadModal();
 
     return (
-        <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 overflow-hidden bg-[#121216] group">
-            <div 
-                className="absolute inset-0 z-0 opacity-70 mix-blend-screen grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
-                style={{
-                    backgroundImage: 'url(/hero-bg.png)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            />
-            {/* High-impact Gradient Overlay - Lightened slightly */}
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#121216]/70 via-[#121216]/30 to-[#121216] pointer-events-none z-1" />
-            
-            {/* Glow branco central */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-[120px] opacity-10 pointer-events-none" />
-            {/* Glow vermelho — identidade da marca */}
-            <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-[var(--accent-primary)] rounded-full blur-[140px] opacity-[0.06] pointer-events-none" />
+        <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 bg-[#121216] group">
+            {/* Fundo isolado em overflow-hidden para não clipar o texto */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div
+                    className="absolute inset-0 z-0 opacity-70 mix-blend-screen grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
+                    style={{
+                        backgroundImage: 'url(/hero-bg.png)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                    }}
+                />
+                {/* High-impact Gradient Overlay */}
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#121216]/70 via-[#121216]/30 to-[#121216] z-1" />
+                {/* Glow branco central */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-[120px] opacity-10" />
+                {/* Glow vermelho — identidade da marca */}
+                <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-[var(--accent-primary)] rounded-full blur-[140px] opacity-[0.06]" />
+            </div>
 
             <div className="container mx-auto px-6 text-center relative z-10">
                 <motion.div
