@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     siteName: "Cyber Informática",
     images: [
       {
-        url: "https://cyberinformatica.tech/og-image.jpg", // We can place an og-image later, but define the link for now
+        url: "https://cyberinformatica.tech/api/og",
         width: 1200,
         height: 630,
         alt: "Cyber Informática - Hardware de Alta Performance",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Cyber Informática | " + brand.slogan,
     description: brand.description,
-    images: ["https://cyberinformatica.tech/og-image.jpg"],
+    images: ["https://cyberinformatica.tech/api/og"],
   },
 };
 
