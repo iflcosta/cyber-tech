@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Copy, Send, Monitor, Smartphone, Wrench, HelpCircle, ArrowRight } from 'lucide-react';
+import { cn } from "./ui/Button";
 import { trackLead } from '@/lib/leads';
 import { getOrCreateSessionVoucher } from '@/lib/session/voucherSession';
 import { brand } from '@/lib/brand';
@@ -212,15 +213,15 @@ export default function LeadModal() {
                                     {step === 'intent' ? 'VAMOS COMEÇAR?' : step === 'details' ? 'QUASE LÁ' : 'TUDO PRONTO!'}
                                 </h2>
                                 {selectedProduct && step !== 'success' && (
-                                    <div className="ml-auto flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg p-2 pr-4 backdrop-blur-md">
+                                    <div className="ml-auto flex items-center gap-3 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg p-2 pr-4 shadow-sm">
                                         {selectedProduct.image && (
-                                            <div className="w-10 h-10 relative rounded overflow-hidden border border-white/10">
+                                            <div className="w-10 h-10 relative rounded overflow-hidden border border-[var(--border-subtle)]">
                                                 <img src={selectedProduct.image} alt={selectedProduct.name} className="object-cover w-full h-full" />
                                             </div>
                                         )}
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Interesse em:</span>
-                                            <span className="text-[11px] text-white font-bold truncate max-w-[150px]">{selectedProduct.name}</span>
+                                            <span className="text-[9px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Interesse em:</span>
+                                            <span className="text-[11px] text-[var(--text-primary)] font-bold truncate max-w-[150px]">{selectedProduct.name}</span>
                                         </div>
                                     </div>
                                 )}
@@ -277,7 +278,17 @@ export default function LeadModal() {
                                                     <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Vai usar para quê?</label>
                                                     <div className="grid grid-cols-2 gap-2">
                                                         {['GAMES', 'TRABALHO', 'ESTUDOS', 'GERAL'].map((val) => (
-                                                            <button key={val} type="button" onClick={() => setUsage(val)} className={`py-2 text-[10px] font-bold rounded-md border transition-all ${usage === val ? 'bg-[var(--accent-glow)] border-[var(--accent-primary)] text-[var(--bg-primary)]' : 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--border-active)]'}`}>
+                                                            <button 
+                                                                key={val} 
+                                                                type="button" 
+                                                                onClick={() => setUsage(val)} 
+                                                                className={cn(
+                                                                    "py-3 text-[10px] font-bold rounded-md border transition-all uppercase tracking-widest",
+                                                                    usage === val 
+                                                                        ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-[0_0_15px_rgba(var(--accent-rgb),0.2)]" 
+                                                                        : "bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--border-active)] hover:bg-[var(--bg-surface)]"
+                                                                )}
+                                                            >
                                                                 {val}
                                                             </button>
                                                         ))}

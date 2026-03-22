@@ -52,7 +52,16 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <LeadModalContext.Provider value={{ isOpen, goal, customDescription, whatsappMessage, productIds, openModal, closeModal }}>
+        <LeadModalContext.Provider value={{ 
+            isOpen, 
+            goal, 
+            customDescription, 
+            whatsappMessage, 
+            productIds, 
+            selectedProduct,
+            openModal, 
+            closeModal 
+        }}>
             {children}
         </LeadModalContext.Provider>
     );

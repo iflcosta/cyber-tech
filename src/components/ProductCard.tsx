@@ -13,7 +13,7 @@ function isStoreOpen() {
   const minutes = now.getMinutes();
   const time = hour + minutes / 60;
 
-  if (day >= 1 && day <= 5) return time >= 9 && time < 18.5;
+  if (day >= 1 && day <= 5) return time >= 9 && time < 18;
   if (day === 6) return time >= 9 && time < 13;
   return false;
 }
