@@ -153,12 +153,18 @@ export default function FixBuyCalculator() {
 
                   <div className="space-y-4">
                     {result.verdict === 'FIX' ? (
-                      <button className="w-full btn-primary py-5 px-8 rounded-xl flex items-center justify-between group">
+                      <button 
+                        onClick={() => document.getElementById('assistencia')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="w-full btn-primary py-5 px-8 rounded-xl flex items-center justify-between group"
+                      >
                         <span className="text-xs font-display font-bold uppercase tracking-widest">Solicitar Orçamento Grátis</span>
                         <Wrench size={18} className="group-hover:rotate-12 transition-transform" />
                       </button>
                     ) : (
-                      <button className="w-full btn-primary py-5 px-8 rounded-xl flex items-center justify-between group bg-[var(--text-primary)] text-[var(--bg-primary)] border-transparent">
+                      <button 
+                        onClick={() => window.location.href = '/produtos'}
+                        className="w-full btn-primary py-5 px-8 rounded-xl flex items-center justify-between group bg-[var(--text-primary)] text-[var(--bg-primary)] border-transparent"
+                      >
                         <span className="text-xs font-display font-bold uppercase tracking-widest">Ver Novos Equipamentos</span>
                         <ShoppingCart size={18} className="group-hover:scale-110 transition-transform" />
                       </button>

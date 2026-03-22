@@ -101,7 +101,7 @@ function CatalogContent() {
             placeholder="Buscar por nome ou categoria..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-white"
+            className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-[var(--text-primary)]"
           />
         </div>
       </div>

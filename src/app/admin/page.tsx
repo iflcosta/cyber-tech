@@ -38,14 +38,23 @@ export default function AdminDashboard() {
         consumedProducts: [] as {product_id: string, quantity: number, name?: string, current_stock?: number}[]
     });
 
-    // PDV Modal (Venda DiretaBalcão)
+    // PDV Modal (Venda Direta Balcão)
     const [showPdvModal, setShowPdvModal] = useState(false);
     const [pdvForm, setPdvForm] = useState({
         customerName: '',
         finalValue: '',
-        isSiteSource: false,
+        ecosystemCaptured: false,
+        isAssembly: false,
+        executor: 'owner', // 'owner', 'iago', 'partner'
         consumedProducts: [] as {product_id: string, quantity: number, name?: string, current_stock?: number}[]
     });
+    // PDV product search/filter state
+    const [pdvProductSearch, setPdvProductSearch] = useState('');
+    const [pdvProductCategory, setPdvProductCategory] = useState('');
+    const [pdvProductQty, setPdvProductQty] = useState(1);
+
+    const [productFilter, setProductFilter] = useState('');
+    const [productSort, setProductSort] = useState('newest'); // 'newest', 'oldest', 'price_asc', 'price_desc', 'stock_asc', 'stock_desc'
 
     const [showSocialCard, setShowSocialCard] = useState(false);
     const [socialCardLead, setSocialCardLead] = useState<any>(null);
@@ -158,20 +167,14 @@ export default function AdminDashboard() {
         const digitalSources = ['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'];
         const isDigital = digitalSources.includes(selectedLeadForCommission.marketing_source?.toLowerCase());
         
-        // Base Protocol: 8% standard, 5% if > 7500 for Digital Leads
+        // Tiered Protocol: 8% padrão, ou 5% se > 7.5k (se ativado pelo checkbox Ecossistema)
         let baseRate = 0;
-        if (isDigital) {
+        if (commissionForm.ecosystemCaptured) {
             baseRate = val > 7500 ? 0.05 : 0.08;
-        } else if (commissionForm.ecosystemCaptured) {
-            // Manual leads still use the old 5% "Ecosystem Bounty" if checked, 
-            // unless we want to apply the 8%/5% rule to everyone.
-            // But the user was specific about "conversões que vem do site, instagram ou facebook".
-            baseRate = 0.05;
         }
 
-        // Assembly Protocol: +3% strictly for PC Builds
-        const isPCBuild = selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly;
-        let assemblyRate = isPCBuild ? 0.03 : 0;
+        const qualifiesForIagoAssembly = commissionForm.isAssembly && commissionForm.executor === 'iago';
+        let assemblyRate = qualifiesForIagoAssembly ? 0.03 : 0;
 
         const totalIagoEarnings = (val * baseRate) + (val * assemblyRate);
 
@@ -181,7 +184,7 @@ export default function AdminDashboard() {
             cost_value: cost,
             commission_value: totalIagoEarnings,
             commission_ecosystem: isDigital || commissionForm.ecosystemCaptured,
-            commission_service: isPCBuild,
+            commission_service: commissionForm.isAssembly,
             performed_by_partner: commissionForm.executor === 'partner',
             converted_at: new Date().toISOString()
         };
@@ -233,25 +236,34 @@ export default function AdminDashboard() {
         e.preventDefault();
         const val = parseFloat(pdvForm.finalValue) || 0;
         
-        // Base commission setup for PDV
-        // "+8% se vier do site"
-        const commissionRate = pdvForm.isSiteSource ? 0.08 : 0;
-        const totalCommission = val * commissionRate;
+        // Tiered Commission: 5% if sale > 7500, else 8% (only if Ecossistema activated)
+        let baseRate = 0;
+        if (pdvForm.ecosystemCaptured) {
+            baseRate = val > 7500 ? 0.05 : 0.08;
+        }
 
-        // Create a 'converted' lead to act as a Sale Record
-        const { error, data } = await supabase.from('leads').insert([{
+        // Assembly Commission: +3% if active AND executor is Iago
+        const qualifiesForIagoAssembly = pdvForm.isAssembly && pdvForm.executor === 'iago';
+        const assemblyRate = qualifiesForIagoAssembly ? 0.03 : 0;
+
+        const totalCommission = (val * baseRate) + (val * assemblyRate);
+
+        const { error } = await supabase.from('leads').insert([{
             client_name: pdvForm.customerName || 'Cliente Balcão',
             interest_type: 'venda',
             status: 'converted',
-            marketing_source: pdvForm.isSiteSource ? 'site' : 'balcao',
+            marketing_source: pdvForm.ecosystemCaptured ? 'site' : 'balcao',
             final_value: val,
             commission_value: totalCommission,
+            commission_ecosystem: pdvForm.ecosystemCaptured,
+            commission_service: pdvForm.isAssembly,
+            performed_by_partner: pdvForm.executor === 'partner',
             converted_at: new Date().toISOString(),
             payment_status: 'paid'
         }]).select();
 
         if (!error) {
-            // Deduct stock for consumed products
+            // Deduct stock for consumed products by specified quantity
             if (pdvForm.consumedProducts.length > 0) {
                 for (const item of pdvForm.consumedProducts) {
                     const product = products.find(p => p.id === item.product_id);
@@ -266,7 +278,11 @@ export default function AdminDashboard() {
             }
 
             setShowPdvModal(false);
-            setPdvForm({ customerName: '', finalValue: '', isSiteSource: false, consumedProducts: [] });
+            setPdvForm({ customerName: '', finalValue: '', ecosystemCaptured: false, isAssembly: false, executor: 'owner', consumedProducts: [] });
+            setPdvProductSearch('');
+            setPdvProductCategory('');
+            setPdvProductQty(1);
+            setManualProductSelect('');
             fetchLeads();
         } else {
             console.error("PDV Error:", error);
@@ -656,7 +672,7 @@ export default function AdminDashboard() {
                                 .reduce((acc, l) => {
                                     return acc + (l.interest_type === 'manutencao'
                                         ? ((l.final_value || 0) - (l.cost_value || 0)) * 0.5
-                                        : (l.final_value || 0) * 0.03);
+                                        : (l.commission_service ? (l.final_value || 0) * 0.03 : 0));
                                 }, 0);
                             const totalCusto = convertedLeads.reduce((acc, l) => acc + (l.cost_value || 0), 0);
                             const totalLoja = totalBruto - totalIago - totalTecnico - totalCusto;
@@ -1263,32 +1279,48 @@ export default function AdminDashboard() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div className="flex bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-1 rounded-xl">
-                                <button
-                                    onClick={() => setProductSubTab('showroom')}
-                                    className={`px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${productSubTab === 'showroom' ? 'bg-[var(--accent-primary)] text-[var(--bg-primary)] shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[var(--bg-elevated)] p-6 rounded-2xl border border-[var(--border-subtle)]">
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <div className="relative group">
+                                        <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--accent-primary)] opacity-50 group-hover:opacity-100 transition-opacity" size={16} />
+                                        <select 
+                                            value={productFilter}
+                                            onChange={(e) => setProductFilter(e.target.value)}
+                                            className="pl-10 pr-8 py-2 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl text-[10px] font-black uppercase tracking-widest focus:border-[var(--accent-primary)]/50 transition-all outline-none appearance-none"
+                                        >
+                                            <option value="">TODAS AS CATEGORIAS</option>
+                                            {Array.from(new Set(products.map(p => p.category))).map(cat => {
+                                                if (!cat) return null;
+                                                return <option key={cat} value={cat}>{cat.toUpperCase()}</option>;
+                                            })}
+                                        </select>
+                                    </div>
+
+                                    <div className="relative group">
+                                        <RefreshCw className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--accent-primary)] opacity-50 group-hover:opacity-100 transition-opacity" size={16} />
+                                        <select 
+                                            value={productSort}
+                                            onChange={(e) => setProductSort(e.target.value)}
+                                            className="pl-10 pr-8 py-2 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl text-[10px] font-black uppercase tracking-widest focus:border-[var(--accent-primary)]/50 transition-all outline-none appearance-none"
+                                        >
+                                            <option value="newest">MAIS RECENTES</option>
+                                            <option value="oldest">MAIS ANTIGOS</option>
+                                            <option value="price_asc">MENOR PREÇO</option>
+                                            <option value="price_desc">MAIOR PREÇO</option>
+                                            <option value="stock_asc">MENOR ESTOQUE</option>
+                                            <option value="stock_desc">MAIOR ESTOQUE</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => { setEditingProduct(null); setShowProductForm(true); setPreviewUrls([]); }}
+                                    className="w-full md:w-auto px-6 py-3 bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 rounded-xl font-display font-black text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-lg shadow-[var(--accent-primary)]/20 whitespace-nowrap"
                                 >
-                                    Showroom Público
-                                </button>
-                                <button
-                                    onClick={() => setProductSubTab('geral')}
-                                    className={`px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${productSubTab === 'geral' ? 'bg-[var(--accent-primary)] text-[var(--bg-primary)] shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
-                                >
-                                    Estoque Interno
+                                    <Plus size={18} />
+                                    CADASTRAR PRODUTO
                                 </button>
                             </div>
-                            <button
-                                onClick={() => {
-                                    setEditingProduct(null);
-                                    setPreviewUrls([]);
-                                    setShowProductForm(true);
-                                }}
-                                className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-8 py-4 rounded-xl font-display font-black uppercase tracking-widest text-xs flex items-center gap-3 transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(var(--accent-primary-rgb),0.2)]"
-                            >
-                                <Plus size={18} strokeWidth={3} /> Cadastrar Produto
-                            </button>
-                        </div>
 
                         {showProductForm && (
                             <form onSubmit={handleSaveProduct} className="bg-[var(--bg-elevated)] p-10 rounded-3xl border border-[var(--border-subtle)] space-y-8 relative overflow-hidden group/form">
@@ -1297,8 +1329,17 @@ export default function AdminDashboard() {
                                     <h3 className="text-xl font-display font-black italic uppercase tracking-tighter chrome-text">
                                         {editingProduct ? 'Editar Produto' : 'Cadastrar Produto'}
                                     </h3>
-                                    <div className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest bg-[var(--bg-primary)] px-3 py-1 rounded-full border border-[var(--border-subtle)]">
-                                        {editingProduct ? `ID: ${editingProduct.id.slice(0,8)}` : 'Rascunho'}
+                                    <div className="flex items-center gap-4">
+                                        <div className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest bg-[var(--bg-primary)] px-3 py-1 rounded-full border border-[var(--border-subtle)]">
+                                            {editingProduct ? `ID: ${editingProduct.id.slice(0,8)}` : 'Rascunho'}
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowProductForm(false)}
+                                            className="p-2 text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors"
+                                        >
+                                            <X size={20} />
+                                        </button>
                                     </div>
                                 </div>
                                 
@@ -1427,67 +1468,124 @@ export default function AdminDashboard() {
                                         {previewUrls.length > 0 && (
                                             <div className="grid grid-cols-4 md:grid-cols-6 gap-2 pt-2">
                                                 {previewUrls.map((url, i) => (
-                                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 glass">
+                                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-primary)] group/preview">
                                                         <img src={url} alt={`Preview ${i}`} className="w-full h-full object-cover" onError={(e) => (e.currentTarget.src = 'https://placehold.co/100x100?text=Erro')} />
-                                                        <div className="absolute top-0 right-0 bg-black/50 text-[8px] px-1 font-bold">{i + 1}</div>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => setPreviewUrls(previewUrls.filter((_, index) => index !== i))}
+                                                            className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover/preview:opacity-100 transition-opacity"
+                                                        >
+                                                            <X size={10} />
+                                                        </button>
+                                                        <div className="absolute bottom-0 right-0 bg-black/50 text-[8px] px-1 font-bold text-white">{i + 1}</div>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex gap-4">
-                                    <button type="submit" className="bg-white hover:bg-slate-200 text-[#121216] px-8 py-3 rounded-xl font-black">Salvar</button>
-                                    <button type="button" onClick={() => setShowProductForm(false)} className="bg-white/10 text-slate-300 px-8 py-3 rounded-xl font-bold">Cancelar</button>
+                                <div className="flex gap-4 pt-4 border-t border-[var(--border-subtle)]">
+                                    <button type="submit" className="bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/80 text-white px-10 py-4 rounded-xl font-display font-black uppercase tracking-widest text-xs shadow-lg shadow-[var(--accent-primary)]/20 transition-all">
+                                        Salvar Produto
+                                    </button>
+                                    <button type="button" onClick={() => setShowProductForm(false)} className="bg-[var(--bg-primary)] hover:bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-subtle)] px-8 py-4 rounded-xl font-display font-black uppercase tracking-widest text-[10px] transition-all">
+                                        Cancelar
+                                    </button>
                                 </div>
                             </form>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {products
-                                .filter(p => productSubTab === 'geral' ? p.category === 'internal_part' : p.category !== 'internal_part')
-                                .map((p) => (
-                                <div key={p.id} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] flex flex-col relative group hover:border-[var(--accent-primary)]/30 transition-all shadow-xl overflow-hidden">
-                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                        <div className="flex gap-2">
-                                            <button onClick={() => {
-                                                setEditingProduct(p);
-                                                setPreviewUrls(p.image_urls || []);
-                                                setShowProductForm(true);
-                                            }} className="p-2 bg-[var(--bg-primary)]/80 backdrop-blur rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-primary)] border border-[var(--border-subtle)] transition-all">
-                                                <Edit size={16} />
-                                            </button>
-                                            <button onClick={() => deleteProduct(p.id)} className="p-2 bg-[var(--bg-primary)]/80 backdrop-blur rounded-lg text-[var(--text-muted)] hover:text-red-500 border border-[var(--border-subtle)] transition-all">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-between items-start mb-6">
-                                        <span className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 px-3 py-1 rounded-full italic">
-                                            {p.category}
-                                        </span>
-                                    </div>
-
-                                    <h4 className="text-xl font-display font-black italic uppercase tracking-tighter mb-2 group-hover:chrome-text transition-all leading-tight">{p.name}</h4>
-                                    <div className="text-2xl font-black mb-6 tracking-tighter">R$ {p.price?.toLocaleString('pt-BR')}</div>
-                                    
-                                    <div className="mt-auto pt-6 border-t border-[var(--border-subtle)] flex justify-between items-center">
-                                        <div className="flex flex-col">
-                                            <span className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1">Status</span>
-                                            <span className={`text-[10px] font-black uppercase tracking-widest ${p.stock_quantity > 0 ? "text-green-500" : "text-red-500"}`}>
-                                                {p.stock_quantity > 0 ? `Em estoque: ${p.stock_quantity}` : 'Esgotado'}
-                                            </span>
-                                        </div>
-                                        {p.sku && (
-                                            <div className="text-right">
-                                                <div className="text-[8px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest mb-1 text-right">SKU</div>
-                                                <div className="text-[10px] font-mono font-bold text-[var(--text-muted)] opacity-60">#{p.sku}</div>
-                                            </div>
-                                        )}
-                                    </div>
+                        <div className="overflow-hidden bg-[var(--bg-elevated)] rounded-2xl border border-[var(--border-subtle)]">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/50">
+                                        <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Produto</th>
+                                        <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Categoria</th>
+                                        <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] text-right">Preço</th>
+                                        <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] text-center">Estoque</th>
+                                        <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] text-center">Flags</th>
+                                        <th className="px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[var(--border-subtle)]">
+                                    {products
+                                        .filter(p => !productFilter || p.category === productFilter)
+                                        .sort((a, b) => {
+                                            if (productSort === 'price_asc') return a.price - b.price;
+                                            if (productSort === 'price_desc') return b.price - a.price;
+                                            if (productSort === 'stock_asc') return a.stock_quantity - b.stock_quantity;
+                                            if (productSort === 'stock_desc') return b.stock_quantity - a.stock_quantity;
+                                            if (productSort === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                                            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                                        })
+                                        .map((product) => (
+                                        <tr key={product.id} className="group hover:bg-[var(--bg-primary)]/40 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)] overflow-hidden p-1 shrink-0">
+                                                        {product.image_urls?.[0] ? (
+                                                            <img src={product.image_urls[0]} alt="" className="w-full h-full object-contain" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] opacity-20"><Package size={14} /></div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[11px] font-bold text-[var(--text-primary)] leading-tight">{product.name?.toUpperCase()}</div>
+                                                        <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">{product.sku || '#SEM-SKU'}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="px-2 py-0.5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-full text-[8px] font-black uppercase tracking-wider text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] group-hover:border-[var(--accent-primary)]/30 transition-all">
+                                                    {product.category || 'GERAL'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="text-xs font-black text-[var(--text-primary)]">R$ {product.price?.toLocaleString('pt-BR')}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <div className={`text-[10px] font-mono font-black ${product.stock_quantity <= 3 ? 'text-red-500' : 'text-green-500'}`}>
+                                                    {product.stock_quantity} <span className="text-[7px] uppercase tracking-widest opacity-60 ml-1">un</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center gap-1.5">
+                                                    <div className={`w-2 h-2 rounded-full ${product.show_in_showroom ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-[var(--bg-primary)] border border-[var(--border-subtle)]'}`} title="Showroom" />
+                                                    <div className={`w-2 h-2 rounded-full ${product.show_in_catalog ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-[var(--bg-primary)] border border-[var(--border-subtle)]'}`} title="Catálogo" />
+                                                    <div className={`w-2 h-2 rounded-full ${product.show_in_pcbuilder ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-[var(--bg-primary)] border border-[var(--border-subtle)]'}`} title="PC Builder" />
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingProduct(product);
+                                                            setShowProductForm(true);
+                                                            setPreviewUrls(product.image_urls || []);
+                                                        }}
+                                                        className="p-2 text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-all"
+                                                        title="Editar"
+                                                    >
+                                                        <Edit size={14} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => deleteProduct(product.id)}
+                                                        className="p-2 text-[var(--text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                        title="Excluir"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {products.length === 0 && (
+                                <div className="py-20 text-center text-[var(--text-muted)] font-mono text-[10px] uppercase tracking-[0.4em]">
+                                    Nenhum produto em estoque
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 )}
@@ -1626,7 +1724,8 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-5 max-h-[80vh] overflow-y-auto pr-1 custom-scrollbar">
+                            {/* Cliente */}
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Nome do Cliente (Opcional)</label>
                                 <input
@@ -1638,29 +1737,36 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            {/* Itens do Estoque */}
+                            {/* Produtos da Venda — Seleção Robusta */}
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Produtos da Venda</label>
-                                </div>
-                                
+                                <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Produtos da Venda</label>
+
+                                {/* Itens adicionados */}
                                 {pdvForm.consumedProducts.length > 0 && (
-                                    <div className="space-y-2 mb-4 max-h-[150px] overflow-y-auto custom-scrollbar">
+                                    <div className="space-y-2 max-h-[140px] overflow-y-auto custom-scrollbar">
                                         {pdvForm.consumedProducts.map((item, idx) => (
                                             <div key={idx} className="flex items-center justify-between bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-3 rounded-xl">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold chrome-text uppercase">{item.name}</span>
-                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} (Est: {item.current_stock})</span>
+                                                <div className="flex flex-col flex-1 mr-2">
+                                                    <span className="text-xs font-bold chrome-text uppercase leading-tight">{item.name}</span>
+                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} · Est. atual: {item.current_stock}</span>
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
+                                                {/* Ajuste rápido de qtd */}
+                                                <div className="flex items-center gap-1 mr-2">
+                                                    <button type="button" onClick={() => {
                                                         const newArr = [...pdvForm.consumedProducts];
-                                                        newArr.splice(idx, 1);
-                                                        setPdvForm({ ...pdvForm, consumedProducts: newArr });
-                                                    }}
-                                                    className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                                                >
+                                                        if (newArr[idx].quantity > 1) { newArr[idx] = { ...newArr[idx], quantity: newArr[idx].quantity - 1 }; setPdvForm({ ...pdvForm, consumedProducts: newArr }); }
+                                                    }} className="w-6 h-6 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-xs flex items-center justify-center hover:bg-[var(--accent-primary)]/10 transition-colors">-</button>
+                                                    <span className="text-xs font-black w-5 text-center">{item.quantity}</span>
+                                                    <button type="button" onClick={() => {
+                                                        const newArr = [...pdvForm.consumedProducts];
+                                                        if (newArr[idx].quantity < (item.current_stock || 99)) { newArr[idx] = { ...newArr[idx], quantity: newArr[idx].quantity + 1 }; setPdvForm({ ...pdvForm, consumedProducts: newArr }); }
+                                                    }} className="w-6 h-6 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-xs flex items-center justify-center hover:bg-[var(--accent-primary)]/10 transition-colors">+</button>
+                                                </div>
+                                                <button type="button" onClick={() => {
+                                                    const newArr = [...pdvForm.consumedProducts];
+                                                    newArr.splice(idx, 1);
+                                                    setPdvForm({ ...pdvForm, consumedProducts: newArr });
+                                                }} className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors shrink-0">
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
@@ -1668,50 +1774,88 @@ export default function AdminDashboard() {
                                     </div>
                                 )}
 
-                                <div className="flex gap-2">
+                                {/* Filtros de busca */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <input
+                                        type="text"
+                                        value={pdvProductSearch}
+                                        onChange={(e) => setPdvProductSearch(e.target.value)}
+                                        placeholder="Buscar nome ou SKU..."
+                                        className="col-span-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all placeholder:text-[var(--text-muted)]"
+                                    />
                                     <select
-                                        value={manualProductSelect}
-                                        onChange={(e) => setManualProductSelect(e.target.value)}
-                                        className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all uppercase appearance-none"
+                                        value={pdvProductCategory}
+                                        onChange={(e) => setPdvProductCategory(e.target.value)}
+                                        className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
                                     >
-                                        <option value="">+ Selecionar Produto</option>
-                                        {products.filter(p => p.stock_quantity > 0).map(p => (
-                                            <option key={p.id} value={p.id}>
-                                                {p.name} (R$ {p.price} | Est: {p.stock_quantity})
-                                            </option>
+                                        <option value="">Todas categorias</option>
+                                        {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
                                         ))}
                                     </select>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (!manualProductSelect) return;
-                                            const p = products.find(prod => prod.id === manualProductSelect);
-                                            if (!p) return;
-                                            
-                                            const existingIdx = pdvForm.consumedProducts.findIndex(item => item.product_id === p.id);
-                                            const newArr = [...pdvForm.consumedProducts];
-                                            
-                                            if (existingIdx >= 0) {
-                                                newArr[existingIdx].quantity += 1;
-                                            } else {
-                                                newArr.push({
-                                                    product_id: p.id,
-                                                    quantity: 1,
-                                                    name: p.name,
-                                                    current_stock: p.stock_quantity
-                                                });
-                                            }
-                                            
-                                            setPdvForm({ ...pdvForm, consumedProducts: newArr });
-                                            setManualProductSelect('');
-                                        }}
-                                        className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-4 py-2 rounded-xl font-bold flex items-center justify-center transition-all active:scale-95"
-                                    >
-                                        <Plus size={16} strokeWidth={3} />
-                                    </button>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase shrink-0">Qtd:</span>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={pdvProductQty}
+                                            onChange={(e) => setPdvProductQty(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-black focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Lista de produtos filtrada */}
+                                <div className="space-y-1 max-h-[160px] overflow-y-auto custom-scrollbar">
+                                    {products
+                                        .filter(p => p.stock_quantity > 0)
+                                        .filter(p => {
+                                            if (pdvProductCategory && p.category !== pdvProductCategory) return false;
+                                            const q = pdvProductSearch.toLowerCase();
+                                            if (!q) return true;
+                                            return (
+                                                (p.name || '').toLowerCase().includes(q) ||
+                                                (p.sku || '').toLowerCase().includes(q) ||
+                                                (p.category || '').toLowerCase().includes(q)
+                                            );
+                                        })
+                                        .map(p => (
+                                            <button
+                                                key={p.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    const qty = pdvProductQty || 1;
+                                                    const existingIdx = pdvForm.consumedProducts.findIndex(item => item.product_id === p.id);
+                                                    const newArr = [...pdvForm.consumedProducts];
+                                                    if (existingIdx >= 0) {
+                                                        newArr[existingIdx] = { ...newArr[existingIdx], quantity: newArr[existingIdx].quantity + qty };
+                                                    } else {
+                                                        newArr.push({ product_id: p.id, quantity: qty, name: p.name, current_stock: p.stock_quantity });
+                                                    }
+                                                    setPdvForm({ ...pdvForm, consumedProducts: newArr });
+                                                    setPdvProductQty(1);
+                                                }}
+                                                className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)]/10 border border-transparent hover:border-[var(--accent-primary)]/30 transition-all text-left"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="text-xs font-bold uppercase leading-tight">{p.name}</div>
+                                                    <div className="text-[9px] font-mono text-[var(--text-muted)]">{p.sku || 'SEM-SKU'} · {p.category} · Est: {p.stock_quantity}</div>
+                                                </div>
+                                                <div className="text-xs font-black text-[var(--accent-primary)] ml-3 shrink-0">R$ {p.price?.toLocaleString('pt-BR')}</div>
+                                            </button>
+                                        ))
+                                    }
+                                    {products.filter(p => p.stock_quantity > 0).filter(p => {
+                                        if (pdvProductCategory && p.category !== pdvProductCategory) return false;
+                                        const q = pdvProductSearch.toLowerCase();
+                                        return !q || (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q);
+                                    }).length === 0 && (
+                                        <div className="py-4 text-center text-[var(--text-muted)] text-[10px] font-mono uppercase tracking-widest">Nenhum produto encontrado.</div>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* Valor final */}
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Valor Final da Venda (R$)</label>
                                 <input
@@ -1721,29 +1865,64 @@ export default function AdminDashboard() {
                                     className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl focus:outline-none focus:border-[var(--accent-primary)]/50 shadow-inner transition-all"
                                     placeholder="0.00"
                                 />
+                                {pdvForm.finalValue && parseFloat(pdvForm.finalValue) > 0 && pdvForm.ecosystemCaptured && (
+                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] pl-1">
+                                        Comissão Ecossistema: {parseFloat(pdvForm.finalValue) > 7500 ? '5% (> R$7.500)' : '8% (Padrão)'} = R$ {(parseFloat(pdvForm.finalValue) * (parseFloat(pdvForm.finalValue) > 7500 ? 0.05 : 0.08)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    </div>
+                                )}
                             </div>
 
+                            {/* Ecossistema toggle */}
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
                                 <label className="flex items-start gap-4 cursor-pointer group">
                                     <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
-                                        <input
-                                            type="checkbox"
-                                            checked={pdvForm.isSiteSource}
-                                            onChange={(e) => setPdvForm({ ...pdvForm, isSiteSource: e.target.checked })}
-                                            className="opacity-0 absolute inset-0 cursor-pointer z-10"
-                                        />
-                                        {pdvForm.isSiteSource && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                        <input type="checkbox" checked={pdvForm.ecosystemCaptured} onChange={(e) => setPdvForm({ ...pdvForm, ecosystemCaptured: e.target.checked })} className="opacity-0 absolute inset-0 cursor-pointer z-10" />
+                                        {pdvForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                     </div>
                                     <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Venda capturada pelo Site (+8% Comis.)</div>
-                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Identifica se o cliente veio pela landing page/catálogo.</div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Ecossistema Digital (8% ou 5% se &gt;R$7.500)</div>
+                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Cliente veio pelo site, Instagram, catálogo ou indicação digital.</div>
                                     </div>
                                 </label>
                             </div>
 
-                            <button type="submit" className="w-full bg-white hover:bg-slate-200 text-[#121216] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all hover:scale-[1.01]">
-                                Registrar Venda e Abater Estoque
-                            </button>
+                            {/* Montagem toggle + executor */}
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4 hover:border-[var(--accent-primary)]/30 transition-all">
+                                <label className="flex items-start gap-4 cursor-pointer group">
+                                    <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
+                                        <input type="checkbox" checked={pdvForm.isAssembly} onChange={(e) => setPdvForm({ ...pdvForm, isAssembly: e.target.checked })} className="opacity-0 absolute inset-0 cursor-pointer z-10" />
+                                        {pdvForm.isAssembly && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Comissão de Montagem (+3% se Iago)</div>
+                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Serviço de montagem/configuração incluso na venda.</div>
+                                    </div>
+                                </label>
+
+                                {pdvForm.isAssembly && (
+                                    <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
+                                        <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Montagem</div>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {[
+                                                { value: 'owner', label: 'João (Dono)', desc: 'Sem comissão extra', color: '' },
+                                                { value: 'iago', label: 'Iago Lopes', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
+                                                { value: 'partner', label: 'Técnico Externo', desc: 'Sem comissão extra aqui', color: 'text-purple-400' },
+                                            ].map(opt => (
+                                                <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
+                                                    <input type="radio" name="pdvExecutor" value={opt.value} checked={pdvForm.executor === opt.value} onChange={() => setPdvForm({ ...pdvForm, executor: opt.value })} className="w-4 h-4 accent-[var(--accent-primary)]" />
+                                                    <div className={`text-xs font-black uppercase tracking-widest ${opt.color}`}>{opt.label} <span className="font-mono text-[8px] opacity-60 ml-1">{opt.desc}</span></div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-center pt-2">
+                                <button type="submit" className="w-full bg-white hover:bg-slate-200 text-[#121216] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all hover:scale-[1.01]">
+                                    Registrar Venda e Abater Estoque
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>

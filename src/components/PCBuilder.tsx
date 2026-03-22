@@ -25,6 +25,13 @@ export default function PCBuilder() {
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
 
   useEffect(() => {
+    // Scroll to section if hash is present (handles direct navigation from other pages)
+    if (typeof window !== 'undefined' && window.location.hash === '#pc-builder') {
+      setTimeout(() => {
+        document.getElementById('pc-builder')?.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    }
+
     async function loadData() {
       try {
         const data = await getProducts();
