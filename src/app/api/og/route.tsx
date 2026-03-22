@@ -1,27 +1,16 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 const BG_IMAGE = 'https://images.unsplash.com/photo-1771014846919-3a1cf73aeea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBwYyUyMHJnYiUyMGRhcmslMjBwcmVtaXVtfGVufDF8fHx8MTc3NDIxMTA4Mnww&ixlib=rb-4.1.0&q=80&w=1080';
 const BG = '#0d0d11';
 const RED = '#E53935';
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-    const timer = new Promise<null>(resolve => setTimeout(() => resolve(null), ms));
-    return Promise.race([promise, timer]);
-}
-
-async function loadFont(family: string, weight: number): Promise<ArrayBuffer | null> {
+async function loadLocalFont(filename: string): Promise<ArrayBuffer | null> {
     try {
-        const css = await withTimeout(
-            fetch(`https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' }
-            }).then(r => r.text()),
-            2500
-        );
-        if (!css) return null;
-        const url = css.match(/src: url\(([^)]+)\) format\('woff2'\)/)?.[1];
-        if (!url) return null;
-        return await withTimeout(fetch(url).then(r => r.arrayBuffer()), 2500);
+        const buffer = await readFile(join(process.cwd(), 'public', 'fonts', filename));
+        return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
     } catch {
         return null;
     }
@@ -35,8 +24,8 @@ export async function GET(req: NextRequest) {
         const category = searchParams.get('category');
 
         const [rajdhaniBold, jetbrainsMono] = await Promise.all([
-            loadFont('Rajdhani', 700),
-            loadFont('JetBrains+Mono', 400),
+            loadLocalFont('Rajdhani-Bold.woff2'),
+            loadLocalFont('JetBrainsMono-Regular.woff2'),
         ]);
 
         const fonts: any[] = [];
