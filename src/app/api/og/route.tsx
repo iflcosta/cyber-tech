@@ -84,10 +84,7 @@ export async function GET(req: NextRequest) {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                            <div style={{ width: 30, height: 1, backgroundColor: 'rgba(229,57,53,0.5)', display: 'flex' }} />
-                            <span style={{ fontFamily: M, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>cyberinformatica.tech</span>
-                        </div>
+                        <span style={{ fontFamily: M, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>cyberinformatica.tech</span>
                     </div>
                 </div>
             </div>,
