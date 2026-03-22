@@ -594,7 +594,6 @@ export default function AdminDashboard() {
                                         { label: 'Venda Balcão', key: 'venda', color: 'bg-green-500' },
                                         { label: 'Showroom', key: 'compra', color: 'bg-orange-500' },
                                         { label: 'Cyber IA / Dúvida', key: 'duvida', color: 'bg-yellow-500' },
-                                        { label: 'Carrinho Abandonado', key: 'checkout_abandonment', color: 'bg-red-500' },
                                     ].map(type => {
                                         const count = leads.filter(l => l.interest_type === type.key).length;
                                         const pct = leads.length > 0 ? (count / leads.length) * 100 : 0;
