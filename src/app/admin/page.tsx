@@ -42,11 +42,12 @@ export default function AdminDashboard() {
     const [showPdvModal, setShowPdvModal] = useState(false);
     const [pdvForm, setPdvForm] = useState({
         customerName: '',
-        finalValue: '',
+        discountType: 'fixed' as 'fixed' | 'percentage',
+        discountValue: 0,
         ecosystemCaptured: false,
         isAssembly: false,
         executor: 'owner', // 'owner', 'iago', 'partner'
-        consumedProducts: [] as {product_id: string, quantity: number, name?: string, current_stock?: number}[]
+        consumedProducts: [] as {product_id: string, quantity: number, name?: string, price: number, current_stock?: number}[]
     });
     // PDV product search/filter state
     const [pdvProductSearch, setPdvProductSearch] = useState('');
@@ -173,8 +174,8 @@ export default function AdminDashboard() {
             baseRate = val > 7500 ? 0.05 : 0.08;
         }
 
-        const qualifiesForIagoAssembly = commissionForm.isAssembly && commissionForm.executor === 'iago';
-        let assemblyRate = qualifiesForIagoAssembly ? 0.03 : 0;
+        const qualifiesForAssembly = commissionForm.isAssembly && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner');
+        let assemblyRate = qualifiesForAssembly ? 0.03 : 0;
 
         const totalIagoEarnings = (val * baseRate) + (val * assemblyRate);
 
@@ -234,19 +235,25 @@ export default function AdminDashboard() {
 
     const submitPdvForm = async (e: React.FormEvent) => {
         e.preventDefault();
-        const val = parseFloat(pdvForm.finalValue) || 0;
         
-        // Tiered Commission: 5% if sale > 7500, else 8% (only if Ecossistema activated)
+        const subtotal = pdvForm.consumedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountAmount = pdvForm.discountType === 'percentage'
+            ? subtotal * (pdvForm.discountValue / 100)
+            : pdvForm.discountValue;
+        const val = Math.max(0, subtotal - discountAmount);
+        
+        // Tiered Commission: 5% if GROSS sale > 7500, else 8% (only if Ecossistema activated)
         let baseRate = 0;
         if (pdvForm.ecosystemCaptured) {
-            baseRate = val > 7500 ? 0.05 : 0.08;
+            baseRate = subtotal > 7500 ? 0.05 : 0.08;
         }
 
-        // Assembly Commission: +3% if active AND executor is Iago
-        const qualifiesForIagoAssembly = pdvForm.isAssembly && pdvForm.executor === 'iago';
-        const assemblyRate = qualifiesForIagoAssembly ? 0.03 : 0;
+        // Assembly Commission: +3% if active AND executor is Iago OR Partner
+        const qualifiesForAssembly = pdvForm.isAssembly && (pdvForm.executor === 'iago' || pdvForm.executor === 'partner');
+        const assemblyRate = qualifiesForAssembly ? 0.03 : 0;
 
-        const totalCommission = (val * baseRate) + (val * assemblyRate);
+        // Comission is applied over the GROSS value (subtotal) per user rules
+        const totalCommission = (subtotal * baseRate) + (subtotal * assemblyRate);
 
         const { error } = await supabase.from('leads').insert([{
             client_name: pdvForm.customerName || 'Cliente Balcão',
@@ -278,7 +285,7 @@ export default function AdminDashboard() {
             }
 
             setShowPdvModal(false);
-            setPdvForm({ customerName: '', finalValue: '', ecosystemCaptured: false, isAssembly: false, executor: 'owner', consumedProducts: [] });
+            setPdvForm({ customerName: '', discountType: 'fixed', discountValue: 0, ecosystemCaptured: false, isAssembly: false, executor: 'owner', consumedProducts: [] });
             setPdvProductSearch('');
             setPdvProductCategory('');
             setPdvProductQty(1);
@@ -1748,7 +1755,7 @@ export default function AdminDashboard() {
                                             <div key={idx} className="flex items-center justify-between bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-3 rounded-xl">
                                                 <div className="flex flex-col flex-1 mr-2">
                                                     <span className="text-xs font-bold chrome-text uppercase leading-tight">{item.name}</span>
-                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} · Est. atual: {item.current_stock}</span>
+                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} · Est. atual: {item.current_stock} · R$ {item.price.toLocaleString('pt-BR')}</span>
                                                 </div>
                                                 {/* Ajuste rápido de qtd */}
                                                 <div className="flex items-center gap-1 mr-2">
@@ -1830,7 +1837,7 @@ export default function AdminDashboard() {
                                                     if (existingIdx >= 0) {
                                                         newArr[existingIdx] = { ...newArr[existingIdx], quantity: newArr[existingIdx].quantity + qty };
                                                     } else {
-                                                        newArr.push({ product_id: p.id, quantity: qty, name: p.name, current_stock: p.stock_quantity });
+                                                        newArr.push({ product_id: p.id, quantity: qty, name: p.name, current_stock: p.stock_quantity, price: p.price || 0 });
                                                     }
                                                     setPdvForm({ ...pdvForm, consumedProducts: newArr });
                                                     setPdvProductQty(1);
@@ -1855,22 +1862,59 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* Valor final */}
-                            <div className="space-y-2">
-                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Valor Final da Venda (R$)</label>
-                                <input
-                                    type="number" step="0.01" required
-                                    value={pdvForm.finalValue}
-                                    onChange={(e) => setPdvForm({ ...pdvForm, finalValue: e.target.value })}
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl focus:outline-none focus:border-[var(--accent-primary)]/50 shadow-inner transition-all"
-                                    placeholder="0.00"
-                                />
-                                {pdvForm.finalValue && parseFloat(pdvForm.finalValue) > 0 && pdvForm.ecosystemCaptured && (
-                                    <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] pl-1">
-                                        Comissão Ecossistema: {parseFloat(pdvForm.finalValue) > 7500 ? '5% (> R$7.500)' : '8% (Padrão)'} = R$ {(parseFloat(pdvForm.finalValue) * (parseFloat(pdvForm.finalValue) > 7500 ? 0.05 : 0.08)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            {/* Desconto & Valor final (Calculado) */}
+                            {(() => {
+                                const sub = pdvForm.consumedProducts.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                                const descAmount = pdvForm.discountType === 'percentage' ? sub * (pdvForm.discountValue / 100) : pdvForm.discountValue;
+                                const finalVal = Math.max(0, sub - descAmount);
+
+                                return (
+                                    <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
+                                        <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
+                                            <span>Subtotal Brut</span>
+                                            <span className="text-white">R$ {sub.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1">
+                                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 mb-1">Desconto</label>
+                                                <input
+                                                    type="number" step="0.01" min={0}
+                                                    value={pdvForm.discountValue || ''}
+                                                    onChange={(e) => setPdvForm({ ...pdvForm, discountValue: parseFloat(e.target.value) || 0 })}
+                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <div className="w-24 shrink-0">
+                                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-transparent ml-1 mb-1">Tipo</label>
+                                                <select
+                                                    value={pdvForm.discountType}
+                                                    onChange={(e) => setPdvForm({ ...pdvForm, discountType: e.target.value as 'fixed' | 'percentage' })}
+                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-3 text-sm font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
+                                                >
+                                                    <option value="fixed">R$</option>
+                                                    <option value="percentage">%</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-3 border-t border-[var(--border-subtle)]">
+                                            <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 mb-1">Valor Líquido (Cobrado do Cliente)</label>
+                                            <div className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl shadow-inner transition-all flex justify-between items-center">
+                                                <span>R$</span>
+                                                <span>{finalVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                            </div>
+                                        </div>
+
+                                        {sub > 0 && pdvForm.ecosystemCaptured && (
+                                            <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] pl-1">
+                                                Comissão calculada do BRUTO: {sub > 7500 ? '5% (> R$7.500)' : '8% (Padrão)'} = R$ {(sub * (sub > 7500 ? 0.05 : 0.08)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                );
+                            })()}
 
                             {/* Ecossistema toggle */}
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
@@ -1894,7 +1938,7 @@ export default function AdminDashboard() {
                                         {pdvForm.isAssembly && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                     </div>
                                     <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Comissão de Montagem (+3% se Iago)</div>
+                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Comissão de Montagem (+3% Iago/Parceiro)</div>
                                         <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Serviço de montagem/configuração incluso na venda.</div>
                                     </div>
                                 </label>
@@ -1906,7 +1950,7 @@ export default function AdminDashboard() {
                                             {[
                                                 { value: 'owner', label: 'João (Dono)', desc: 'Sem comissão extra', color: '' },
                                                 { value: 'iago', label: 'Iago Lopes', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
-                                                { value: 'partner', label: 'Técnico Externo', desc: 'Sem comissão extra aqui', color: 'text-purple-400' },
+                                                { value: 'partner', label: 'Técnico Externo', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
                                             ].map(opt => (
                                                 <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
                                                     <input type="radio" name="pdvExecutor" value={opt.value} checked={pdvForm.executor === opt.value} onChange={() => setPdvForm({ ...pdvForm, executor: opt.value })} className="w-4 h-4 accent-[var(--accent-primary)]" />
