@@ -1,9 +1,9 @@
 export const brand = {
   name: "Cyber Informática",
   slogan: "A melhor assistência e montagem de Bragança Paulista",
-  whatsapp: "5511999999999",
-  phone: "5511999999999",
-  url: "https://cyberinformatica.com.br",
+  whatsapp: "5511997457718",
+  phone: "5511997457718",
+  url: "https://cyberinformatica.tech",
   openingHours: "Seg-Sex: 09h às 18h, Sáb: 09h às 13h",
   address: {
     street: "Rua do Comércio",
@@ -30,13 +30,12 @@ export const brand = {
   description: "Cyber Informática Bragança - Especialistas em PC Gamer, Workstations de IA e Manutenção de Celulares no interior de SP.",
   seo: {
     keywords: [
-      "Manutenção de Celular Bragança Paulista",
-      "PC Gamer Bragança",
-      "Assistência Técnica notebook",
-      "Cyber Informática",
-      "Workstation IA",
-      "Gamer PC",
-      "Interior de SP"
+      "Manutenção de Celulares Bragança Paulista",
+      "Conserto de Notebook e PC",
+      "Reparo de iPhone e Smartphone",
+      "Assistência Técnica de Informática",
+      "Loja de Informática Bragança",
+      "Montagem PC Gamer e Workstation IA"
     ]
   },
   colors: {

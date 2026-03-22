@@ -84,7 +84,7 @@ export default function PCBuilder() {
       Object.entries(build).map(([key, p]) => `• *${SLOTS.find(s => s.id === key)?.label}:* ${p.name}`).join('\n') + 
       `\n\n*Total Estimado:* R$ ${estimatedTotal.toLocaleString('pt-BR')}\n\nPodem confirmar disponibilidade?`;
 
-    openModal('compra', `BUILD SIMULADA: ${buildSummary}`, whatsappMsg);
+    openModal('compra', `BUILD SIMULADA: ${buildSummary}`, whatsappMsg, Object.values(build).map(p => p.id));
   };
 
   if (!mounted) return null;

@@ -13,7 +13,7 @@ type LeadStep = 'intent' | 'details' | 'success';
 type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
 
 export default function LeadModal() {
-    const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, openModal } = useLeadModal();
+    const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, productIds, openModal } = useLeadModal();
     const [step, setStep] = useState<LeadStep>('intent');
     const [intent, setIntent] = useState<IntentType | null>(null);
     const [goal, setGoal] = useState<'compra' | 'manutencao' | 'duvida' | null>(null);
@@ -154,7 +154,8 @@ export default function LeadModal() {
         const utm_params = {
             source: searchParams.get('utm_source'),
             medium: searchParams.get('utm_medium'),
-            campaign: searchParams.get('utm_campaign')
+            campaign: searchParams.get('utm_campaign'),
+            product_ids: productIds
         };
 
         const sessionVoucherCode = await getOrCreateSessionVoucher();

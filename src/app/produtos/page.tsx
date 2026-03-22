@@ -2,9 +2,20 @@ import { Instagram, Facebook } from "lucide-react";
 import Header from "@/components/Header";
 import Showroom from "@/components/Showroom";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Catálogo de Produtos | Cyber Informática",
   description: "Navegue pelo nosso catálogo premium de Workstations de IA, PC Gamers de alto desempenho e Hardware Elite.",
+  openGraph: {
+    title: "Catálogo de Produtos | Cyber Informática",
+    description: "Navegue pelo nosso catálogo premium de Workstations de IA, PC Gamers de alto desempenho e Hardware Elite.",
+    url: "https://cyberinformatica.tech/produtos",
+  },
+  twitter: {
+    title: "Catálogo de Produtos | Cyber Informática",
+    description: "Navegue pelo nosso catálogo premium de Workstations de IA, PC Gamers de alto desempenho e Hardware Elite.",
+  }
 };
 
 export default function ProdutosPage() {

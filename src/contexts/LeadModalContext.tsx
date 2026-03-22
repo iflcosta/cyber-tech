@@ -8,7 +8,8 @@ interface LeadModalContextType {
     goal: LeadGoal | null;
     customDescription?: string;
     whatsappMessage?: string;
-    openModal: (goal?: LeadGoal, customDescription?: string, whatsappMessage?: string) => void;
+    productIds?: string[];
+    openModal: (goal?: LeadGoal, customDescription?: string, whatsappMessage?: string, productIds?: string[]) => void;
     closeModal: () => void;
 }
 
@@ -19,11 +20,13 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     const [goal, setGoal] = useState<LeadGoal | null>(null);
     const [customDescription, setCustomDescription] = useState<string | undefined>();
     const [whatsappMessage, setWhatsappMessage] = useState<string | undefined>();
+    const [productIds, setProductIds] = useState<string[] | undefined>();
 
-    const openModal = useCallback((g?: LeadGoal, desc?: string, message?: string) => {
+    const openModal = useCallback((g?: LeadGoal, desc?: string, message?: string, pIds?: string[]) => {
         if (g) setGoal(g);
         setCustomDescription(desc);
         setWhatsappMessage(message);
+        setProductIds(pIds);
         setIsOpen(true);
     }, []);
 
@@ -39,11 +42,12 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
             setGoal(null);
             setCustomDescription(undefined);
             setWhatsappMessage(undefined);
+            setProductIds(undefined);
         }, 300);
     }, []);
 
     return (
-        <LeadModalContext.Provider value={{ isOpen, goal, customDescription, whatsappMessage, openModal, closeModal }}>
+        <LeadModalContext.Provider value={{ isOpen, goal, customDescription, whatsappMessage, productIds, openModal, closeModal }}>
             {children}
         </LeadModalContext.Provider>
     );

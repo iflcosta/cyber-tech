@@ -2,6 +2,30 @@
 import Header from "@/components/Header";
 import Maintenance from "@/components/Maintenance";
 import CyberIA from "@/components/CyberIA";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Assistência Técnica de Computadores | Cyber Informática",
+  description: "Especialistas em reparo de notebooks, computadores e smartphones em Bragança Paulista com garantia técnica.",
+  keywords: [
+    "manutenção de smartphones",
+    "conserto de celulares Bragança Paulista",
+    "consertar tela iPhone",
+    "troca de tela celular",
+    "assistência técnica bateria iPhone",
+    "reparo de placa mãe",
+    "assistência técnica notebook Bragança",
+  ],
+  openGraph: {
+    title: "Assistência Técnica de Computadores | Cyber Informática",
+    description: "Especialistas em reparo de notebooks, computadores e smartphones em Bragança Paulista com garantia técnica.",
+    url: "https://cyberinformatica.tech/manutencao",
+  },
+  twitter: {
+    title: "Assistência Técnica de Computadores | Cyber Informática",
+    description: "Especialistas em reparo de notebooks, computadores e smartphones em Bragança Paulista com garantia técnica.",
+  }
+};
 
 export default function MaintenancePage() {
   return (

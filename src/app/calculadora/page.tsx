@@ -14,6 +14,15 @@ export const metadata: Metadata = {
     "calculadora upgrade notebook",
     "assistência técnica barata Bragança Paulista",
   ],
+  openGraph: {
+    title: "Calculadora: Consertar ou Comprar? | Cyber Informática",
+    description: "Use nossa calculadora interativa para descobrir se vale a pena consertar ou atualizar seu notebook/PC.",
+    url: "https://cyberinformatica.tech/calculadora",
+  },
+  twitter: {
+    title: "Calculadora: Consertar ou Comprar? | Cyber Informática",
+    description: "Use nossa calculadora interativa para descobrir se vale a pena consertar ou atualizar seu notebook/PC.",
+  }
 };
 
 export default function CalculadoraPage() {

@@ -34,6 +34,28 @@ export const metadata: Metadata = {
   authors: [{ name: "Cyber Informática" }],
   robots: "index, follow",
   alternates: { canonical: "https://cyberinformatica.tech" },
+  openGraph: {
+    title: "Cyber Informática | " + brand.slogan,
+    description: brand.description,
+    url: "https://cyberinformatica.tech",
+    siteName: "Cyber Informática",
+    images: [
+      {
+        url: "https://cyberinformatica.tech/og-image.jpg", // We can place an og-image later, but define the link for now
+        width: 1200,
+        height: 630,
+        alt: "Cyber Informática - Hardware de Alta Performance",
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cyber Informática | " + brand.slogan,
+    description: brand.description,
+    images: ["https://cyberinformatica.tech/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({
@@ -95,6 +117,31 @@ export default function RootLayout({
                 window.dispatchEvent(new Event('pwa-installable'));
               });
             `,
+          }}
+        />
+        {/* Schema Markup for Local SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+             __html: JSON.stringify({
+               "@context": "https://schema.org",
+               "@type": "ComputerStore",
+               "name": "Cyber Informática",
+               "image": "https://cyberinformatica.tech/og-image.jpg",
+               "@id": "https://cyberinformatica.tech",
+               "url": "https://cyberinformatica.tech",
+               "telephone": "+5511997457718",
+               "priceRange": "$$$",
+               "address": {
+                 "@type": "PostalAddress",
+                 "streetAddress": "Bragança Paulista",
+                 "addressLocality": "Bragança Paulista",
+                 "addressRegion": "SP",
+                 "postalCode": "12900-000",
+                 "addressCountry": "BR"
+               },
+               "description": brand.description
+             })
           }}
         />
       </head>

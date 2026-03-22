@@ -38,7 +38,8 @@ function ShowroomContent() {
   const handleInterest = (product: Product) => {
     openModal('compra',
       `Interesse no Produto: ${product.name} (R$ ${product.price.toLocaleString('pt-BR')})`,
-      `Olá, tenho interesse no *${product.name}* que vi no site por *R$ ${product.price.toLocaleString('pt-BR')}*. Pode me ajudar?`
+      `Olá, tenho interesse no *${product.name}* que vi no site por *R$ ${product.price.toLocaleString('pt-BR')}*. Pode me ajudar?`,
+      [product.id]
     );
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'ViewContent', {
@@ -187,7 +188,7 @@ function ShowroomContent() {
 
 export default function Showroom() {
   return (
-    <section id="produtos" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative overflow-hidden red-line-top">
+    <section id="showroom" className="py-24 bg-[var(--bg-primary)] border-t border-[var(--border-subtle)] relative overflow-hidden red-line-top">
       <Suspense fallback={
         <div className="container mx-auto px-4 flex h-96 items-center justify-center text-[var(--text-primary)]">
           <Loader2 className="h-12 w-12 animate-spin" />

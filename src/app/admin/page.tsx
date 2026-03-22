@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         ecosystemCaptured: true,
         isAssembly: false,
         executor: 'owner', // 'owner', 'iago', 'partner'
-        consumedProducts: [] as {product_id: string, quantity: number}[]
+        consumedProducts: [] as {product_id: string, quantity: number, name?: string, current_stock?: number}[]
     });
 
     // PDV Modal (Venda DiretaBalcão)
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         customerName: '',
         finalValue: '',
         isSiteSource: false,
-        consumedProducts: [] as {product_id: string, quantity: number}[]
+        consumedProducts: [] as {product_id: string, quantity: number, name?: string, current_stock?: number}[]
     });
 
     const [showSocialCard, setShowSocialCard] = useState(false);
@@ -53,6 +53,8 @@ export default function AdminDashboard() {
     const [sentimentAnalysis, setSentimentAnalysis] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [installable, setInstallable] = useState(false);
+    const [productSubTab, setProductSubTab] = useState<'showroom' | 'geral'>('showroom');
+    const [manualProductSelect, setManualProductSelect] = useState('');
     const router = useRouter();
 
     async function fetchMaintenanceOrders() {
@@ -451,7 +453,7 @@ export default function AdminDashboard() {
                         <h1 className="text-4xl font-black italic tracking-tighter chrome-text uppercase leading-none">
                             CYBER <span className="text-[var(--accent-primary)]">CONTROL</span>
                         </h1>
-                        <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mt-2">Terminal de Gerenciamento Industrial</p>
+                        <p className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-[0.4em] mt-2">Terminal de Gerenciamento</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-6">
@@ -709,9 +711,9 @@ export default function AdminDashboard() {
                                     </div>
 
                                     {/* Popular Products Sidebar */}
-                                    <div className="glass p-8 rounded-[40px] border border-white/10 bg-white/5">
+                                    <div className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)]">
                                         <h3 className="text-sm font-black uppercase italic mb-6 flex items-center gap-2">
-                                            <Eye size={16} className="text-blue-500" /> Produtos Populares
+                                            <Eye size={16} className="text-[var(--accent-primary)]" /> Produtos Populares
                                         </h3>
                                         <div className="space-y-4">
                                             {products.sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5).map(p => {
@@ -719,12 +721,12 @@ export default function AdminDashboard() {
                                                 const pct = ((p.views || 0) / maxViews) * 100;
                                                 return (
                                                     <div key={p.id}>
-                                                        <div className="flex justify-between text-xs font-bold mb-1">
-                                                            <span className="text-white/60 truncate max-w-[120px]">{p.name}</span>
-                                                            <span>{p.views || 0} v.</span>
+                                                        <div className="flex justify-between text-xs font-bold mb-2">
+                                                            <span className="text-[var(--text-muted)] truncate max-w-[150px]">{p.name}</span>
+                                                            <span className="text-[var(--text-primary)]">{p.views || 0} v.</span>
                                                         </div>
-                                                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                                                            <div className="bg-blue-600 h-full transition-all duration-1000" style={{ width: `${pct}%` }} />
+                                                        <div className="w-full bg-[var(--border-subtle)] h-2 rounded-full overflow-hidden">
+                                                            <div className="bg-[var(--accent-primary)] h-full transition-all duration-1000" style={{ width: `${pct}%` }} />
                                                         </div>
                                                     </div>
                                                 );
@@ -904,13 +906,20 @@ export default function AdminDashboard() {
                                                     <button
                                                         onClick={() => {
                                                             setSelectedLeadForCommission(lead);
+                                                            const autoProducts = (lead.utm_parameters as any)?.product_ids
+                                                                ?.map((id: string) => {
+                                                                    const p = products.find(prod => prod.id === id);
+                                                                    return p ? { product_id: p.id, quantity: 1, name: p.name, current_stock: p.stock_quantity } : null;
+                                                                })
+                                                                .filter(Boolean) || [];
+                                                                
                                                             setCommissionForm({
                                                                 finalValue: '',
                                                                 costValue: '',
                                                                 ecosystemCaptured: true,
                                                                 isAssembly: false,
                                                                 executor: 'owner',
-                                                                consumedProducts: []
+                                                                consumedProducts: autoProducts
                                                             });
                                                             setShowCommissionModal(true);
                                                         }}
@@ -1251,7 +1260,21 @@ export default function AdminDashboard() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        <div className="flex justify-end gap-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="flex bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-1 rounded-xl">
+                                <button
+                                    onClick={() => setProductSubTab('showroom')}
+                                    className={`px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${productSubTab === 'showroom' ? 'bg-[var(--accent-primary)] text-[var(--bg-primary)] shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                                >
+                                    Showroom Público
+                                </button>
+                                <button
+                                    onClick={() => setProductSubTab('geral')}
+                                    className={`px-4 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${productSubTab === 'geral' ? 'bg-[var(--accent-primary)] text-[var(--bg-primary)] shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                                >
+                                    Estoque Interno
+                                </button>
+                            </div>
                             <button
                                 onClick={() => {
                                     setEditingProduct(null);
@@ -1343,7 +1366,9 @@ export default function AdminDashboard() {
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {products.map((p) => (
+                            {products
+                                .filter(p => productSubTab === 'geral' ? p.category === 'internal_part' : p.category !== 'internal_part')
+                                .map((p) => (
                                 <div key={p.id} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] flex flex-col relative group hover:border-[var(--accent-primary)]/30 transition-all shadow-xl overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                         <div className="flex gap-2">
@@ -1536,6 +1561,81 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="space-y-6">
+                            
+                            {/* Itens do Estoque */}
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Itens do Estoque (Baixa Automática)</label>
+                                </div>
+                                
+                                {commissionForm.consumedProducts.length > 0 && (
+                                    <div className="space-y-2 mb-4">
+                                        {commissionForm.consumedProducts.map((item, idx) => (
+                                            <div key={idx} className="flex items-center justify-between bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-3 rounded-xl">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold chrome-text uppercase">{item.name || 'Item Desconhecido'}</span>
+                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} (Estoque atual: {item.current_stock})</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newArr = [...commissionForm.consumedProducts];
+                                                        newArr.splice(idx, 1);
+                                                        setCommissionForm({ ...commissionForm, consumedProducts: newArr });
+                                                    }}
+                                                    className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="flex gap-2">
+                                    <select
+                                        value={manualProductSelect}
+                                        onChange={(e) => setManualProductSelect(e.target.value)}
+                                        className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all uppercase appearance-none"
+                                    >
+                                        <option value="">+ Selecionar Item do Estoque</option>
+                                        {products.filter(p => p.stock_quantity > 0).map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name} (R$ {p.price} | Est: {p.stock_quantity})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (!manualProductSelect) return;
+                                            const p = products.find(prod => prod.id === manualProductSelect);
+                                            if (!p) return;
+                                            
+                                            const existingIdx = commissionForm.consumedProducts.findIndex(item => item.product_id === p.id);
+                                            const newArr = [...commissionForm.consumedProducts];
+                                            
+                                            if (existingIdx >= 0) {
+                                                newArr[existingIdx].quantity += 1;
+                                            } else {
+                                                newArr.push({
+                                                    product_id: p.id,
+                                                    quantity: 1,
+                                                    name: p.name,
+                                                    current_stock: p.stock_quantity
+                                                });
+                                            }
+                                            
+                                            setCommissionForm({ ...commissionForm, consumedProducts: newArr });
+                                            setManualProductSelect('');
+                                        }}
+                                        className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-4 py-2 rounded-xl font-bold flex items-center justify-center hover:scale-105 transition-all"
+                                    >
+                                        <Plus size={16} strokeWidth={3} />
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div className="space-y-2">
                                 <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Valor Total Cobrado (R$)</label>
                                 <input

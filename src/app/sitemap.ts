@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://cyber-tech.vercel.app'; // Troque pelo seu domínio final
+    const baseUrl = 'https://cyberinformatica.tech';
 
     return [
         {
@@ -11,9 +11,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 1,
         },
         {
-            url: `${baseUrl}/showroom`,
+            url: `${baseUrl}/produtos`,
             lastModified: new Date(),
             changeFrequency: 'daily',
+            priority: 0.9,
+        },
+        {
+            url: `${baseUrl}/showroom`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
             priority: 0.8,
         },
         {
