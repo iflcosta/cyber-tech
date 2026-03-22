@@ -5,31 +5,27 @@ const BG_IMAGE = 'https://images.unsplash.com/photo-1771014846919-3a1cf73aeea1?c
 const BG = '#0d0d11';
 const RED = '#E53935';
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+    const timer = new Promise<null>(resolve => setTimeout(() => resolve(null), ms));
+    return Promise.race([promise, timer]);
+}
+
 async function loadFont(family: string, weight: number): Promise<ArrayBuffer | null> {
     try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3000);
-        const css = await fetch(
-            `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`,
-            { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' }, signal: controller.signal }
-        ).then(r => r.text()).finally(() => clearTimeout(timeout));
+        const css = await withTimeout(
+            fetch(`https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' }
+            }).then(r => r.text()),
+            2500
+        );
+        if (!css) return null;
         const url = css.match(/src: url\(([^)]+)\) format\('woff2'\)/)?.[1];
         if (!url) return null;
-        const controller2 = new AbortController();
-        const timeout2 = setTimeout(() => controller2.abort(), 3000);
-        return fetch(url, { signal: controller2.signal })
-            .then(r => r.arrayBuffer())
-            .finally(() => clearTimeout(timeout2));
+        return await withTimeout(fetch(url).then(r => r.arrayBuffer()), 2500);
     } catch {
         return null;
     }
 }
-
-const TAGS = [
-    { id: '01', label: 'PC GAMER' },
-    { id: '02', label: 'MANUTENÇÃO' },
-    { id: '03', label: 'SMARTPHONE' },
-];
 
 export async function GET(req: NextRequest) {
     try {
@@ -50,72 +46,23 @@ export async function GET(req: NextRequest) {
         const R = rajdhaniBold ? 'Rajdhani' : 'sans-serif';
         const M = jetbrainsMono ? 'JetBrains Mono' : 'monospace';
 
-        const bottomSection = (
-            <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'rgba(255,255,255,0.1)',
-                paddingTop: 32, position: 'relative',
-            }}>
-                {/* Corner markers */}
-                <div style={{ position: 'absolute', top: 0, left: 0, width: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.3)', display: 'flex' }} />
-                <div style={{ position: 'absolute', top: 0, right: 0, width: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.3)', display: 'flex' }} />
-
-                {/* Tags */}
-                <div style={{ display: 'flex', gap: 20 }}>
-                    {TAGS.map(tag => (
-                        <div key={tag.id} style={{
-                            display: 'flex', alignItems: 'center', gap: 12,
-                            borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.1)',
-                            paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 10,
-                            backgroundColor: 'rgba(13,13,17,0.8)', position: 'relative',
-                        }}>
-                            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: RED, display: 'flex' }} />
-                            <span style={{ fontFamily: M, fontWeight: 400, fontSize: 10, color: RED, opacity: 0.8 }}>
-                                // {tag.id}
-                            </span>
-                            <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>
-                                {tag.label}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* URL */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, paddingRight: 8, paddingBottom: 4 }}>
-                    <div style={{ width: 30, height: 1, backgroundColor: 'rgba(229,57,53,0.5)', display: 'flex' }} />
-                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>
-                        cyberinformatica.tech
-                    </span>
-                </div>
-            </div>
-        );
-
         return new ImageResponse(
             <div style={{ width: 1200, height: 630, backgroundColor: BG, display: 'flex', position: 'relative', overflow: 'hidden' }}>
 
-                {/* Background: gaming PC image (right 60%) */}
+                {/* Background image right side */}
                 <div style={{ position: 'absolute', top: 0, right: 0, width: 720, height: 630, display: 'flex' }}>
                     <img src={BG_IMAGE} alt="" style={{ width: 720, height: 630, objectFit: 'cover', opacity: 0.9 }} />
-                    {/* Left fade */}
                     <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 460, backgroundImage: `linear-gradient(to right, ${BG} 0%, rgba(13,13,17,0.75) 55%, transparent 100%)`, display: 'flex' }} />
-                    {/* Bottom fade */}
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 220, backgroundImage: `linear-gradient(to top, ${BG} 0%, transparent 100%)`, display: 'flex' }} />
                 </div>
 
-                {/* Red radial glow bottom-left */}
-                <div style={{
-                    position: 'absolute', bottom: -270, left: -90, width: 900, height: 900,
-                    borderRadius: 450,
-                    backgroundImage: `radial-gradient(circle, rgba(229,57,53,0.12) 0%, rgba(13,13,17,0) 65%)`,
-                    display: 'flex',
-                }} />
+                {/* Red glow bottom-left */}
+                <div style={{ position: 'absolute', bottom: -270, left: -90, width: 900, height: 900, borderRadius: 450, backgroundImage: `radial-gradient(circle, rgba(229,57,53,0.12) 0%, rgba(13,13,17,0) 65%)`, display: 'flex' }} />
 
-                {/* Foreground */}
-                <div style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                    padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                }}>
-                    {/* Top: location */}
+                {/* Content */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+
+                    {/* Top */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                         <div style={{ width: 40, height: 2, backgroundColor: RED, display: 'flex' }} />
                         <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: RED, letterSpacing: '0.4em' }}>
@@ -123,40 +70,69 @@ export async function GET(req: NextRequest) {
                         </span>
                     </div>
 
-                    {/* Center: logo */}
-                    <div style={{ display: 'flex', flexDirection: 'column', maxWidth: title ? '65%' : '70%', paddingLeft: 44, position: 'relative' }}>
+                    {/* Center */}
+                    <div style={{ display: 'flex', flexDirection: 'column', maxWidth: '70%', paddingLeft: 44, position: 'relative' }}>
                         <div style={{ position: 'absolute', left: 0, top: 18, bottom: 18, width: 6, backgroundColor: RED, display: 'flex' }} />
-
                         {title ? (
-                            <>
-                                {category && (
-                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 11, color: RED, letterSpacing: '0.3em', opacity: 0.8, marginBottom: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                {category ? (
+                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 11, color: RED, letterSpacing: '0.3em', opacity: 0.8 }}>
                                         // {category.toUpperCase()}
                                     </span>
-                                )}
+                                ) : null}
                                 <span style={{ fontFamily: R, fontWeight: 700, fontSize: title.length > 25 ? 62 : 78, lineHeight: 0.9, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
                                     {title}
                                 </span>
-                                {price && (
-                                    <span style={{ fontFamily: R, fontWeight: 700, fontSize: 48, color: RED, letterSpacing: '-0.01em', marginTop: 16 }}>
+                                {price ? (
+                                    <span style={{ fontFamily: R, fontWeight: 700, fontSize: 48, color: RED, letterSpacing: '-0.01em' }}>
                                         R$ {price}
                                     </span>
-                                )}
-                            </>
+                                ) : null}
+                            </div>
                         ) : (
-                            <>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span style={{ fontFamily: R, fontWeight: 700, fontSize: 160, lineHeight: 0.8, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
                                     cyber
                                 </span>
                                 <span style={{ fontFamily: M, fontWeight: 400, fontSize: 36, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)', marginTop: 12 }}>
                                     informática
                                 </span>
-                            </>
+                            </div>
                         )}
                     </div>
 
                     {/* Bottom */}
-                    {bottomSection}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 32, position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.3)', display: 'flex' }} />
+                        <div style={{ position: 'absolute', top: 0, right: 0, width: 1, height: 8, backgroundColor: 'rgba(255,255,255,0.3)', display: 'flex' }} />
+
+                        {/* Tags */}
+                        <div style={{ display: 'flex', gap: 20 }}>
+                            {[
+                                { id: '01', label: 'PC GAMER' },
+                                { id: '02', label: 'MANUTENÇÃO' },
+                                { id: '03', label: 'SMARTPHONE' },
+                            ].map(tag => (
+                                <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.1)', paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 10, backgroundColor: 'rgba(13,13,17,0.8)', position: 'relative' }}>
+                                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: RED, display: 'flex' }} />
+                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 10, color: RED, opacity: 0.8 }}>
+                                        // {tag.id}
+                                    </span>
+                                    <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>
+                                        {tag.label}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* URL */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, paddingRight: 8, paddingBottom: 4 }}>
+                            <div style={{ width: 30, height: 1, backgroundColor: 'rgba(229,57,53,0.5)', display: 'flex' }} />
+                            <span style={{ fontFamily: M, fontWeight: 400, fontSize: 14, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em' }}>
+                                cyberinformatica.tech
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>,
             { width: 1200, height: 630, fonts }
