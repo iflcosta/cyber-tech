@@ -13,7 +13,7 @@ type LeadStep = 'intent' | 'details' | 'success';
 type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
 
 export default function LeadModal() {
-    const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, productIds, openModal } = useLeadModal();
+    const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, productIds, openModal, selectedProduct } = useLeadModal();
     const [step, setStep] = useState<LeadStep>('intent');
     const [intent, setIntent] = useState<IntentType | null>(null);
     const [goal, setGoal] = useState<'compra' | 'manutencao' | 'duvida' | null>(null);
@@ -46,7 +46,8 @@ export default function LeadModal() {
                 setCountdown(prev => {
                     if (prev <= 1) {
                         clearInterval(timer);
-                        const url = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida'}.`)}`;
+                        const text = whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${selectedProduct ? `o produto ${selectedProduct.name}` : (goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida')}.`;
+                        const url = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`;
                         window.open(url, '_blank');
                         closeModal();
                         return 0;
@@ -147,6 +148,10 @@ export default function LeadModal() {
             }
         }
         
+        if (selectedProduct) {
+            finalDescription = `Produto: ${selectedProduct.name} (Pr: ${selectedProduct.price}) | ${finalDescription}`;
+        }
+        
         if (customDescription) {
             finalDescription = `${customDescription} | Detalhes: ${finalDescription}`;
         }
@@ -206,6 +211,19 @@ export default function LeadModal() {
                                 <h2 className="text-3xl font-display font-bold tracking-tight text-[var(--text-primary)] chrome-text leading-none">
                                     {step === 'intent' ? 'VAMOS COMEÇAR?' : step === 'details' ? 'QUASE LÁ' : 'TUDO PRONTO!'}
                                 </h2>
+                                {selectedProduct && step !== 'success' && (
+                                    <div className="ml-auto flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg p-2 pr-4 backdrop-blur-md">
+                                        {selectedProduct.image && (
+                                            <div className="w-10 h-10 relative rounded overflow-hidden border border-white/10">
+                                                <img src={selectedProduct.image} alt={selectedProduct.name} className="object-cover w-full h-full" />
+                                            </div>
+                                        )}
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Interesse em:</span>
+                                            <span className="text-[11px] text-white font-bold truncate max-w-[150px]">{selectedProduct.name}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="p-8">
@@ -314,7 +332,7 @@ export default function LeadModal() {
                                         </div>
 
                                         <div className="space-y-3 px-4">
-                                            <a href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida'}.`)}`} target="_blank" rel="noreferrer" className="btn-primary w-full py-5 flex items-center justify-center gap-3" onClick={closeModal} >
+                                            <a href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${selectedProduct ? `a compra do ${selectedProduct.name}` : (goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida')}.`)}`} target="_blank" rel="noreferrer" className="btn-primary w-full py-5 flex items-center justify-center gap-3" onClick={closeModal} >
                                                 <Send size={18} /> INICIAR NO WHATSAPP
                                             </a>
                                             <button onClick={closeModal} className="w-full py-3 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--text-primary)] transition-colors">

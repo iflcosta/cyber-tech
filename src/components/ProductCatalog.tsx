@@ -64,7 +64,12 @@ function CatalogContent() {
     openModal('compra',
       `Interesse no Produto: ${product.name}`,
       `Olá, vi o *${product.name}* no catálogo e gostaria de mais informações.`,
-      [product.id]
+      [product.id],
+      { 
+        name: product.name, 
+        price: product.price_estimate || product.price, 
+        image: product.image_url || product.image_urls?.[0] 
+      }
     );
   };
 

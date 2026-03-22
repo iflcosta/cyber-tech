@@ -7,7 +7,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "none";
   size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
   asChild?: boolean;
@@ -34,6 +34,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       outline: "bg-transparent border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white",
       ghost: "bg-transparent border border-[#D4D2CF] text-[#666666] hover:border-[#888888] hover:text-[#1A1A1A]",
       danger: "bg-red-600 text-white hover:bg-red-700",
+      none: "",
     };
 
     const sizes = {

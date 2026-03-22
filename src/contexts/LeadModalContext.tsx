@@ -9,7 +9,12 @@ interface LeadModalContextType {
     customDescription?: string;
     whatsappMessage?: string;
     productIds?: string[];
-    openModal: (goal?: LeadGoal, customDescription?: string, whatsappMessage?: string, productIds?: string[]) => void;
+    selectedProduct?: {
+        name: string;
+        price: number | string;
+        image?: string;
+    };
+    openModal: (goal?: LeadGoal, customDescription?: string, whatsappMessage?: string, productIds?: string[], selectedProduct?: { name: string; price: number | string; image?: string; }) => void;
     closeModal: () => void;
 }
 
@@ -21,20 +26,19 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
     const [customDescription, setCustomDescription] = useState<string | undefined>();
     const [whatsappMessage, setWhatsappMessage] = useState<string | undefined>();
     const [productIds, setProductIds] = useState<string[] | undefined>();
+    const [selectedProduct, setSelectedProduct] = useState<{ name: string; price: number | string; image?: string; } | undefined>();
 
-    const openModal = useCallback((g?: LeadGoal, desc?: string, message?: string, pIds?: string[]) => {
+    const openModal = useCallback((g?: LeadGoal, desc?: string, message?: string, pIds?: string[], sProd?: { name: string; price: number | string; image?: string; }) => {
         if (g) setGoal(g);
         setCustomDescription(desc);
         setWhatsappMessage(message);
         setProductIds(pIds);
+        setSelectedProduct(sProd);
         setIsOpen(true);
     }, []);
 
     const closeModal = useCallback(() => {
         setIsOpen(false);
-        // Save to localStorage to avoid showing for 24h if it was an auto-open or exit-intent
-        // But if it was triggered by user button, maybe we don't block? 
-        // Let's block anyway to be respectful.
         const expiry = new Date().getTime() + 24 * 60 * 60 * 1000;
         localStorage.setItem('lead_modal_expiry', expiry.toString());
         
@@ -43,6 +47,7 @@ export function LeadModalProvider({ children }: { children: React.ReactNode }) {
             setCustomDescription(undefined);
             setWhatsappMessage(undefined);
             setProductIds(undefined);
+            setSelectedProduct(undefined);
         }, 300);
     }, []);
 

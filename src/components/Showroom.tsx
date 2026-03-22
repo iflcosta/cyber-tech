@@ -40,7 +40,12 @@ function ShowroomContent() {
     openModal('compra',
       `Interesse no Produto: ${product.name} (R$ ${product.price.toLocaleString('pt-BR')})`,
       `Olá, tenho interesse no *${product.name}* que vi no site por *R$ ${product.price.toLocaleString('pt-BR')}*. Pode me ajudar?`,
-      [product.id]
+      [product.id],
+      { 
+        name: product.name, 
+        price: product.price, 
+        image: product.image_url 
+      }
     );
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'ViewContent', {

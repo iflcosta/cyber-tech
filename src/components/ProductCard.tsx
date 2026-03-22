@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { MessageSquare, Cpu, Zap, Package } from "lucide-react";
 import { Card, CardFooter } from "./ui/Card";
-import { Button } from "./ui/Button";
+import { Button, cn } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 import { PerformanceBadge } from "./PerformanceBadge";
 import { useEffect, useState } from "react";
@@ -152,12 +152,11 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
       {/* Footer Section (Interest Button) */}
       <CardFooter className="p-6 pt-0">
         <Button 
-          size="sm" 
-          className={`w-full ${
-            isOpen 
-              ? "btn-success" 
-              : "btn-primary"
-          }`}
+          variant="none"
+          className={cn(
+            "w-full h-12",
+            isOpen ? "btn-success" : "btn-primary"
+          )}
           onClick={(e) => {
             e.stopPropagation();
             onInterest?.();
