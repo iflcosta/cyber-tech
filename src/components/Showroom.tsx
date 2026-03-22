@@ -100,8 +100,8 @@ function ShowroomContent() {
   const maxIndex = Math.max(0, filteredProducts.length - visibleCount);
   const xOffset = -(carouselIndex * (cardWidth + GAP));
 
-  const prev = () => setCarouselIndex(i => i === 0 ? maxIndex : i - 1);
-  const next = () => setCarouselIndex(i => i >= maxIndex ? 0 : i + 1);
+  const prev = () => setCarouselIndex(i => Math.max(0, i - 1));
+  const next = () => setCarouselIndex(i => Math.min(maxIndex, i + 1));
 
   // Keyboard navigation (ArrowLeft / ArrowRight)
   useEffect(() => {
@@ -210,7 +210,8 @@ function ShowroomContent() {
             {/* Left arrow */}
             <button
               onClick={prev}
-              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 p-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[2px] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all"
+              disabled={carouselIndex === 0}
+              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 p-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[2px] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all disabled:opacity-20 disabled:pointer-events-none"
               aria-label="Anterior"
             >
               <ChevronLeft size={20} />
