@@ -107,7 +107,7 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
         onClick={handleViewDetails}
       >
         <div className="space-y-1 mb-4">
-          <Badge variant="outline" className="text-[8px] uppercase tracking-widest border-[var(--border-subtle)] text-[var(--text-muted)] rounded-sm">
+          <Badge variant="outline" className="text-[9px] uppercase tracking-[0.15em] border-[var(--accent-primary)]/30 text-[var(--accent-primary)] rounded-sm bg-[var(--accent-primary)]/5">
             {product.category.replace('_', ' ')}
           </Badge>
           <h3 className="text-lg font-display font-bold uppercase tracking-tight text-white group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
@@ -115,26 +115,26 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
           </h3>
         </div>
 
-        <div className="space-y-2.5 mb-6">
+        <div className="space-y-2.5 mb-6 opacity-80 group-hover:opacity-100 transition-opacity">
           {(product.specs.cpu || product.specs.Chip) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <Cpu className="h-3.5 w-3.5 text-[var(--accent-primary)]/50" />
-              <span className="truncate">{product.specs.cpu || product.specs.Chip}</span>
+              <Cpu className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+              <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.cpu || product.specs.Chip}</span>
             </div>
           )}
           {(product.specs.gpu || product.specs.Câmera) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <Zap className="h-3.5 w-3.5 text-[var(--accent-primary)]/50" />
-              <span className="truncate">{product.specs.gpu || product.specs.Câmera}</span>
+              <Zap className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+              <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.gpu || product.specs.Câmera}</span>
             </div>
           )}
           {(product.specs.ram || product.specs.Tela) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <div className="h-3.5 w-3.5 rounded-full border border-[var(--accent-primary)]/30 flex items-center justify-center text-[8px] font-bold text-[var(--accent-primary)]">R</div>
-              <span className="text-[var(--text-primary)]">
+              <div className="h-3.5 w-3.5 rounded-full border border-[var(--accent-primary)]/50 flex items-center justify-center text-[8px] font-bold text-[var(--accent-primary)]">R</div>
+              <span className="text-[var(--text-primary)] brightness-200">
                 {product.specs.ram || product.specs.Tela}
               </span>
-              {product.specs.storage && <span className="opacity-40">• {product.specs.storage}</span>}
+              {product.specs.storage && <span className="opacity-60">• {product.specs.storage}</span>}
             </div>
           )}
         </div>

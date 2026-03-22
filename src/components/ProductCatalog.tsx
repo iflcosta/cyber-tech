@@ -166,14 +166,14 @@ function CatalogContent() {
                   const categoryProducts = filteredProducts.filter(p => p.category === cat.id);
                   if (categoryProducts.length === 0) return null;
 
-                  return (
-                    <section key={cat.id} className="space-y-8">
-                      <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-display font-black uppercase tracking-widest text-white/90">
-                          {cat.label}
-                        </h2>
-                        <div className="h-px flex-1 bg-gradient-to-r from-[var(--border-subtle)] to-transparent" />
-                      </div>
+                    return (
+                      <section key={cat.id} className="space-y-8">
+                        <div className="flex items-center gap-4">
+                          <h2 className="text-2xl font-display font-black uppercase tracking-[0.2em] text-[var(--text-primary)] chrome-text">
+                            {cat.label}
+                          </h2>
+                          <div className="h-px flex-1 bg-gradient-to-r from-[var(--border-active)] to-transparent opacity-30" />
+                        </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {categoryProducts.map((product) => (
