@@ -29,6 +29,9 @@ export default function CyberIA() {
     const { voucherCode } = useVoucherSession();
     const [productsString, setProductsString] = useState('');
     const [summarizing, setSummarizing] = useState(false);
+    const [contactStep, setContactStep] = useState<'idle' | 'collecting' | 'done'>('idle');
+    const [contactName, setContactName] = useState('');
+    const [contactPhone, setContactPhone] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -143,23 +146,54 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
         setLoading(false);
     };
 
-    const handleDirectWhatsApp = async () => {
+    const handleDirectWhatsApp = () => {
+        if (contactStep === 'done') {
+            doOpenWhatsApp();
+        } else {
+            setContactStep('collecting');
+            setTimeout(() => {
+                if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            }, 50);
+        }
+    };
+
+    const doOpenWhatsApp = async (name?: string, phone?: string) => {
         setSummarizing(true);
         try {
             const lastMessages = messages.slice(-8);
-            const summaryContext = `Abaixo está uma conversa entre um cliente e a Cyber IA. 
+            const summaryContext = `Abaixo está uma conversa entre um cliente e a Cyber IA.
             Extraia SOMENTE o objetivo principal do cliente (ex: "Conserto de tela de iPhone" ou "Orçamento de PC Gamer") em uma frase curta de no máximo 80 caracteres.
             Seja direto e não adicione saudações.
-            
+
             Conversa:
             ${lastMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'IA'}: ${m.content}`).join('\n')}
-            
+
             Objetivo em uma linha:`;
-            
+
             const rawSummary = await getGeminiResponse(summaryContext);
             const summary = rawSummary.trim().replace(/^Objetivo:\s*/i, '').replace(/["']/g, '');
-            
-            const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\n*Assunto:* ${summary}\n\n*Voucher:* ${voucherCode || 'N/A'}`;
+
+            const resolvedName = name || contactName;
+            const resolvedPhone = phone || contactPhone;
+
+            // Save lead with name + phone
+            if (resolvedName || resolvedPhone) {
+                fetch('/api/extract-lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [
+                            ...messages,
+                            { role: 'user', content: `Meu nome é ${resolvedName} e meu WhatsApp é ${resolvedPhone}` }
+                        ],
+                        source: 'Cyber IA',
+                        session_voucher_code: voucherCode
+                    })
+                }).catch(() => {});
+            }
+
+            const nameTag = resolvedName ? `\n*Nome:* ${resolvedName}` : '';
+            const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.${nameTag}\n\n*Assunto:* ${summary}\n\n*Voucher:* ${voucherCode || 'N/A'}`;
             openWhatsApp(text);
         } catch (e) {
             console.error("Erro ao resumir conversa para WA", e);
@@ -252,6 +286,42 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                 </div>
                             ))}
                             
+                            {contactStep === 'collecting' && (
+                                <div className="flex justify-start">
+                                    <div className="bg-zinc-800/80 border border-zinc-700/50 rounded-xl p-4 max-w-[85%] space-y-3">
+                                        <p className="text-sm text-zinc-100 leading-relaxed">Para te chamar no WhatsApp, preciso do seu nome e número. 😊</p>
+                                        <input
+                                            autoFocus
+                                            value={contactName}
+                                            onChange={e => setContactName(e.target.value)}
+                                            placeholder="Seu nome"
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-[var(--accent-success)]"
+                                        />
+                                        <input
+                                            value={contactPhone}
+                                            onChange={e => setContactPhone(e.target.value)}
+                                            placeholder="WhatsApp (ex: 11912345678)"
+                                            type="tel"
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-[var(--accent-success)]"
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter' && contactName.trim()) {
+                                                    setContactStep('done');
+                                                    doOpenWhatsApp(contactName, contactPhone);
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            disabled={!contactName.trim() || summarizing}
+                                            onClick={() => { setContactStep('done'); doOpenWhatsApp(contactName, contactPhone); }}
+                                            className="w-full bg-white text-zinc-950 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-zinc-100 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                                        >
+                                            {summarizing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} fill="currentColor" />}
+                                            {summarizing ? 'Abrindo...' : 'Confirmar e Abrir WhatsApp'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             {loading && (
                                 <div className="flex justify-start">
                                     <div className="bg-[var(--bg-elevated)] p-3 rounded-xl border border-[var(--border-subtle)] flex items-center gap-3">
