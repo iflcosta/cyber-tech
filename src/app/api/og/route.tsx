@@ -4,6 +4,17 @@ import { NextRequest } from 'next/server';
 const BG = '#0d0d11';
 const RED = '#E53935';
 
+function isStoreOpen(): boolean {
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const day = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sab
+    const hour = now.getHours();
+    const min = now.getMinutes();
+    const time = hour * 60 + min;
+    if (day >= 1 && day <= 5) return time >= 9 * 60 && time < 18 * 60; // Seg-Sex 09-18h
+    if (day === 6) return time >= 9 * 60 && time < 13 * 60;             // Sáb 09-13h
+    return false;
+}
+
 async function loadFonts() {
     try {
         const { readFile } = await import('fs/promises');
@@ -24,6 +35,7 @@ export async function GET(req: NextRequest) {
         const title = searchParams.get('title');
         const price = searchParams.get('price');
         const category = searchParams.get('category');
+        const open = isStoreOpen();
 
         const { rajdhaniBold, jetbrainsMono } = await loadFonts();
 
@@ -43,11 +55,17 @@ export async function GET(req: NextRequest) {
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
 
                     {/* Top */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <div style={{ width: 40, height: 2, backgroundColor: RED, display: 'flex' }} />
-                        <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: RED, letterSpacing: '0.4em' }}>
-                            BRAGANÇA PAULISTA · SP
-                        </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                            <div style={{ width: 40, height: 2, backgroundColor: RED, display: 'flex' }} />
+                            <span style={{ fontFamily: M, fontWeight: 400, fontSize: 12, color: RED, letterSpacing: '0.4em' }}>
+                                BRAGANÇA PAULISTA · SP
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, backgroundColor: open ? 'rgba(34,197,94,0.1)' : 'rgba(229,57,53,0.1)', borderWidth: 1, borderStyle: 'solid', borderColor: open ? 'rgba(34,197,94,0.3)' : 'rgba(229,57,53,0.3)', paddingLeft: 14, paddingRight: 14, paddingTop: 6, paddingBottom: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: open ? '#22c55e' : RED, display: 'flex' }} />
+                            <span style={{ fontFamily: M, fontSize: 11, color: open ? '#22c55e' : RED, letterSpacing: '0.2em' }}>{open ? 'ABERTO' : 'FECHADO'}</span>
+                        </div>
                     </div>
 
                     {/* Center */}
