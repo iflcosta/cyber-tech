@@ -71,20 +71,32 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
         </h3>
         
         <div className="space-y-2 mb-8" onClick={onInterest}>
-          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
-            <Cpu size={12} className="text-[var(--text-primary)]" />
-            <span>{product.specs.cpu}</span>
-          </div>
-          {product.specs.gpu && (
+          {product.specs.cpu || product.specs.Chip ? (
+            <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+              <Cpu size={12} className="text-[var(--text-primary)]" />
+              <span>{product.specs.cpu || product.specs.Chip}</span>
+            </div>
+          ) : null}
+          
+          {(product.specs.gpu || product.specs.Câmera) && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
               <Zap size={12} className="text-[var(--text-primary)]" />
-              <span>{product.specs.gpu}</span>
+              <span>{product.specs.gpu || product.specs.Câmera}</span>
             </div>
           )}
-          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
-            <span className="text-[var(--text-primary)] font-black">{product.specs.ram} RAM</span> • 
-            <span>{product.specs.storage}</span>
-          </div>
+
+          {(product.specs.ram || product.specs.Tela) && (
+            <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
+              {product.specs.ram ? (
+                <>
+                  <span className="text-[var(--text-primary)] font-black">{product.specs.ram} RAM</span> • 
+                  <span>{product.specs.storage}</span>
+                </>
+              ) : (
+                <span>{product.specs.Tela}</span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="text-2xl font-display font-bold tracking-tighter text-[var(--accent-primary)]">

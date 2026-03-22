@@ -1309,6 +1309,7 @@ export default function AdminDashboard() {
                                         <select name="category" defaultValue={editingProduct?.category || 'workstation_ai'} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all uppercase appearance-none">
                                             <option value="workstation_ai">Workstation IA</option>
                                             <option value="gamer">PC Gamer</option>
+                                            <option value="smartphone">Smartphone</option>
                                             <option value="office">Office Pro</option>
                                             <option value="hardware">Hardware</option>
                                             <option value="perifericos">Periféricos</option>

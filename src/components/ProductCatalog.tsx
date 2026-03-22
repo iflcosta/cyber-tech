@@ -152,37 +152,70 @@ function CatalogContent() {
         </button>
 
         {/* Product Grid */}
-        <div className="space-y-8">
+        <div className="space-y-16">
           {loading ? (
             <div className="flex h-96 items-center justify-center">
               <Loader2 className="h-12 w-12 animate-spin text-[var(--accent-primary)]" />
             </div>
           ) : (
             <>
-              {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard 
-                      key={product.id} 
-                      product={product} 
-                      onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
-                      onInterest={() => handleInterest(product)}
-                    />
-                  ))}
-                </div>
+              {activeCategory === "all" ? (
+                // Grouped view
+                CATEGORIES.filter(cat => cat.id !== 'all').map(cat => {
+                  const categoryProducts = filteredProducts.filter(p => p.category === cat.id);
+                  if (categoryProducts.length === 0) return null;
+
+                  return (
+                    <section key={cat.id} className="space-y-8">
+                      <div className="flex items-center gap-4">
+                        <h2 className="text-xl font-display font-black uppercase tracking-widest text-white/90">
+                          {cat.label}
+                        </h2>
+                        <div className="h-px flex-1 bg-gradient-to-r from-[var(--border-subtle)] to-transparent" />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {categoryProducts.map((product) => (
+                          <ProductCard 
+                            key={product.id} 
+                            product={product} 
+                            onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
+                            onInterest={() => handleInterest(product)}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })
               ) : (
-                <div className="flex flex-col items-center justify-center h-96 border border-dashed border-[var(--border-subtle)] rounded-2xl bg-[var(--bg-surface)]/30 text-center px-10">
-                  <Package className="h-12 w-12 text-[var(--text-muted)] mb-4 opacity-20" />
-                  <p className="text-[11px] font-mono font-bold uppercase text-[var(--text-muted)] tracking-widest">
-                    Nenhum item corresponde à sua busca técnica.
-                  </p>
-                  <button 
-                    onClick={() => { setSearchTerm(""); handleCategoryChange("all"); }}
-                    className="mt-6 text-[10px] font-bold text-[var(--accent-primary)] uppercase underline tracking-tighter"
-                  >
-                    Limpar Filtros
-                  </button>
-                </div>
+                // Standard grid view for single category
+                <>
+                  {filteredProducts.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {filteredProducts.map((product) => (
+                        <ProductCard 
+                          key={product.id} 
+                          product={product} 
+                          onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
+                          onInterest={() => handleInterest(product)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-96 border border-dashed border-[var(--border-subtle)] rounded-2xl bg-[var(--bg-surface)]/30 text-center px-10">
+                      <Package className="h-12 w-12 text-[var(--text-muted)] mb-4 opacity-20" />
+                      <p className="text-[11px] font-mono font-bold uppercase text-[var(--text-muted)] tracking-widest">
+                        Nenhum item corresponde à sua busca técnica.
+                      </p>
+                      <button 
+                        onClick={() => { setSearchTerm(""); handleCategoryChange("all"); }}
+                        className="mt-6 text-[10px] font-bold text-[var(--accent-primary)] uppercase underline tracking-tighter"
+                      >
+                        Limpar Filtros
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
