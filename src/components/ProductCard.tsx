@@ -4,6 +4,19 @@ import { Card, CardContent, CardFooter } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 import { PerformanceBadge } from "./PerformanceBadge";
+import { useEffect, useState } from "react";
+
+function isStoreOpen() {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const minutes = now.getMinutes();
+  const time = hour + minutes / 60;
+
+  if (day >= 1 && day <= 5) return time >= 9 && time < 18.5;
+  if (day === 6) return time >= 9 && time < 13;
+  return false;
+}
 
 export interface Product {
   id: string;
@@ -22,6 +35,9 @@ export interface Product {
   in_stock: boolean;
   image_urls?: string[];
   image_url?: string;
+  show_in_showroom?: boolean;
+  show_in_catalog?: boolean;
+  show_in_pcbuilder?: boolean;
 }
 
 interface ProductCardProps {
@@ -31,7 +47,13 @@ interface ProductCardProps {
   onAddToCart?: () => void;
 }
 
-export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }: ProductCardProps) {
+export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  useEffect(() => {
+    setIsOpen(isStoreOpen());
+  }, []);
+
   return (
     <Card className="card-dark group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)]">
       <div className="relative aspect-video w-full overflow-hidden bg-[var(--bg-primary)]">
@@ -104,13 +126,18 @@ export function ProductCard({ product, onOpenGallery, onInterest, onAddToCart }:
         </div>
       </CardContent>
 
-      <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-3">
-        <Button variant="outline" size="sm" className="w-full btn-ghost" onClick={onInterest}>
-             SIMILAR
-        </Button>
-        <Button size="sm" className="w-full gap-2 btn-primary" onClick={onInterest}>
-             <MessageSquare className="h-3 w-3" />
-             ORÇAMENTO
+      <CardFooter className="p-6 pt-0">
+        <Button 
+          size="sm" 
+          className={`w-full gap-2 transition-all duration-500 scale-100 active:scale-95 ${
+            isOpen 
+              ? "bg-[#3A8F66] hover:bg-[#2F7352] text-white shadow-[0_0_15px_rgba(58,143,102,0.3)]" 
+              : "btn-primary"
+          }`}
+          onClick={onInterest}
+        >
+          <MessageSquare className="h-3 w-3" />
+          {isOpen ? "ORÇAMENTO AGORA" : "TENHO INTERESSE"}
         </Button>
       </CardFooter>
     </Card>

@@ -244,22 +244,11 @@ export default function LeadModal() {
                                             </div>
                                         </div>
 
-                                        {goal === 'manutencao' ? (
-                                            <div className="space-y-4">
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Modelo do Dispositivo</label>
-                                                    <input required type="text" value={deviceModel} onChange={(e) => setDeviceModel(e.target.value)} placeholder="Ex: iPhone 13, Notebook Dell G15..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
-                                                </div>
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que está acontecendo?</label>
-                                                    <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva brevemente o problema..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
-                                                </div>
-                                            </div>
-                                        ) : goal === 'compra' ? (
+                                        {(goal === 'compra' && !customDescription?.startsWith('BUILD SIMULADA')) ? (
                                             <>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Qual é o seu orçamento?</label>
-                                                    <select required value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm">
+                                                    <select required={!customDescription?.startsWith('BUILD SIMULADA')} value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm">
                                                         <option value="">Selecione uma faixa...</option>
                                                         <option value="até R$1.500">Até R$ 1.500</option>
                                                         <option value="R$1.500-3.000">R$ 1.500 — R$ 3.000</option>
@@ -277,10 +266,21 @@ export default function LeadModal() {
                                                     </div>
                                                 </div>
                                             </>
+                                        ) : goal === 'manutencao' ? (
+                                            <div className="space-y-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Modelo do Dispositivo</label>
+                                                    <input required type="text" value={deviceModel} onChange={(e) => setDeviceModel(e.target.value)} placeholder="Ex: iPhone 13, Notebook Dell G15..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que está acontecendo?</label>
+                                                    <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva brevemente o problema..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
+                                                </div>
+                                            </div>
                                         ) : (
                                             <div className="space-y-1.5">
                                                 <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Como podemos ajudar?</label>
-                                                <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Sua dúvida ou comentário..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
+                                                <textarea required={!customDescription} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={customDescription?.startsWith('BUILD SIMULADA') ? "Alguma observação adicional?" : "Sua dúvida ou comentário..."} className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
                                             </div>
                                         )}
 

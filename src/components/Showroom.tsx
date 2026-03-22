@@ -21,7 +21,8 @@ function ShowroomContent() {
     async function loadProducts() {
       setLoading(true);
       const data = await getProducts();
-      const mapped = data.map((p: any) => ({
+      const filtered = data.filter((p: any) => p.show_in_showroom);
+      const mapped = filtered.map((p: any) => ({
         ...p,
         category: p.category === 'kit' ? 'gamer' : p.category, 
         price_estimate: p.price,

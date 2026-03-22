@@ -11,6 +11,9 @@ export interface Product {
     views?: number;
     sku?: string;
     created_at: string;
+    show_in_showroom?: boolean;
+    show_in_catalog?: boolean;
+    show_in_pcbuilder?: boolean;
 }
 
 export const getProducts = async (): Promise<Product[]> => {

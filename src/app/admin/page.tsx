@@ -327,7 +327,10 @@ export default function AdminDashboard() {
                 stock_quantity: parseInt(formData.get('stock') as string),
                 specs: JSON.parse(formData.get('specs') as string || "{}"),
                 image_urls: imageUrls,
-                sku: formData.get('sku')
+                sku: formData.get('sku'),
+                show_in_showroom: formData.get('show_in_showroom') === 'on',
+                show_in_catalog: formData.get('show_in_catalog') === 'on',
+                show_in_pcbuilder: formData.get('show_in_pcbuilder') === 'on'
             };
 
             let error;
@@ -1328,7 +1331,81 @@ export default function AdminDashboard() {
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">SKU (ID no ERP)</label>
                                         <input name="sku" defaultValue={editingProduct?.sku} placeholder="ERP-SYNC-ID" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-xs font-mono font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" />
                                     </div>
-                                    <div className="md:col-span-2 space-y-6">
+                                    <div className="md:col-span-2 space-y-8">
+                                        <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-subtle)] space-y-4">
+                                            <h4 className="text-[10px] font-mono font-black uppercase tracking-widest text-[var(--accent-primary)] flex items-center gap-2">
+                                                <Eye size={12} /> Visibilidade do Produto
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <label className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
+                                                    <input type="checkbox" name="show_in_showroom" defaultChecked={editingProduct?.show_in_showroom ?? false} className="w-5 h-5 rounded border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]" />
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-black uppercase">Showroom</span>
+                                                        <span className="text-[8px] text-[var(--text-muted)] uppercase">Vitrine Destaque</span>
+                                                    </div>
+                                                </label>
+                                                <label className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
+                                                    <input type="checkbox" name="show_in_catalog" defaultChecked={editingProduct?.show_in_catalog ?? true} className="w-5 h-5 rounded border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]" />
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-black uppercase">Catálogo</span>
+                                                        <span className="text-[8px] text-[var(--text-muted)] uppercase">Página de Produtos</span>
+                                                    </div>
+                                                </label>
+                                                <label className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
+                                                    <input type="checkbox" name="show_in_pcbuilder" defaultChecked={editingProduct?.show_in_pcbuilder ?? false} className="w-5 h-5 rounded border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]" />
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-black uppercase">PC Builder</span>
+                                                        <span className="text-[8px] text-[var(--text-muted)] uppercase">Montagem de PC</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Upload de Imagens</label>
+                                            <div className="flex items-center justify-center w-full">
+                                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[var(--border-subtle)] rounded-2xl cursor-pointer bg-[var(--bg-primary)] hover:bg-[var(--bg-elevated)] transition-all group/upload">
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                        <Plus className="w-8 h-8 text-[var(--text-muted)] group-hover/upload:text-[var(--accent-primary)] transition-colors" />
+                                                        <p className="mt-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)]">Upload Local (Supabase Storage)</p>
+                                                    </div>
+                                                    <input type="file" multiple accept="image/*" className="hidden" 
+                                                        onChange={async (e) => {
+                                                            const files = Array.from(e.target.files || []);
+                                                            if (files.length === 0) return;
+                                                            
+                                                            setLoading(true);
+                                                            const urls = [...previewUrls];
+                                                            
+                                                            for (const file of files) {
+                                                                const fileExt = file.name.split('.').pop();
+                                                                const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+                                                                const filePath = `${fileName}`;
+                                                                
+                                                                const { error: uploadError, data } = await supabase.storage
+                                                                    .from('products')
+                                                                    .upload(filePath, file);
+                                                                
+                                                                if (uploadError) {
+                                                                    alert("Erro no upload: " + uploadError.message);
+                                                                    continue;
+                                                                }
+                                                                
+                                                                const { data: { publicUrl } } = supabase.storage
+                                                                    .from('products')
+                                                                    .getPublicUrl(filePath);
+                                                                
+                                                                urls.push(publicUrl);
+                                                            }
+                                                            
+                                                            setPreviewUrls(urls);
+                                                            setLoading(false);
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Especificações (JSON)</label>
                                             <textarea name="specs" defaultValue={editingProduct?.specs ? JSON.stringify(editingProduct.specs) : ''} placeholder='{"key": "value"}' className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 focus:border-[var(--accent-primary)]/50 outline-none h-32 font-mono text-xs font-bold leading-relaxed transition-all" />
@@ -1337,7 +1414,7 @@ export default function AdminDashboard() {
                                             <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">URLs das Imagens (uma por linha)</label>
                                             <textarea
                                                 name="image_urls"
-                                                defaultValue={editingProduct?.image_urls?.join('\n') || ''}
+                                                value={previewUrls.join('\n')}
                                                 onChange={(e) => {
                                                     const urls = e.target.value.split('\n').filter(url => url.trim() !== '');
                                                     setPreviewUrls(urls);

@@ -60,9 +60,10 @@ export default function PCBuilder() {
     if (!slot) return [];
 
     return products.filter(p => {
+      const isVisible = p.show_in_pcbuilder;
       const inCategory = slot.categories.includes(p.category);
       const hasKeyword = slot.keywords.some(k => p.name.toLowerCase().includes(k));
-      return inCategory && hasKeyword && (p.stock_quantity ?? 0) > 0;
+      return isVisible && inCategory && hasKeyword && (p.stock_quantity ?? 0) > 0;
     }).sort((a, b) => a.price - b.price);
   }, [activeSlot, products]);
 

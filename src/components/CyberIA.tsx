@@ -28,6 +28,7 @@ export default function CyberIA() {
     const [loading, setLoading] = useState(false);
     const { voucherCode } = useVoucherSession();
     const [productsString, setProductsString] = useState('');
+    const [summarizing, setSummarizing] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -142,9 +143,30 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
         setLoading(false);
     };
 
-    const handleDirectWhatsApp = (aiContent: string) => {
-        const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\nAssunto: ${aiContent.slice(0, 150)}...`;
-        openWhatsApp(text);
+    const handleDirectWhatsApp = async () => {
+        setSummarizing(true);
+        try {
+            const lastMessages = messages.slice(-8);
+            const summaryContext = `Abaixo está uma conversa entre um cliente e a Cyber IA. 
+            Extraia SOMENTE o objetivo principal do cliente (ex: "Conserto de tela de iPhone" ou "Orçamento de PC Gamer") em uma frase curta de no máximo 80 caracteres.
+            Seja direto e não adicione saudações.
+            
+            Conversa:
+            ${lastMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'IA'}: ${m.content}`).join('\n')}
+            
+            Objetivo em uma linha:`;
+            
+            const rawSummary = await getGeminiResponse(summaryContext);
+            const summary = rawSummary.trim().replace(/^Objetivo:\s*/i, '').replace(/["']/g, '');
+            
+            const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\n*Assunto:* ${summary}\n\n*Voucher:* ${voucherCode || 'N/A'}`;
+            openWhatsApp(text);
+        } catch (e) {
+            console.error("Erro ao resumir conversa para WA", e);
+            openWhatsApp(`Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\nMeu voucher: *${voucherCode || 'N/A'}*`);
+        } finally {
+            setSummarizing(false);
+        }
     };
 
     const renderContent = (content: string) => {
@@ -213,11 +235,16 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                                         {msg.role === 'ai' && (msg.content.toLowerCase().includes('whatsapp') || msg.content.toLowerCase().includes('chama no')) && (
                                             <div className="mt-4 pt-4 border-t border-zinc-700/30">
                                                 <button 
-                                                    onClick={() => handleDirectWhatsApp(msg.content)}
-                                                    className="inline-flex items-center gap-2 bg-white text-zinc-950 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg border border-zinc-200"
+                                                    onClick={() => handleDirectWhatsApp()}
+                                                    disabled={summarizing}
+                                                    className="inline-flex items-center gap-2 bg-white text-zinc-950 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg border border-zinc-200 disabled:opacity-50"
                                                 >
-                                                    <Sparkles size={12} fill="currentColor" />
-                                                    Gerar Voucher & Chamar WhatsApp
+                                                    {summarizing ? (
+                                                        <Loader2 size={12} className="animate-spin" />
+                                                    ) : (
+                                                        <Sparkles size={12} fill="currentColor" />
+                                                    )}
+                                                    {summarizing ? 'Resumindo...' : 'Gerar Voucher & Chamar WhatsApp'}
                                                 </button>
                                             </div>
                                         )}

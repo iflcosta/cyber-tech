@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Laptop, Monitor, Zap, AlertTriangle, Wifi, Gauge, Ticket } from "lucide-react";
 import { generateVoucherCode } from "@/lib/voucher";
 import { trackLead } from "@/lib/leads";
+import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type DeviceType = "notebook" | "desktop";
@@ -473,17 +474,13 @@ export default function CalculadoraWizard() {
                     Agendar Avaliação com Voucher
                   </motion.a>
 
-                  <motion.a
-                    href={buildWALink(state.device, state.symptom, state.age, "buy", leadName, voucher!)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center justify-center gap-3 w-full py-4 border border-white/15 text-slate-300 font-display font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-white/5 hover:border-white/30 transition-all"
+                  <Link
+                    href="/#showroom"
+                    className="flex items-center justify-center gap-3 w-full py-4 border border-white/15 text-slate-300 font-display font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-white/5 hover:border-white/30 transition-all font-display"
                   >
                     <Zap size={18} />
                     Ver Configurações Novas
-                  </motion.a>
+                  </Link>
 
                   <button onClick={reset} className="block w-full text-xs font-mono text-slate-600 hover:text-slate-400 transition-colors mt-1 uppercase tracking-widest text-center">
                     ↺ Refazer o diagnóstico
