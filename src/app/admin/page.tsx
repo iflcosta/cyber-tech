@@ -730,7 +730,7 @@ export default function AdminDashboard() {
                                                         R$ {totalTecnico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                                     </div>
                                                     <div className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-40">
-                                                        Fluxo de pagamento de parceiro externo
+                                                        Fluxo de pagamento de técnico parceiro
                                                     </div>
                                                 </div>
                                             </div>
