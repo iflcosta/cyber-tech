@@ -148,7 +148,7 @@ export default function Header() {
                             <Clock size={20} className={statusColors[storeStatus.status]} />
                             <div className="flex flex-col">
                                 <span className={`text-[16px] font-bold ${statusColors[storeStatus.status]}`}>{storeStatus.status === 'closed' ? 'FECHADO' : 'ABERTO'}</span>
-                                <span className="text-[14px] text-[var(--text-secondary)] font-bold uppercase">{storeStatus.message}</span>
+                                <span className="text-[14px] text-[var(--text-secondary)] font-bold uppercase">{storeStatus.message.split('·').slice(1).join('·').trim()}</span>
                             </div>
                         </div>
 
