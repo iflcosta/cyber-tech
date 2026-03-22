@@ -4,17 +4,28 @@ import { NextRequest } from 'next/server';
 const BG = '#0d0d11';
 const RED = '#E53935';
 
+async function loadFonts() {
+    try {
+        const { readFile } = await import('fs/promises');
+        const { join } = await import('path');
+        const [r, j] = await Promise.all([
+            readFile(join(process.cwd(), 'public/fonts/Rajdhani-Bold.woff2')),
+            readFile(join(process.cwd(), 'public/fonts/JetBrainsMono-Regular.woff2')),
+        ]);
+        return { rajdhaniBold: r.buffer as ArrayBuffer, jetbrainsMono: j.buffer as ArrayBuffer };
+    } catch {
+        return { rajdhaniBold: null, jetbrainsMono: null };
+    }
+}
+
 export async function GET(req: NextRequest) {
     try {
-        const { searchParams, origin } = new URL(req.url);
+        const { searchParams } = new URL(req.url);
         const title = searchParams.get('title');
         const price = searchParams.get('price');
         const category = searchParams.get('category');
 
-        const [rajdhaniBold, jetbrainsMono] = await Promise.all([
-            fetch(`${origin}/fonts/Rajdhani-Bold.woff2`).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null),
-            fetch(`${origin}/fonts/JetBrainsMono-Regular.woff2`).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null),
-        ]);
+        const { rajdhaniBold, jetbrainsMono } = await loadFonts();
 
         const fonts: any[] = [];
         if (rajdhaniBold) fonts.push({ name: 'Rajdhani', data: rajdhaniBold, weight: 700 });
