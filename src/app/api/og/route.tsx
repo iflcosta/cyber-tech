@@ -24,16 +24,17 @@ export async function GET(req: NextRequest) {
         const price = searchParams.get('price');
         const category = searchParams.get('category');
 
-        const [rajdhaniBold, dmSansBold] = await Promise.all([
+        const [rajdhaniBold, jetbrainsMono] = await Promise.all([
             loadFont('Rajdhani', 700),
-            loadFont('DM+Sans', 700),
+            loadFont('JetBrains+Mono', 400),
         ]);
 
         const fonts: any[] = [];
         if (rajdhaniBold) fonts.push({ name: 'Rajdhani', data: rajdhaniBold, weight: 700 });
-        if (dmSansBold) fonts.push({ name: 'DM Sans', data: dmSansBold, weight: 700 });
+        if (jetbrainsMono) fonts.push({ name: 'JetBrains Mono', data: jetbrainsMono, weight: 400 });
 
-        const headingFont = rajdhaniBold ? 'Rajdhani' : dmSansBold ? 'DM Sans' : 'sans-serif';
+        const headingFont = rajdhaniBold ? 'Rajdhani' : 'sans-serif';
+        const monoFont = jetbrainsMono ? 'JetBrains Mono' : 'monospace';
 
         // ── PRODUCT MODE ────────────────────────────────────────────────────────
         if (title) {
@@ -106,11 +107,11 @@ export async function GET(req: NextRequest) {
                             cyber
                         </span>
                         <span style={{
-                            fontFamily: 'monospace',
+                            fontFamily: monoFont,
                             fontWeight: 400,
-                            fontSize: 36,
-                            letterSpacing: '0.28em',
-                            color: 'rgba(255,255,255,0.38)',
+                            fontSize: 34,
+                            letterSpacing: '0.15em',
+                            color: '#8A8A9A',
                         }}>
                             informática
                         </span>
