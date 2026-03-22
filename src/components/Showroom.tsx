@@ -100,8 +100,20 @@ function ShowroomContent() {
   const maxIndex = Math.max(0, filteredProducts.length - visibleCount);
   const xOffset = -(carouselIndex * (cardWidth + GAP));
 
-  const prev = () => setCarouselIndex(i => Math.max(0, i - 1));
-  const next = () => setCarouselIndex(i => Math.min(maxIndex, i + 1));
+  const prev = () => setCarouselIndex(i => i === 0 ? maxIndex : i - 1);
+  const next = () => setCarouselIndex(i => i >= maxIndex ? 0 : i + 1);
+
+  // Keyboard navigation (ArrowLeft / ArrowRight)
+  useEffect(() => {
+    if (maxIndex === 0) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (selectedGallery) return; // lightbox usa as setas também
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [maxIndex, selectedGallery, carouselIndex]);
 
   return (
     <div className="container mx-auto px-4">
@@ -198,8 +210,7 @@ function ShowroomContent() {
             {/* Left arrow */}
             <button
               onClick={prev}
-              disabled={carouselIndex === 0}
-              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 p-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[2px] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all disabled:opacity-20 disabled:pointer-events-none"
+              className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 p-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[2px] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all"
               aria-label="Anterior"
             >
               <ChevronLeft size={20} />
