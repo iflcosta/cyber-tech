@@ -57,7 +57,7 @@ export default function Logo({ className = "" }: { className?: string }) {
           fill="#E2E2E7"
           fontFamily="Rajdhani, Inter, system-ui, -apple-system, sans-serif"
           fontWeight="700"
-          fontSize="36"
+          fontSize="40"
           letterSpacing="-0.01em"
           style={{ textTransform: 'lowercase' }}
         >
@@ -65,11 +65,11 @@ export default function Logo({ className = "" }: { className?: string }) {
         </text>
         {/* 'informática' - Monospace Engineering Subtitle */}
         <text 
-          y="18"
+          y="20"
           fill="#8A8A9A"
           fontFamily="JetBrains Mono, Inter, monospace"
           fontWeight="400"
-          fontSize="12.5"
+          fontSize="14"
           letterSpacing="0.15em"
           style={{ textTransform: 'lowercase' }}
         >

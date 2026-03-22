@@ -1,4 +1,3 @@
-"use client";
 import Header from "@/components/Header";
 import Maintenance from "@/components/Maintenance";
 import CyberIA from "@/components/CyberIA";

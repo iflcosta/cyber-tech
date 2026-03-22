@@ -72,7 +72,7 @@ export default function Header() {
         <header className="fixed top-0 w-full z-[100] bg-[#0A0A0C]/80 backdrop-blur-md border-b border-white/5">
             <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
                 <Link href="/" onClick={scrollToTop} className="flex items-center">
-                    <Logo className="h-10 md:h-12 w-auto" />
+                    <Logo className="h-11 md:h-14 w-auto" />
                 </Link>
 
                 {/* Desktop Nav */}
