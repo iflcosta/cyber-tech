@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.1)', paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 10, backgroundColor: 'rgba(13,13,17,0.8)', position: 'relative' }}>
                                     <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: RED, display: 'flex' }} />
                                     <span style={{ fontFamily: M, fontSize: 10, color: RED, opacity: 0.8 }}>// {tag.id}</span>
-                                    <span style={{ fontFamily: M, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em' }}>{tag.label}</span>
+                                    <span style={{ fontFamily: M, fontSize: 12, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.2em', whiteSpace: 'nowrap' }}>{tag.label}</span>
                                 </div>
                             ))}
                         </div>
