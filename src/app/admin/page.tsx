@@ -42,6 +42,8 @@ export default function AdminDashboard() {
         ecosystemCaptured: true,
         isAssembly: false,
         executor: 'owner', // 'owner', 'iago', 'partner'
+        customCommissionType: 'percent' as 'percent' | 'value',
+        customCommissionAmount: '',
         consumedProducts: [] as {product_id: string, quantity: number, name?: string, current_stock?: number}[]
     });
 
@@ -205,12 +207,14 @@ export default function AdminDashboard() {
             if (isCelular && commissionForm.executor === 'partner') {
                 // Manutenção celular + Jefferson: 50% do lucro líquido
                 techCommission = (val - cost) * 0.5;
-            } else if (commissionForm.executor === 'iago') {
-                // Montagem PC/notebook + Iago: +3% para Iago
-                assemblyRate = 0.03;
-            } else if (commissionForm.executor === 'partner') {
-                // Montagem PC/notebook + Jefferson: +3% para Jefferson
-                techCommission = val * 0.03;
+            } else if (commissionForm.executor === 'iago' || commissionForm.executor === 'partner') {
+                // PC/notebook + Iago ou Jefferson: valor personalizado (R$ ou %)
+                const customAmt = parseFloat(commissionForm.customCommissionAmount) || 0;
+                const customComm = commissionForm.customCommissionType === 'percent'
+                    ? val * (customAmt / 100)
+                    : customAmt;
+                if (commissionForm.executor === 'iago') assemblyRate = customAmt > 0 ? customComm / val : 0.03;
+                else techCommission = customAmt > 0 ? customComm : val * 0.03;
             }
         }
 
@@ -2441,6 +2445,37 @@ export default function AdminDashboard() {
                                     <div className="text-[9px] font-mono text-purple-400 bg-purple-400/5 border border-purple-400/20 rounded-lg px-3 py-2">
                                         Jefferson recebe: R$ {((parseFloat(commissionForm.finalValue) - (parseFloat(commissionForm.costValue) || 0)) * 0.5).toFixed(2)}
                                         <span className="opacity-60 ml-1">(50% de R$ {(parseFloat(commissionForm.finalValue) - (parseFloat(commissionForm.costValue) || 0)).toFixed(2)} líquido)</span>
+                                    </div>
+                                )}
+                                {!isCelularLead(selectedLeadForCommission) && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner') && (
+                                    <div className="space-y-2 pt-1">
+                                        <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Comissão personalizada</div>
+                                        <div className="flex gap-2">
+                                            <button type="button"
+                                                onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'percent' })}
+                                                className={`px-3 py-1.5 text-[9px] font-mono font-black uppercase rounded-lg border transition-all ${commissionForm.customCommissionType === 'percent' ? 'bg-[var(--accent-primary)] text-black border-[var(--accent-primary)]' : 'bg-transparent text-[var(--text-muted)] border-[var(--border-subtle)]'}`}
+                                            >%</button>
+                                            <button type="button"
+                                                onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'value' })}
+                                                className={`px-3 py-1.5 text-[9px] font-mono font-black uppercase rounded-lg border transition-all ${commissionForm.customCommissionType === 'value' ? 'bg-[var(--accent-primary)] text-black border-[var(--accent-primary)]' : 'bg-transparent text-[var(--text-muted)] border-[var(--border-subtle)]'}`}
+                                            >R$</button>
+                                            <input
+                                                type="number" step="0.01" min="0"
+                                                placeholder={commissionForm.customCommissionType === 'percent' ? 'Ex: 3' : 'Ex: 150.00'}
+                                                value={commissionForm.customCommissionAmount}
+                                                onChange={(e) => setCommissionForm({ ...commissionForm, customCommissionAmount: e.target.value })}
+                                                className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)]/50"
+                                            />
+                                        </div>
+                                        {commissionForm.customCommissionAmount && parseFloat(commissionForm.finalValue) > 0 && (
+                                            <div className="text-[9px] font-mono text-[var(--accent-primary)] opacity-70">
+                                                = R$ {(commissionForm.customCommissionType === 'percent'
+                                                    ? parseFloat(commissionForm.finalValue) * (parseFloat(commissionForm.customCommissionAmount) / 100)
+                                                    : parseFloat(commissionForm.customCommissionAmount)
+                                                ).toFixed(2)}
+                                            </div>
+                                        )}
+                                        <p className="text-[8px] font-mono text-[var(--text-muted)] opacity-60">Deixe vazio para usar padrão de 3%.</p>
                                     </div>
                                 )}
                             </div>
