@@ -26,10 +26,10 @@ export async function trackLead(data: any) {
 
     const { error } = await supabase
       .from('leads')
-      .insert(cleanData);
+      .upsert(cleanData, { onConflict: 'voucher_code', ignoreDuplicates: false });
 
     if (error) throw error;
-    console.log('[LEADS] Lead geral atualizado/capturado com sucesso! Voucher:', voucherCode);
+    console.log('[LEADS] Lead capturado/atualizado com sucesso! Voucher:', voucherCode);
     return voucherCode;
   } catch (error) {
     console.error('[LEADS] Erro ao rastrear lead:', error);

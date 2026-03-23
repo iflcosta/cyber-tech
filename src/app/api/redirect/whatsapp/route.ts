@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateVoucherCode } from '@/lib/voucher'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import { utmToVoucherSource } from '@/lib/tracking/sources'
 
 /**
  * GET /api/redirect/whatsapp?utm_source=instagram&service=celular&utm_campaign=reparo
  *
  * Entry point for Instagram / Facebook / Google Ads links.
- * Generates a voucher code locally (no DB insert) and lands the user on the
- * site so useWhatsAppLead can set the session and insert the lead correctly
- * into the leads table when the user clicks WhatsApp.
+ * Registers the click as a lead immediately (no name/phone yet) so the
+ * voucher appears in the admin panel even if the user never clicks WhatsApp.
+ * When the user does click WhatsApp on the site, trackLead upserts by
+ * voucher_code and fills in name, phone, and intent.
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
@@ -15,7 +18,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const serviceKey  = searchParams.get('service') ?? 'outro'
   const utmCampaign = searchParams.get('utm_campaign')
 
-  const code = generateVoucherCode()
+  const code   = generateVoucherCode()
+  const source = utmToVoucherSource(utmSource)
+
+  // Insert lead immediately on ad click — upsert is safe if somehow duplicate
+  supabaseAdmin.from('leads').upsert({
+    voucher_code:     code,
+    client_name:      'Clique no Anúncio',
+    interest_type:    serviceKey === 'reparo' || serviceKey === 'celular' || serviceKey === 'notebook' || serviceKey === 'desktop' ? 'manutencao' : 'contato',
+    marketing_source: source,
+    status:           'pending',
+    utm_parameters:   { source: utmSource, campaign: utmCampaign },
+  }, { onConflict: 'voucher_code', ignoreDuplicates: true })
+    .then(({ error }) => { if (error) console.error('[REDIRECT/WA] Lead insert error:', error) })
 
   const siteBase = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cyberinformatica.tech'
   const params = new URLSearchParams()
