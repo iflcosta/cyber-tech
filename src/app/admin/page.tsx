@@ -2176,19 +2176,11 @@ export default function AdminDashboard() {
                                 </label>
 
                                 {pdvForm.isAssembly && (
-                                    <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
+                                    <div className="border-t border-[var(--border-subtle)] pt-4 flex items-center gap-3">
                                         <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Montagem</div>
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {[
-                                                { value: 'owner', label: 'Felipe (Dono)', desc: 'Sem comissão extra', color: '' },
-                                                { value: 'iago', label: 'Iago (Marketing)', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
-                                                { value: 'partner', label: 'Jefferson (Técnico)', desc: '+3% comissão', color: 'text-[var(--accent-primary)]' },
-                                            ].map(opt => (
-                                                <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
-                                                    <input type="radio" name="pdvExecutor" value={opt.value} checked={pdvForm.executor === opt.value} onChange={() => setPdvForm({ ...pdvForm, executor: opt.value })} className="w-4 h-4 accent-[var(--accent-primary)]" />
-                                                    <div className={`text-xs font-black uppercase tracking-widest ${opt.color}`}>{opt.label} <span className="font-mono text-[8px] opacity-60 ml-1">{opt.desc}</span></div>
-                                                </label>
-                                            ))}
+                                        <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">
+                                            {currentExecutor === 'iago' ? 'Iago (Marketing)' : currentExecutor === 'partner' ? 'Jefferson (Técnico)' : 'Felipe (Dono)'}
+                                            <span className="ml-2 font-mono text-[8px] opacity-60">+3%</span>
                                         </div>
                                     </div>
                                 )}
@@ -2399,26 +2391,11 @@ export default function AdminDashboard() {
                             )}
 
                             {commissionForm.isAssembly && (
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3">
-                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Quem realizou a montagem?</div>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {[
-                                        { value: 'owner', label: 'Felipe (Dono)', badge: null, color: '' },
-                                        { value: 'iago', label: 'Iago (Marketing)', badge: '+3% Montagem', color: 'text-[var(--accent-primary)]' },
-                                        { value: 'partner', label: 'Jefferson (Técnico)', badge: '+3% Montagem', color: 'text-purple-400' },
-                                    ].map(opt => (
-                                        <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
-                                            <input type="radio" name="assemblyExecutor" value={opt.value}
-                                                checked={commissionForm.executor === opt.value}
-                                                onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                                className="w-4 h-4 accent-[var(--accent-primary)]"
-                                            />
-                                            <div className={`text-xs font-black uppercase tracking-widest ${opt.color}`}>
-                                                {opt.label}
-                                                {opt.badge && <span className="ml-2 font-mono text-[8px] opacity-60">{opt.badge}</span>}
-                                            </div>
-                                        </label>
-                                    ))}
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 flex items-center gap-3">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Montagem</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">
+                                    {currentExecutor === 'iago' ? 'Iago (Marketing)' : currentExecutor === 'partner' ? 'Jefferson (Técnico)' : 'Felipe (Dono)'}
+                                    <span className="ml-2 font-mono text-[8px] opacity-60">+3%</span>
                                 </div>
                             </div>
                             )}
