@@ -1591,21 +1591,24 @@ export default function AdminDashboard() {
                                             </h4>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <label className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
-                                                    <input type="checkbox" name="show_in_showroom" defaultChecked={editingProduct?.show_in_showroom ?? false} className="w-5 h-5 rounded border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]" />
+                                                    <input type="checkbox" name="show_in_showroom" defaultChecked={editingProduct?.show_in_showroom ?? false} className="w-5 h-5 rounded accent-blue-500" />
+                                                    <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] shrink-0" />
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-black uppercase">Showroom</span>
                                                         <span className="text-[8px] text-[var(--text-muted)] uppercase">Vitrine Destaque</span>
                                                     </div>
                                                 </label>
                                                 <label className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
-                                                    <input type="checkbox" name="show_in_catalog" defaultChecked={editingProduct?.show_in_catalog ?? true} className="w-5 h-5 rounded border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]" />
+                                                    <input type="checkbox" name="show_in_catalog" defaultChecked={editingProduct?.show_in_catalog ?? true} className="w-5 h-5 rounded accent-green-500" />
+                                                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)] shrink-0" />
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-black uppercase">Catálogo</span>
                                                         <span className="text-[8px] text-[var(--text-muted)] uppercase">Página de Produtos</span>
                                                     </div>
                                                 </label>
                                                 <label className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
-                                                    <input type="checkbox" name="show_in_pcbuilder" defaultChecked={editingProduct?.show_in_pcbuilder ?? false} className="w-5 h-5 rounded border-[var(--border-subtle)] bg-[var(--bg-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]" />
+                                                    <input type="checkbox" name="show_in_pcbuilder" defaultChecked={editingProduct?.show_in_pcbuilder ?? false} className="w-5 h-5 rounded accent-purple-500" />
+                                                    <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)] shrink-0" />
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-black uppercase">PC Builder</span>
                                                         <span className="text-[8px] text-[var(--text-muted)] uppercase">Montagem de PC</span>
