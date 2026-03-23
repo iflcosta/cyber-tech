@@ -33,6 +33,14 @@ export default function AdminDashboard() {
     const generateSlug = (name: string) =>
         name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+    // Maps utm_parameters.ref to commission executor — affiliate links auto-attribute commission
+    const getExecutorFromLead = (lead: any): string => {
+        const ref = (lead?.utm_parameters as any)?.ref;
+        if (ref === 'iago') return 'iago';
+        if (ref === 'jefferson') return 'partner';
+        return 'owner';
+    };
+
     // Modal de Comissões
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [selectedLeadForCommission, setSelectedLeadForCommission] = useState<any>(null);
@@ -255,7 +263,7 @@ export default function AdminDashboard() {
             costValue: '',
             ecosystemCaptured: !!lead.voucher_code,
             isAssembly: false,
-            executor: type === 'manutencao' ? 'partner' : 'owner',
+            executor: type === 'manutencao' ? 'partner' : getExecutorFromLead(lead),
             consumedProducts: []
         });
         setShowCommissionModal(true);
@@ -347,7 +355,7 @@ export default function AdminDashboard() {
                         costValue: '',
                         ecosystemCaptured: true,
                         isAssembly: false,
-                        executor: 'owner',
+                        executor: getExecutorFromLead(lead),
                         consumedProducts: autoProducts
                     });
                     setShowCommissionModal(true);
@@ -1141,7 +1149,7 @@ export default function AdminDashboard() {
                                                                 costValue: '',
                                                                 ecosystemCaptured: true,
                                                                 isAssembly: false,
-                                                                executor: 'owner',
+                                                                executor: getExecutorFromLead(lead),
                                                                 consumedProducts: autoProducts
                                                             });
                                                             setShowCommissionModal(true);

@@ -17,26 +17,28 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const utmSource   = searchParams.get('utm_source')
   const serviceKey  = searchParams.get('service') ?? 'outro'
   const utmCampaign = searchParams.get('utm_campaign')
+  const ref         = searchParams.get('ref') // e.g. 'iago', 'felipe'
 
   const code   = generateVoucherCode()
   const source = utmToVoucherSource(utmSource)
 
-  // Insert lead immediately on ad click — upsert is safe if somehow duplicate
+  // Insert lead immediately on ad click
   supabaseAdmin.from('leads').upsert({
     voucher_code:     code,
     client_name:      'Clique no Anúncio',
-    interest_type:    serviceKey === 'reparo' || serviceKey === 'celular' || serviceKey === 'notebook' || serviceKey === 'desktop' ? 'manutencao' : 'contato',
+    interest_type:    ['reparo','celular','notebook','desktop'].includes(serviceKey) ? 'manutencao' : 'contato',
     marketing_source: source,
     status:           'pending',
-    utm_parameters:   { source: utmSource, campaign: utmCampaign },
+    utm_parameters:   { source: utmSource, campaign: utmCampaign, ref },
   }, { onConflict: 'voucher_code', ignoreDuplicates: true })
     .then(({ error }) => { if (error) console.error('[REDIRECT/WA] Lead insert error:', error) })
 
   const siteBase = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cyberinformatica.tech'
   const params = new URLSearchParams()
   params.set('voucher', code)
-  if (utmSource) params.set('utm_source', utmSource)
+  if (utmSource)   params.set('utm_source', utmSource)
   if (utmCampaign) params.set('utm_campaign', utmCampaign)
+  if (ref)         params.set('ref', ref)
   params.set('service', serviceKey)
 
   return NextResponse.redirect(`${siteBase}/?${params.toString()}`, { status: 302 })

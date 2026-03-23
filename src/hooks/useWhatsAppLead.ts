@@ -60,13 +60,17 @@ export function useWhatsAppLead({
 }: UseWhatsAppLeadParams = {}) {
   const [isLoading, setIsLoading] = useState(false)
 
-  // Intercepta ?voucher= na URL e salva na sessão.
+  // Intercepta ?voucher= e ?ref= na URL e salva na sessão.
   useEffect(() => {
     if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search)
         const utmVoucher = params.get('voucher')
         if (utmVoucher && utmVoucher.startsWith('BPC-')) {
             setSessionVoucher(utmVoucher)
+        }
+        const ref = params.get('ref')
+        if (ref) {
+            sessionStorage.setItem('bpc_ref', ref)
         }
     }
   }, [])
@@ -79,13 +83,17 @@ export function useWhatsAppLead({
       const voucher = await getOrCreateSessionVoucher()
 
       try {
+        const ref = typeof window !== 'undefined' ? sessionStorage.getItem('bpc_ref') : null
+        const utmSource = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') : null
         await trackLead({
-            voucher_code: voucher,
-            intent_type: 'duvida_tecnica',
-            description: overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
-            interest_type: serviceType?.includes('reparo') ? 'manutencao' : serviceType === 'montagem_pc' ? 'pc_build' : 'contato',
-            client_name: 'Lead Direto (WhatsApp)',
-            whatsapp: '00000000000' 
+            voucher_code:     voucher,
+            intent_type:      'duvida_tecnica',
+            description:      overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
+            interest_type:    serviceType?.includes('reparo') ? 'manutencao' : serviceType === 'montagem_pc' ? 'pc_build' : 'contato',
+            client_name:      'Lead Direto (WhatsApp)',
+            whatsapp:         '00000000000',
+            marketing_source: utmSource || undefined,
+            utm_parameters:   ref ? { ref } : undefined,
         });
       } catch(e) { }
 
