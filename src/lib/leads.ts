@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
+import type { TrackLeadParams } from '@/types/lead';
 
-export async function trackLead(data: any) {
+export async function trackLead(data: TrackLeadParams) {
   try {
     const voucherCode = data.voucher_code || `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     
@@ -19,8 +20,8 @@ export async function trackLead(data: any) {
 
     // Remove keys that are strictly null to allow Supabase defaults or avoid overriding existing data with null
     Object.keys(cleanData).forEach(key => {
-        if ((cleanData as any)[key] === null) {
-            delete (cleanData as any)[key];
+        if (cleanData[key as keyof typeof cleanData] === null) {
+            delete cleanData[key as keyof typeof cleanData];
         }
     });
 

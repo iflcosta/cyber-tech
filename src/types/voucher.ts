@@ -1,4 +1,14 @@
-export type VoucherStatus = 'pending' | 'in_progress' | 'delivered' | 'cancelled'
+export type VoucherStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'analysis'
+  | 'parts'
+  | 'maintenance'
+  | 'testing'
+  | 'ready'
+  | 'converted'
+  | 'delivered'
+  | 'cancelled'
 
 export type VoucherSource =
   | 'whatsapp_site'

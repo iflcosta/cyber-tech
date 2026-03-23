@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createVoucher } from '@/lib/voucher'
+import { checkRateLimit } from '@/lib/rate-limit'
 import type { VoucherSource } from '@/types/voucher'
 
 // ---------------------------------------------------------------------------
@@ -30,27 +31,6 @@ export async function OPTIONS(req: NextRequest): Promise<NextResponse> {
 }
 
 // ---------------------------------------------------------------------------
-// Rate limiting — in-memory per IP
-// ---------------------------------------------------------------------------
-
-interface RateLimitEntry { count: number; resetAt: number }
-const rateLimitMap = new Map<string, RateLimitEntry>()
-const RATE_LIMIT_MAX = 10
-const RATE_LIMIT_WINDOW_MS = 60_000
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-    return false
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return true
-  entry.count++
-  return false
-}
-
-// ---------------------------------------------------------------------------
 // Valid sources
 // ---------------------------------------------------------------------------
 
@@ -76,7 +56,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     req.headers.get('x-real-ip') ??
     'unknown'
 
-  if (isRateLimited(ip)) {
+  const rl = await checkRateLimit(ip, { max: 10, windowMs: 60_000, prefix: 'rl:voucher' })
+  if (rl.limited) {
     return NextResponse.json(
       { error: 'Rate limit exceeded. Try again in 1 minute.' },
       { status: 429, headers: cors }

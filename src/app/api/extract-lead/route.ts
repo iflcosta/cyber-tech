@@ -1,11 +1,23 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { nanoid } from 'nanoid';
+import { checkRateLimit } from '@/lib/rate-limit';
+import type { ChatMessage } from '@/types/chat';
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+    const ip =
+        req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+        req.headers.get('x-real-ip') ??
+        'unknown'
+
+    const rl = await checkRateLimit(ip, { max: 5, windowMs: 60_000, prefix: 'rl:extract-lead' })
+    if (rl.limited) {
+        return NextResponse.json({ error: 'Rate limit exceeded. Try again in 1 minute.' }, { status: 429 });
+    }
+
     try {
         const { messages, source, session_voucher_code } = await req.json();
 
@@ -21,7 +33,7 @@ Extraia um objeto JSON com:
 - "description": Breve resumo do que o cliente quer.
 
 Histórico:
-${messages.map((m: any) => `${m.role}: ${m.content}`).join('\n')}`;
+${(messages as ChatMessage[]).map((m) => `${m.role}: ${m.content}`).join('\n')}`;
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const result = await model.generateContent(prompt);
