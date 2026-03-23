@@ -68,10 +68,19 @@ export default function AdminDashboard() {
     const [socialCardLead, setSocialCardLead] = useState<any>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
 
-    // Derives executor from the logged-in user's email
+    // Derives executor from the logged-in user's email (for order traceability)
     const currentExecutor = userEmail?.toLowerCase().includes('iago') ? 'iago'
         : userEmail?.toLowerCase().includes('jefferson') ? 'partner'
         : 'owner';
+
+    // Detects if a lead is a celular/smartphone maintenance
+    const isCelularLead = (lead: any) => {
+        const t = (lead?.interest_type || lead?.equipment_type || '').toLowerCase();
+        return t.includes('celular') || t.includes('smartphone') || t.includes('phone') || t.includes('mobile');
+    };
+
+    // Smart pre-selection of assembly executor based on lead type
+    const getAssemblyExecutor = (lead: any) => isCelularLead(lead) ? 'partner' : 'owner';
 
     const [sentimentAnalysis, setSentimentAnalysis] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -181,15 +190,29 @@ export default function AdminDashboard() {
         const digitalSources = ['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'];
         const isDigital = digitalSources.includes(selectedLeadForCommission.marketing_source?.toLowerCase());
         
-        // Ecossistema: 8% padrão, ou 5% se valor > 8000
+        // Marketing (Iago): 8% padrão, 5% se valor > 8000
         let baseRate = 0;
         if (commissionForm.ecosystemCaptured) {
             baseRate = val > 8000 ? 0.05 : 0.08;
         }
 
-        // Assembly: Iago (+3% vai para commission_value) ou Jefferson (+3% vai para comissão técnico)
-        const qualifiesForAssembly = commissionForm.isAssembly && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner');
-        let assemblyRate = (commissionForm.isAssembly && commissionForm.executor === 'iago') ? 0.03 : 0;
+        // Assembly commission
+        let assemblyRate = 0;
+        let techCommission = 0;
+        const isCelular = isCelularLead(selectedLeadForCommission);
+
+        if (commissionForm.isAssembly) {
+            if (isCelular && commissionForm.executor === 'partner') {
+                // Manutenção celular + Jefferson: 50% do lucro líquido
+                techCommission = (val - cost) * 0.5;
+            } else if (commissionForm.executor === 'iago') {
+                // Montagem PC/notebook + Iago: +3% para Iago
+                assemblyRate = 0.03;
+            } else if (commissionForm.executor === 'partner') {
+                // Montagem PC/notebook + Jefferson: +3% para Jefferson
+                techCommission = val * 0.03;
+            }
+        }
 
         const totalIagoEarnings = (val * baseRate) + (val * assemblyRate);
 
@@ -261,7 +284,7 @@ export default function AdminDashboard() {
             costValue: '',
             ecosystemCaptured: !!lead.voucher_code,
             isAssembly: false,
-            executor: type === 'manutencao' ? 'partner' : currentExecutor,
+            executor: getAssemblyExecutor({ ...lead, interest_type: type }),
             consumedProducts: []
         });
         setShowCommissionModal(true);
@@ -353,7 +376,7 @@ export default function AdminDashboard() {
                         costValue: '',
                         ecosystemCaptured: true,
                         isAssembly: false,
-                        executor: currentExecutor,
+                        executor: getAssemblyExecutor(lead),
                         consumedProducts: autoProducts
                     });
                     setShowCommissionModal(true);
@@ -1147,7 +1170,7 @@ export default function AdminDashboard() {
                                                                 costValue: '',
                                                                 ecosystemCaptured: true,
                                                                 isAssembly: false,
-                                                                executor: currentExecutor,
+                                                                executor: getAssemblyExecutor(lead),
                                                                 consumedProducts: autoProducts
                                                             });
                                                             setShowCommissionModal(true);
@@ -2339,7 +2362,7 @@ export default function AdminDashboard() {
                                         <div>
                                             <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Protocolo Digital Ativo</div>
                                             <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
-                                                Comissão Automatizada Aplicada: {parseFloat(commissionForm.finalValue) > 7500 ? '5% (>7.5k)' : '8% (Padrão)'}
+                                                Comissão Automatizada Aplicada: {parseFloat(commissionForm.finalValue) > 8000 ? '5% (>8k)' : '8% (Padrão)'}
                                             </div>
                                         </div>
                                     </div>
@@ -2357,7 +2380,7 @@ export default function AdminDashboard() {
                                             {commissionForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
                                         </div>
                                         <div>
-                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Bônus de Ecossistema (+5%)</div>
+                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Bônus de Ecossistema (8%/5%)</div>
                                             <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Protocolo de indicação de Lead manual/externo.</div>
                                         </div>
                                     </label>
@@ -2391,12 +2414,35 @@ export default function AdminDashboard() {
                             )}
 
                             {commissionForm.isAssembly && (
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 flex items-center gap-3">
-                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Montagem</div>
-                                <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">
-                                    {currentExecutor === 'iago' ? 'Iago (Marketing)' : currentExecutor === 'partner' ? 'Jefferson (Técnico)' : 'Felipe (Dono)'}
-                                    <span className="ml-2 font-mono text-[8px] opacity-60">+3%</span>
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">
+                                    {isCelularLead(selectedLeadForCommission) ? 'Técnico Responsável' : 'Executor da Montagem'}
                                 </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {[
+                                        { value: 'owner', label: 'Felipe (Dono)', desc: 'Sem comissão extra', color: '' },
+                                        { value: 'iago', label: 'Iago (Marketing)', desc: '+3%', color: 'text-[var(--accent-primary)]' },
+                                        { value: 'partner', label: 'Jefferson (Técnico)', desc: isCelularLead(selectedLeadForCommission) ? '50% lucro líquido' : '+3%', color: 'text-purple-400' },
+                                    ].map(opt => (
+                                        <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
+                                            <input type="radio" name="assemblyExecutor" value={opt.value}
+                                                checked={commissionForm.executor === opt.value}
+                                                onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
+                                                className="w-4 h-4 accent-[var(--accent-primary)]"
+                                            />
+                                            <div className={`text-xs font-black uppercase tracking-widest ${opt.color}`}>
+                                                {opt.label}
+                                                <span className="ml-2 font-mono text-[8px] opacity-60">{opt.desc}</span>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                                {isCelularLead(selectedLeadForCommission) && commissionForm.executor === 'partner' && parseFloat(commissionForm.finalValue) > 0 && (
+                                    <div className="text-[9px] font-mono text-purple-400 bg-purple-400/5 border border-purple-400/20 rounded-lg px-3 py-2">
+                                        Jefferson recebe: R$ {((parseFloat(commissionForm.finalValue) - (parseFloat(commissionForm.costValue) || 0)) * 0.5).toFixed(2)}
+                                        <span className="opacity-60 ml-1">(50% de R$ {(parseFloat(commissionForm.finalValue) - (parseFloat(commissionForm.costValue) || 0)).toFixed(2)} líquido)</span>
+                                    </div>
+                                )}
                             </div>
                             )}
 
