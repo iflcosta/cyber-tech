@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { X, Zap, ChevronLeft, ChevronRight, Loader2, Search, Filter, SlidersHorizontal, Package } from "lucide-react";
 import { getProducts } from "@/lib/products";
 import { ProductCard, Product } from "./ProductCard";
@@ -8,6 +8,64 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useLeadModal } from "@/contexts/LeadModalContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "./ui/Button";
+
+const CARD_W = 300; // px — largura fixa de cada card no carousel
+
+function CategoryCarousel({
+  products,
+  onOpenGallery,
+  onInterest,
+}: {
+  products: Product[];
+  onOpenGallery: (images: string[]) => void;
+  onInterest: (p: Product) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -(CARD_W + 24) : (CARD_W + 24), behavior: 'smooth' });
+  };
+
+  if (products.length <= 3) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {products.map(p => (
+          <ProductCard key={p.id} product={p} onOpenGallery={onOpenGallery} onInterest={() => onInterest(p)} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative group/carousel">
+      <button
+        onClick={() => scroll('left')}
+        className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-muted)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all shadow-md opacity-0 group-hover/carousel:opacity-100"
+      >
+        <ChevronLeft size={16} />
+      </button>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto pb-3 scroll-smooth"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {products.map(p => (
+          <div key={p.id} className="shrink-0" style={{ width: CARD_W }}>
+            <ProductCard product={p} onOpenGallery={onOpenGallery} onInterest={() => onInterest(p)} />
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={() => scroll('right')}
+        className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-muted)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all shadow-md opacity-0 group-hover/carousel:opacity-100"
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+}
 
 const CATEGORIES = [
   { id: "all", label: "Tudo" },
@@ -133,14 +191,14 @@ function CatalogContent() {
           </div>
 
           <div className="p-6 bg-gradient-to-br from-[var(--bg-elevated)] to-transparent border border-[var(--border-subtle)] rounded-2xl relative overflow-hidden">
-             <div className="absolute -right-4 -bottom-4 opacity-5 rotate-12">
-               <Zap size={100} />
+             <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12">
+               <Zap size={100} className="text-[var(--accent-primary)]" />
              </div>
-             <h4 className="text-[11px] font-display font-bold text-white uppercase tracking-widest mb-3">Consultoria Premium</h4>
-             <p className="text-[9px] text-[var(--text-muted)] font-mono leading-relaxed uppercase mb-4">
-               Não encontrou o que precisava? Nossa equipe monta setups personalizados sob medida.
+             <h4 className="text-[11px] font-display font-bold text-[var(--text-primary)] uppercase tracking-widest mb-3">Precisa de ajuda?</h4>
+             <p className="text-[9px] text-[var(--text-secondary)] font-mono leading-relaxed uppercase mb-4">
+               Smartphone, PC Gamer, Workstation ou acessório — nosso time te indica o melhor para o seu uso e orçamento.
              </p>
-             <button 
+             <button
                onClick={() => openModal('duvida')}
                className="text-[9px] font-bold text-[var(--accent-primary)] hover:underline uppercase tracking-tight"
              >
@@ -172,26 +230,21 @@ function CatalogContent() {
                   if (categoryProducts.length === 0) return null;
 
                     return (
-                      <section key={cat.id} className="space-y-8">
+                      <section key={cat.id} className="space-y-6">
                         <div className="flex items-center gap-4">
                           <h2 className="text-2xl font-display font-black uppercase tracking-[0.2em] text-[var(--text-primary)] chrome-text">
                             {cat.label}
                           </h2>
+                          <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest">{categoryProducts.length} itens</span>
                           <div className="h-px flex-1 bg-gradient-to-r from-[var(--border-active)] to-transparent opacity-30" />
                         </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {categoryProducts.map((product) => (
-                          <ProductCard 
-                            key={product.id} 
-                            product={product} 
-                            onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
-                            onInterest={() => handleInterest(product)}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  );
+                        <CategoryCarousel
+                          products={categoryProducts}
+                          onOpenGallery={(images) => setSelectedGallery({ images, index: 0 })}
+                          onInterest={handleInterest}
+                        />
+                      </section>
+                    );
                 })
               ) : (
                 // Standard grid view for single category

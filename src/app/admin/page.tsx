@@ -2,15 +2,17 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, CheckCircle, Clock, Package, Plus, Trash2, Edit, RefreshCw, LogOut, X, CheckCircle2, Eye, Star, Sparkles, Smartphone, AlertTriangle, Search, ShoppingCart } from 'lucide-react';
 import { sourceLabel } from '@/lib/tracking/sources';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'inbox' | 'leads' | 'products' | 'reviews'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'vendas' | 'maintenance' | 'products' | 'reviews'>('dashboard');
     const [inboxEdit, setInboxEdit] = useState<Record<string, { name: string; phone: string }>>({});
+    const [globalSearch, setGlobalSearch] = useState('');
     const [leads, setLeads] = useState<any[]>([]);
     const [maintenanceOrders, setMaintenanceOrders] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
@@ -26,6 +28,10 @@ export default function AdminDashboard() {
     const [showProductForm, setShowProductForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any | null>(null);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    const [slugDraft, setSlugDraft] = useState('');
+
+    const generateSlug = (name: string) =>
+        name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     // Modal de Comissões
     const [showCommissionModal, setShowCommissionModal] = useState(false);
@@ -324,7 +330,30 @@ export default function AdminDashboard() {
             .from('leads')
             .update({ payment_status: newPaymentStatus })
             .eq('id', leadId);
-        if (!error) fetchLeads();
+        if (!error) {
+            fetchLeads();
+            if (newPaymentStatus === 'paid') {
+                const lead = leads.find(l => l.id === leadId);
+                if (lead && lead.status !== 'converted') {
+                    setSelectedLeadForCommission(lead);
+                    const autoProducts = (lead.utm_parameters as any)?.product_ids
+                        ?.map((id: string) => {
+                            const p = products.find(prod => prod.id === id);
+                            return p ? { product_id: p.id, quantity: 1, name: p.name, current_stock: p.stock_quantity } : null;
+                        })
+                        .filter(Boolean) || [];
+                    setCommissionForm({
+                        finalValue: '',
+                        costValue: '',
+                        ecosystemCaptured: true,
+                        isAssembly: false,
+                        executor: 'owner',
+                        consumedProducts: autoProducts
+                    });
+                    setShowCommissionModal(true);
+                }
+            }
+        }
     };
 
     const updateMaintenanceStatus = async (orderId: string, newStatus: string) => {
@@ -367,6 +396,8 @@ export default function AdminDashboard() {
 
             const productData = {
                 name: formData.get('name'),
+                slug: slugDraft || null,
+                description: formData.get('description') || null,
                 category: formData.get('category'),
                 price: parseFloat(formData.get('price') as string),
                 stock_quantity: parseInt(formData.get('stock') as string),
@@ -409,7 +440,7 @@ export default function AdminDashboard() {
             try {
                 const { error } = await supabase.from('products').delete().eq('id', id);
                 if (error) throw error;
-                alert("â Produto excluÃ­do!");
+                alert("Produto excluido!");
                 fetchProducts();
             } catch (err: any) {
                 console.error("Erro ao excluir produto:", err);
@@ -532,15 +563,18 @@ export default function AdminDashboard() {
                     </div>
                 </header>
 
-                <nav className="flex flex-wrap gap-2 mb-10 overflow-x-auto pb-4 custom-scrollbar">
-                    {[
-                        { id: 'dashboard', label: 'Painel' , icon: LayoutDashboard },
-                        { id: 'inbox', label: `Leads ${leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda'].includes(l.interest_type)).length > 0 ? `(${leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda'].includes(l.interest_type)).length})` : ''}`.trim(), icon: Sparkles },
-                        { id: 'leads', label: 'Vendas', icon: Users },
-                        { id: 'products', label: 'Produtos', icon: Package },
-                        { id: 'maintenance', label: 'Manutenção', icon: RefreshCw },
-                        { id: 'reviews', label: 'Depoimentos', icon: Star },
-                    ].map((tab) => (
+                <nav className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2 custom-scrollbar">
+                    {(() => {
+                        const pendingLeads = leads.filter(l => l.status !== 'dismissed' && !['manutencao','venda','pc_build','compra','showroom'].includes(l.interest_type));
+                        return [
+                            { id: 'dashboard', label: 'Painel', icon: LayoutDashboard, badge: null },
+                            { id: 'leads', label: 'Leads', icon: Sparkles, badge: pendingLeads.length > 0 ? pendingLeads.length : null },
+                            { id: 'vendas', label: 'Vendas', icon: ShoppingCart, badge: null },
+                            { id: 'maintenance', label: 'Manutenção', icon: RefreshCw, badge: null },
+                            { id: 'products', label: 'Produtos', icon: Package, badge: null },
+                            { id: 'reviews', label: 'Depoimentos', icon: Star, badge: null },
+                        ];
+                    })().map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
@@ -548,9 +582,69 @@ export default function AdminDashboard() {
                         >
                             <tab.icon size={14} className={activeTab === tab.id ? 'animate-pulse' : ''} />
                             {tab.label}
+                            {tab.badge !== null && <span className="ml-1 px-1.5 py-0.5 bg-yellow-400/20 text-yellow-400 text-[8px] rounded-full font-mono">{tab.badge}</span>}
                         </button>
                     ))}
                 </nav>
+
+                {/* Busca Global */}
+                {(() => {
+                    const q = globalSearch.toLowerCase().trim();
+                    const searchResults = q.length >= 2 ? [
+                        ...leads.filter(l => l.status !== 'dismissed' && (
+                            l.client_name?.toLowerCase().includes(q) ||
+                            l.whatsapp?.includes(q) ||
+                            l.voucher_code?.toLowerCase().includes(q)
+                        )).map(l => ({ ...l, _type: 'lead' })),
+                        ...maintenanceOrders.filter((o: any) =>
+                            o.customer_name?.toLowerCase().includes(q) ||
+                            o.customer_phone?.includes(q) ||
+                            o.voucher_code?.toLowerCase().includes(q)
+                        ).map((o: any) => ({ ...o, _type: 'maintenance' })),
+                    ] : [];
+                    return (
+                        <div className="relative mb-8">
+                            <div className="flex items-center gap-3 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 focus-within:border-[var(--accent-primary)]/50 transition-all">
+                                <Search size={14} className="text-[var(--text-muted)] shrink-0" />
+                                <input
+                                    value={globalSearch}
+                                    onChange={e => setGlobalSearch(e.target.value)}
+                                    placeholder="Buscar por nome, telefone ou voucher..."
+                                    className="flex-1 bg-transparent text-sm outline-none text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+                                />
+                                {globalSearch && <button onClick={() => setGlobalSearch('')}><X size={12} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]" /></button>}
+                            </div>
+                            {q.length >= 2 && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-2xl z-50 overflow-hidden max-h-96 overflow-y-auto">
+                                    {searchResults.length === 0 ? (
+                                        <div className="p-6 text-center text-[var(--text-muted)] text-sm">Nenhum resultado para "{globalSearch}"</div>
+                                    ) : searchResults.map((item: any) => (
+                                        <div key={item.id} className="p-4 border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
+                                            onClick={() => {
+                                                setActiveTab(item._type === 'maintenance' ? 'maintenance' : ['manutencao'].includes(item.interest_type) ? 'maintenance' : ['venda','pc_build','compra','showroom'].includes(item.interest_type) ? 'vendas' : 'leads');
+                                                setGlobalSearch('');
+                                            }}>
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div>
+                                                    <div className="font-bold text-sm text-[var(--text-primary)]">{item.client_name || item.customer_name || 'Sem nome'}</div>
+                                                    <div className="text-[10px] font-mono text-[var(--accent-primary)]">{item.whatsapp || item.customer_phone || '—'}</div>
+                                                    {(item.description || item.problem_description) && <div className="text-[10px] text-[var(--text-muted)] italic mt-1">"{item.description || item.problem_description}"</div>}
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <div className={`text-[9px] font-mono uppercase px-2 py-1 rounded-full ${item._type === 'maintenance' || item.interest_type === 'manutencao' ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'}`}>
+                                                        {item._type === 'maintenance' || item.interest_type === 'manutencao' ? 'Manutenção' : item.interest_type || 'Lead'}
+                                                    </div>
+                                                    {item.voucher_code && <div className="text-[9px] font-mono text-[var(--accent-primary)] mt-1">{item.voucher_code}</div>}
+                                                    <div className="text-[9px] text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleDateString('pt-BR')}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
 
                 {activeTab === 'dashboard' ? (
                     <div className="space-y-10">
@@ -788,8 +882,8 @@ export default function AdminDashboard() {
                         })()}
                     </div>
 
-                ) : activeTab === 'inbox' ? (() => {
-                    const inboxLeads = leads.filter(l => l.status === 'pending' && !['manutencao','pc_build','venda'].includes(l.interest_type));
+                ) : activeTab === 'leads' ? (() => {
+                    const inboxLeads = leads.filter(l => l.status !== 'dismissed' && !['manutencao','venda','pc_build','compra','showroom'].includes(l.interest_type));
                     return (
                         <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                             <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
@@ -865,11 +959,11 @@ export default function AdminDashboard() {
                             )}
                         </div>
                     );
-                })() : activeTab === 'leads' ? (
+                })() : activeTab === 'vendas' ? (
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
-                                <Users size={20} className="text-blue-500" /> Histórico de Vendas
+                                <ShoppingCart size={20} className="text-green-500" /> Vendas
                             </div>
                             <button
                                 onClick={fetchLeads}
@@ -893,7 +987,7 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/10">
-                                    {leads.filter(l => l.interest_type !== 'manutencao').length > 0 ? leads.filter(l => l.interest_type !== 'manutencao').map((lead) => (
+                                    {leads.filter(l => ['venda','pc_build','compra','showroom'].includes(l.interest_type)).length > 0 ? leads.filter(l => ['venda','pc_build','compra','showroom'].includes(l.interest_type)).map((lead) => (
                                         <tr key={lead.id} className="hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group">
                                             <td className="p-6">
                                                 <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{lead.client_name || "Cliente"}</div>
@@ -1179,7 +1273,7 @@ export default function AdminDashboard() {
                             </table>
                         </div>
                     </div>
-                ) : (activeTab as any) === 'maintenance' ? (
+                ) : activeTab === 'maintenance' ? (
                     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                             <div className="flex items-center gap-2">
@@ -1422,7 +1516,7 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <button 
-                                    onClick={() => { setEditingProduct(null); setShowProductForm(true); setPreviewUrls([]); }}
+                                    onClick={() => { setEditingProduct(null); setSlugDraft(''); setShowProductForm(true); setPreviewUrls([]); }}
                                     className="w-full md:w-auto px-6 py-3 bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 rounded-xl font-display font-black text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-lg shadow-[var(--accent-primary)]/20 whitespace-nowrap"
                                 >
                                     <Plus size={18} />
@@ -1454,7 +1548,8 @@ export default function AdminDashboard() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Nome do produto</label>
-                                        <input name="name" defaultValue={editingProduct?.name} placeholder="Ex: RTX 4070 SUPER" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
+                                        <input name="name" defaultValue={editingProduct?.name} placeholder="Ex: RTX 4070 SUPER" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required
+                                            onChange={(e) => { if (!editingProduct?.slug) setSlugDraft(generateSlug(e.target.value)); }} />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Categoria</label>
@@ -1476,9 +1571,18 @@ export default function AdminDashboard() {
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Estoque</label>
                                         <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="0" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
                                     </div>
-                                    <div className="space-y-2 md:col-span-2">
+                                    <div className="space-y-2">
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">SKU (ID no ERP)</label>
                                         <input name="sku" defaultValue={editingProduct?.sku} placeholder="ERP-SYNC-ID" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-xs font-mono font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Slug (URL da página)</label>
+                                        <input name="slug" value={slugDraft} onChange={(e) => setSlugDraft(e.target.value)} placeholder="pc-gamer-rtx-4060" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-xs font-mono focus:border-[var(--accent-primary)]/50 outline-none transition-all" />
+                                        <p className="text-[9px] text-[var(--text-muted)] ml-1">Auto-gerado do nome. URL: /produtos/<span className="text-[var(--accent-primary)]">{slugDraft || '...'}</span></p>
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Descrição (opcional)</label>
+                                        <textarea name="description" defaultValue={editingProduct?.description} placeholder="Descreva o produto, diferenciais, uso recomendado..." rows={3} className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:border-[var(--accent-primary)]/50 outline-none transition-all resize-none" />
                                     </div>
                                     <div className="md:col-span-2 space-y-8">
                                         <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-subtle)] space-y-4">
@@ -1638,8 +1742,14 @@ export default function AdminDashboard() {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <div className="text-[11px] font-bold text-[var(--text-primary)] leading-tight">{product.name?.toUpperCase()}</div>
-                                                        <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">{product.sku || '#SEM-SKU'}</div>
+                                                        <div className="text-[11px] font-bold text-[var(--text-primary)] leading-tight">
+                                                            {product.slug ? (
+                                                                <Link href={`/produtos/${product.slug}`} target="_blank" className="hover:text-[var(--accent-primary)] transition-colors underline-offset-2 hover:underline">
+                                                                    {product.name?.toUpperCase()}
+                                                                </Link>
+                                                            ) : product.name?.toUpperCase()}
+                                                        </div>
+                                                        <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">{product.sku || '#SEM-SKU'} {!product.slug && <span className="text-amber-500">· sem slug</span>}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -1665,9 +1775,10 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             setEditingProduct(product);
+                                                            setSlugDraft(product.slug || '');
                                                             setShowProductForm(true);
                                                             setPreviewUrls(product.image_urls || []);
                                                         }}
@@ -2076,8 +2187,8 @@ export default function AdminDashboard() {
 
             {/* Modal de Comissões */}
             {showCommissionModal && selectedLeadForCommission && (
-                <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                    <form onSubmit={submitCommissionForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-10 max-w-lg w-full relative overflow-hidden card-dark">
+                <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+                    <form onSubmit={submitCommissionForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-8 max-w-lg w-full relative card-dark my-auto">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
                         
                         <button type="button" onClick={() => setShowCommissionModal(false)} className="absolute top-8 right-8 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
@@ -2193,10 +2304,7 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            {(selectedLeadForCommission.interest_type === 'manutencao' || 
-                              selectedLeadForCommission.interest_type === 'pc_build' || 
-                              selectedLeadForCommission.equipment_type ||
-                              !selectedLeadForCommission.isLead) && (
+                            {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) && (
                                 <div className="space-y-2">
                                     <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 text-red-400/80">Custo de Peças / Material (R$)</label>
                                     <input
@@ -2271,60 +2379,30 @@ export default function AdminDashboard() {
                                 </div>
                             )}
 
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-4">
-                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Ordem</div>
-
-                                <div className="grid grid-cols-1 gap-3">
-                                    {/* Felipe (Dono) — executa PC/notebook, sem comissão de serviço */}
-                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
-                                        <input
-                                            type="radio" name="executor" value="owner"
-                                            checked={commissionForm.executor === 'owner'}
-                                            onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                            className="w-4 h-4 accent-[var(--accent-primary)]"
-                                        />
-                                        <div className="text-xs font-black uppercase tracking-widest group-hover:text-[var(--text-primary)] transition-colors">
-                                            Felipe (Dono)
-                                            {(['notebook', 'desktop', 'pc'].includes((selectedLeadForCommission.equipment_type || selectedLeadForCommission.interest_type || '').toLowerCase())) && (
-                                                <span className="ml-2 font-mono text-[8px] font-bold opacity-40">Padrão</span>
-                                            )}
-                                        </div>
-                                    </label>
-
-                                    {/* Iago (Marketing) — montagem de PC, +3% */}
-                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
-                                        <input
-                                            type="radio" name="executor" value="iago"
-                                            checked={commissionForm.executor === 'iago'}
-                                            onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                            className="w-4 h-4 accent-[var(--accent-primary)]"
-                                        />
-                                        <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">
-                                            Iago (Marketing)
-                                            {commissionForm.isAssembly && <span className="ml-2 font-mono text-[8px] bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded">+3% Montagem</span>}
-                                        </div>
-                                    </label>
-
-                                    {/* Jefferson (Técnico) — manutenção mobile + montagem */}
-                                    <label className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer group">
-                                        <input
-                                            type="radio" name="executor" value="partner"
-                                            checked={commissionForm.executor === 'partner'}
-                                            onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                            className="w-4 h-4 accent-[var(--accent-primary)]"
-                                        />
-                                        <div className="text-xs font-black uppercase tracking-widest text-purple-400">
-                                            Jefferson (Técnico)
-                                            {(['smartphone', 'celular', 'tablet', 'mobile'].includes((selectedLeadForCommission.equipment_type || selectedLeadForCommission.interest_type || '').toLowerCase())) && (
-                                                <span className="ml-2 font-mono text-[8px] font-bold text-purple-400/60">Padrão</span>
-                                            )}
-                                            <span className="ml-2 font-mono text-[8px] bg-purple-500/10 px-2 py-0.5 rounded">
-                                                {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) ? '50% Lucro' : '+3% Montagem'}
-                                            </span>
-                                        </div>
-                                    </label>
+                            {(commissionForm.isAssembly || selectedLeadForCommission.interest_type === 'pc_build') && (
+                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Quem realizou a montagem?</div>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {[
+                                        { value: 'owner', label: 'Felipe (Dono)', badge: null, color: '' },
+                                        { value: 'iago', label: 'Iago (Marketing)', badge: '+3% Montagem', color: 'text-[var(--accent-primary)]' },
+                                        { value: 'partner', label: 'Jefferson (Técnico)', badge: '+3% Montagem', color: 'text-purple-400' },
+                                    ].map(opt => (
+                                        <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
+                                            <input type="radio" name="assemblyExecutor" value={opt.value}
+                                                checked={commissionForm.executor === opt.value}
+                                                onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
+                                                className="w-4 h-4 accent-[var(--accent-primary)]"
+                                            />
+                                            <div className={`text-xs font-black uppercase tracking-widest ${opt.color}`}>
+                                                {opt.label}
+                                                {opt.badge && <span className="ml-2 font-mono text-[8px] opacity-60">{opt.badge}</span>}
+                                            </div>
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
+                            )}
 
                             <button type="submit" className="w-full bg-white hover:bg-slate-200 text-[#121216] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all hover:scale-[1.01]">
                                 Confirmar Finalização

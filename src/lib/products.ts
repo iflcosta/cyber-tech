@@ -3,6 +3,8 @@ import { supabase } from './supabase';
 export interface Product {
     id: string;
     name: string;
+    slug?: string;
+    description?: string;
     category: string;
     price: number;
     stock_quantity: number;
@@ -28,4 +30,15 @@ export const getProducts = async (): Promise<Product[]> => {
     }
 
     return data as Product[];
+};
+
+export const getProductBySlug = async (slug: string): Promise<Product | null> => {
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+
+    if (error || !data) return null;
+    return data as Product;
 };

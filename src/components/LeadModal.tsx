@@ -283,9 +283,9 @@ export default function LeadModal() {
                                                     </select>
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Vai usar para quê?</label>
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que você procura?</label>
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        {['GAMES', 'TRABALHO', 'ESTUDOS', 'GERAL'].map((val) => (
+                                                        {['Smartphone', 'PC Gamer', 'Periféricos', 'Outros'].map((val) => (
                                                             <button 
                                                                 key={val} 
                                                                 type="button" 

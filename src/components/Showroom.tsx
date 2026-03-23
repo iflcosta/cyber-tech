@@ -44,19 +44,23 @@ function ShowroomContent() {
   // Reset carousel when filter changes
   useEffect(() => { setCarouselIndex(0); }, [category]);
 
-  // Measure container width — runs after products load (carousel div only exists then)
+  // Measure container width — re-runs when category changes (carousel may remount)
   useEffect(() => {
-    if (loading) return;
-    const measure = () => {
-      if (containerRef.current) setContainerWidth(containerRef.current.offsetWidth);
+    let ro: ResizeObserver | null = null;
+    const attach = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      ro = new ResizeObserver(([entry]) => setContainerWidth(entry.contentRect.width));
+      ro.observe(el);
+      setContainerWidth(el.offsetWidth);
     };
-    requestAnimationFrame(measure);
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [loading]);
+    // rAF garante que o DOM já remontou após mudança de categoria
+    const raf = requestAnimationFrame(attach);
+    return () => { cancelAnimationFrame(raf); ro?.disconnect(); };
+  }, [loading, category]);
 
-  // Reset measurement on category change (products count may change, index resets)
-  useEffect(() => { setCarouselIndex(0); setContainerWidth(0); }, [category]);
+  // Reset index on category change
+  useEffect(() => { setCarouselIndex(0); }, [category]);
 
   const handleInterest = (product: Product) => {
     openModal('compra',
@@ -199,15 +203,17 @@ function ShowroomContent() {
         <div className="flex h-96 items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-[var(--text-muted)]" />
         </div>
-      ) : filteredProducts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[var(--border-subtle)] rounded-xl bg-[var(--bg-surface)]/50 text-[var(--text-muted)]">
-          <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado nesta categoria.</p>
-        </div>
       ) : (
         <>
-          {/* Carousel wrapper */}
-          <div className="relative">
-            {/* Left arrow */}
+          {/* Empty state — mostrado por cima, mas container sempre existe no DOM */}
+          {filteredProducts.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-64 border border-dashed border-[var(--border-subtle)] rounded-xl bg-[var(--bg-surface)]/50 text-[var(--text-muted)]">
+              <p className="text-[10px] font-bold uppercase tracking-widest">Nenhum produto encontrado nesta categoria.</p>
+            </div>
+          )}
+
+          {/* Carousel wrapper — sempre no DOM para containerRef nunca ser null */}
+          <div className="relative" style={{ display: filteredProducts.length === 0 ? 'none' : 'block' }}>
             <button
               onClick={prev}
               disabled={carouselIndex === 0}
@@ -217,7 +223,6 @@ function ShowroomContent() {
               <ChevronLeft size={20} />
             </button>
 
-            {/* Cards track */}
             <div ref={containerRef} className="overflow-hidden">
               <motion.div
                 className="flex"
@@ -248,7 +253,6 @@ function ShowroomContent() {
               </motion.div>
             </div>
 
-            {/* Right arrow */}
             <button
               onClick={next}
               disabled={carouselIndex >= maxIndex}
@@ -259,8 +263,7 @@ function ShowroomContent() {
             </button>
           </div>
 
-          {/* Dot indicators */}
-          {maxIndex > 0 && (
+          {maxIndex > 0 && filteredProducts.length > 0 && (
             <div className="flex justify-center gap-2 mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button

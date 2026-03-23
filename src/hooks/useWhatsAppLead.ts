@@ -83,7 +83,7 @@ export function useWhatsAppLead({
             voucher_code: voucher,
             intent_type: 'duvida_tecnica',
             description: overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
-            interest_type: serviceType?.includes('reparo') ? 'manutencao' : 'venda',
+            interest_type: serviceType?.includes('reparo') ? 'manutencao' : serviceType === 'montagem_pc' ? 'pc_build' : 'contato',
             client_name: 'Lead Direto (WhatsApp)',
             whatsapp: '00000000000' 
         });

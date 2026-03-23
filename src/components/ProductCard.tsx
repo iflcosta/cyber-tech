@@ -1,7 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import { MessageSquare, Cpu, Zap, Package } from "lucide-react";
 import { Card, CardFooter } from "./ui/Card";
-import { Button, cn } from "./ui/Button";
+import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 import { PerformanceBadge } from "./PerformanceBadge";
 import { useEffect, useState } from "react";
@@ -21,6 +22,8 @@ function isStoreOpen() {
 export interface Product {
   id: string;
   name: string;
+  slug?: string;
+  description?: string;
   category: string;
   specs: {
     cpu: string;
@@ -44,27 +47,76 @@ interface ProductCardProps {
   product: Product;
   onOpenGallery?: (images: string[]) => void;
   onInterest?: () => void;
-  onAddToCart?: () => void;
+}
+
+const CONTENT_CLASS = "flex-1 p-4 cursor-pointer group/content block";
+
+function CardContent({ product }: { product: Product }) {
+  return (
+    <>
+      <div className="space-y-0.5 mb-2">
+        <Badge variant="outline" className="text-[9px] uppercase tracking-[0.15em] border-[var(--accent-primary)]/30 text-[var(--accent-primary)] rounded-sm bg-[var(--accent-primary)]/5">
+          {product.category.replace('_', ' ')}
+        </Badge>
+        <h3 className="text-base font-display font-bold uppercase tracking-tight text-white group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
+          {product.name}
+        </h3>
+      </div>
+
+      <div className="space-y-1.5 mb-3 opacity-80 group-hover:opacity-100 transition-opacity">
+        {(product.specs.cpu || product.specs.Chip) && (
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
+            <Cpu className="h-3.5 w-3.5 text-[var(--accent-primary)] shrink-0" />
+            <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.cpu || product.specs.Chip}</span>
+          </div>
+        )}
+        {(product.specs.gpu || product.specs.Câmera) && (
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
+            <Zap className="h-3.5 w-3.5 text-[var(--accent-primary)] shrink-0" />
+            <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.gpu || product.specs.Câmera}</span>
+          </div>
+        )}
+        {(product.specs.ram || product.specs.Tela) && (
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
+            <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-[var(--accent-primary)]/50 flex items-center justify-center text-[8px] font-bold text-[var(--accent-primary)]">R</div>
+            <span className="text-[var(--text-primary)] brightness-200 truncate">
+              {product.specs.ram || product.specs.Tela}
+            </span>
+            {product.specs.storage && <span className="opacity-60 shrink-0">• {product.specs.storage}</span>}
+          </div>
+        )}
+      </div>
+
+      <div className="pt-2 border-t border-[var(--border-subtle)]/50 flex items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-[9px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Preço Estimado</span>
+          <span className="text-xl font-display font-bold text-white tracking-tighter">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price || product.price_estimate)}
+          </span>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   useEffect(() => {
     setIsOpen(isStoreOpen());
   }, []);
 
-  const handleViewDetails = () => {
+  const handleOpenGallery = () => {
     const images = product.image_urls || [product.image_url].filter(Boolean) as string[];
     onOpenGallery?.(images);
   };
 
   return (
     <Card className="card-dark group flex flex-col h-full card-industrial border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden transition-all duration-300 hover:border-[var(--accent-primary)]/50">
-      {/* Visual Header / Image Section */}
-      <div 
+      {/* Image — sempre abre galeria */}
+      <div
         className="relative aspect-video w-full overflow-hidden bg-[var(--bg-primary)] cursor-zoom-in group-hover:brightness-110 transition-all border-b border-[var(--border-subtle)]/30"
-        onClick={handleViewDetails}
+        onClick={handleOpenGallery}
       >
         {product.image_url ? (
           <Image
@@ -78,14 +130,11 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
             <Package className="h-10 w-10 text-[var(--border-active)]" />
           </div>
         )}
-        
-        {/* Hover Overlay Hint */}
+
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] z-10">
-          <div className="flex flex-col items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-            <span className="text-[10px] font-display font-bold text-white uppercase tracking-[0.2em] border border-white/20 px-4 py-2 rounded-full bg-white/10 shadow-2xl backdrop-blur-md">
-              Ver Galeria Completa
-            </span>
-          </div>
+          <span className="text-[10px] font-display font-bold text-white uppercase tracking-[0.2em] border border-white/20 px-4 py-2 rounded-full bg-white/10 shadow-2xl backdrop-blur-md">
+            Ver Galeria Completa
+          </span>
         </div>
 
         <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
@@ -95,61 +144,24 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
             </Badge>
           )}
         </div>
-        
+
         <div className="absolute bottom-4 left-4 z-20">
           <PerformanceBadge score={product.performance_score} variant="mini" />
         </div>
       </div>
 
-      {/* Content Section (Clickable for Gallery) */}
-      <div
-        className="flex-1 p-4 cursor-pointer group/content"
-        onClick={handleViewDetails}
-      >
-        <div className="space-y-0.5 mb-2">
-          <Badge variant="outline" className="text-[9px] uppercase tracking-[0.15em] border-[var(--accent-primary)]/30 text-[var(--accent-primary)] rounded-sm bg-[var(--accent-primary)]/5">
-            {product.category.replace('_', ' ')}
-          </Badge>
-          <h3 className="text-base font-display font-bold uppercase tracking-tight text-white group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
-            {product.name}
-          </h3>
+      {/* Conteúdo — slug navega para página, sem slug abre galeria */}
+      {product.slug ? (
+        <Link href={`/produtos/${product.slug}`} className={CONTENT_CLASS}>
+          <CardContent product={product} />
+        </Link>
+      ) : (
+        <div className={CONTENT_CLASS} onClick={handleOpenGallery}>
+          <CardContent product={product} />
         </div>
+      )}
 
-        <div className="space-y-1.5 mb-3 opacity-80 group-hover:opacity-100 transition-opacity">
-          {(product.specs.cpu || product.specs.Chip) && (
-            <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <Cpu className="h-3.5 w-3.5 text-[var(--accent-primary)] shrink-0" />
-              <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.cpu || product.specs.Chip}</span>
-            </div>
-          )}
-          {(product.specs.gpu || product.specs.Câmera) && (
-            <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <Zap className="h-3.5 w-3.5 text-[var(--accent-primary)] shrink-0" />
-              <span className="truncate text-[var(--text-secondary)] brightness-150">{product.specs.gpu || product.specs.Câmera}</span>
-            </div>
-          )}
-          {(product.specs.ram || product.specs.Tela) && (
-            <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-mono">
-              <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-[var(--accent-primary)]/50 flex items-center justify-center text-[8px] font-bold text-[var(--accent-primary)]">R</div>
-              <span className="text-[var(--text-primary)] brightness-200 truncate">
-                {product.specs.ram || product.specs.Tela}
-              </span>
-              {product.specs.storage && <span className="opacity-60 shrink-0">• {product.specs.storage}</span>}
-            </div>
-          )}
-        </div>
-
-        <div className="pt-2 border-t border-[var(--border-subtle)]/50 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[9px] text-[var(--text-muted)] uppercase tracking-widest font-bold">Preço Estimado</span>
-            <span className="text-xl font-display font-bold text-white tracking-tighter">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price || product.price_estimate)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Section (Interest Button) */}
+      {/* Footer */}
       <CardFooter className="p-4 pt-0">
         <Button
           className="w-full h-9"
