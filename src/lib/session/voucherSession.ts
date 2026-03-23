@@ -55,10 +55,13 @@ export function isSessionVoucherValid(): boolean {
 }
 
 /**
- * Retrieves the valid session voucher or asks the server to create a new one,
- * which reserves it in the database and prevents duplicate creations later.
+ * Retrieves the valid session voucher or generates one locally.
+ * We intentionally do NOT call the API here to avoid creating phantom
+ * maintenance_orders records for every page visit or WhatsApp click.
+ * The voucher is persisted in Supabase only when the user submits a
+ * real form (maintenance, lead modal, etc.).
  */
-export async function getOrCreateSessionVoucher(params: CreateVoucherParams = {}): Promise<string> {
+export async function getOrCreateSessionVoucher(_params: CreateVoucherParams = {}): Promise<string> {
     if (typeof window === 'undefined') return '';
 
     if (isSessionVoucherValid()) {
@@ -66,25 +69,7 @@ export async function getOrCreateSessionVoucher(params: CreateVoucherParams = {}
         if (code) return code;
     }
 
-    try {
-        const res = await fetch('/api/vouchers/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ source: 'organic', ...params })
-        });
-        
-        if (!res.ok) throw new Error('API failed to create voucher');
-        
-        const data = await res.json();
-        const code = data.code || data.voucher;
-        
-        if (code) setSessionVoucher(code);
-        return code || '';
-    } catch (error) {
-        console.error("Failed to create session voucher via API, using local fallback", error);
-        // Fallback resilient (e.g. if API is down)
-        const code = generateVoucherCode();
-        setSessionVoucher(code);
-        return code;
-    }
+    const code = generateVoucherCode();
+    setSessionVoucher(code);
+    return code;
 }
