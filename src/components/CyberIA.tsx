@@ -26,7 +26,7 @@ export default function CyberIA() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const { voucherCode } = useVoucherSession();
+    const { voucherCode, refreshVoucher } = useVoucherSession();
     const [productsString, setProductsString] = useState('');
     const [summarizing, setSummarizing] = useState(false);
     const [contactStep, setContactStep] = useState<'idle' | 'collecting' | 'done'>('idle');
@@ -127,6 +127,11 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
 
         const currentIntent = determineIntent(userMsg + " " + aiResponse);
 
+        let currentVoucher = voucherCode;
+        if (!currentVoucher) {
+            currentVoucher = await refreshVoucher();
+        }
+
         setMessages(prev => {
             const newMessages: Message[] = [...prev, { role: 'ai', content: aiResponse }];
             try {
@@ -137,7 +142,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                         messages: newMessages, 
                         source: 'Cyber IA',
                         intent_type: currentIntent,
-                        session_voucher_code: voucherCode
+                        session_voucher_code: currentVoucher
                     })
                 });
             } catch (e) {}
@@ -172,9 +177,13 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
 
             const rawSummary = await getGeminiResponse(summaryContext);
             const summary = rawSummary.trim().replace(/^Objetivo:\s*/i, '').replace(/["']/g, '');
-
             const resolvedName = name || contactName;
             const resolvedPhone = phone || contactPhone;
+
+            let currentVoucher = voucherCode;
+            if (!currentVoucher) {
+                currentVoucher = await refreshVoucher();
+            }
 
             // Save lead with name + phone
             if (resolvedName || resolvedPhone) {
@@ -187,17 +196,21 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
                             { role: 'user', content: `Meu nome é ${resolvedName} e meu WhatsApp é ${resolvedPhone}` }
                         ],
                         source: 'Cyber IA',
-                        session_voucher_code: voucherCode
+                        session_voucher_code: currentVoucher
                     })
                 }).catch(() => {});
             }
 
             const nameTag = resolvedName ? `\n*Nome:* ${resolvedName}` : '';
-            const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.${nameTag}\n\n*Assunto:* ${summary}\n\n*Voucher:* ${voucherCode || 'N/A'}`;
+            const text = `Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.${nameTag}\n\n*Assunto:* ${summary}\n\n*Voucher:* ${currentVoucher || 'N/A'}`;
             openWhatsApp(text);
         } catch (e) {
             console.error("Erro ao resumir conversa para WA", e);
-            openWhatsApp(`Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\nMeu voucher: *${voucherCode || 'N/A'}*`);
+            let currentVoucher = voucherCode;
+            if (!currentVoucher) {
+                currentVoucher = await refreshVoucher();
+            }
+            openWhatsApp(`Olá! Vi a Cyber IA no site e gostaria de continuar o atendimento.\n\nMeu voucher: *${currentVoucher || 'N/A'}*`);
         } finally {
             setSummarizing(false);
         }

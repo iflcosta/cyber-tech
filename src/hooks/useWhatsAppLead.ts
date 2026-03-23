@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { brand } from '@/lib/brand'
 import { getOrCreateSessionVoucher, setSessionVoucher } from '@/lib/session/voucherSession'
 import { trackLead } from '@/lib/leads'
+import { utmToVoucherSource } from '@/lib/tracking/sources'
 
 export type WhatsAppServiceType =
   | 'reparo_celular'
@@ -95,7 +96,7 @@ export function useWhatsAppLead({
             interest_type:    serviceType?.includes('reparo') ? 'manutencao' : serviceType === 'montagem_pc' ? 'pc_build' : 'contato',
             client_name:      'Lead Direto (WhatsApp)',
             whatsapp:         '00000000000',
-            marketing_source: utmSource || undefined,
+            marketing_source: utmSource ? utmToVoucherSource(utmSource) : undefined,
             utm_parameters:   ref ? { ref } : undefined,
         });
       } catch(e) { }

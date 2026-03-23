@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://cyber-tech.vercel.app/sitemap.xml
+Sitemap: https://cyberinformatica.tech/sitemap.xml
