@@ -406,7 +406,9 @@ export default function AdminDashboard() {
                 sku: formData.get('sku'),
                 show_in_showroom: formData.get('show_in_showroom') === 'on',
                 show_in_catalog: formData.get('show_in_catalog') === 'on',
-                show_in_pcbuilder: formData.get('show_in_pcbuilder') === 'on'
+                show_in_pcbuilder: formData.get('show_in_pcbuilder') === 'on',
+                stock_alert: formData.get('stock_alert') === 'on',
+                stock_alert_min: parseInt(formData.get('stock_alert_min') as string) || 1,
             };
 
             let error;
@@ -663,7 +665,7 @@ export default function AdminDashboard() {
                                 { label: 'Receita Total', val: `R$ ${stats.totalLeadValue.toLocaleString('pt-BR')}`, sub: `+${stats.convertedCount} conversões`, color: 'var(--accent-primary)', icon: TrendingUp },
                                 { label: 'Leads Ativos', val: leads.length, sub: `${stats.pendingCount} pendentes`, color: 'var(--accent-primary)', icon: Users },
                                 { label: 'Ticket Médio', val: `R$ ${stats.avgTicket.toFixed(0)}`, sub: 'Faturamento/Conversão', color: 'var(--accent-primary)', icon: Package },
-                                { label: 'Estoque Crítico', val: products.filter(p => p.stock_quantity <= 3).length, sub: 'Itens < 4 unidades', color: 'red-500', icon: AlertTriangle }
+                                { label: 'Alerta de Estoque', val: products.filter(p => p.stock_alert && p.stock_quantity <= (p.stock_alert_min || 1)).length, sub: 'Produtos sinalizados', color: 'red-500', icon: AlertTriangle }
                             ].map((kpi, i) => (
                                 <div key={i} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group hover:border-[var(--accent-primary)]/30 transition-all">
                                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -766,8 +768,8 @@ export default function AdminDashboard() {
                                     <Package size={14} className="text-red-500" /> Alerta de Estoque
                                 </h3>
                                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {products.filter(p => p.stock_quantity <= 3).length > 0 ? (
-                                        products.filter(p => p.stock_quantity <= 3).map(p => (
+                                    {products.filter(p => p.stock_alert && p.stock_quantity <= (p.stock_alert_min || 1)).length > 0 ? (
+                                        products.filter(p => p.stock_alert && p.stock_quantity <= (p.stock_alert_min || 1)).map(p => (
                                             <div key={p.id} onClick={() => { setEditingProduct(p); setSlugDraft(p.slug || ''); setPreviewUrls(p.image_urls || []); setShowProductForm(true); setActiveTab('products'); }} className="flex items-center justify-between p-5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl group/item hover:border-red-500/30 transition-all cursor-pointer">
                                                 <div>
                                                     <div className="text-[11px] font-black uppercase leading-tight italic tracking-tighter group-hover/item:text-red-500 transition-colors">{p.name}</div>
@@ -1570,6 +1572,14 @@ export default function AdminDashboard() {
                                     <div className="space-y-2">
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Estoque</label>
                                         <input name="stock" type="number" defaultValue={editingProduct?.stock_quantity} placeholder="0" className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all" required />
+                                        <div className="flex items-center gap-3 pt-1">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input type="checkbox" name="stock_alert" defaultChecked={editingProduct?.stock_alert ?? false} className="w-4 h-4 rounded accent-yellow-500" />
+                                                <span className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Alerta de Estoque Baixo</span>
+                                            </label>
+                                            <input name="stock_alert_min" type="number" defaultValue={editingProduct?.stock_alert_min ?? 3} min="1" placeholder="3" className="w-16 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg px-2 py-1 text-xs font-bold focus:border-yellow-500/50 outline-none transition-all text-center" />
+                                            <span className="text-[8px] font-mono text-[var(--text-muted)] uppercase">un. mín.</span>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">SKU (ID no ERP)</label>
