@@ -20,6 +20,9 @@ const SERVICE_LABELS: Record<string, string> = {
  *
  * Registers the click as a lead immediately, then redirects directly to
  * WhatsApp with the voucher code in the message for full traceability.
+ *
+ * A cookie (cyber_wa_voucher) is set for 24h so repeated opens from the
+ * same browser reuse the same voucher and don't create duplicate leads.
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
@@ -28,10 +31,24 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const utmCampaign = searchParams.get('utm_campaign')
   const ref         = searchParams.get('ref')
 
+  const service = SERVICE_LABELS[serviceKey] ?? 'atendimento'
+
+  // Reuse existing voucher from cookie — prevents duplicate leads from the same browser
+  const existingCode = req.cookies.get('cyber_wa_voucher')?.value
+  if (existingCode) {
+    const message =
+      `Olá! Vim pelo QR Code da Cyber Informática.\n\n` +
+      `🎟️ Meu voucher: *${existingCode}*\n\n` +
+      `Gostaria de informações sobre ${service}.\n\n` +
+      `Pode me atender?`
+    const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`
+    return NextResponse.redirect(waUrl, { status: 302 })
+  }
+
   const code   = generateVoucherCode()
   const source = utmToVoucherSource(utmSource)
 
-  // Insert lead immediately on click
+  // Insert lead immediately on first click
   supabaseAdmin.from('leads').upsert({
     voucher_code:     code,
     client_name:      'Clique no Anúncio',
@@ -42,7 +59,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }, { onConflict: 'voucher_code', ignoreDuplicates: true })
     .then(({ error }) => { if (error) console.error('[REDIRECT/WA] Lead insert error:', error) })
 
-  const service = SERVICE_LABELS[serviceKey] ?? 'atendimento'
   const message =
     `Olá! Vim pelo QR Code da Cyber Informática.\n\n` +
     `🎟️ Meu voucher: *${code}*\n\n` +
@@ -50,5 +66,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     `Pode me atender?`
 
   const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`
-  return NextResponse.redirect(waUrl, { status: 302 })
+  const response = NextResponse.redirect(waUrl, { status: 302 })
+  response.cookies.set('cyber_wa_voucher', code, {
+    maxAge: 60 * 60 * 24, // 24 horas
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+  })
+  return response
 }
