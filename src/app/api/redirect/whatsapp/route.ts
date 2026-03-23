@@ -1,44 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createVoucher } from '@/lib/voucher'
-import { utmToVoucherSource } from '@/lib/tracking/sources'
+import { generateVoucherCode } from '@/lib/voucher'
 
 /**
  * GET /api/redirect/whatsapp?utm_source=instagram&service=celular&utm_campaign=reparo
  *
- * Used as the destination URL in Instagram / Facebook / Google Ads.
- * Generates a voucher, builds a pre-filled WhatsApp message and redirects.
+ * Entry point for Instagram / Facebook / Google Ads links.
+ * Generates a voucher code locally (no DB insert) and lands the user on the
+ * site so useWhatsAppLead can set the session and insert the lead correctly
+ * into the leads table when the user clicks WhatsApp.
  */
-
-
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
   const utmSource   = searchParams.get('utm_source')
   const serviceKey  = searchParams.get('service') ?? 'outro'
   const utmCampaign = searchParams.get('utm_campaign')
 
-  const source = utmToVoucherSource(utmSource)
-
-  let code: string | null = null
-
-  try {
-    const voucher = await createVoucher({
-      source,
-      serviceType: serviceKey,
-    })
-    code = voucher.code
-  } catch (err) {
-    console.error('[REDIRECT/WA] Failed to create voucher:', err)
-    // Fallback: redirect to WhatsApp without a voucher code
-  }
+  const code = generateVoucherCode()
 
   const siteBase = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cyberinformatica.tech'
   const params = new URLSearchParams()
-  if (code) params.set('voucher', code)
+  params.set('voucher', code)
   if (utmSource) params.set('utm_source', utmSource)
   if (utmCampaign) params.set('utm_campaign', utmCampaign)
   params.set('service', serviceKey)
 
-  const siteUrl = `${siteBase}/?${params.toString()}`
-
-  return NextResponse.redirect(siteUrl, { status: 302 })
+  return NextResponse.redirect(`${siteBase}/?${params.toString()}`, { status: 302 })
 }
