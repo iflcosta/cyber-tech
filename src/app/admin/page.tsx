@@ -33,6 +33,11 @@ export default function AdminDashboard() {
     const generateSlug = (name: string) =>
         name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+    // Derives executor from the logged-in user's email
+    const currentExecutor = userEmail?.toLowerCase().includes('iago') ? 'iago'
+        : userEmail?.toLowerCase().includes('jefferson') ? 'partner'
+        : 'owner';
+
     // Modal de Comissões
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [selectedLeadForCommission, setSelectedLeadForCommission] = useState<any>(null);
@@ -255,7 +260,7 @@ export default function AdminDashboard() {
             costValue: '',
             ecosystemCaptured: !!lead.voucher_code,
             isAssembly: false,
-            executor: type === 'manutencao' ? 'partner' : 'owner',
+            executor: type === 'manutencao' ? 'partner' : currentExecutor,
             consumedProducts: []
         });
         setShowCommissionModal(true);
@@ -347,7 +352,7 @@ export default function AdminDashboard() {
                         costValue: '',
                         ecosystemCaptured: true,
                         isAssembly: false,
-                        executor: 'owner',
+                        executor: currentExecutor,
                         consumedProducts: autoProducts
                     });
                     setShowCommissionModal(true);
@@ -1141,7 +1146,7 @@ export default function AdminDashboard() {
                                                                 costValue: '',
                                                                 ecosystemCaptured: true,
                                                                 isAssembly: false,
-                                                                executor: 'owner',
+                                                                executor: currentExecutor,
                                                                 consumedProducts: autoProducts
                                                             });
                                                             setShowCommissionModal(true);
