@@ -1,8 +1,8 @@
 export const brand = {
   name: "Cyber Informática",
   slogan: "A melhor assistência e montagem de Bragança Paulista",
-  whatsapp: "5511997457718",
-  phone: "5511997457718",
+  whatsapp: "5511954369269",
+  phone: "5511954369269",
   url: "https://cyberinformatica.tech",
   openingHours: "Seg-Sex: 09h às 18h, Sáb: 09h às 13h",
   address: {
@@ -12,7 +12,7 @@ export const brand = {
     coords: { lat: -22.9519, lng: -46.5412 }
   },
   social: {
-    instagram: "https://instagram.com/cyberinformatica",
+    instagram: "https://instagram.com/cyberinfo.brag",
     facebook: "https://facebook.com/cyberinformatica"
   },
   voucher: {
