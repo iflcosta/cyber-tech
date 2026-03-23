@@ -56,6 +56,9 @@ export default function AdminDashboard() {
         ecosystemCaptured: false,
         isAssembly: false,
         executor: 'owner', // 'owner', 'iago', 'partner'
+        customCommissionType: 'percent' as 'percent' | 'value',
+        customCommissionAmount: '',
+        manualFinalValue: '',
         consumedProducts: [] as {product_id: string, quantity: number, name?: string, price: number, current_stock?: number}[]
     });
     // PDV product search/filter state
@@ -289,6 +292,8 @@ export default function AdminDashboard() {
             ecosystemCaptured: !!lead.voucher_code,
             isAssembly: false,
             executor: getAssemblyExecutor({ ...lead, interest_type: type }),
+            customCommissionType: 'percent',
+            customCommissionAmount: '',
             consumedProducts: []
         });
         setShowCommissionModal(true);
@@ -296,25 +301,31 @@ export default function AdminDashboard() {
 
     const submitPdvForm = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        const subtotal = pdvForm.consumedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        const productSubtotal = pdvForm.consumedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const manualOverride = parseFloat(pdvForm.manualFinalValue) || 0;
+        const subtotal = manualOverride > 0 ? manualOverride : productSubtotal;
         const discountAmount = pdvForm.discountType === 'percentage'
             ? subtotal * (pdvForm.discountValue / 100)
             : pdvForm.discountValue;
         const val = Math.max(0, subtotal - discountAmount);
-        
+
         // Ecossistema: 8% padrão, ou 5% se valor bruto > 8000
         let baseRate = 0;
         if (pdvForm.ecosystemCaptured) {
             baseRate = subtotal > 8000 ? 0.05 : 0.08;
         }
 
-        // Assembly Commission: +3% if active AND executor is Iago OR Partner
-        const qualifiesForAssembly = pdvForm.isAssembly && (pdvForm.executor === 'iago' || pdvForm.executor === 'partner');
-        const assemblyRate = qualifiesForAssembly ? 0.03 : 0;
+        // Assembly Commission: custom % or R$, fallback to 3%
+        let assemblyCommission = 0;
+        if (pdvForm.isAssembly && (currentExecutor === 'iago' || currentExecutor === 'partner')) {
+            const customAmt = parseFloat(pdvForm.customCommissionAmount) || 0;
+            assemblyCommission = customAmt > 0
+                ? (pdvForm.customCommissionType === 'percent' ? subtotal * (customAmt / 100) : customAmt)
+                : subtotal * 0.03;
+        }
 
-        // Comission is applied over the GROSS value (subtotal) per user rules
-        const totalCommission = (subtotal * baseRate) + (subtotal * assemblyRate);
+        const totalCommission = (subtotal * baseRate) + assemblyCommission;
 
         const { error } = await supabase.from('leads').insert([{
             client_name: pdvForm.customerName || 'Cliente Balcão',
@@ -325,7 +336,7 @@ export default function AdminDashboard() {
             commission_value: totalCommission,
             commission_ecosystem: pdvForm.ecosystemCaptured,
             commission_service: pdvForm.isAssembly,
-            performed_by_partner: pdvForm.executor === 'partner',
+            performed_by_partner: currentExecutor === 'partner',
             converted_at: new Date().toISOString(),
             payment_status: 'paid'
         }]).select();
@@ -346,7 +357,7 @@ export default function AdminDashboard() {
             }
 
             setShowPdvModal(false);
-            setPdvForm({ customerName: '', discountType: 'fixed', discountValue: 0, ecosystemCaptured: false, isAssembly: false, executor: 'owner', consumedProducts: [] });
+            setPdvForm({ customerName: '', discountType: 'fixed', discountValue: 0, ecosystemCaptured: false, isAssembly: false, executor: 'owner', customCommissionType: 'percent', customCommissionAmount: '', manualFinalValue: '', consumedProducts: [] });
             setPdvProductSearch('');
             setPdvProductCategory('');
             setPdvProductQty(1);
@@ -381,6 +392,8 @@ export default function AdminDashboard() {
                         ecosystemCaptured: true,
                         isAssembly: false,
                         executor: getAssemblyExecutor(lead),
+            customCommissionType: "percent" as "percent" | "value",
+            customCommissionAmount: "",
                         consumedProducts: autoProducts
                     });
                     setShowCommissionModal(true);
@@ -1175,6 +1188,8 @@ export default function AdminDashboard() {
                                                                 ecosystemCaptured: true,
                                                                 isAssembly: false,
                                                                 executor: getAssemblyExecutor(lead),
+            customCommissionType: "percent" as "percent" | "value",
+            customCommissionAmount: "",
                                                                 consumedProducts: autoProducts
                                                             });
                                                             setShowCommissionModal(true);
@@ -1473,6 +1488,8 @@ export default function AdminDashboard() {
                                                                         ecosystemCaptured: (order as any).commission_ecosystem ?? true,
                                                                         isAssembly: (order as any).commission_service ?? false,
                                                                         executor: order.performed_by_partner ? 'partner' : (['smartphone', 'celular', 'tablet', 'mobile'].includes(((order as any).equipment_type || (order as any).interest_type || '').toLowerCase()) ? 'partner' : 'owner'),
+                                                                        customCommissionType: 'percent',
+                                                                        customCommissionAmount: '',
                                                                         consumedProducts: []
                                                                     });
                                                                     setShowCommissionModal(true);
@@ -1494,6 +1511,8 @@ export default function AdminDashboard() {
                                                                         ecosystemCaptured: true,
                                                                         isAssembly: false,
                                                                         executor: ['smartphone', 'celular', 'tablet', 'mobile'].includes(((originalLead as any)?.equipment_type || (order as any).equipment_type || originalLead?.interest_type || '').toLowerCase()) ? 'partner' : 'owner',
+                                                                        customCommissionType: 'percent',
+                                                                        customCommissionAmount: '',
                                                                         consumedProducts: []
                                                                     });
                                                                     setShowCommissionModal(true);
@@ -2121,36 +2140,51 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
+                            {/* Valor manual (sem produto) */}
+                            <div className="space-y-1.5">
+                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Valor manual (R$) <span className="opacity-50 normal-case tracking-normal">— opcional, substitui produtos</span></label>
+                                <input
+                                    type="number" step="0.01" min={0}
+                                    value={pdvForm.manualFinalValue}
+                                    onChange={(e) => setPdvForm({ ...pdvForm, manualFinalValue: e.target.value })}
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-display font-black text-lg focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                    placeholder="0.00"
+                                />
+                            </div>
+
                             {/* Desconto & Valor final (Calculado) */}
                             {(() => {
-                                const sub = pdvForm.consumedProducts.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                                const manualOverride = parseFloat(pdvForm.manualFinalValue) || 0;
+                                const sub = manualOverride > 0 ? manualOverride : pdvForm.consumedProducts.reduce((acc, item) => acc + (item.price * item.quantity), 0);
                                 const descAmount = pdvForm.discountType === 'percentage' ? sub * (pdvForm.discountValue / 100) : pdvForm.discountValue;
                                 const finalVal = Math.max(0, sub - descAmount);
 
-                                return (
-                                    <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
-                                        <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
-                                            <span>Subtotal Brut</span>
-                                            <span className="text-white">R$ {sub.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                                        </div>
-                                        
+                                return sub > 0 ? (
+                                    <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-4 space-y-3">
+                                        {!manualOverride && (
+                                            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-[var(--text-muted)]">
+                                                <span>Subtotal</span>
+                                                <span className="text-white">R$ {sub.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                            </div>
+                                        )}
+
                                         <div className="flex items-center gap-2">
                                             <div className="flex-1">
-                                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 mb-1">Desconto</label>
+                                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Desconto</label>
                                                 <input
                                                     type="number" step="0.01" min={0}
                                                     value={pdvForm.discountValue || ''}
                                                     onChange={(e) => setPdvForm({ ...pdvForm, discountValue: parseFloat(e.target.value) || 0 })}
-                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
                                                     placeholder="0.00"
                                                 />
                                             </div>
-                                            <div className="w-24 shrink-0">
-                                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-transparent ml-1 mb-1">Tipo</label>
+                                            <div className="w-20 shrink-0">
+                                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-transparent mb-1">Tipo</label>
                                                 <select
                                                     value={pdvForm.discountType}
                                                     onChange={(e) => setPdvForm({ ...pdvForm, discountType: e.target.value as 'fixed' | 'percentage' })}
-                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-3 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
+                                                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none uppercase"
                                                 >
                                                     <option value="fixed">R$</option>
                                                     <option value="percentage">%</option>
@@ -2158,57 +2192,86 @@ export default function AdminDashboard() {
                                             </div>
                                         </div>
 
-                                        <div className="pt-3 border-t border-[var(--border-subtle)]">
-                                            <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 mb-1">Valor Líquido (Cobrado do Cliente)</label>
-                                            <div className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl shadow-inner transition-all flex justify-between items-center">
-                                                <span>R$</span>
-                                                <span>{finalVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                            </div>
+                                        <div className="flex justify-between items-center border-t border-[var(--border-subtle)] pt-3">
+                                            <span className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Cobrado do cliente</span>
+                                            <span className="text-xl font-display font-black text-white">R$ {finalVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </div>
 
-                                        {sub > 0 && pdvForm.ecosystemCaptured && (
-                                            <div className="text-[9px] font-mono font-black text-[var(--accent-primary)] pl-1">
-                                                Comissão calculada do BRUTO: {sub > 7500 ? '5% (> R$7.500)' : '8% (Padrão)'} = R$ {(sub * (sub > 7500 ? 0.05 : 0.08)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        {pdvForm.ecosystemCaptured && (
+                                            <div className="text-[9px] font-mono text-[var(--accent-primary)] bg-[var(--accent-primary)]/5 rounded-lg px-3 py-1.5">
+                                                Ecossistema {sub > 8000 ? '5% (> R$8.000)' : '8%'} = R$ {(sub * (sub > 8000 ? 0.05 : 0.08)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                             </div>
                                         )}
                                     </div>
-                                );
+                                ) : null;
                             })()}
 
-                            {/* Ecossistema toggle */}
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
-                                <label className="flex items-start gap-4 cursor-pointer group">
-                                    <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
+                            {/* Protocolos */}
+                            <div className="space-y-2">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Protocolos de comissão</div>
+
+                                <label className="flex items-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/8 rounded-xl px-4 py-3 cursor-pointer transition-all group">
+                                    <div className="relative w-5 h-5 shrink-0 rounded-md bg-black/40 border border-white/20 group-hover:border-[var(--accent-primary)]/50 flex items-center justify-center transition-all">
                                         <input type="checkbox" checked={pdvForm.ecosystemCaptured} onChange={(e) => setPdvForm({ ...pdvForm, ecosystemCaptured: e.target.checked })} className="opacity-0 absolute inset-0 cursor-pointer z-10" />
-                                        {pdvForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                        {pdvForm.ecosystemCaptured && <div className="w-2.5 h-2.5 rounded-sm bg-[var(--accent-primary)]" />}
                                     </div>
-                                    <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Ecossistema Digital (8% ou 5% se &gt;R$7.500)</div>
-                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Cliente veio pelo site, Instagram, catálogo ou indicação digital.</div>
+                                    <div className="flex-1">
+                                        <div className="text-[10px] font-black uppercase tracking-wider group-hover:text-[var(--accent-primary)] transition-colors">Ecossistema digital — 8% / 5% &gt;R$8k</div>
+                                        <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">Site, Instagram, catálogo ou indicação digital</div>
                                     </div>
                                 </label>
-                            </div>
 
-                            {/* Montagem toggle + executor */}
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4 hover:border-[var(--accent-primary)]/30 transition-all">
-                                <label className="flex items-start gap-4 cursor-pointer group">
-                                    <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
+                                <label className="flex items-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/8 rounded-xl px-4 py-3 cursor-pointer transition-all group">
+                                    <div className="relative w-5 h-5 shrink-0 rounded-md bg-black/40 border border-white/20 group-hover:border-[var(--accent-primary)]/50 flex items-center justify-center transition-all">
                                         <input type="checkbox" checked={pdvForm.isAssembly} onChange={(e) => setPdvForm({ ...pdvForm, isAssembly: e.target.checked })} className="opacity-0 absolute inset-0 cursor-pointer z-10" />
-                                        {pdvForm.isAssembly && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                        {pdvForm.isAssembly && <div className="w-2.5 h-2.5 rounded-sm bg-[var(--accent-primary)]" />}
                                     </div>
-                                    <div>
-                                        <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Comissão de Montagem (+3% Iago/Jefferson)</div>
-                                        <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Serviço de montagem/configuração incluso na venda.</div>
+                                    <div className="flex-1">
+                                        <div className="text-[10px] font-black uppercase tracking-wider group-hover:text-[var(--accent-primary)] transition-colors">Protocolo de montagem</div>
+                                        <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">Serviço de montagem / configuração incluso</div>
                                     </div>
                                 </label>
 
                                 {pdvForm.isAssembly && (
-                                    <div className="border-t border-[var(--border-subtle)] pt-4 flex items-center gap-3">
-                                        <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da Montagem</div>
-                                        <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">
-                                            {currentExecutor === 'iago' ? 'Iago (Marketing)' : currentExecutor === 'partner' ? 'Jefferson (Técnico)' : 'Felipe (Dono)'}
-                                            <span className="ml-2 font-mono text-[8px] opacity-60">+3%</span>
+                                    <div className="bg-white/[0.02] border border-white/8 rounded-xl px-4 py-3 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor</span>
+                                            <span className={`text-[10px] font-black uppercase tracking-tight ${currentExecutor === 'iago' ? 'text-[var(--accent-primary)]' : currentExecutor === 'partner' ? 'text-purple-400' : 'text-white/60'}`}>
+                                                {currentExecutor === 'iago' ? 'Iago' : currentExecutor === 'partner' ? 'Jefferson' : 'Felipe'}
+                                                <span className="ml-1 font-mono text-[8px] opacity-50">(logado)</span>
+                                            </span>
                                         </div>
+
+                                        {(currentExecutor === 'iago' || currentExecutor === 'partner') && (
+                                            <div className="space-y-1.5">
+                                                <div className="text-[8px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Comissão personalizada <span className="opacity-50">(vazio = 3%)</span></div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex rounded-lg overflow-hidden border border-white/10">
+                                                        <button type="button"
+                                                            onClick={() => setPdvForm({ ...pdvForm, customCommissionType: 'percent' })}
+                                                            className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${pdvForm.customCommissionType === 'percent' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
+                                                        >%</button>
+                                                        <button type="button"
+                                                            onClick={() => setPdvForm({ ...pdvForm, customCommissionType: 'value' })}
+                                                            className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${pdvForm.customCommissionType === 'value' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
+                                                        >R$</button>
+                                                    </div>
+                                                    <input
+                                                        type="number" step="0.01" min="0"
+                                                        placeholder={pdvForm.customCommissionType === 'percent' ? 'Ex: 3' : 'Ex: 150.00'}
+                                                        value={pdvForm.customCommissionAmount}
+                                                        onChange={(e) => setPdvForm({ ...pdvForm, customCommissionAmount: e.target.value })}
+                                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)]/50"
+                                                    />
+                                                    {pdvForm.customCommissionAmount && (() => {
+                                                        const _sub = parseFloat(pdvForm.manualFinalValue) || pdvForm.consumedProducts.reduce((s, i) => s + i.price * i.quantity, 0);
+                                                        const _ca = parseFloat(pdvForm.customCommissionAmount) || 0;
+                                                        const _cv = pdvForm.customCommissionType === 'percent' ? _sub * (_ca / 100) : _ca;
+                                                        return _cv > 0 ? <span className="text-[9px] font-mono text-[var(--accent-primary)] shrink-0">R$ {_cv.toFixed(2)}</span> : null;
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -2224,270 +2287,261 @@ export default function AdminDashboard() {
             )}
 
             {/* Modal de Comissões */}
-            {showCommissionModal && selectedLeadForCommission && (
-                <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
-                    <form onSubmit={submitCommissionForm} className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-[32px] p-8 max-w-lg w-full relative card-dark my-auto">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-20" />
-                        
-                        <button type="button" onClick={() => setShowCommissionModal(false)} className="absolute top-8 right-8 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
-                            <X size={24} />
-                        </button>
+            {showCommissionModal && selectedLeadForCommission && (() => {
+                const _val = parseFloat(commissionForm.finalValue) || 0;
+                const _cost = parseFloat(commissionForm.costValue) || 0;
+                const _isDigital = ['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'].includes(selectedLeadForCommission.marketing_source?.toLowerCase());
+                const _isCelular = isCelularLead(selectedLeadForCommission);
+                const _baseRate = commissionForm.ecosystemCaptured ? (_val > 8000 ? 0.05 : 0.08) : 0;
+                const _customAmt = parseFloat(commissionForm.customCommissionAmount) || 0;
+                const _customComm = commissionForm.customCommissionType === 'percent' ? _val * (_customAmt / 100) : _customAmt;
+                const _iagoAssembly = commissionForm.isAssembly && commissionForm.executor === 'iago' ? (_customAmt > 0 ? _customComm : _val * 0.03) : 0;
+                const _jeffAssembly = commissionForm.isAssembly && _isCelular && commissionForm.executor === 'partner' ? (_val - _cost) * 0.5
+                    : commissionForm.isAssembly && !_isCelular && commissionForm.executor === 'partner' ? (_customAmt > 0 ? _customComm : _val * 0.03) : 0;
+                const _totalIago = _val * _baseRate + _iagoAssembly;
+                const _isMaintenance = selectedLeadForCommission.interest_type === 'manutencao' || !!selectedLeadForCommission.equipment_type;
+                return (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start justify-center p-4 overflow-y-auto">
+                    <form onSubmit={submitCommissionForm} className="bg-[#0e1117] border border-white/10 rounded-3xl w-full max-w-md relative my-6 overflow-hidden">
+                        {/* Top accent line */}
+                        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-60" />
 
-                        <div className="flex items-center gap-4 mb-2">
-                            <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
-                                <TrendingUp className="text-green-500" size={24} />
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 pt-5 pb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
+                                    <TrendingUp size={18} className="text-green-400" />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-display font-black italic uppercase tracking-tight chrome-text">Finalizar Venda</div>
+                                    <div className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest leading-none mt-0.5">Conversão financeira</div>
+                                </div>
                             </div>
+                            <button type="button" onClick={() => setShowCommissionModal(false)} className="w-8 h-8 flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-white hover:bg-white/10 transition-all">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        {/* Lead context pill */}
+                        <div className="mx-6 mb-5 flex items-center justify-between bg-white/5 border border-white/8 rounded-2xl px-4 py-3">
                             <div>
-                                <h2 className="text-2xl font-display font-black italic uppercase tracking-tighter chrome-text leading-tight">Finalizar Venda</h2>
-                                <p className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-widest">Registro financeiro da conversão</p>
+                                <div className="text-xs font-black uppercase tracking-wider text-white leading-none">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Cliente"}</div>
+                                <div className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mt-1">{selectedLeadForCommission.interest_type || selectedLeadForCommission.equipment_type || "Serviço"}</div>
                             </div>
-                        </div>
-                        
-                        <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-4 my-8 space-y-2">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Cliente</span>
-                                <span className="font-display font-bold uppercase italic tracking-tighter text-[var(--text-primary)]">{selectedLeadForCommission.client_name || selectedLeadForCommission.customer_name || "Cliente"}</span>
-                            </div>
-                            <div className="h-px bg-[var(--border-subtle)] opacity-50" />
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="font-mono text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Tipo de Serviço</span>
-                                <span className="font-mono font-black text-[var(--accent-primary)] uppercase tracking-tighter">{selectedLeadForCommission.interest_type || selectedLeadForCommission.equipment_type || "Generic_Manutencao"}</span>
-                            </div>
+                            {selectedLeadForCommission.voucher_code && (
+                                <div className="text-[9px] font-mono text-[var(--accent-primary)]/70 bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/15 rounded-lg px-2 py-1">{selectedLeadForCommission.voucher_code}</div>
+                            )}
                         </div>
 
-                        <div className="space-y-6">
-                            
-                            {/* Itens do Estoque */}
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Itens do Estoque (Baixa Automática)</label>
-                                </div>
-                                
-                                {commissionForm.consumedProducts.length > 0 && (
-                                    <div className="space-y-2 mb-4">
-                                        {commissionForm.consumedProducts.map((item, idx) => (
-                                            <div key={idx} className="flex items-center justify-between bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-3 rounded-xl">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold chrome-text uppercase">{item.name || 'Item Desconhecido'}</span>
-                                                    <span className="text-[9px] font-mono text-[var(--text-muted)]">Qtd: {item.quantity} (Estoque atual: {item.current_stock})</span>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const newArr = [...commissionForm.consumedProducts];
-                                                        newArr.splice(idx, 1);
-                                                        setCommissionForm({ ...commissionForm, consumedProducts: newArr });
-                                                    }}
-                                                    className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                        <div className="px-6 pb-6 space-y-4">
 
-                                <div className="flex gap-2">
-                                    <select
-                                        value={manualProductSelect}
-                                        onChange={(e) => setManualProductSelect(e.target.value)}
-                                        className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all uppercase appearance-none"
-                                    >
-                                        <option value="">+ Selecionar Item do Estoque</option>
-                                        {products.filter(p => p.stock_quantity > 0).map(p => (
-                                            <option key={p.id} value={p.id}>
-                                                {p.name} (R$ {p.price} | Est: {p.stock_quantity})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (!manualProductSelect) return;
-                                            const p = products.find(prod => prod.id === manualProductSelect);
-                                            if (!p) return;
-                                            
-                                            const existingIdx = commissionForm.consumedProducts.findIndex(item => item.product_id === p.id);
-                                            const newArr = [...commissionForm.consumedProducts];
-                                            
-                                            if (existingIdx >= 0) {
-                                                newArr[existingIdx].quantity += 1;
-                                            } else {
-                                                newArr.push({
-                                                    product_id: p.id,
-                                                    quantity: 1,
-                                                    name: p.name,
-                                                    current_stock: p.stock_quantity
-                                                });
-                                            }
-                                            
-                                            setCommissionForm({ ...commissionForm, consumedProducts: newArr });
-                                            setManualProductSelect('');
-                                        }}
-                                        className="bg-[var(--accent-primary)] text-[var(--bg-primary)] px-4 py-2 rounded-xl font-bold flex items-center justify-center hover:scale-105 transition-all"
-                                    >
-                                        <Plus size={16} strokeWidth={3} />
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Valor Total Cobrado (R$)</label>
-                                <input
-                                    type="number" step="0.01" required
-                                    value={commissionForm.finalValue}
-                                    onChange={(e) => setCommissionForm({ ...commissionForm, finalValue: e.target.value })}
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-4 text-white font-display font-black text-xl focus:outline-none focus:border-green-500/50 shadow-inner transition-all"
-                                    placeholder="0.00"
-                                />
-                            </div>
-
-                            {(selectedLeadForCommission.interest_type === 'manutencao' || selectedLeadForCommission.equipment_type) && (
-                                <div className="space-y-2">
-                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 text-red-400/80">Custo de Peças / Material (R$)</label>
+                            {/* Valores financeiros */}
+                            <div className={`grid gap-3 ${_isMaintenance ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                <div>
+                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] mb-1.5">Valor cobrado (R$)</label>
                                     <input
-                                        type="number" step="0.01"
-                                        value={commissionForm.costValue}
-                                        onChange={(e) => setCommissionForm({ ...commissionForm, costValue: e.target.value })}
-                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-mono font-bold focus:outline-none focus:border-red-500/30 transition-all font-mono"
+                                        type="number" step="0.01" required
+                                        value={commissionForm.finalValue}
+                                        onChange={(e) => setCommissionForm({ ...commissionForm, finalValue: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-white font-display font-black text-lg focus:outline-none focus:border-green-500/50 transition-all"
                                         placeholder="0.00"
                                     />
-                                    <p className="text-[8px] font-mono font-medium text-[var(--text-muted)] mt-1 px-1 leading-relaxed">* Dedução impacta diretamente o lucro líquido da loja. Comissões operacionais permanecem estáticas.</p>
                                 </div>
-                            )}
+                                {_isMaintenance && (
+                                    <div>
+                                        <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-red-400/70 mb-1.5">Custo peças (R$)</label>
+                                        <input
+                                            type="number" step="0.01"
+                                            value={commissionForm.costValue}
+                                            onChange={(e) => setCommissionForm({ ...commissionForm, costValue: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-3 text-white font-mono font-bold focus:outline-none focus:border-red-500/30 transition-all"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                )}
+                            </div>
 
-                            {/* Digital Protocol Check */}
-                            {['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'].includes(selectedLeadForCommission.marketing_source?.toLowerCase()) ? (
-                                <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(var(--accent-primary-rgb),0.05)]">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-6 h-6 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center border border-[var(--accent-primary)]/20">
-                                            <CheckCircle2 size={14} className="text-[var(--accent-primary)]" />
-                                        </div>
+                            {/* Protocolos */}
+                            <div className="space-y-2">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Protocolos de comissão</div>
+
+                                {/* Ecosystem */}
+                                {_isDigital ? (
+                                    <div className="flex items-center gap-3 bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 rounded-xl px-4 py-3">
+                                        <CheckCircle2 size={14} className="text-[var(--accent-primary)] shrink-0" />
                                         <div>
-                                            <div className="text-xs font-black uppercase tracking-widest text-[var(--accent-primary)]">Protocolo Digital Ativo</div>
-                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
-                                                Comissão Automatizada Aplicada: {parseFloat(commissionForm.finalValue) > 8000 ? '5% (>8k)' : '8% (Padrão)'}
-                                            </div>
+                                            <div className="text-[10px] font-black uppercase tracking-wider text-[var(--accent-primary)]">Digital — Ativo automaticamente</div>
+                                            <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">{_val > 8000 ? '5% (valor > R$8.000)' : '8% padrão'}</div>
                                         </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
-                                    <label className="flex items-start gap-4 cursor-pointer group">
-                                        <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
-                                            <input
-                                                type="checkbox"
-                                                checked={commissionForm.ecosystemCaptured}
-                                                onChange={(e) => setCommissionForm({ ...commissionForm, ecosystemCaptured: e.target.checked })}
-                                                className="opacity-0 absolute inset-0 cursor-pointer z-10"
-                                            />
-                                            {commissionForm.ecosystemCaptured && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                ) : (
+                                    <label className="flex items-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/8 rounded-xl px-4 py-3 cursor-pointer transition-all group">
+                                        <div className="relative w-5 h-5 shrink-0 rounded-md bg-black/40 border border-white/20 group-hover:border-[var(--accent-primary)]/50 flex items-center justify-center transition-all">
+                                            <input type="checkbox" checked={commissionForm.ecosystemCaptured} onChange={(e) => setCommissionForm({ ...commissionForm, ecosystemCaptured: e.target.checked })} className="opacity-0 absolute inset-0 cursor-pointer z-10" />
+                                            {commissionForm.ecosystemCaptured && <div className="w-2.5 h-2.5 rounded-sm bg-[var(--accent-primary)]" />}
                                         </div>
-                                        <div>
-                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Bônus de Ecossistema (8%/5%)</div>
-                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">Protocolo de indicação de Lead manual/externo.</div>
+                                        <div className="flex-1">
+                                            <div className="text-[10px] font-black uppercase tracking-wider group-hover:text-[var(--accent-primary)] transition-colors">Bônus de ecossistema — {_val > 8000 ? '5%' : '8%'}</div>
+                                            <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">Lead manual / indicação externa</div>
                                         </div>
+                                        {commissionForm.ecosystemCaptured && _val > 0 && (
+                                            <div className="text-[10px] font-mono font-black text-[var(--accent-primary)]">+R$ {(_val * _baseRate).toFixed(2)}</div>
+                                        )}
                                     </label>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Assembly Protocol Check */}
-                            {(selectedLeadForCommission.interest_type === 'manutencao' || !!selectedLeadForCommission.equipment_type) && (
-                                <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
-                                    <label className="flex items-start gap-4 cursor-pointer group">
-                                        <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
-                                            <input
-                                                type="checkbox"
+                                {/* Assembly */}
+                                {_isMaintenance && (
+                                    <label className="flex items-center gap-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/8 rounded-xl px-4 py-3 cursor-pointer transition-all group">
+                                        <div className="relative w-5 h-5 shrink-0 rounded-md bg-black/40 border border-white/20 group-hover:border-[var(--accent-primary)]/50 flex items-center justify-center transition-all">
+                                            <input type="checkbox"
                                                 checked={selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly}
                                                 disabled={selectedLeadForCommission.interest_type === 'pc_build'}
                                                 onChange={(e) => setCommissionForm({ ...commissionForm, isAssembly: e.target.checked })}
                                                 className="opacity-0 absolute inset-0 cursor-pointer z-10 disabled:cursor-not-allowed"
                                             />
-                                            {(selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly) && <div className="w-3 h-3 bg-[var(--accent-primary)] rounded-sm mx-auto shadow-[0_0_8px_var(--accent-primary)]" />}
+                                            {(selectedLeadForCommission.interest_type === 'pc_build' || commissionForm.isAssembly) && <div className="w-2.5 h-2.5 rounded-sm bg-[var(--accent-primary)]" />}
                                         </div>
-                                        <div>
-                                            <div className="text-xs font-black uppercase tracking-widest mb-1 group-hover:text-[var(--accent-primary)] transition-colors">Protocolo de Montagem (+3%)</div>
-                                            <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-tighter">
-                                                {selectedLeadForCommission.interest_type === 'pc_build' 
-                                                    ? 'Aplicado automaticamente para interesse em Montagem de PC.' 
-                                                    : 'Gatilho manual para serviço de montagem de PC.'}
+                                        <div className="flex-1">
+                                            <div className="text-[10px] font-black uppercase tracking-wider group-hover:text-[var(--accent-primary)] transition-colors">Protocolo de montagem</div>
+                                            <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">
+                                                {selectedLeadForCommission.interest_type === 'pc_build' ? 'Automático — Montagem de PC' : 'Serviço de montagem / reparo'}
                                             </div>
                                         </div>
                                     </label>
-                                </div>
-                            )}
-
-                            {commissionForm.isAssembly && (
-                            <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3">
-                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">
-                                    {isCelularLead(selectedLeadForCommission) ? 'Técnico Responsável' : 'Executor da Montagem'}
-                                </div>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {[
-                                        { value: 'owner', label: 'Felipe (Dono)', desc: 'Sem comissão extra', color: '' },
-                                        { value: 'iago', label: 'Iago (Marketing)', desc: '+3%', color: 'text-[var(--accent-primary)]' },
-                                        { value: 'partner', label: 'Jefferson (Técnico)', desc: isCelularLead(selectedLeadForCommission) ? '50% lucro líquido' : '+3%', color: 'text-purple-400' },
-                                    ].map(opt => (
-                                        <label key={opt.value} className="flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)] transition-all cursor-pointer">
-                                            <input type="radio" name="assemblyExecutor" value={opt.value}
-                                                checked={commissionForm.executor === opt.value}
-                                                onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
-                                                className="w-4 h-4 accent-[var(--accent-primary)]"
-                                            />
-                                            <div className={`text-xs font-black uppercase tracking-widest ${opt.color}`}>
-                                                {opt.label}
-                                                <span className="ml-2 font-mono text-[8px] opacity-60">{opt.desc}</span>
-                                            </div>
-                                        </label>
-                                    ))}
-                                </div>
-                                {isCelularLead(selectedLeadForCommission) && commissionForm.executor === 'partner' && parseFloat(commissionForm.finalValue) > 0 && (
-                                    <div className="text-[9px] font-mono text-purple-400 bg-purple-400/5 border border-purple-400/20 rounded-lg px-3 py-2">
-                                        Jefferson recebe: R$ {((parseFloat(commissionForm.finalValue) - (parseFloat(commissionForm.costValue) || 0)) * 0.5).toFixed(2)}
-                                        <span className="opacity-60 ml-1">(50% de R$ {(parseFloat(commissionForm.finalValue) - (parseFloat(commissionForm.costValue) || 0)).toFixed(2)} líquido)</span>
-                                    </div>
-                                )}
-                                {!isCelularLead(selectedLeadForCommission) && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner') && (
-                                    <div className="space-y-2 pt-1">
-                                        <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Comissão personalizada</div>
-                                        <div className="flex gap-2">
-                                            <button type="button"
-                                                onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'percent' })}
-                                                className={`px-3 py-1.5 text-[9px] font-mono font-black uppercase rounded-lg border transition-all ${commissionForm.customCommissionType === 'percent' ? 'bg-[var(--accent-primary)] text-black border-[var(--accent-primary)]' : 'bg-transparent text-[var(--text-muted)] border-[var(--border-subtle)]'}`}
-                                            >%</button>
-                                            <button type="button"
-                                                onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'value' })}
-                                                className={`px-3 py-1.5 text-[9px] font-mono font-black uppercase rounded-lg border transition-all ${commissionForm.customCommissionType === 'value' ? 'bg-[var(--accent-primary)] text-black border-[var(--accent-primary)]' : 'bg-transparent text-[var(--text-muted)] border-[var(--border-subtle)]'}`}
-                                            >R$</button>
-                                            <input
-                                                type="number" step="0.01" min="0"
-                                                placeholder={commissionForm.customCommissionType === 'percent' ? 'Ex: 3' : 'Ex: 150.00'}
-                                                value={commissionForm.customCommissionAmount}
-                                                onChange={(e) => setCommissionForm({ ...commissionForm, customCommissionAmount: e.target.value })}
-                                                className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)]/50"
-                                            />
-                                        </div>
-                                        {commissionForm.customCommissionAmount && parseFloat(commissionForm.finalValue) > 0 && (
-                                            <div className="text-[9px] font-mono text-[var(--accent-primary)] opacity-70">
-                                                = R$ {(commissionForm.customCommissionType === 'percent'
-                                                    ? parseFloat(commissionForm.finalValue) * (parseFloat(commissionForm.customCommissionAmount) / 100)
-                                                    : parseFloat(commissionForm.customCommissionAmount)
-                                                ).toFixed(2)}
-                                            </div>
-                                        )}
-                                        <p className="text-[8px] font-mono text-[var(--text-muted)] opacity-60">Deixe vazio para usar padrão de 3%.</p>
-                                    </div>
                                 )}
                             </div>
+
+                            {/* Executor da montagem */}
+                            {commissionForm.isAssembly && (
+                                <div className="space-y-2">
+                                    <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">{_isCelular ? 'Técnico responsável' : 'Executor da montagem'}</div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { value: 'owner', label: 'Felipe', role: 'Dono', color: 'white/60' },
+                                            { value: 'iago', label: 'Iago', role: 'Marketing', color: '[var(--accent-primary)]' },
+                                            { value: 'partner', label: 'Jefferson', role: 'Técnico', color: 'purple-400' },
+                                        ].map(opt => (
+                                            <label key={opt.value} className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border cursor-pointer transition-all text-center ${commissionForm.executor === opt.value ? 'border-white/30 bg-white/10' : 'border-white/8 bg-white/[0.02] hover:bg-white/[0.05]'}`}>
+                                                <input type="radio" name="assemblyExecutor" value={opt.value}
+                                                    checked={commissionForm.executor === opt.value}
+                                                    onChange={(e) => setCommissionForm({ ...commissionForm, executor: e.target.value })}
+                                                    className="sr-only"
+                                                />
+                                                <span className={`text-xs font-black uppercase tracking-tight text-${opt.color}`}>{opt.label}</span>
+                                                <span className="text-[8px] font-mono text-[var(--text-muted)]">{opt.role}</span>
+                                                {commissionForm.executor === opt.value && (
+                                                    <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-white/40" />
+                                                )}
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    {/* Celular + Jefferson → 50% net */}
+                                    {_isCelular && commissionForm.executor === 'partner' && _val > 0 && (
+                                        <div className="flex items-center justify-between bg-purple-500/5 border border-purple-500/20 rounded-xl px-4 py-2.5">
+                                            <span className="text-[9px] font-mono text-purple-400">Jefferson (50% líquido)</span>
+                                            <span className="text-[10px] font-mono font-black text-purple-400">R$ {_jeffAssembly.toFixed(2)}</span>
+                                        </div>
+                                    )}
+
+                                    {/* PC/notebook + Iago or Jefferson → custom */}
+                                    {!_isCelular && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner') && (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex rounded-lg overflow-hidden border border-white/10">
+                                                    <button type="button"
+                                                        onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'percent' })}
+                                                        className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${commissionForm.customCommissionType === 'percent' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
+                                                    >%</button>
+                                                    <button type="button"
+                                                        onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'value' })}
+                                                        className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${commissionForm.customCommissionType === 'value' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
+                                                    >R$</button>
+                                                </div>
+                                                <input
+                                                    type="number" step="0.01" min="0"
+                                                    placeholder={commissionForm.customCommissionType === 'percent' ? 'Ex: 3 (padrão)' : 'Ex: 150.00 (padrão 3%)'}
+                                                    value={commissionForm.customCommissionAmount}
+                                                    onChange={(e) => setCommissionForm({ ...commissionForm, customCommissionAmount: e.target.value })}
+                                                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)]/50"
+                                                />
+                                                {_customAmt > 0 && _val > 0 && (
+                                                    <span className="text-[9px] font-mono text-[var(--accent-primary)] shrink-0">R$ {_customComm.toFixed(2)}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             )}
 
-                            <button type="submit" className="w-full bg-white hover:bg-slate-200 text-[#121216] font-display font-black uppercase tracking-[0.2em] text-[10px] py-5 rounded-2xl transition-all hover:scale-[1.01]">
-                                Confirmar Finalização
+                            {/* Commission preview */}
+                            {_val > 0 && (_totalIago > 0 || _jeffAssembly > 0) && (
+                                <div className="bg-green-500/5 border border-green-500/15 rounded-2xl px-4 py-3 space-y-2">
+                                    <div className="text-[9px] font-mono font-black uppercase tracking-widest text-green-400/70">Resumo de comissões</div>
+                                    {_totalIago > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[10px] font-mono text-[var(--text-muted)]">Iago <span className="opacity-50">({_val > 8000 ? '5%' : '8%'}{commissionForm.isAssembly && commissionForm.executor === 'iago' ? ' + serviço' : ''})</span></span>
+                                            <span className="text-sm font-display font-black text-green-400">R$ {_totalIago.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {_jeffAssembly > 0 && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[10px] font-mono text-[var(--text-muted)]">Jefferson <span className="opacity-50">({_isCelular ? '50% líquido' : 'serviço'})</span></span>
+                                            <span className="text-sm font-display font-black text-purple-400">R$ {_jeffAssembly.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="h-px bg-white/8" />
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-wider">Lucro líquido loja</span>
+                                        <span className="text-[10px] font-mono font-black text-white/70">R$ {(_val - _cost - _totalIago - _jeffAssembly).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Itens do Estoque */}
+                            <div className="space-y-2">
+                                <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Baixa de estoque</div>
+                                {commissionForm.consumedProducts.length > 0 && (
+                                    <div className="space-y-1.5">
+                                        {commissionForm.consumedProducts.map((item, idx) => (
+                                            <div key={idx} className="flex items-center justify-between bg-white/[0.03] border border-white/8 px-3 py-2 rounded-xl">
+                                                <div>
+                                                    <span className="text-[10px] font-bold text-white uppercase">{item.name || 'Item'}</span>
+                                                    <span className="text-[8px] font-mono text-[var(--text-muted)] ml-2">× {item.quantity}</span>
+                                                </div>
+                                                <button type="button" onClick={() => { const newArr = [...commissionForm.consumedProducts]; newArr.splice(idx, 1); setCommissionForm({ ...commissionForm, consumedProducts: newArr }); }} className="p-1 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 rounded-lg transition-colors">
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <div className="flex gap-2">
+                                    <select
+                                        value={manualProductSelect}
+                                        onChange={(e) => setManualProductSelect(e.target.value)}
+                                        className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all appearance-none"
+                                    >
+                                        <option value="">Adicionar item do estoque...</option>
+                                        {products.filter(p => p.stock_quantity > 0).map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} (Est: {p.stock_quantity})</option>
+                                        ))}
+                                    </select>
+                                    <button type="button" onClick={() => { if (!manualProductSelect) return; const p = products.find(prod => prod.id === manualProductSelect); if (!p) return; const existingIdx = commissionForm.consumedProducts.findIndex(item => item.product_id === p.id); const newArr = [...commissionForm.consumedProducts]; if (existingIdx >= 0) { newArr[existingIdx].quantity += 1; } else { newArr.push({ product_id: p.id, quantity: 1, name: p.name, current_stock: p.stock_quantity }); } setCommissionForm({ ...commissionForm, consumedProducts: newArr }); setManualProductSelect(''); }} className="bg-[var(--accent-primary)] text-black px-3 py-2 rounded-xl flex items-center justify-center hover:scale-105 transition-all">
+                                        <Plus size={14} strokeWidth={3} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" className="w-full mt-2 bg-white hover:bg-slate-100 text-black font-display font-black italic uppercase tracking-[0.15em] text-[11px] py-4 rounded-2xl transition-all hover:scale-[1.01] shadow-lg">
+                                Confirmar Venda
                             </button>
                         </div>
                     </form>
                 </div>
-            )}
+                );
+            })()}
         </div>
     );
 }
