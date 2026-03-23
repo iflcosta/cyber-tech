@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Product } from '@/lib/products';
 import { MessageSquare, ChevronLeft, ChevronRight, Package, ArrowLeft } from 'lucide-react';
-import { brand } from '@/lib/brand';
+import { useWhatsAppLead } from '@/hooks/useWhatsAppLead';
 
 const CATEGORY_LABELS: Record<string, string> = {
   gamer: 'PC Gamer',
@@ -39,10 +39,9 @@ export default function ProductPage({ product }: { product: Product }) {
 
   const price = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price);
 
-  const whatsappMsg = encodeURIComponent(
-    `Olá! Vi o produto *${product.name}* (${price}) no site e tenho interesse. Podem me dar mais informações?`
-  );
-  const whatsappUrl = `https://wa.me/${brand.whatsapp.replace(/\D/g, '')}?text=${whatsappMsg}`;
+  const { openWhatsApp, loading: waLoading } = useWhatsAppLead({
+    defaultMessage: `Olá! Vi o produto *${product.name}* (${price}) no site e tenho interesse. Podem me dar mais informações?`,
+  });
 
   const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v && String(v).trim());
 
@@ -143,12 +142,14 @@ export default function ProductPage({ product }: { product: Product }) {
             )}
 
             <div className="space-y-3 pt-2">
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                <Button className="w-full h-12 text-sm">
-                  <MessageSquare className="h-4 w-4" />
-                  {open ? 'FALAR AGORA NO WHATSAPP' : 'TENHO INTERESSE'}
-                </Button>
-              </a>
+              <Button
+                onClick={() => openWhatsApp()}
+                disabled={waLoading}
+                className="w-full h-12 text-sm"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {waLoading ? 'AGUARDE...' : open ? 'FALAR AGORA NO WHATSAPP' : 'TENHO INTERESSE'}
+              </Button>
               <Link href="/produtos" className="flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                 <ArrowLeft className="h-3 w-3" /> Ver todos os produtos
               </Link>
