@@ -33,11 +33,6 @@ export default function AdminDashboard() {
     const generateSlug = (name: string) =>
         name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // Derives executor from the logged-in user's email
-    const currentExecutor = userEmail?.toLowerCase().includes('iago') ? 'iago'
-        : userEmail?.toLowerCase().includes('jefferson') ? 'partner'
-        : 'owner';
-
     // Modal de Comissões
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [selectedLeadForCommission, setSelectedLeadForCommission] = useState<any>(null);
@@ -72,6 +67,12 @@ export default function AdminDashboard() {
     const [showSocialCard, setShowSocialCard] = useState(false);
     const [socialCardLead, setSocialCardLead] = useState<any>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
+
+    // Derives executor from the logged-in user's email
+    const currentExecutor = userEmail?.toLowerCase().includes('iago') ? 'iago'
+        : userEmail?.toLowerCase().includes('jefferson') ? 'partner'
+        : 'owner';
+
     const [sentimentAnalysis, setSentimentAnalysis] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [installable, setInstallable] = useState(false);
