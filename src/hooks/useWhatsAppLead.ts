@@ -79,6 +79,9 @@ export function useWhatsAppLead({
     if (isLoading) return
     setIsLoading(true)
 
+    // Open blank window synchronously (before any await) to avoid popup blocker
+    const win = typeof window !== 'undefined' ? window.open('', '_blank') : null
+
     try {
       const voucher = await getOrCreateSessionVoucher()
 
@@ -100,13 +103,15 @@ export function useWhatsAppLead({
       firePixelLead(serviceType)
 
       const msg = buildMessage(voucher, serviceType, overrideMessage ?? defaultMessage)
+      const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(msg)}`
 
-      if (typeof window !== 'undefined') {
-        window.open(
-          `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(msg)}`,
-          '_blank'
-        )
+      if (win) {
+        win.location.href = waUrl
+      } else if (typeof window !== 'undefined') {
+        window.open(waUrl, '_blank')
       }
+    } catch {
+      win?.close()
     } finally {
       setIsLoading(false)
     }
