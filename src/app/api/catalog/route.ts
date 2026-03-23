@@ -19,7 +19,7 @@ export async function GET() {
             availability: p.stock_quantity > 0 ? 'in stock' : 'out of stock',
             condition: 'new',
             price: `${p.price} BRL`,
-            link: `https://cyber-tech.vercel.app/showroom`, // Idealmente seria o link direto do produto
+            link: `https://cyberinformatica.tech/showroom`, // Idealmente seria o link direto do produto
             image_link: p.image_urls?.[0] || 'https://placehold.co/600x600?text=Cyber+Tech',
             brand: 'Cyber Inform�tica',
             google_product_category: p.category === 'smartphone' ? 'Electronics > Communications > Telephony > Mobile Phones' : 'Electronics > Computers',

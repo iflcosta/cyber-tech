@@ -6,8 +6,8 @@ import { getVoucherByCode } from '@/lib/voucher'
 // ---------------------------------------------------------------------------
 
 const ALLOWED_ORIGINS = [
-  'https://cyberinformatica.com.br',
-  'https://www.cyberinformatica.com.br',
+  'https://cyberinformatica.tech',
+  'https://www.cyberinformatica.tech',
 ]
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
