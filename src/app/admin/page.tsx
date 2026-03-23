@@ -59,6 +59,7 @@ export default function AdminDashboard() {
         customCommissionType: 'percent' as 'percent' | 'value',
         customCommissionAmount: '',
         manualFinalValue: '',
+        serviceDescription: '',
         consumedProducts: [] as {product_id: string, quantity: number, name?: string, price: number, current_stock?: number}[]
     });
     // PDV product search/filter state
@@ -236,7 +237,11 @@ export default function AdminDashboard() {
             commission_ecosystem: isDigital || commissionForm.ecosystemCaptured,
             commission_service: commissionForm.isAssembly,
             performed_by_partner: commissionForm.executor === 'partner',
-            converted_at: new Date().toISOString()
+            converted_at: new Date().toISOString(),
+            utm_parameters: {
+                ...(selectedLeadForCommission.utm_parameters || {}),
+                executor: userEmail,
+            },
         } : {
             status: 'converted',
             final_value: val,
@@ -336,6 +341,7 @@ export default function AdminDashboard() {
         const { error } = await supabase.from('leads').insert([{
             client_name: pdvForm.customerName || 'Cliente Balcão',
             interest_type: 'venda',
+            description: pdvForm.serviceDescription || null,
             status: 'converted',
             marketing_source: pdvForm.ecosystemCaptured ? 'site' : 'balcao',
             final_value: val,
@@ -344,7 +350,8 @@ export default function AdminDashboard() {
             commission_service: pdvForm.isAssembly,
             performed_by_partner: currentExecutor === 'partner',
             converted_at: new Date().toISOString(),
-            payment_status: 'paid'
+            payment_status: 'paid',
+            utm_parameters: { executor: userEmail },
         }]).select();
 
         if (!error) {
@@ -363,7 +370,7 @@ export default function AdminDashboard() {
             }
 
             setShowPdvModal(false);
-            setPdvForm({ customerName: '', discountType: 'fixed', discountValue: 0, ecosystemCaptured: false, isAssembly: false, executor: 'owner', customCommissionType: 'percent', customCommissionAmount: '', manualFinalValue: '', consumedProducts: [] });
+            setPdvForm({ customerName: '', discountType: 'fixed', discountValue: 0, ecosystemCaptured: false, isAssembly: false, executor: 'owner', customCommissionType: 'percent', customCommissionAmount: '', manualFinalValue: '', serviceDescription: '', consumedProducts: [] });
             setPdvProductSearch('');
             setPdvProductCategory('');
             setPdvProductQty(1);
@@ -689,7 +696,7 @@ export default function AdminDashboard() {
                                                         {item._type === 'maintenance' || item.interest_type === 'manutencao' ? 'Manutenção' : item.interest_type || 'Lead'}
                                                     </div>
                                                     {item.voucher_code && <div className="text-[9px] font-mono text-[var(--accent-primary)] mt-1">{item.voucher_code}</div>}
-                                                    <div className="text-[9px] text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleDateString('pt-BR')}</div>
+                                                    <div className="text-[9px] text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -979,7 +986,7 @@ export default function AdminDashboard() {
                                                     <div className="flex items-center gap-3 text-[9px] font-mono text-[var(--text-muted)] uppercase">
                                                         <span>{getSourceIcon(lead.marketing_source)} {lead.marketing_source || 'direct'}</span>
                                                         {lead.voucher_code && <span className="text-[var(--accent-primary)]">{lead.voucher_code}</span>}
-                                                        <span>{new Date(lead.created_at).toLocaleDateString('pt-BR')}</span>
+                                                        <span>{new Date(lead.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                                                     </div>
                                                 </div>
                                                 {/* Actions */}
@@ -1173,6 +1180,16 @@ export default function AdminDashboard() {
                                                                 R$ {((lead.final_value || 0) - (lead.commission_value || 0) - (lead.performed_by_partner ? (lead.interest_type === 'manutencao' ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5 : (lead.final_value || 0) * 0.03) : 0)).toLocaleString('pt-BR')}
                                                             </span>
                                                         </div>
+                                                        {(lead.utm_parameters as any)?.executor && (
+                                                            <div className="text-[8px] font-mono text-white/30 pt-1 border-t border-white/5">
+                                                                executor: {(lead.utm_parameters as any).executor}
+                                                            </div>
+                                                        )}
+                                                        {lead.converted_at && (
+                                                            <div className="text-[8px] font-mono text-white/30">
+                                                                {new Date(lead.converted_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ) : "--"}
                                             </td>
@@ -1527,7 +1544,7 @@ export default function AdminDashboard() {
                                                                 Finalizar Ordem
                                                             </button>
                                                             <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] text-center uppercase tracking-widest mt-2">
-                                                                Aberto em: {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                                                                Aberto em: {new Date(order.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                             </div>
                                                         </div>
                                                     )}
@@ -2146,16 +2163,28 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* Valor manual (sem produto) */}
-                            <div className="space-y-1.5">
-                                <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Valor manual (R$) <span className="opacity-50 normal-case tracking-normal">— opcional, substitui produtos</span></label>
-                                <input
-                                    type="number" step="0.01" min={0}
-                                    value={pdvForm.manualFinalValue}
-                                    onChange={(e) => setPdvForm({ ...pdvForm, manualFinalValue: e.target.value })}
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-display font-black text-lg focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
-                                    placeholder="0.00"
-                                />
+                            {/* Valor manual + descrição */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Valor manual (R$) <span className="opacity-50 normal-case tracking-normal font-normal">— substitui produtos</span></label>
+                                    <input
+                                        type="number" step="0.01" min={0}
+                                        value={pdvForm.manualFinalValue}
+                                        onChange={(e) => setPdvForm({ ...pdvForm, manualFinalValue: e.target.value })}
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-display font-black text-lg focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Descrição do serviço</label>
+                                    <input
+                                        type="text"
+                                        value={pdvForm.serviceDescription}
+                                        onChange={(e) => setPdvForm({ ...pdvForm, serviceDescription: e.target.value })}
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
+                                        placeholder="ex: venda cabo de rede"
+                                    />
+                                </div>
                             </div>
 
                             {/* Desconto & Valor final (Calculado) */}
