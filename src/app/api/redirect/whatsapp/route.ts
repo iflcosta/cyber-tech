@@ -9,13 +9,6 @@ import { utmToVoucherSource } from '@/lib/tracking/sources'
  * Generates a voucher, builds a pre-filled WhatsApp message and redirects.
  */
 
-const SERVICE_LABELS: Record<string, string> = {
-  celular:   'reparo de celular',
-  notebook:  'reparo de notebook',
-  desktop:   'reparo de desktop',
-  pc_gamer:  'montagem de PC Gamer',
-  outro:     'atendimento geral',
-}
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
@@ -23,11 +16,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const serviceKey  = searchParams.get('service') ?? 'outro'
   const utmCampaign = searchParams.get('utm_campaign')
 
-  const source      = utmToVoucherSource(utmSource)
-  const serviceLabel = SERVICE_LABELS[serviceKey] ?? 'atendimento'
-
-  const waNumber =
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '5511999999999'
+  const source = utmToVoucherSource(utmSource)
 
   let code: string | null = null
 
@@ -42,11 +31,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // Fallback: redirect to WhatsApp without a voucher code
   }
 
-  const message = code
-    ? `Olá! Vim pelo anúncio da Cyber Informática.\n\n🔖 Código: ${code}\n🛠️ Serviço: ${serviceLabel}\n\nPode me ajudar?`
-    : `Olá! Vim pelo anúncio da Cyber Informática.\n🛠️ Serviço: ${serviceLabel}\n\nPode me ajudar?`
+  const siteBase = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cyberinformatica.tech'
+  const params = new URLSearchParams()
+  if (code) params.set('voucher', code)
+  if (utmSource) params.set('utm_source', utmSource)
+  if (utmCampaign) params.set('utm_campaign', utmCampaign)
+  params.set('service', serviceKey)
 
-  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`
+  const siteUrl = `${siteBase}/?${params.toString()}`
 
-  return NextResponse.redirect(waUrl, { status: 302 })
+  return NextResponse.redirect(siteUrl, { status: 302 })
 }
