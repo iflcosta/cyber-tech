@@ -223,7 +223,12 @@ export default function AdminDashboard() {
 
         const totalIagoEarnings = (val * baseRate) + (val * assemblyRate);
 
-        const updateData = {
+        // Determine which table to update
+        const isLead = leads.some(l => l.id === selectedLeadForCommission.id);
+        const tableName = isLead ? 'leads' : 'maintenance_orders';
+
+        // maintenance_orders schema only has the base columns
+        const updateData = isLead ? {
             status: 'converted',
             final_value: val,
             cost_value: cost,
@@ -232,11 +237,12 @@ export default function AdminDashboard() {
             commission_service: commissionForm.isAssembly,
             performed_by_partner: commissionForm.executor === 'partner',
             converted_at: new Date().toISOString()
+        } : {
+            status: 'converted',
+            final_value: val,
+            cost_value: cost,
+            commission_value: totalIagoEarnings,
         };
-
-        // Determine which table to update
-        const isLead = leads.some(l => l.id === selectedLeadForCommission.id);
-        const tableName = isLead ? 'leads' : 'maintenance_orders';
 
         const { error } = await supabase
             .from(tableName)
