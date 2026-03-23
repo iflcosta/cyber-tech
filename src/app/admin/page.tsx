@@ -768,7 +768,7 @@ export default function AdminDashboard() {
                                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                     {products.filter(p => p.stock_quantity <= 3).length > 0 ? (
                                         products.filter(p => p.stock_quantity <= 3).map(p => (
-                                            <div key={p.id} className="flex items-center justify-between p-5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl group/item hover:border-red-500/30 transition-all">
+                                            <div key={p.id} onClick={() => { setEditingProduct(p); setSlugDraft(p.slug || ''); setPreviewUrls(p.image_urls || []); setShowProductForm(true); setActiveTab('products'); }} className="flex items-center justify-between p-5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl group/item hover:border-red-500/30 transition-all cursor-pointer">
                                                 <div>
                                                     <div className="text-[11px] font-black uppercase leading-tight italic tracking-tighter group-hover/item:text-red-500 transition-colors">{p.name}</div>
                                                     <div className="text-[9px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1 opacity-50">{p.category}</div>
