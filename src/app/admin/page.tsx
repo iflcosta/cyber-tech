@@ -316,13 +316,13 @@ export default function AdminDashboard() {
             baseRate = subtotal > 8000 ? 0.05 : 0.08;
         }
 
-        // Assembly Commission: custom % or R$, fallback to 3%
+        // Assembly Commission: always manual when isAssembly is active
         let assemblyCommission = 0;
-        if (pdvForm.isAssembly && (currentExecutor === 'iago' || currentExecutor === 'partner')) {
+        if (pdvForm.isAssembly) {
             const customAmt = parseFloat(pdvForm.customCommissionAmount) || 0;
             assemblyCommission = customAmt > 0
                 ? (pdvForm.customCommissionType === 'percent' ? subtotal * (customAmt / 100) : customAmt)
-                : subtotal * 0.03;
+                : 0;
         }
 
         const totalCommission = (subtotal * baseRate) + assemblyCommission;
@@ -2242,36 +2242,34 @@ export default function AdminDashboard() {
                                             </span>
                                         </div>
 
-                                        {(currentExecutor === 'iago' || currentExecutor === 'partner') && (
-                                            <div className="space-y-1.5">
-                                                <div className="text-[8px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Comissão personalizada <span className="opacity-50">(vazio = 3%)</span></div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex rounded-lg overflow-hidden border border-white/10">
-                                                        <button type="button"
-                                                            onClick={() => setPdvForm({ ...pdvForm, customCommissionType: 'percent' })}
-                                                            className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${pdvForm.customCommissionType === 'percent' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
-                                                        >%</button>
-                                                        <button type="button"
-                                                            onClick={() => setPdvForm({ ...pdvForm, customCommissionType: 'value' })}
-                                                            className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${pdvForm.customCommissionType === 'value' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
-                                                        >R$</button>
-                                                    </div>
-                                                    <input
-                                                        type="number" step="0.01" min="0"
-                                                        placeholder={pdvForm.customCommissionType === 'percent' ? 'Ex: 3' : 'Ex: 150.00'}
-                                                        value={pdvForm.customCommissionAmount}
-                                                        onChange={(e) => setPdvForm({ ...pdvForm, customCommissionAmount: e.target.value })}
-                                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)]/50"
-                                                    />
-                                                    {pdvForm.customCommissionAmount && (() => {
-                                                        const _sub = parseFloat(pdvForm.manualFinalValue) || pdvForm.consumedProducts.reduce((s, i) => s + i.price * i.quantity, 0);
-                                                        const _ca = parseFloat(pdvForm.customCommissionAmount) || 0;
-                                                        const _cv = pdvForm.customCommissionType === 'percent' ? _sub * (_ca / 100) : _ca;
-                                                        return _cv > 0 ? <span className="text-[9px] font-mono text-[var(--accent-primary)] shrink-0">R$ {_cv.toFixed(2)}</span> : null;
-                                                    })()}
+                                        <div className="space-y-1.5">
+                                            <div className="text-[8px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Valor da comissão <span className="opacity-50">(deixe vazio para não registrar)</span></div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex rounded-lg overflow-hidden border border-white/10">
+                                                    <button type="button"
+                                                        onClick={() => setPdvForm({ ...pdvForm, customCommissionType: 'percent' })}
+                                                        className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${pdvForm.customCommissionType === 'percent' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
+                                                    >%</button>
+                                                    <button type="button"
+                                                        onClick={() => setPdvForm({ ...pdvForm, customCommissionType: 'value' })}
+                                                        className={`px-3 py-1.5 text-[9px] font-mono font-black transition-all ${pdvForm.customCommissionType === 'value' ? 'bg-[var(--accent-primary)] text-black' : 'bg-transparent text-[var(--text-muted)] hover:text-white'}`}
+                                                    >R$</button>
                                                 </div>
+                                                <input
+                                                    type="number" step="0.01" min="0"
+                                                    placeholder={pdvForm.customCommissionType === 'percent' ? 'Ex: 3' : 'Ex: 150.00'}
+                                                    value={pdvForm.customCommissionAmount}
+                                                    onChange={(e) => setPdvForm({ ...pdvForm, customCommissionAmount: e.target.value })}
+                                                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-[var(--accent-primary)]/50"
+                                                />
+                                                {pdvForm.customCommissionAmount && (() => {
+                                                    const _sub = parseFloat(pdvForm.manualFinalValue) || pdvForm.consumedProducts.reduce((s, i) => s + i.price * i.quantity, 0);
+                                                    const _ca = parseFloat(pdvForm.customCommissionAmount) || 0;
+                                                    const _cv = pdvForm.customCommissionType === 'percent' ? _sub * (_ca / 100) : _ca;
+                                                    return _cv > 0 ? <span className="text-[9px] font-mono text-[var(--accent-primary)] shrink-0">R$ {_cv.toFixed(2)}</span> : null;
+                                                })()}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
