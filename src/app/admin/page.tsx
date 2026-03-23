@@ -2357,7 +2357,7 @@ export default function AdminDashboard() {
                             )}
 
                             {/* Assembly Protocol Check */}
-                            {(selectedLeadForCommission.interest_type !== 'manutencao' && !selectedLeadForCommission.equipment_type) && (
+                            {(selectedLeadForCommission.interest_type === 'manutencao' || !!selectedLeadForCommission.equipment_type) && (
                                 <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-5 hover:border-[var(--accent-primary)]/30 transition-all">
                                     <label className="flex items-start gap-4 cursor-pointer group">
                                         <div className="relative flex items-center bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg w-6 h-6 shrink-0 group-hover:border-[var(--accent-primary)] transition-all mt-0.5">
@@ -2382,7 +2382,7 @@ export default function AdminDashboard() {
                                 </div>
                             )}
 
-                            {(commissionForm.isAssembly || selectedLeadForCommission.interest_type === 'pc_build') && (
+                            {commissionForm.isAssembly && (
                             <div className="bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl p-6 space-y-3">
                                 <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Quem realizou a montagem?</div>
                                 <div className="grid grid-cols-1 gap-2">
