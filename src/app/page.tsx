@@ -1,4 +1,4 @@
-import { Instagram, Facebook } from "lucide-react";
+import { Instagram } from "lucide-react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Maintenance from "@/components/Maintenance";
@@ -30,11 +30,8 @@ export default function Home() {
             Sólida. Técnica. Confiável.
           </p>
           <div className="flex justify-center gap-6 text-[var(--text-secondary)]">
-            <a href="https://instagram.com/cyberinformática" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">
+            <a href="https://instagram.com/cyberinfo.brag" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">
               <Instagram size={20} />
-            </a>
-            <a href="https://facebook.com/cyberinformática" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">
-              <Facebook size={20} />
             </a>
           </div>
         </div>
