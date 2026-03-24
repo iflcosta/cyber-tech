@@ -81,13 +81,13 @@ function buildWALink(
       `Olá! Me chamo ${name}. Usei a calculadora da Cyber Informática.\n` +
       `Meu ${DEVICE_LABELS[device]} de ${AGE_LABELS[age]} está com problema: ${SYMPTOM_LABELS[symptom]}.\n` +
       `Gostaria de agendar uma avaliação técnica.\n` +
-      `🎟️ Meu voucher: *${voucher}*`;
+      `🎫 Meu voucher: *${voucher}*`;
   } else {
     msg =
       `Olá! Me chamo ${name}. Usei a calculadora da Cyber Informática.\n` +
       `Meu ${DEVICE_LABELS[device]} de ${AGE_LABELS[age]} — ${SYMPTOM_LABELS[symptom]}.\n` +
       `Estou interessado em ver configurações novas de PC/Workstation.\n` +
-      `🎟️ Meu voucher: *${voucher}*`;
+      `🎫 Meu voucher: *${voucher}*`;
   }
   return `https://wa.me/${whatsapp}?text=${encodeURIComponent(msg)}`;
 }
@@ -456,7 +456,7 @@ export default function CalculadoraWizard() {
                 >
                   {/* Voucher display */}
                   <div className="border border-[var(--accent-success)]/40 rounded-lg p-4 bg-[var(--accent-success)]/[0.07] text-center">
-                    <p className="text-[10px] font-mono text-[var(--accent-success)] uppercase tracking-widest mb-1">🎟️ Seu Voucher Exclusivo</p>
+                    <p className="text-[10px] font-mono text-[var(--accent-success)] uppercase tracking-widest mb-1">🎫 Seu Voucher Exclusivo</p>
                     <p className="text-3xl font-display font-bold text-white tracking-[0.3em]">{voucher}</p>
                     <p className="text-[10px] font-mono text-slate-500 mt-1">Envie este código no WhatsApp para garantir atendimento prioritário.</p>
                   </div>

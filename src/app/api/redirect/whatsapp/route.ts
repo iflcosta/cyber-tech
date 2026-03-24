@@ -38,7 +38,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   if (existingCode) {
     const message =
       `Olá! Vim pelo QR Code da Cyber Informática.\n\n` +
-      `🎟️ Meu voucher: *${existingCode}*\n\n` +
+      `🎫 Meu voucher: *${existingCode}*\n\n` +
       `Gostaria de informações sobre ${service}.\n\n` +
       `Pode me atender?`
     const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const message =
     `Olá! Vim pelo QR Code da Cyber Informática.\n\n` +
-    `🎟️ Meu voucher: *${code}*\n\n` +
+    `🎫 Meu voucher: *${code}*\n\n` +
     `Gostaria de informações sobre ${service}.\n\n` +
     `Pode me atender?`
 

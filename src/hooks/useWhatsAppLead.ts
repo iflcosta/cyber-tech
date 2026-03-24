@@ -44,12 +44,12 @@ function buildMessage(
   if (customMessage) {
     return customMessage.includes(code)
       ? customMessage
-      : `${customMessage}\n\n🎟️ Meu voucher: *${code}*`
+      : `${customMessage}\n\n🎫 Meu voucher: *${code}*`
   }
   const service = serviceType ? SERVICE_LABELS[serviceType] : 'atendimento'
   return (
     `Olá! Vim pelo site da Cyber Informática.\n\n` +
-    `🎟️ Meu voucher: *${code}*\n\n` +
+    `🎫 Meu voucher: *${code}*\n\n` +
     `Gostaria de informações sobre ${service}.\n\n` +
     `Pode me atender?`
   )
