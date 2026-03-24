@@ -12,6 +12,7 @@ export type WhatsAppServiceType =
   | 'reparo_notebook'
   | 'reparo_desktop'
   | 'montagem_pc'
+  | 'venda'
   | 'outro'
 
 export interface UseWhatsAppLeadParams {
@@ -24,7 +25,16 @@ const SERVICE_LABELS: Record<WhatsAppServiceType, string> = {
   reparo_notebook: 'reparo de notebook',
   reparo_desktop:  'reparo de desktop/PC',
   montagem_pc:     'montagem de PC',
+  venda:           'compra de produto',
   outro:           'atendimento',
+}
+
+function serviceTypeToInterestType(serviceType?: WhatsAppServiceType): InterestType {
+  if (!serviceType) return 'contato'
+  if (serviceType.includes('reparo')) return 'manutencao'
+  if (serviceType === 'montagem_pc') return 'pc_build'
+  if (serviceType === 'venda') return 'venda'
+  return 'contato'
 }
 
 function firePixelLead(serviceType?: WhatsAppServiceType): void {
@@ -82,7 +92,7 @@ export function useWhatsAppLead({
     setIsLoading(true)
 
     const effectiveServiceType = overrideServiceType ?? serviceType
-    const effectiveInterestType: InterestType = overrideInterestType ?? (effectiveServiceType?.includes('reparo') ? 'manutencao' : effectiveServiceType === 'montagem_pc' ? 'pc_build' : 'contato')
+    const effectiveInterestType: InterestType = overrideInterestType ?? serviceTypeToInterestType(effectiveServiceType)
 
     // Open blank window synchronously (before any await) to avoid popup blocker
     const win = typeof window !== 'undefined' ? window.open('', '_blank') : null
@@ -125,7 +135,7 @@ export function useWhatsAppLead({
   // Aliased syntax to maintain backwards compatibility with the code I wrote inside components
   const openWhatsAppLead = async (params: { intent?: string, description?: string, messageTemplate?: string, serviceType?: WhatsAppServiceType } = {}) => {
       const effectiveServiceType = params.serviceType ?? serviceType
-      const effectiveInterestType: InterestType = effectiveServiceType?.includes('reparo') ? 'manutencao' : effectiveServiceType === 'montagem_pc' ? 'pc_build' : 'contato'
+      const effectiveInterestType: InterestType = serviceTypeToInterestType(effectiveServiceType)
       await openWhatsApp(params.messageTemplate || params.description, effectiveServiceType, effectiveInterestType)
   }
 

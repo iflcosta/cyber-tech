@@ -40,6 +40,7 @@ export default function ProductPage({ product }: { product: Product }) {
   const price = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price);
 
   const { openWhatsApp, isLoading: waLoading } = useWhatsAppLead({
+    serviceType: 'venda',
     defaultMessage: `Olá! Vi o produto *${product.name}* (${price}) no site e tenho interesse. Podem me dar mais informações?`,
   });
 
