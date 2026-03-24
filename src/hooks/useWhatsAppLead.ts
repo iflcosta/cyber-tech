@@ -5,6 +5,7 @@ import { brand } from '@/lib/brand'
 import { getOrCreateSessionVoucher, setSessionVoucher } from '@/lib/session/voucherSession'
 import { trackLead } from '@/lib/leads'
 import { utmToVoucherSource } from '@/lib/tracking/sources'
+import type { InterestType } from '@/types/lead'
 
 export type WhatsAppServiceType =
   | 'reparo_celular'
@@ -76,9 +77,12 @@ export function useWhatsAppLead({
     }
   }, [])
 
-  const openWhatsApp = async (overrideMessage?: string): Promise<void> => {
+  const openWhatsApp = async (overrideMessage?: string, overrideServiceType?: WhatsAppServiceType, overrideInterestType?: InterestType): Promise<void> => {
     if (isLoading) return
     setIsLoading(true)
+
+    const effectiveServiceType = overrideServiceType ?? serviceType
+    const effectiveInterestType: InterestType = overrideInterestType ?? (effectiveServiceType?.includes('reparo') ? 'manutencao' : effectiveServiceType === 'montagem_pc' ? 'pc_build' : 'contato')
 
     // Open blank window synchronously (before any await) to avoid popup blocker
     const win = typeof window !== 'undefined' ? window.open('', '_blank') : null
@@ -93,7 +97,7 @@ export function useWhatsAppLead({
             voucher_code:     voucher,
             intent_type:      'duvida_tecnica',
             description:      overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
-            interest_type:    serviceType?.includes('reparo') ? 'manutencao' : serviceType === 'montagem_pc' ? 'pc_build' : 'contato',
+            interest_type:    effectiveInterestType,
             client_name:      'Lead Direto (WhatsApp)',
             whatsapp:         '00000000000',
             marketing_source: utmSource ? utmToVoucherSource(utmSource) : undefined,
@@ -101,9 +105,9 @@ export function useWhatsAppLead({
         });
       } catch(e) { }
 
-      firePixelLead(serviceType)
+      firePixelLead(effectiveServiceType)
 
-      const msg = buildMessage(voucher, serviceType, overrideMessage ?? defaultMessage)
+      const msg = buildMessage(voucher, effectiveServiceType, overrideMessage ?? defaultMessage)
       const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(msg)}`
 
       if (win) {
@@ -120,8 +124,9 @@ export function useWhatsAppLead({
 
   // Aliased syntax to maintain backwards compatibility with the code I wrote inside components
   const openWhatsAppLead = async (params: { intent?: string, description?: string, messageTemplate?: string, serviceType?: WhatsAppServiceType } = {}) => {
-      // Provide backwards compatibility map
-      await openWhatsApp(params.messageTemplate || params.description);
+      const effectiveServiceType = params.serviceType ?? serviceType
+      const effectiveInterestType: InterestType = effectiveServiceType?.includes('reparo') ? 'manutencao' : effectiveServiceType === 'montagem_pc' ? 'pc_build' : 'contato'
+      await openWhatsApp(params.messageTemplate || params.description, effectiveServiceType, effectiveInterestType)
   }
 
   return { isLoading, openWhatsApp, openWhatsAppLead }

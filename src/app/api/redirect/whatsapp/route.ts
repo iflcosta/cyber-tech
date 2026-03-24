@@ -52,7 +52,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   supabaseAdmin.from('leads').upsert({
     voucher_code:     code,
     client_name:      'Clique no Anúncio',
-    interest_type:    ['reparo','celular','notebook','desktop'].includes(serviceKey) ? 'manutencao' : 'contato',
+    interest_type:    (serviceKey.includes('reparo') || ['celular','notebook','desktop'].includes(serviceKey)) ? 'manutencao' : serviceKey === 'montagem_pc' ? 'pc_build' : 'contato',
     marketing_source: source,
     status:           'pending',
     utm_parameters:   { source: utmSource, campaign: utmCampaign, ref },
