@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createVoucher } from '@/lib/voucher'
-import { trackLead } from '@/lib/leads'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { utmToVoucherSource } from '@/lib/tracking/sources'
 import { brand } from '@/lib/brand'
 
@@ -15,12 +15,6 @@ const SERVICE_LABELS: Record<string, string> = {
   outro:           'atendimento',
 }
 
-/**
- * GET /api/redirect/whatsapp?utm_source=custom&utm_campaign=manutencao-celular&service=reparo_celular
- * 
- * Creates a voucher (maintenance_order) and a lead, then redirects to WhatsApp.
- * Uses cookies to prevent duplicate creation for the same session.
- */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
   const utmSource   = searchParams.get('utm_source')
@@ -31,7 +25,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const service = SERVICE_LABELS[serviceKey] ?? 'atendimento'
   const source = utmToVoucherSource(utmSource)
 
-  // Reuse existing voucher from cookie if present
+  // Reuse existing voucher from cookie
   const existingCode = req.cookies.get('cyber_wa_voucher')?.value
   
   let code = existingCode
@@ -39,6 +33,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   if (!code) {
     try {
       // 1. Create maintenance order (Voucher)
+      // We use the helper which uses supabaseAdmin
       const voucher = await createVoucher({
         source,
         serviceType: serviceKey,
@@ -46,8 +41,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       })
       code = voucher.code
 
-      // 2. Track Lead
-      await trackLead({
+      // 2. Track Lead (Using supabaseAdmin directly to ensure it works)
+      const { error: leadError } = await supabaseAdmin.from('leads').insert({
         voucher_code:     code,
         client_name:      'Lead via Link Direto',
         interest_type:    ['reparo_celular', 'celular', 'reparo_notebook', 'notebook'].includes(serviceKey) ? 'manutencao' : 'contato',
@@ -55,10 +50,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         status:           'pending',
         utm_parameters:   { source: utmSource, campaign: utmCampaign, ref },
       })
-    } catch (err) {
-      console.error('[REDIRECT/WA] Error creating voucher or lead:', err)
-      // Fallback code generation if DB fails (less ideal but prevents 500)
-      code = `BPC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
+
+      if (leadError) console.error('[REDIRECT/WA] Lead insert error:', leadError)
+      
+    } catch (err: any) {
+      console.error('[REDIRECT/WA] Error creating voucher:', err)
+      // If it fails, we show the error so the user can see what's wrong instead of a silent failure
+      return NextResponse.json({ 
+        error: 'Falha ao criar voucher no banco de dados', 
+        details: err.message || 'Erro desconhecido'
+      }, { status: 500 })
     }
   }
 
@@ -72,7 +73,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   
   const response = NextResponse.redirect(waUrl, { status: 302 })
   
-  // Set cookie for 24h
   if (code) {
     response.cookies.set('cyber_wa_voucher', code, {
       maxAge: 60 * 60 * 24,
