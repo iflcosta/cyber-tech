@@ -1,4 +1,5 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { ShieldCheck, Clock, MapPin, Zap } from "lucide-react";
 import { MaintenanceForm } from "./MaintenanceForm";
 
@@ -9,6 +10,13 @@ const features = [
 ];
 
 export default function Maintenance() {
+  const searchParams = useSearchParams();
+  const serviceParam = searchParams.get('service');
+
+  const formattedService = serviceParam 
+    ? serviceParam.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    : null;
+
   return (
     <section id="assistencia" className="py-24 bg-[var(--bg-primary)] relative overflow-hidden hero-texture border-y border-[var(--border-subtle)] red-line-top">
       <div className="container mx-auto px-4 relative z-10">
@@ -20,8 +28,17 @@ export default function Maintenance() {
                 <span>LABORATÓRIO DE ALTA PERFORMANCE</span>
               </div>
               <h2 className="text-6xl md:text-8xl font-display font-bold mb-8 tracking-tighter text-[var(--text-primary)] leading-[0.85] uppercase chrome-text">
-                ASSISTÊNCIA <br />
-                <span className="opacity-40 italic">TÉCNICA ELITE</span>
+                {formattedService ? (
+                  <>
+                    ASSISTÊNCIA EM <br />
+                    <span className="opacity-40 italic">{formattedService}</span>
+                  </>
+                ) : (
+                  <>
+                    ASSISTÊNCIA <br />
+                    <span className="opacity-40 italic">TÉCNICA ELITE</span>
+                  </>
+                )}
               </h2>
               <p className="text-[var(--text-secondary)] text-sm font-medium max-w-lg leading-relaxed">
                 De smartphones a workstations complexas, nossa equipe certificada resolve problemas com precisão cirúrgica e agilidade digital em Bragança Paulista.

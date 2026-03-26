@@ -31,7 +31,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const utmCampaign = searchParams.get('utm_campaign')
   const ref         = searchParams.get('ref')
 
-  const service = SERVICE_LABELS[serviceKey] ?? 'atendimento'
+  const service = SERVICE_LABELS[serviceKey] ?? (serviceKey !== 'outro' 
+    ? serviceKey.replace(/_/g, ' ').replace(/\+/g, ' ') 
+    : 'atendimento')
 
   // Reuse existing voucher from cookie — prevents duplicate leads from the same browser
   const existingCode = req.cookies.get('cyber_wa_voucher')?.value

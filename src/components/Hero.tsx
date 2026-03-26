@@ -1,4 +1,5 @@
 "use client";
+import { useSearchParams } from "next/navigation";
 import { ShieldCheck, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -6,6 +7,13 @@ import { useLeadModal } from "@/contexts/LeadModalContext";
 
 export default function Hero() {
     const { openModal } = useLeadModal();
+    const searchParams = useSearchParams();
+    const serviceParam = searchParams.get('service');
+
+    // Formata o serviço vindo da URL (ex: conserto_iphone -> Conserto de iPhone)
+    const formattedService = serviceParam 
+        ? serviceParam.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        : null;
 
     return (
         <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 bg-[#121216] group">
@@ -53,9 +61,18 @@ export default function Hero() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="text-balance text-sm md:text-lg text-slate-300 max-w-2xl mx-auto mb-16 leading-relaxed relative z-10 font-medium tracking-wide"
                 >
-                    Reparos especializados em smartphones, notebooks e dispositivos Apple. <br className="hidden md:block" />
-                    Montagem de PCs gamer e workstations com estoque real <br className="hidden md:block" />
-                    em Bragança Paulista, SP.
+                    {formattedService ? (
+                        <>
+                            Especialistas em <span className="text-[var(--accent-primary)] font-bold">{formattedService}</span>. <br className="hidden md:block" />
+                            Atendimento técnico certificado com estoque real em Bragança Paulista, SP.
+                        </>
+                    ) : (
+                        <>
+                            Reparos especializados em smartphones, notebooks e dispositivos Apple. <br className="hidden md:block" />
+                            Montagem de PCs gamer e workstations com estoque real <br className="hidden md:block" />
+                            em Bragança Paulista, SP.
+                        </>
+                    )}
                 </motion.p>
 
                 <motion.div

@@ -64,6 +64,7 @@ export default function MaintenancePage() {
                   <li>• Troca de Tela Touch</li>
                   <li>• Substituição de Bateria</li>
                   <li>• Reparo em Conector de Carga</li>
+                  <li>• Reparo em Placa</li>
                   <li>• Recuperação de Software</li>
                   <li>• Proteção (Películas e Capas)</li>
                 </ul>

@@ -29,7 +29,7 @@ const SERVICE_LABELS: Record<WhatsAppServiceType, string> = {
   outro:           'atendimento',
 }
 
-function serviceTypeToInterestType(serviceType?: WhatsAppServiceType): InterestType {
+function serviceTypeToInterestType(serviceType?: string): InterestType {
   if (!serviceType) return 'contato'
   if (serviceType.includes('reparo')) return 'manutencao'
   if (serviceType === 'montagem_pc') return 'pc_build'
@@ -37,19 +37,19 @@ function serviceTypeToInterestType(serviceType?: WhatsAppServiceType): InterestT
   return 'contato'
 }
 
-function firePixelLead(serviceType?: WhatsAppServiceType): void {
+function firePixelLead(serviceType?: string): void {
   if (typeof window === 'undefined') return
   const fbq = (window as any).fbq
   if (typeof fbq !== 'function') return
   ;(fbq as Function)('track', 'Lead', {
-    content_name:     serviceType ? SERVICE_LABELS[serviceType] : 'geral',
+    content_name:     serviceType ? (SERVICE_LABELS[serviceType as WhatsAppServiceType] ?? serviceType) : 'geral',
     content_category: 'whatsapp_site',
   })
 }
 
 function buildMessage(
   code: string,
-  serviceType?: WhatsAppServiceType,
+  serviceType?: string,
   customMessage?: string
 ): string {
   if (customMessage) {
@@ -57,7 +57,13 @@ function buildMessage(
       ? customMessage
       : `${customMessage}\n\n🎫 Meu voucher: *${code}*`
   }
-  const service = serviceType ? SERVICE_LABELS[serviceType] : 'atendimento'
+  
+  let service = 'atendimento';
+  if (serviceType) {
+    service = SERVICE_LABELS[serviceType as WhatsAppServiceType] ?? 
+              serviceType.replace(/_/g, ' ').replace(/\+/g, ' ');
+  }
+  
   return (
     `Olá! Vim pelo site da Cyber Informática.\n\n` +
     `🎫 Meu voucher: *${code}*\n\n` +
@@ -91,8 +97,11 @@ export function useWhatsAppLead({
     if (isLoading) return
     setIsLoading(true)
 
-    const effectiveServiceType = overrideServiceType ?? serviceType
-    const effectiveInterestType: InterestType = overrideInterestType ?? serviceTypeToInterestType(effectiveServiceType)
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const dynamicService = urlParams?.get('service');
+    
+    const effectiveServiceType = overrideServiceType ?? serviceType ?? dynamicService ?? undefined;
+    const effectiveInterestType: InterestType = overrideInterestType ?? serviceTypeToInterestType(effectiveServiceType as WhatsAppServiceType)
 
     // Open blank window synchronously (before any await) to avoid popup blocker
     const win = typeof window !== 'undefined' ? window.open('', '_blank') : null
