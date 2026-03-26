@@ -80,7 +80,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const message =
     `Olá! Vim pelo site da Cyber Informática.\n\n` +
-    `🎟️ Meu voucher: *${code}*\n\n` +
+    `🎫 Meu voucher: *${code}*\n\n` +
     `Gostaria de informações sobre ${service}.\n\n` +
     `Pode me atender?`
 
