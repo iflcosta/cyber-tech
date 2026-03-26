@@ -1,4 +1,5 @@
 import { Instagram } from "lucide-react";
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Maintenance from "@/components/Maintenance";
@@ -12,13 +13,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[var(--bg-primary)]">
       <Header />
-      <Hero />
-      <Maintenance />
+      <Suspense fallback={<div className="h-screen bg-[var(--bg-primary)]" />}>
+        <Hero />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[400px]" />}>
+        <Maintenance />
+      </Suspense>
       <ServiceSearch />
-      <Showroom />
+      <Suspense fallback={<div className="min-h-[400px]" />}>
+        <Showroom />
+      </Suspense>
       <PCBuilder />
       <Reviews />
-      <CyberIA />
+      <Suspense fallback={null}>
+        <CyberIA />
+      </Suspense>
 
       <footer className="py-20 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] text-center relative overflow-hidden red-line-top">
         <div className="absolute inset-0 hero-texture opacity-50" />

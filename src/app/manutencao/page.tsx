@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import { Suspense } from "react";
 import Maintenance from "@/components/Maintenance";
 import CyberIA from "@/components/CyberIA";
 import type { Metadata } from "next";
@@ -31,7 +32,9 @@ export default function MaintenancePage() {
     <main className="min-h-screen bg-[var(--bg-primary)]">
       <Header />
       <div className="pt-24">
-        <Maintenance />
+        <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin" /></div>}>
+          <Maintenance />
+        </Suspense>
       </div>
       
       {/* SEO Section */}
@@ -80,7 +83,9 @@ export default function MaintenancePage() {
         </p>
       </footer>
 
-      <CyberIA />
+      <Suspense fallback={null}>
+        <CyberIA />
+      </Suspense>
     </main>
   );
 }
