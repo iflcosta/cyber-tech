@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validando seu Voucher - Cyber Informática</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #FFFFFF;
+            --soft-gray: #F5F5F7;
+            --charcoal: #1D1D1F;
+            --metallic: #86868B;
+            --white: #FFFFFF;
+            --border-radius: 12px;
+            --transition-speed: 0.6s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--charcoal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 100vh;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            transition: opacity var(--transition-speed);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--charcoal);
+            text-transform: uppercase;
+        }
+
+        /* Main Section */
+        main {
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .loader-container {
+            width: 100%;
+            height: 4px;
+            background-color: var(--soft-gray);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--charcoal);
+            transition: width 2s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            margin-top: 10px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn var(--transition-speed) forwards 0.2s;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: var(--metallic);
+            line-height: 1.5;
+            margin-top: -8px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn var(--transition-speed) forwards 0.4s;
+        }
+
+        /* CTA Button */
+        #cta-button {
+            display: none;
+            background-color: var(--charcoal);
+            color: var(--white);
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 0;
+            transform: scale(0.95);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #cta-button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        #cta-button.visible {
+            display: block;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--metallic);
+            letter-spacing: 0.02em;
+            opacity: 0.8;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Polish */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.3rem; }
+            p { font-size: 0.9rem; }
+            #cta-button { padding: 18px 24px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Cyber Informática</div>
+    </header>
+
+    <main>
+        <div class="loader-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        
+        <h1 id="heading">Validando seu Voucher de Desconto...</h1>
+        <p id="subheading">Aguarde um instante enquanto conectamos você ao nosso especialista em Bragança Paulista.</p>
+
+        <a href="#" id="cta-button">RECEBER VOUCHER NO WHATSAPP</a>
+    </main>
+
+    <footer>
+        Cyber Informática - 20 anos de tradição em tecnologia. Atendimento oficial.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const progress = document.getElementById('progress');
+            const ctaButton = document.getElementById('cta-button');
+            const heading = document.getElementById('heading');
+            const subheading = document.getElementById('subheading');
+
+            // 1. Kick off Progress Bar
+            setTimeout(() => {
+                progress.style.width = '100%';
+            }, 100);
+
+            // 2. Logic after 2 seconds
+            setTimeout(() => {
+                // Update text to indicate completion
+                heading.innerText = "Voucher Validado com Sucesso!";
+                subheading.innerText = "Clique abaixo para receber seu cupom e iniciar o atendimento exclusivo.";
+
+                // Show the button
+                ctaButton.classList.add('visible');
+            }, 2100);
+
+            // 3. UTM Capture and CTA Logic
+            ctaButton.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Get all current URL parameters (UTMs, service, ref, etc.)
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // Build the internal API URL — it generates the voucher,
+                // logs the lead in Supabase, and redirects to WhatsApp
+                // with the voucher code included in the message.
+                const apiUrl = new URL('/api/redirect/whatsapp', window.location.origin);
+
+                // Forward all URL parameters to the API
+                urlParams.forEach((value, key) => {
+                    apiUrl.searchParams.set(key, value);
+                });
+
+                // Smooth redirection to API → WhatsApp (with voucher in the message)
+                window.location.href = apiUrl.toString();
+            });
+        });
+    </script>
+</body>
+</html>
