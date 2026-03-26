@@ -60,7 +60,7 @@ export function MaintenanceForm() {
       {step === 1 && (
         <div className="card-dark bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-2xl">
           <h3 className="text-xl font-display font-bold tracking-[0.1em] text-[var(--text-primary)] mb-8 uppercase">
-            <span className="chrome-text">SINAL DE</span> <span className="text-[var(--accent-primary)]">ENTRADA</span>
+            <span className="chrome-text">INICIAR</span> <span className="text-[var(--accent-primary)]">ATENDIMENTO</span>
           </h3>
           <div className="grid grid-cols-1 gap-4 mb-4">
             {equipmentTypes.map((type) => (
