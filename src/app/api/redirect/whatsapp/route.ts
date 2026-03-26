@@ -26,10 +26,25 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const source = utmToVoucherSource(utmSource)
 
   // Reuse existing voucher from cookie
-  const existingCode = req.cookies.get('cyber_wa_voucher')?.value
+  const cookieCode = req.cookies.get('cyber_wa_voucher')?.value
   
-  let code = existingCode
+  let code = ''
+  
+  // If we have a cookie, check if it exists in the database
+  if (cookieCode) {
+    const { data: voucherExists } = await supabaseAdmin
+      .from('maintenance_orders')
+      .select('voucher_code')
+      .eq('voucher_code', cookieCode)
+      .maybeSingle()
+    
+    if (voucherExists) {
+      code = cookieCode
+      console.log(`[REDIRECT/WA] Reusing existing DB voucher: ${code}`)
+    }
+  }
 
+  // If no valid code found in cookie/DB, create a new one
   if (!code) {
     try {
       // 1. Create maintenance order (Voucher)
@@ -40,8 +55,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         customerName: 'Lead via Link Direto',
       })
       code = voucher.code
+      console.log(`[REDIRECT/WA] Created new voucher: ${code}`)
 
-      // 2. Track Lead (Using supabaseAdmin directly to ensure it works)
+      // 2. Track Lead
       const { error: leadError } = await supabaseAdmin.from('leads').insert({
         voucher_code:     code,
         client_name:      'Lead via Link Direto',
@@ -54,10 +70,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       if (leadError) console.error('[REDIRECT/WA] Lead insert error:', leadError)
       
     } catch (err: any) {
-      console.error('[REDIRECT/WA] Error creating voucher:', err)
-      // If it fails, we show the error so the user can see what's wrong instead of a silent failure
+      console.error('[REDIRECT/WA] Critical error creating voucher:', err)
       return NextResponse.json({ 
-        error: 'Falha ao criar voucher no banco de dados', 
+        error: 'Erro técnico ao gerar seu voucher', 
         details: err.message || 'Erro desconhecido'
       }, { status: 500 })
     }

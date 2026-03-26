@@ -24,6 +24,9 @@ export function MaintenanceTab({
     onOpenCommission,
     onRefresh,
 }: MaintenanceTabProps) {
+    // Deduplicate by voucher_code: if a code exists in maintenanceOrders, skip it from leads.
+    const seenCodes = new Set(maintenanceOrders.map(o => o.voucher_code.toUpperCase()));
+
     const merged = [
         ...maintenanceOrders.map(o => ({
             id: o.id,
@@ -31,7 +34,7 @@ export function MaintenanceTab({
             customer_name: (o as any).customer_name,
             customer_phone: (o as any).customer_phone || (o as any).customer_email,
             equipment_type: (o as any).equipment_type,
-            problem_description: (o as any).problem_description,
+            problem_description: (o as any).problem_description || (o as any).description,
             source: (o as any).source ?? 'organic',
             status: o.status,
             payment_status: o.payment_status,
@@ -42,23 +45,25 @@ export function MaintenanceTab({
             created_at: o.created_at,
             isLead: false,
         })),
-        ...leads.filter(l => l.interest_type === 'manutencao').map(l => ({
-            id: l.id,
-            voucher_code: l.voucher_code,
-            customer_name: l.client_name,
-            customer_phone: l.whatsapp,
-            equipment_type: 'manutenção',
-            problem_description: l.description,
-            source: l.marketing_source ?? 'form',
-            status: l.status,
-            payment_status: l.payment_status,
-            final_value: l.final_value,
-            commission_value: l.commission_value,
-            cost_value: l.cost_value,
-            performed_by_partner: l.performed_by_partner,
-            created_at: l.created_at,
-            isLead: true,
-        })),
+        ...leads
+            .filter(l => l.interest_type === 'manutencao' && !seenCodes.has((l.voucher_code || '').toUpperCase()))
+            .map(l => ({
+                id: l.id,
+                voucher_code: l.voucher_code,
+                customer_name: l.client_name,
+                customer_phone: l.whatsapp,
+                equipment_type: 'manutenção',
+                problem_description: l.description,
+                source: l.marketing_source ?? 'form',
+                status: l.status,
+                payment_status: l.payment_status,
+                final_value: l.final_value,
+                commission_value: l.commission_value,
+                cost_value: l.cost_value,
+                performed_by_partner: l.performed_by_partner,
+                created_at: l.created_at,
+                isLead: true,
+            })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return (
