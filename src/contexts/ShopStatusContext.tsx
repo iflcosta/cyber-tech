@@ -40,7 +40,7 @@ export function ShopStatusProvider({ children }: { children: ReactNode }) {
             } else if (day === 6) {
                 if (time >= HOURS.saturday.open && time < HOURS.saturday.close) {
                     status = (HOURS.saturday.close - time <= 0.5) ? 'closing' : 'open';
-                    message = status === 'closing' ? 'Fechamos em 30 min' : `Abertos · Fecha às 13h`;
+                    message = status === 'closing' ? 'Fechamos em 30 min' : `Aberto · Fecha às 13h`;
                 } else {
                     status = 'closed';
                     message = 'Fechado · Abrimos segunda às 9h';
@@ -48,7 +48,7 @@ export function ShopStatusProvider({ children }: { children: ReactNode }) {
             } else {
                 if (time >= HOURS.weekdays.open && time < HOURS.weekdays.close) {
                     status = (HOURS.weekdays.close - time <= 0.5) ? 'closing' : 'open';
-                    message = status === 'closing' ? 'Fechamos em 30 min' : `Abertos · Fecha às 18h`;
+                    message = status === 'closing' ? 'Fechamos em 30 min' : `Aberto · Fecha às 18h`;
                 } else {
                     status = 'closed';
                     message = `Fechado · Abrimos amanhã às 9h`;
