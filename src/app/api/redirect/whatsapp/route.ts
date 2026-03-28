@@ -21,9 +21,22 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const utmCampaign = searchParams.get('utm_campaign')
   const ref         = searchParams.get('ref')
   const serviceKey  = searchParams.get('service') ?? 'outro'
+  const coupon      = searchParams.get('coupon')?.toUpperCase().trim()
 
   const service = SERVICE_LABELS[serviceKey] ?? 'atendimento'
   const source = utmToVoucherSource(utmSource)
+
+  // --- COUPON FLOW: skip voucher creation, send coupon directly ---
+  if (coupon) {
+    const couponMessage =
+      `Olá! Vim pelo Google e quero o desconto usando o CUPOM: *${coupon}*\n\n` +
+      `Gostaria de informações sobre ${service}.\n\n` +
+      `Pode me atender?`
+    const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(couponMessage)}`
+    return NextResponse.redirect(waUrl, { status: 302 })
+  }
+
+  // --- STANDARD FLOW: dynamic voucher generation ---
 
   // Reuse existing voucher from cookie
   const cookieCode = req.cookies.get('cyber_wa_voucher')?.value

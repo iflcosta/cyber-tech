@@ -2,7 +2,7 @@
 "use client";
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Package, RefreshCw, LogOut, X, CheckCircle2, Star, Sparkles, Smartphone, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Package, RefreshCw, LogOut, X, CheckCircle2, Star, Sparkles, Smartphone, ShoppingCart, Tag } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { useAdminData } from './hooks/useAdminData';
@@ -16,6 +16,7 @@ import { VendasTab } from './components/VendasTab';
 import { MaintenanceTab } from './components/MaintenanceTab';
 import { ProductsTab } from './components/ProductsTab';
 import { ReviewsTab } from './components/ReviewsTab';
+import { CouponsTab } from './components/CouponsTab';
 import { CommissionModal } from './components/CommissionModal';
 import { PdvModal } from './components/PdvModal';
 import { GlobalSearch } from './components/GlobalSearch';
@@ -51,12 +52,14 @@ export default function AdminDashboard() {
         maintenanceOrders,
         products,
         reviews,
+        coupons,
         loading,
         stats,
         fetchLeads,
         fetchMaintenanceOrders,
         fetchProducts,
         fetchReviews,
+        fetchCoupons,
         setLoading,
     } = useAdminData();
 
@@ -332,6 +335,7 @@ export default function AdminDashboard() {
         { id: 'maintenance' as TabId, label: 'Manutenção', icon: RefreshCw, badge: null },
         { id: 'products' as TabId, label: 'Produtos', icon: Package, badge: null },
         { id: 'reviews' as TabId, label: 'Depoimentos', icon: Star, badge: null },
+        { id: 'coupons' as TabId, label: 'Cupons', icon: Tag, badge: null },
     ];
 
     return (
@@ -407,6 +411,7 @@ export default function AdminDashboard() {
                         stats={stats}
                         leads={leads}
                         products={products}
+                        coupons={coupons}
                         maintenanceOrders={maintenanceOrders}
                         onOpenPdv={openPdvModal}
                         onEditProduct={p => {
@@ -488,6 +493,15 @@ export default function AdminDashboard() {
                         onAnalyze={analyzeReviews}
                         onRefresh={fetchReviews}
                         onClearSentiment={() => setSentimentAnalysis(null)}
+                    />
+                )}
+
+                {activeTab === 'coupons' && (
+                    <CouponsTab
+                        coupons={coupons}
+                        products={products}
+                        loading={loading}
+                        onRefresh={fetchCoupons}
                     />
                 )}
             </div>

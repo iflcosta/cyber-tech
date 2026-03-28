@@ -1,14 +1,15 @@
 'use client';
-import { TrendingUp, Users, Package, AlertTriangle, Eye } from 'lucide-react';
+import { TrendingUp, Users, Package, AlertTriangle, Eye, Tag } from 'lucide-react';
 import type { Lead } from '@/types/lead';
 import type { Product } from '@/types/product';
 import type { MaintenanceOrder } from '@/types/maintenance';
-import type { AdminStats } from '@/types/admin';
+import type { AdminStats, DiscountCoupon } from '@/types/admin';
 
 interface DashboardTabProps {
     stats: AdminStats;
     leads: Lead[];
     products: Product[];
+    coupons: DiscountCoupon[];
     maintenanceOrders: MaintenanceOrder[];
     onOpenPdv: () => void;
     onEditProduct: (product: Product) => void;
@@ -18,6 +19,7 @@ export function DashboardTab({
     stats,
     leads,
     products,
+    coupons,
     maintenanceOrders,
     onOpenPdv,
     onEditProduct,
@@ -166,6 +168,51 @@ export function DashboardTab({
                         )}
                     </div>
                 </div>
+
+                {/* Coupon Alerts */}
+                {(() => {
+                    const now = new Date();
+                    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+                    const alertCoupons = coupons.filter(c => {
+                        if (!c.is_active) return false;
+                        const exhausted = c.max_uses != null && c.used_count >= c.max_uses;
+                        const expired = c.expires_at && new Date(c.expires_at) < now && new Date(c.expires_at) > threeDaysAgo;
+                        const expiringSoon = c.expires_at && new Date(c.expires_at) >= now &&
+                            (new Date(c.expires_at).getTime() - now.getTime()) < 24 * 60 * 60 * 1000;
+                        return exhausted || expired || expiringSoon;
+                    });
+
+                    if (alertCoupons.length === 0) return null;
+
+                    return (
+                        <div className="bg-[var(--bg-elevated)] p-10 rounded-3xl border border-red-500/20 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-20" />
+                            <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-red-400 mb-6 flex items-center gap-3">
+                                <Tag size={14} className="text-red-500" /> ⚠️ Alertas de Cupom
+                            </h3>
+                            <p className="text-[9px] font-mono text-[var(--text-muted)] mb-6 uppercase tracking-widest">Remova as publicidades relacionadas a estes cupons</p>
+                            <div className="space-y-3">
+                                {alertCoupons.map(c => {
+                                    const exhausted = c.max_uses != null && c.used_count >= c.max_uses;
+                                    const expired = c.expires_at && new Date(c.expires_at) < now;
+                                    return (
+                                        <div key={c.id} className="flex items-center justify-between p-4 bg-[var(--bg-primary)] border border-red-500/20 rounded-2xl">
+                                            <div>
+                                                <div className="text-sm font-mono font-black text-white tracking-wider">{c.code}</div>
+                                                <div className="text-[9px] font-mono text-[var(--text-muted)] mt-0.5 uppercase tracking-widest">
+                                                    {c.discount_type === 'percentage' ? `${c.discount_value}%` : `R$ ${c.discount_value}`}
+                                                </div>
+                                            </div>
+                                            <div className={`px-3 py-1 rounded-full text-[9px] font-mono font-black uppercase tracking-widest border ${exhausted ? 'bg-red-500/10 text-red-400 border-red-500/20' : expired ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'}`}>
+                                                {exhausted ? 'Esgotado' : expired ? 'Expirado' : 'Expira hoje'}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Financial Breakdown Section */}

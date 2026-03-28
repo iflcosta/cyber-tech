@@ -1,5 +1,6 @@
 'use client';
-import { X, Package, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { X, Package, Trash2, Tag, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import type { PdvForm } from '@/types/admin';
 import type { Product } from '@/types/product';
 import type { Executor } from '@/types/admin';
@@ -36,6 +37,46 @@ export function PdvModal({
     currentExecutor,
 }: PdvModalProps) {
     if (!showPdvModal) return null;
+
+    const [couponInput, setCouponInput] = useState(pdvForm.couponCode || '');
+    const [couponStatus, setCouponStatus] = useState<'idle' | 'loading' | 'valid' | 'invalid'>('idle');
+    const [couponMessage, setCouponMessage] = useState('');
+
+    const validateCoupon = async () => {
+        const code = couponInput.toUpperCase().trim();
+        if (!code) return;
+        setCouponStatus('loading');
+        try {
+            const res = await fetch(`/api/coupons/validate?code=${encodeURIComponent(code)}`);
+            const data = await res.json();
+            if (data.valid) {
+                setCouponStatus('valid');
+                setCouponMessage(`${code} — ${data.discount_type === 'percentage' ? data.discount_value + '%' : 'R$ ' + data.discount_value} de desconto`);
+                setPdvForm({
+                    ...pdvForm,
+                    couponCode: code,
+                    couponId: data.coupon_id,
+                    discountType: data.discount_type === 'percentage' ? 'percentage' : 'fixed',
+                    discountValue: data.discount_value,
+                    ecosystemCaptured: true,
+                });
+            } else {
+                setCouponStatus('invalid');
+                setCouponMessage(data.reason || 'Cupom inválido');
+                setPdvForm({ ...pdvForm, couponCode: undefined, couponId: undefined });
+            }
+        } catch {
+            setCouponStatus('invalid');
+            setCouponMessage('Erro ao validar cupom');
+        }
+    };
+
+    const clearCoupon = () => {
+        setCouponInput('');
+        setCouponStatus('idle');
+        setCouponMessage('');
+        setPdvForm({ ...pdvForm, couponCode: undefined, couponId: undefined, discountValue: 0 });
+    };
 
     return (
         <div className="fixed inset-0 bg-[#020406]/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
@@ -74,6 +115,49 @@ export function PdvModal({
                             className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-[var(--accent-primary)]/50 transition-all"
                             placeholder="Cliente Balcão"
                         />
+                    </div>
+
+                    {/* Cupom de Desconto */}
+                    <div className="space-y-2">
+                        <label className="block text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1 flex items-center gap-1.5">
+                            <Tag size={10} /> Cupom de Desconto (Opcional)
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={couponInput}
+                                onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponStatus('idle'); }}
+                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), validateCoupon())}
+                                className={`flex-1 bg-[var(--bg-primary)] border rounded-xl px-4 py-3 text-sm font-mono font-black text-white focus:outline-none transition-all uppercase tracking-wider ${
+                                    couponStatus === 'valid' ? 'border-green-500/50' :
+                                    couponStatus === 'invalid' ? 'border-red-500/50' :
+                                    'border-[var(--border-subtle)] focus:border-[var(--accent-primary)]/50'
+                                }`}
+                                placeholder="EX: SSD20"
+                            />
+                            {couponStatus === 'valid' ? (
+                                <button type="button" onClick={clearCoupon} className="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-xs font-black hover:bg-red-500/20 transition-all">✕</button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={validateCoupon}
+                                    disabled={couponStatus === 'loading' || !couponInput.trim()}
+                                    className="px-4 py-2 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 rounded-xl text-xs font-black hover:bg-[var(--accent-primary)]/20 transition-all disabled:opacity-40"
+                                >
+                                    {couponStatus === 'loading' ? <Loader2 size={14} className="animate-spin" /> : 'Aplicar'}
+                                </button>
+                            )}
+                        </div>
+                        {couponStatus === 'valid' && (
+                            <div className="flex items-center gap-2 text-[10px] font-mono text-green-400">
+                                <CheckCircle2 size={12} /> {couponMessage} · Ecossistema ativado automaticamente
+                            </div>
+                        )}
+                        {couponStatus === 'invalid' && (
+                            <div className="flex items-center gap-2 text-[10px] font-mono text-red-400">
+                                <AlertCircle size={12} /> {couponMessage}
+                            </div>
+                        )}
                     </div>
 
                     {/* Produtos da Venda */}

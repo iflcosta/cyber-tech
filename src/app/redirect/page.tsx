@@ -59,15 +59,24 @@ function RedirectContent() {
     const bar = progressRef.current
     if (bar) setTimeout(() => { bar.style.width = '100%' }, 100)
 
+    const coupon = searchParams.get('coupon')?.toUpperCase().trim()
+
     // After 2s: update text + show button
     const timer = setTimeout(() => {
       if (headingRef.current)
-        headingRef.current.textContent = 'Voucher Validado com Sucesso!'
+        headingRef.current.textContent = coupon
+          ? 'Cupom Exclusivo Ativado! ✓'
+          : 'Voucher Validado com Sucesso!'
       if (subheadingRef.current)
-        subheadingRef.current.textContent =
-          'Clique abaixo para receber seu cupom e iniciar o atendimento exclusivo.'
-      if (buttonRef.current)
+        subheadingRef.current.innerHTML = coupon
+          ? `Apresente o código <strong style="font-family:monospace;letter-spacing:0.1em;">${coupon}</strong> ao atendente para garantir seu desconto.`
+          : 'Clique abaixo para receber seu cupom e iniciar o atendimento exclusivo.'
+      if (buttonRef.current) {
+        buttonRef.current.textContent = coupon
+          ? 'GARANTIR MEU DESCONTO NO WHATSAPP'
+          : 'RECEBER VOUCHER NO WHATSAPP'
         buttonRef.current.classList.add('visible')
+      }
     }, 2100)
 
     return () => clearTimeout(timer)

@@ -17,6 +17,8 @@ const defaultPdvForm: PdvForm = {
     manualFinalValue: '',
     serviceDescription: '',
     consumedProducts: [],
+    couponCode: undefined,
+    couponId: undefined,
 };
 
 interface UsePdvFormParams {
@@ -80,13 +82,13 @@ export function usePdvForm({
 
         const totalCommission = subtotal * baseRate + assemblyCommission;
 
-        const { error } = await supabase.from('leads').insert([
+        const { error, data: insertedLead } = await supabase.from('leads').insert([
             {
                 client_name: pdvForm.customerName || 'Cliente Balcão',
                 interest_type: 'venda',
                 description: pdvForm.serviceDescription || null,
                 status: 'converted',
-                marketing_source: pdvForm.ecosystemCaptured ? 'site' : 'balcao',
+                marketing_source: pdvForm.couponCode ? 'marketing' : (pdvForm.ecosystemCaptured ? 'site' : 'balcao'),
                 final_value: val,
                 commission_value: totalCommission,
                 commission_ecosystem: pdvForm.ecosystemCaptured,
@@ -94,11 +96,30 @@ export function usePdvForm({
                 performed_by_partner: currentExecutor === 'partner',
                 converted_at: new Date().toISOString(),
                 payment_status: 'paid',
-                utm_parameters: { executor: userEmail },
+                utm_parameters: { executor: userEmail, coupon: pdvForm.couponCode || null },
             },
-        ]);
+        ]).select('id').single();
 
         if (!error) {
+            // Register coupon redemption if coupon was applied
+            if (pdvForm.couponId && insertedLead?.id) {
+                await supabase.from('coupon_redemptions').insert({
+                    coupon_id: pdvForm.couponId,
+                    lead_id: insertedLead.id,
+                });
+                // Atomic increment using raw update with current value + 1
+                const { data: couponData } = await supabase
+                    .from('discount_coupons')
+                    .select('used_count')
+                    .eq('id', pdvForm.couponId)
+                    .single();
+                if (couponData) {
+                    await supabase
+                        .from('discount_coupons')
+                        .update({ used_count: (couponData.used_count || 0) + 1 })
+                        .eq('id', pdvForm.couponId);
+                }
+            }
             // Deduct stock for consumed products by specified quantity
             if (pdvForm.consumedProducts.length > 0) {
                 for (const item of pdvForm.consumedProducts) {

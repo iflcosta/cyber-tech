@@ -5,13 +5,14 @@ import type { Lead } from '@/types/lead';
 import type { MaintenanceOrder } from '@/types/maintenance';
 import type { Product } from '@/types/product';
 import type { Review } from '@/types/review';
-import type { AdminStats } from '@/types/admin';
+import type { AdminStats, DiscountCoupon } from '@/types/admin';
 
 export function useAdminData() {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [maintenanceOrders, setMaintenanceOrders] = useState<MaintenanceOrder[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [coupons, setCoupons] = useState<DiscountCoupon[]>([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<AdminStats>({
         totalLeadValue: 0,
@@ -61,11 +62,20 @@ export function useAdminData() {
         if (data) setReviews(data as Review[]);
     }
 
+    async function fetchCoupons() {
+        const { data } = await supabase
+            .from('discount_coupons')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (data) setCoupons(data as DiscountCoupon[]);
+    }
+
     useEffect(() => {
         fetchLeads();
         fetchMaintenanceOrders();
         fetchProducts();
         fetchReviews();
+        fetchCoupons();
 
         const channel = supabase
             .channel('db-leads-changes')
@@ -101,6 +111,7 @@ export function useAdminData() {
         maintenanceOrders,
         products,
         reviews,
+        coupons,
         loading,
         setLoading,
         stats,
@@ -108,5 +119,6 @@ export function useAdminData() {
         fetchMaintenanceOrders,
         fetchProducts,
         fetchReviews,
+        fetchCoupons,
     };
 }
