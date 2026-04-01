@@ -50,14 +50,6 @@ export function BuildSlot({ label, icon, selected, onSelect, onClear }: BuildSlo
               <h4 className="font-display font-bold uppercase tracking-tight text-[var(--text-primary)] leading-tight truncate">
                 {selected.name}
               </h4>
-              <div className="mt-1.5 flex items-center gap-4">
-                <span className="text-sm font-mono font-black text-[var(--accent-primary)]">
-                   R$ {selected.price.toLocaleString('pt-BR')}
-                </span>
-                <span className="text-[9px] font-mono font-bold text-[var(--accent-success)] uppercase tracking-tighter flex items-center gap-1 opacity-80">
-                  <span className="w-1.5 h-1.5 bg-[var(--accent-success)] rounded-full animate-pulse" /> EM ESTOQUE
-                </span>
-              </div>
             </div>
             <ChevronDown className="h-4 w-4 text-[var(--text-muted)] group-hover:text-[var(--text-primary)]" />
           </div>

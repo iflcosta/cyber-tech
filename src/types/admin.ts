@@ -1,4 +1,4 @@
-export type TabId = 'dashboard' | 'leads' | 'vendas' | 'maintenance' | 'products' | 'reviews' | 'coupons'
+export type TabId = 'dashboard' | 'leads' | 'vendas' | 'maintenance' | 'products' | 'reviews' | 'coupons' | 'simulator'
 
 export type Executor = 'owner' | 'iago' | 'partner'
 

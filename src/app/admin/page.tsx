@@ -2,7 +2,7 @@
 "use client";
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Package, RefreshCw, LogOut, X, CheckCircle2, Star, Sparkles, Smartphone, ShoppingCart, Tag } from 'lucide-react';
+import { LayoutDashboard, Package, RefreshCw, LogOut, X, CheckCircle2, Star, Sparkles, Smartphone, ShoppingCart, Tag, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { useAdminData } from './hooks/useAdminData';
@@ -20,6 +20,7 @@ import { CouponsTab } from './components/CouponsTab';
 import { CommissionModal } from './components/CommissionModal';
 import { PdvModal } from './components/PdvModal';
 import { GlobalSearch } from './components/GlobalSearch';
+import { SimulatorTab } from './components/SimulatorTab';
 
 import type { TabId } from '@/types/admin';
 import type { Lead } from '@/types/lead';
@@ -336,6 +337,7 @@ export default function AdminDashboard() {
         { id: 'products' as TabId, label: 'Produtos', icon: Package, badge: null },
         { id: 'reviews' as TabId, label: 'Depoimentos', icon: Star, badge: null },
         { id: 'coupons' as TabId, label: 'Cupons', icon: Tag, badge: null },
+        { id: 'simulator' as TabId, label: 'Simulador', icon: Zap, badge: null },
     ];
 
     return (
@@ -503,6 +505,10 @@ export default function AdminDashboard() {
                         loading={loading}
                         onRefresh={fetchCoupons}
                     />
+                )}
+                
+                {activeTab === 'simulator' && (
+                    <SimulatorTab />
                 )}
             </div>
 

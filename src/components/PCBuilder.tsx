@@ -7,20 +7,19 @@ import { brand } from '@/lib/brand';
 import { getProducts, Product } from '@/lib/products';
 import { useLeadModal } from '@/contexts/LeadModalContext';
 
+import { getSimulatorOptions, calculateProfile, PCBuilderOption } from '@/lib/pcBuilderData';
+
 const SLOTS = [
-  { id: 'cpu', label: 'Processador', icon: <Cpu size={14} />, categories: ['hardware'], keywords: ['intel', 'amd', 'ryzen', 'core i'] },
-  { id: 'gpu', label: 'Placa de Vídeo', icon: <MonitorPlay size={14} />, categories: ['hardware'], keywords: ['rtx', 'rx', 'gtx', 'geforce', 'radeon'] },
-  { id: 'mobo', label: 'Placa-Mãe', icon: <CircuitBoard size={14} />, categories: ['hardware'], keywords: ['placa-mãe', 'motherboard', 'b660', 'b550', 'z690', 'a520'] },
-  { id: 'ram', label: 'Memória RAM', icon: <Zap size={14} />, categories: ['hardware'], keywords: ['memória', 'ram', 'ddr4', 'ddr5'] },
-  { id: 'storage', label: 'Armazenamento', icon: <HardDrive size={14} />, categories: ['hardware'], keywords: ['ssd', 'hd', 'nvme', 'sata'] },
-  { id: 'psu', label: 'Fonte (PSU)', icon: <Zap size={14} />, categories: ['hardware'], keywords: ['fonte', 'psu', '600w', '750w', '80w'] },
-  { id: 'case', label: 'Gabinete', icon: <Package size={14} />, categories: ['hardware', 'peripheral'], keywords: ['gabinete', 'case', 'tower'] },
+  { id: 'cpu', label: 'Processador', icon: <Cpu size={14} /> },
+  { id: 'gpu', label: 'Placa de Vídeo', icon: <MonitorPlay size={14} /> },
+  { id: 'ram', label: 'Memória RAM', icon: <Zap size={14} /> },
+  { id: 'storage', label: 'Armazenamento (SSD)', icon: <HardDrive size={14} /> },
 ];
 
 export default function PCBuilder() {
   const { openModal } = useLeadModal();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [build, setBuild] = useState<Record<string, Product>>({});
+  const [build, setBuild] = useState<Record<string, PCBuilderOption>>({});
+  const [options, setOptions] = useState<PCBuilderOption[]>([]);
   const [mounted, setMounted] = useState(false);
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
 
@@ -32,51 +31,46 @@ export default function PCBuilder() {
       }, 500);
     }
 
-    async function loadData() {
+    async function init() {
       try {
-        const data = await getProducts();
-        setProducts(data);
+        const data = await getSimulatorOptions();
+        setOptions(data);
       } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('Error loading simulator options:', error);
       } finally {
         setMounted(true);
       }
     }
-    loadData();
+    init();
   }, []);
 
   const filteredParts = useMemo(() => {
     if (!activeSlot) return [];
-    const slot = SLOTS.find(s => s.id === activeSlot);
-    if (!slot) return [];
+    return options.filter(opt => opt.category === activeSlot);
+  }, [activeSlot, options]);
 
-    return products.filter(p => {
-      const isVisible = p.show_in_pcbuilder;
-      const inCategory = slot.categories.includes(p.category);
-      const hasKeyword = slot.keywords.some(k => p.name.toLowerCase().includes(k));
-      return isVisible && inCategory && hasKeyword && (p.stock_quantity ?? 0) > 0;
-    }).sort((a, b) => a.price - b.price);
-  }, [activeSlot, products]);
-
-  const handleSelect = (slotId: string, part: Product) => {
-    setBuild(prev => ({ ...prev, [slotId]: part }));
+  const handleSelect = (slotId: string, option: PCBuilderOption) => {
+    setBuild(prev => ({ ...prev, [slotId]: option }));
     setActiveSlot(null);
   };
 
-  const laborCost = brand.builder?.laborCost || 150;
-  const partsTotal = Object.values(build).reduce((acc, p) => acc + (p.price || 0), 0);
-  const estimatedTotal = partsTotal + (partsTotal > 0 ? laborCost : 0);
+  // Price calculations hidden for now as per user request
+  const laborCost = 0;
+  const estimatedTotal = 0;
+
+  const buyerProfile = useMemo(() => calculateProfile(build), [build]);
 
   const handleConsultation = () => {
     const buildSummary = Object.entries(build)
       .map(([key, p]) => `${SLOTS.find(s => s.id === key)?.label}: ${p.name}`)
       .join(' | ');
     
-    const whatsappMsg = `Olá! Montei um setup no simulador da Cyber:\n\n` + 
+    const whatsappMsg = `Olá! Simulei um perfil de PC na Cyber:\n\n` + 
+      `*Perfil:* ${buyerProfile.profile}\n` +
       Object.entries(build).map(([key, p]) => `• *${SLOTS.find(s => s.id === key)?.label}:* ${p.name}`).join('\n') + 
-      `\n\n*Total Estimado:* R$ ${estimatedTotal.toLocaleString('pt-BR')}\n\nPodem confirmar disponibilidade?`;
+      `\n\nNota: Sei que a Placa-Mãe e Fonte serão selecionadas pela equipe técnica de acordo com esse setup. Podem me ajudar com um orçamento?`;
 
-    openModal('compra', `BUILD SIMULADA: ${buildSummary}`, whatsappMsg, Object.values(build).map(p => p.id));
+    openModal('compra', `PERFIL SIMULADO: ${buyerProfile.profile} | ${buildSummary}`, whatsappMsg, []);
   };
 
   return (
@@ -94,10 +88,10 @@ export default function PCBuilder() {
                 <div>
                   <h2 className="text-5xl md:text-6xl font-display font-bold tracking-tight text-[var(--text-primary)] leading-none mb-4 chrome-text">
                     SIMULADOR <br />
-                    <span className="opacity-40 italic">DE PERFORMANCE</span>
+                    <span className="opacity-40 italic">DE PERFIL</span>
                   </h2>
                   <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em]">
-                    Selecione os componentes para sua configuração ideal.
+                    Selecione as categorias para encontrarmos sua configuração ideal.
                   </p>
                 </div>
                 <button 
@@ -133,7 +127,7 @@ export default function PCBuilder() {
                         >
                           {filteredParts.length === 0 ? (
                               <div className="p-8 text-center text-[var(--text-muted)] font-mono text-[10px] uppercase tracking-widest">
-                                  Sem itens compatíveis no estoque.
+                                  Opções indisponíveis.
                               </div>
                           ) : filteredParts.map((part) => (
                               <button
@@ -146,12 +140,9 @@ export default function PCBuilder() {
                                 }`}
                               >
                                 <div className="flex-1 pr-4">
-                                  <div className="text-[10px] font-mono font-bold uppercase tracking-tighter opacity-60 mb-1">
-                                      {part.sku || 'N/A'}
-                                  </div>
                                   <div className="text-xs font-bold font-display uppercase truncate">{part.name}</div>
+                                  {part.description && <div className="text-[9px] font-mono opacity-50 uppercase mt-0.5">{part.description}</div>}
                                 </div>
-                                <div className="text-xs font-mono font-black">R$ {part.price.toLocaleString('pt-BR')}</div>
                               </button>
                           ))}
                         </motion.div>
@@ -168,9 +159,10 @@ export default function PCBuilder() {
                 <div className="card-dark bg-[var(--bg-surface)] rounded-2xl overflow-hidden shadow-2xl">
                   {/* Barra de acento vermelha */}
                   <div className="h-[3px] bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent" />
-                  <div className="p-8 border-b border-[var(--border-subtle)]">
-                    <h3 className="text-lg font-display font-bold tracking-[0.1em] uppercase chrome-text">
-                      RELATÓRIO DE MONTAGEM
+                  <div className="p-8 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)]/50">
+                    <p className="text-[9px] font-mono font-bold text-[var(--accent-primary)] uppercase tracking-[0.2em] mb-1">Perfil Sugerido</p>
+                    <h3 className={`text-2xl font-display font-bold tracking-[0.05em] uppercase ${buyerProfile.color}`}>
+                      {buyerProfile.profile}
                     </h3>
                   </div>
 
@@ -178,10 +170,6 @@ export default function PCBuilder() {
                     <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-none">
                       {SLOTS.map(slot => build[slot.id] && (
                         <div key={slot.id} className="group">
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-wider">{slot.label}</span>
-                            <span className="text-xs font-mono font-bold text-[var(--text-primary)]">R$ {build[slot.id].price.toLocaleString('pt-BR')}</span>
-                          </div>
                           <div className="text-[11px] font-bold text-[var(--text-secondary)] uppercase group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
                               {build[slot.id].name}
                           </div>
@@ -194,27 +182,8 @@ export default function PCBuilder() {
                       )}
                     </div>
 
-                    <div className="pt-8 border-t border-[var(--border-subtle)] space-y-4">
-                      <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-[0.1em]">
-                        <span className="text-[var(--text-muted)]">Custo de Hardware</span>
-                        <span className="text-[var(--text-primary)]">R$ {partsTotal.toLocaleString('pt-BR')}</span>
-                      </div>
-                      <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-[0.1em]">
-                        <span className="text-[var(--text-muted)]">Laboratório Técnica</span>
-                        <span className="text-[var(--text-primary)]">~ R$ {laborCost.toLocaleString('pt-BR')}</span>
-                      </div>
-                      
-                      <div className="pt-6 relative">
-                          <div className="absolute inset-x-0 -top-2 flex justify-center">
-                              <span className="bg-[var(--bg-surface)] px-3 text-[9px] font-mono font-bold text-[var(--accent-primary)] tracking-widest">ESTIMATIVA TOTAL</span>
-                          </div>
-                          <div className="flex items-baseline justify-between">
-                              <span className="text-[var(--text-muted)] font-mono text-xs font-bold uppercase">BRL</span>
-                              <span className="text-5xl font-display font-bold text-[var(--text-primary)] chrome-text">
-                                  {estimatedTotal.toLocaleString('pt-BR')}
-                              </span>
-                          </div>
-                      </div>
+                    <div className="pt-4 border-t border-[var(--border-subtle)] space-y-4">
+                      {/* Price summary hidden by request */}
                     </div>
 
                     <button 
@@ -227,7 +196,8 @@ export default function PCBuilder() {
                     </button>
                     
                     <p className="text-[10px] font-mono font-medium text-[var(--text-muted)] text-center leading-relaxed px-4">
-                      *Preços podem variar conforme cotação do dólar e reposição de estoque diária.
+                      *Preços estimados baseados na média de mercado. <br />
+                      **A Placa-Mãe e Fonte serão selecionadas pela nossa equipe técnica para total compatibilidade.
                     </p>
                   </div>
                 </div>
