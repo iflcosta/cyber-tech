@@ -18,9 +18,7 @@ export default function Header() {
 
     const menuItems = [
         { label: "Manutenção", href: "/#assistencia" },
-        { label: "Showroom", href: "/#showroom" },
         { label: "PC Builder", href: "/#pc-builder" },
-        { label: "Produtos", href: "/produtos" },
         { label: "Calculadora", href: "/calculadora" },
     ];
 
