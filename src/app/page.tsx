@@ -20,9 +20,9 @@ export default function Home() {
         <Maintenance />
       </Suspense>
       <ServiceSearch />
-      <Suspense fallback={<div className="min-h-[400px]" />}>
+      {/* <Suspense fallback={<div className="min-h-[400px]" />}>
         <Showroom />
-      </Suspense>
+      </Suspense> */}
       <PCBuilder />
       <Reviews />
       <Suspense fallback={null}>

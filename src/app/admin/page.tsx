@@ -334,7 +334,6 @@ export default function AdminDashboard() {
         { id: 'leads' as TabId, label: 'Leads', icon: Sparkles, badge: pendingLeads.length > 0 ? pendingLeads.length : null },
         { id: 'vendas' as TabId, label: 'Vendas', icon: ShoppingCart, badge: null },
         { id: 'maintenance' as TabId, label: 'Manutenção', icon: RefreshCw, badge: null },
-        { id: 'products' as TabId, label: 'Produtos', icon: Package, badge: null },
         { id: 'reviews' as TabId, label: 'Depoimentos', icon: Star, badge: null },
         { id: 'coupons' as TabId, label: 'Cupons', icon: Tag, badge: null },
         { id: 'simulator' as TabId, label: 'Simulador', icon: Zap, badge: null },
