@@ -416,11 +416,15 @@ export default function AdminDashboard() {
                         maintenanceOrders={maintenanceOrders}
                         onOpenPdv={openPdvModal}
                         onEditProduct={p => {
+                            // Redirecionamento desativado temporariamente
+                            /* 
                             setEditingProduct(p);
                             setSlugDraft(p.slug || '');
                             setPreviewUrls(p.image_urls || []);
                             setShowProductForm(true);
                             setActiveTab('products');
+                            */
+                            alert('A edição de produtos está desativada temporariamente.');
                         }}
                     />
                 )}
@@ -461,7 +465,7 @@ export default function AdminDashboard() {
                     />
                 )}
 
-                {activeTab === 'products' && (
+                {/* {activeTab === 'products' && (
                     <ProductsTab
                         products={products}
                         loading={loading}
@@ -481,7 +485,7 @@ export default function AdminDashboard() {
                         setSlugDraft={setSlugDraft}
                         setLoading={setLoading}
                     />
-                )}
+                )} */}
 
                 {activeTab === 'reviews' && (
                     <ReviewsTab
