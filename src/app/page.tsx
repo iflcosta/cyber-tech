@@ -16,10 +16,10 @@ export default function Home() {
       <Suspense fallback={<div className="h-screen bg-[var(--bg-primary)]" />}>
         <Hero />
       </Suspense>
-      <Suspense fallback={<div className="min-h-[400px]" />}>
+      {/* <Suspense fallback={<div className="min-h-[400px]" />}>
         <Maintenance />
       </Suspense>
-      <ServiceSearch />
+      <ServiceSearch /> */}
       {/* <Suspense fallback={<div className="min-h-[400px]" />}>
         <Showroom />
       </Suspense> */}

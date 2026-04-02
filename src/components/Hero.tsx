@@ -42,7 +42,7 @@ export default function Hero() {
                     transition={{ duration: 0.5 }}
                     className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5 backdrop-blur-md text-[var(--accent-primary)] text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] mb-12 rounded-full shadow-[0_0_20px_var(--accent-glow)]"
                 >
-                    ESPECIALISTAS EM TECNOLOGIA · BRAGANÇA PAULISTA
+                    ALTA PERFORMANCE EM HARDWARE · BRAGANÇA PAULISTA
                 </motion.div>
 
                 <motion.h1
@@ -68,8 +68,8 @@ export default function Hero() {
                         </>
                     ) : (
                         <>
-                            Upgrades e Soluções de Hardware para Smartphones, <br className="hidden md:block" />
-                            Notebooks e Apple com estoque real em Bragança Paulista, SP.
+                            Hardware de Alta Performance e Sistemas Customizados <br className="hidden md:block" />
+                            com estoque real em Bragança Paulista, SP.
                         </>
                     )}
                 </motion.p>
@@ -84,8 +84,7 @@ export default function Hero() {
                         onClick={() => document.getElementById('assistencia')?.scrollIntoView({ behavior: 'smooth' })}
                         className="btn-primary w-full sm:flex-1 py-6 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs"
                     >
-                        <ShieldCheck size={20} />
-                        SOLICITAR UPGRADE
+                        VER COMPONENTES
                     </button>
                     <button
                         onClick={() => document.getElementById('pc-builder')?.scrollIntoView({ behavior: 'smooth' })}
@@ -102,7 +101,7 @@ export default function Hero() {
                         { value: '2500+', label: 'Dispositivos Otimizados', color: 'text-white' },
                         { value: '800+',  label: 'Setups Montados',    color: 'text-white' },
                         { value: '4.9/5', label: 'Google Reviews',     color: 'text-white' },
-                        { value: '100%',  label: 'Certificação Técnica',   color: 'text-[var(--accent-success)]' },
+                        { value: '100%',  label: 'Qualidade Garantida',   color: 'text-[var(--accent-success)]' },
                     ].map((stat) => (
                         <div key={stat.label} className="glass-dark rounded-2xl p-6 text-center transition-all duration-300">
                             <div className={`text-4xl md:text-5xl font-display font-bold tracking-tighter ${stat.color}`}>{stat.value}</div>

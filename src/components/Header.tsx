@@ -17,7 +17,6 @@ export default function Header() {
     const { storeStatus } = useShopStatus();
 
     const menuItems = [
-        { label: "Upgrades", href: "/#assistencia" },
         { label: "PC Builder", href: "/#pc-builder" },
         { label: "Calculadora", href: "/calculadora" },
     ];
