@@ -76,30 +76,7 @@ export default function LeadModal() {
         }
     }, [isOpen, initialGoal]);
 
-    useEffect(() => {
-        if (!mounted || pathname.startsWith('/admin')) return;
-
-        const hasUTM = searchParams.get('utm_source') || searchParams.get('utm_medium');
-        const expiry = localStorage.getItem('lead_modal_expiry');
-        const isExpired = !expiry || new Date().getTime() > parseInt(expiry);
-
-        if (hasUTM && isExpired) {
-            openModal();
-        } else if (isExpired) {
-            const timer = setTimeout(() => openModal(), 45000);
-            const handleMouseLeave = (e: MouseEvent) => {
-                if (e.clientY <= 0) {
-                    openModal();
-                    document.removeEventListener('mouseleave', handleMouseLeave);
-                }
-            };
-            document.addEventListener('mouseleave', handleMouseLeave);
-            return () => {
-                clearTimeout(timer);
-                document.removeEventListener('mouseleave', handleMouseLeave);
-            };
-        }
-    }, [searchParams, openModal, mounted, pathname]);
+    // useEffect removed to prevent automatic modal pop-up on load/exit
 
     useEffect(() => {
         if (isOpen) {
