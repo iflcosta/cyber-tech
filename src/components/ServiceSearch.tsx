@@ -9,7 +9,7 @@ import { brand } from "@/lib/brand";
 const statusSteps = [
     { id: 'pending', label: 'Recebido', icon: Package },
     { id: 'analyzing', label: 'Análise', icon: Search },
-    { id: 'in_progress', label: 'Reparo', icon: Clock },
+    { id: 'in_progress', label: 'Otimização', icon: Clock },
     { id: 'testing', label: 'Testes', icon: CheckCircle2 },
     { id: 'ready', label: 'Pronto', icon: CheckCircle2 },
 ];
@@ -122,7 +122,7 @@ export default function ServiceSearch() {
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-7xl font-display font-bold mb-6 tracking-tight text-[var(--text-primary)] leading-none uppercase">
                         RASTREIO DE <br />
-                        <span className="opacity-40 italic">MANUTENÇÃO</span>
+                        <span className="opacity-40 italic">SOLUÇÕES</span>
                     </h2>
                     <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest max-w-lg mx-auto leading-relaxed">
                         Acompanhe o status do seu equipamento em tempo real com transparência total e segurança digital.
@@ -166,7 +166,7 @@ export default function ServiceSearch() {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 border-b border-[var(--border-subtle)] pb-8">
                                 <div>
                                     <div className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mb-1">
-                                        {result.type === 'maintenance' ? 'ORDEM DE SERVIÇO' : 'CÓDIGO DO PEDIDO'}
+                                        {result.type === 'maintenance' ? 'PROTOCOLO DE UPGRADE' : 'CÓDIGO DO PEDIDO'}
                                     </div>
                                     <h3 className="text-3xl font-display font-bold text-[var(--text-primary)] uppercase tracking-tight chrome-text">{result.id}</h3>
                                 </div>
@@ -271,7 +271,7 @@ export default function ServiceSearch() {
                             <div className="bg-[var(--bg-elevated)] rounded-xl p-8 border border-[var(--border-subtle)]">
                                 <div className="text-[10px] text-[var(--text-muted)] mb-4 uppercase font-bold tracking-[0.3em]">INFORMAÇÃO TÉCNICA:</div>
                                 <p className="text-[var(--text-primary)] font-medium leading-relaxed italic opacity-80">
-                                    "{result.description || "Iniciando processo de avaliação técnica."}"
+                                    "{result.description || "Iniciando processo de avaliação especializada."}"
                                 </p>
                             </div>
                         </motion.div>

@@ -68,9 +68,8 @@ export default function Hero() {
                         </>
                     ) : (
                         <>
-                            Reparos especializados em smartphones, notebooks e dispositivos Apple. <br className="hidden md:block" />
-                            Montagem de PCs gamer e workstations com estoque real <br className="hidden md:block" />
-                            em Bragança Paulista, SP.
+                            Upgrades e Soluções de Hardware para Smartphones, <br className="hidden md:block" />
+                            Notebooks e Apple com estoque real em Bragança Paulista, SP.
                         </>
                     )}
                 </motion.p>
@@ -86,7 +85,7 @@ export default function Hero() {
                         className="btn-primary w-full sm:flex-1 py-6 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs"
                     >
                         <ShieldCheck size={20} />
-                        AGENDAR REPARO
+                        SOLICITAR UPGRADE
                     </button>
                     <button
                         onClick={() => document.getElementById('pc-builder')?.scrollIntoView({ behavior: 'smooth' })}
@@ -100,10 +99,10 @@ export default function Hero() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-24 md:mt-32 pt-16 border-t border-white/10">
                     {[
-                        { value: '2500+', label: 'Reparos Efetuados', color: 'text-white' },
+                        { value: '2500+', label: 'Dispositivos Otimizados', color: 'text-white' },
                         { value: '800+',  label: 'Setups Montados',    color: 'text-white' },
                         { value: '4.9/5', label: 'Google Reviews',     color: 'text-white' },
-                        { value: '100%',  label: 'Garantia Técnica',   color: 'text-[var(--accent-success)]' },
+                        { value: '100%',  label: 'Certificação Técnica',   color: 'text-[var(--accent-success)]' },
                     ].map((stat) => (
                         <div key={stat.label} className="glass-dark rounded-2xl p-6 text-center transition-all duration-300">
                             <div className={`text-4xl md:text-5xl font-display font-bold tracking-tighter ${stat.color}`}>{stat.value}</div>

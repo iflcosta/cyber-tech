@@ -17,7 +17,7 @@ export default function Header() {
     const { storeStatus } = useShopStatus();
 
     const menuItems = [
-        { label: "Manutenção", href: "/#assistencia" },
+        { label: "Upgrades", href: "/#assistencia" },
         { label: "PC Builder", href: "/#pc-builder" },
         { label: "Calculadora", href: "/calculadora" },
     ];
@@ -170,7 +170,7 @@ export default function Header() {
                                 className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all disabled:opacity-70"
                             >
                                 {waLoading ? <Loader2 size={20} className="animate-spin" /> : <MessageSquare size={20} />}
-                                FALAR COM TÉCNICO
+                                FALAR COM ESPECIALISTA
                             </button>
                         </div>
                     </motion.div>

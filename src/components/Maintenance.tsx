@@ -4,9 +4,7 @@ import { ShieldCheck, Clock, MapPin, Zap } from "lucide-react";
 import { MaintenanceForm } from "./MaintenanceForm";
 
 const features = [
-  { icon: <ShieldCheck size={20} className="text-[var(--accent-primary)]" />, text: "Garantia de 90 dias em todos os reparos" },
-  { icon: <Clock size={20} className="text-[var(--accent-primary)]" />, text: "Orçamento rápido em até 15 minutos" },
-  { icon: <MapPin size={20} className="text-[var(--accent-primary)]" />, text: "Unidade Física em Bragança Paulista" },
+  { icon: <ShieldCheck size={20} className="text-[var(--accent-primary)]" />, text: "Certificação de 90 dias em todas as soluções" },  { icon: <Clock size={20} className="text-[var(--accent-primary)]" />, text: "Avaliação rápida em até 15 minutos" },  { icon: <MapPin size={20} className="text-[var(--accent-primary)]" />, text: "Unidade Física em Bragança Paulista" },
 ];
 
 export default function Maintenance() {
@@ -30,18 +28,18 @@ export default function Maintenance() {
               <h2 className="text-6xl md:text-8xl font-display font-bold mb-8 tracking-tighter text-[var(--text-primary)] leading-[0.85] uppercase chrome-text">
                 {formattedService ? (
                   <>
-                    ASSISTÊNCIA EM <br />
+                    SOLUÇÕES EM <br />
                     <span className="opacity-40 italic">{formattedService}</span>
                   </>
                 ) : (
                   <>
-                    ASSISTÊNCIA <br />
-                    <span className="opacity-40 italic">TÉCNICA ELITE</span>
+                    CUSTOM <br />
+                    <span className="opacity-40 italic">HARDWARE CENTER</span>
                   </>
                 )}
               </h2>
               <p className="text-[var(--text-secondary)] text-sm font-medium max-w-lg leading-relaxed">
-                De smartphones a workstations complexas, nossa equipe certificada resolve problemas com precisão cirúrgica e agilidade digital em Bragança Paulista.
+                De smartphones a workstations complexas, nossa equipe certificada otimiza seu hardware com precisão cirúrgica e agilidade digital em Bragança Paulista.
               </p>
             </div>
 
@@ -65,7 +63,7 @@ export default function Maintenance() {
               </div>
               <h4 className="font-display font-bold text-[var(--text-primary)] mb-4 uppercase tracking-[0.1em] text-lg chrome-text">CHECKOUT DIGITAL</h4>
               <p className="text-[10px] text-[var(--text-muted)] font-mono font-bold uppercase tracking-widest leading-relaxed">
-                CONTROLE TOTAL: Cada reparo é registrado via software próprio com fotos e logs técnicos, garantindo que seu equipamento volte 100% certificado.
+                CERTIFICAÇÃO TOTAL: Cada dispositivo é validado via software próprio com fotos e logs técnicos, garantindo que seu equipamento atinja performance máxima.
               </p>
             </div>
           </div>
