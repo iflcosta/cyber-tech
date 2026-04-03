@@ -52,7 +52,7 @@ export function MaintenanceTab({
                 voucher_code: l.voucher_code,
                 customer_name: l.client_name,
                 customer_phone: l.whatsapp,
-                equipment_type: 'manutenção',
+                equipment_type: 'upgrade',
                 problem_description: l.description,
                 source: l.marketing_source ?? 'form',
                 status: l.status,
@@ -70,7 +70,7 @@ export function MaintenanceTab({
         <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
             <div className="p-6 border-b border-white/10 flex items-center justify-between font-bold uppercase tracking-tighter italic">
                 <div className="flex items-center gap-2">
-                    <RefreshCw size={20} className="text-blue-500" /> Ordens de Manutenção
+                    <RefreshCw size={20} className="text-blue-500" /> Ordens de Upgrade
                 </div>
                 <button onClick={onRefresh} className="p-2 hover:bg-white/10 rounded-full transition-all">
                     <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
@@ -127,9 +127,7 @@ export function MaintenanceTab({
                                             }`}
                                     >
                                         <option value="pending" className="bg-black">PENDENTE</option>
-                                        <option value="analysis" className="bg-black">EM ANÁLISE</option>
-                                        <option value="parts" className="bg-black">AGUARD. PEÇA</option>
-                                        <option value="maintenance" className="bg-black">MANUTENÇÃO</option>
+                                        <option value="upgrade" className="bg-black">EM UPGRADE</option>
                                         <option value="testing" className="bg-black">EM TESTES</option>
                                         <option value="ready" className="bg-black">PRONTO</option>
                                         <option value="converted" className="bg-black">FINALIZADO</option>

@@ -154,9 +154,9 @@ export function CommissionModal({
                   {(('interest_type' in selectedLead && selectedLead.interest_type === 'pc_build') || commissionForm.isAssembly) && <div className="w-2.5 h-2.5 rounded-sm bg-[var(--accent-primary)]" />}
                 </div>
                 <div className="flex-1">
-                  <div className="text-[10px] font-black uppercase tracking-wider group-hover:text-[var(--accent-primary)] transition-colors">Protocolo de montagem</div>
+                  <div className="text-[10px] font-black uppercase tracking-wider group-hover:text-[var(--accent-primary)] transition-colors">Projeto de Upgrade</div>
                   <div className="text-[8px] font-mono text-[var(--text-muted)] mt-0.5">
-                    {'interest_type' in selectedLead && selectedLead.interest_type === 'pc_build' ? 'Automático — Montagem de PC' : 'Serviço de montagem / reparo'}
+                    {'interest_type' in selectedLead && selectedLead.interest_type === 'pc_build' ? 'Automático — Montagem de PC' : 'Serviço de montagem / upgrade'}
                   </div>
                 </div>
               </label>

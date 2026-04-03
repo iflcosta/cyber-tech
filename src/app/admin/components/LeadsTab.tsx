@@ -102,7 +102,7 @@ export function LeadsTab({
                                         onClick={() => onConvertLead(lead, 'upgrade')}
                                         className="w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-[10px] font-black px-4 py-2.5 rounded-lg transition-all uppercase tracking-widest"
                                     >
-                                        → Manutenção
+                                        → Upgrade
                                     </button>
                                     <button
                                         onClick={() => onDismissLead(lead.id)}

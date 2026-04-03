@@ -62,7 +62,7 @@ export function DashboardTab({
                     <h3 className="text-sm font-black uppercase italic mb-6">Volume por Segmento</h3>
                     <div className="space-y-6">
                         {[
-                            { label: 'Manutenção', key: 'upgrade', color: 'bg-blue-500' },
+                            { label: 'Upgrade', key: 'upgrade', color: 'bg-blue-500' },
                             { label: 'PC Builder', key: 'pc_build', color: 'bg-purple-500' },
                             { label: 'Venda Balcão', key: 'venda', color: 'bg-green-500' },
                             { label: 'Showroom', key: 'compra', color: 'bg-orange-500' },

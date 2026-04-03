@@ -123,16 +123,14 @@ export function VendasTab({
                                         onChange={e => onUpdateStatus(lead.id, e.target.value)}
                                         className={`w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none transition-all ${lead.status === 'converted' ? 'text-green-400 border-green-500/20' :
                                             lead.status === 'ready' ? 'text-blue-400 border-blue-500/20' :
-                                                lead.status === 'maintenance' || lead.status === 'building' ? 'text-purple-400 border-purple-500/20' :
+                                                lead.status === 'upgrade' || lead.status === 'building' ? 'text-purple-400 border-purple-500/20' :
                                                     'text-yellow-500 border-yellow-500/20'
                                             }`}
                                     >
                                         {lead.interest_type === 'upgrade' ? (
                                             <>
                                                 <option value="pending" className="bg-black">PENDENTE</option>
-                                                <option value="analysis" className="bg-black">EM ANÁLISE</option>
-                                                <option value="parts" className="bg-black">AGUARD. PEÇA</option>
-                                                <option value="maintenance" className="bg-black">MANUTENÇÃO</option>
+                                                <option value="upgrade" className="bg-black">EM UPGRADE</option>
                                                 <option value="testing" className="bg-black">EM TESTES</option>
                                                 <option value="ready" className="bg-black">PRONTO</option>
                                                 <option value="converted" className="bg-black">FINALIZADO</option>

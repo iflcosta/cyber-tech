@@ -333,7 +333,7 @@ export default function AdminDashboard() {
         { id: 'dashboard' as TabId, label: 'Painel', icon: LayoutDashboard, badge: null },
         { id: 'leads' as TabId, label: 'Leads', icon: Sparkles, badge: pendingLeads.length > 0 ? pendingLeads.length : null },
         { id: 'vendas' as TabId, label: 'Vendas', icon: ShoppingCart, badge: null },
-        { id: 'maintenance' as TabId, label: 'Manutenção', icon: RefreshCw, badge: null },
+        { id: 'upgrade' as TabId, label: 'Upgrades', icon: RefreshCw, badge: null },
         { id: 'reviews' as TabId, label: 'Depoimentos', icon: Star, badge: null },
         { id: 'coupons' as TabId, label: 'Cupons', icon: Tag, badge: null },
         { id: 'simulator' as TabId, label: 'Simulador', icon: Zap, badge: null },
@@ -453,7 +453,7 @@ export default function AdminDashboard() {
                     />
                 )}
 
-                {activeTab === 'maintenance' && (
+                {activeTab === 'upgrade' && (
                     <MaintenanceTab
                         maintenanceOrders={maintenanceOrders}
                         leads={leads}
@@ -554,7 +554,7 @@ export default function AdminDashboard() {
                                     }`}>
                                     <div className={`w-1.5 h-1.5 rounded-full animate-ping ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-400' : socialCardLead.interest_type === 'upgrade' ? 'bg-[var(--accent-primary)]' : 'bg-green-400'}`} />
                                     {socialCardLead.interest_type === 'pc_build' ? 'Montagem de Sistema' :
-                                        socialCardLead.interest_type === 'upgrade' ? 'Protocolo de Manutenção' :
+                                        socialCardLead.interest_type === 'upgrade' ? 'Projeto de Upgrade' :
                                             'Sucesso Gerenciado'}
                                 </div>
 

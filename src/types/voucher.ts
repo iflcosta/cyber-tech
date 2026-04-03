@@ -3,7 +3,7 @@ export type VoucherStatus =
   | 'in_progress'
   | 'analysis'
   | 'parts'
-  | 'maintenance'
+  | 'upgrade'
   | 'testing'
   | 'ready'
   | 'converted'

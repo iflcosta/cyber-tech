@@ -24,7 +24,7 @@ export function GlobalSearch({ globalSearch, setGlobalSearch, leads, maintenance
       o.customer_name?.toLowerCase().includes(q) ||
       o.customer_phone?.includes(q) ||
       o.voucher_code?.toLowerCase().includes(q)
-    ).map(o => ({ ...o, _type: 'maintenance' as const })),
+    ).map(o => ({ ...o, _type: 'upgrade' as const })),
   ] : [];
 
   return (
@@ -52,10 +52,10 @@ export function GlobalSearch({ globalSearch, setGlobalSearch, leads, maintenance
               key={item.id}
               className="p-4 border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
               onClick={() => {
-                const tab: TabId = item._type === 'maintenance'
-                  ? 'maintenance'
+                const tab: TabId = item._type === 'upgrade'
+                  ? 'upgrade'
                   : 'interest_type' in item && item.interest_type === 'upgrade'
-                    ? 'maintenance'
+                    ? 'upgrade'
                     : 'interest_type' in item && ['venda', 'pc_build', 'compra', 'showroom'].includes(item.interest_type ?? '')
                       ? 'vendas'
                       : 'leads';
@@ -76,8 +76,8 @@ export function GlobalSearch({ globalSearch, setGlobalSearch, leads, maintenance
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className={`text-[9px] font-mono uppercase px-2 py-1 rounded-full ${item._type === 'maintenance' ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'}`}>
-                    {item._type === 'maintenance' ? 'Manutenção' : 'interest_type' in item ? (item.interest_type ?? 'Lead') : 'Lead'}
+                  <div className={`text-[9px] font-mono uppercase px-2 py-1 rounded-full ${item._type === 'upgrade' ? 'bg-blue-500/10 text-blue-400' : 'bg-green-500/10 text-green-400'}`}>
+                    {item._type === 'upgrade' ? 'Upgrade' : 'interest_type' in item ? (item.interest_type ?? 'Lead') : 'Lead'}
                   </div>
                   {item.voucher_code && (
                     <div className="text-[9px] font-mono text-[var(--accent-primary)] mt-1">{item.voucher_code}</div>
