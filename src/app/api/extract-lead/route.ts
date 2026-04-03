@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 Extraia um objeto JSON com:
 - "name": Nome do cliente (null se não houver)
 - "whatsapp": WhatsApp do cliente formatado apenas números (null se não houver)
-- "interest_type": 'venda', 'manutencao' ou 'duvida'
+- "interest_type": 'venda', 'upgrade' ou 'duvida'
 - "description": Breve resumo do que o cliente quer.
 
 Histórico:

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, Copy, Send, Monitor, Smartphone, Wrench, HelpCircle, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, Copy, Send, Monitor, Smartphone, Zap, HelpCircle, ArrowRight } from 'lucide-react';
 import { cn } from "./ui/Button";
 import { trackLead } from '@/lib/leads';
 import { getOrCreateSessionVoucher } from '@/lib/session/voucherSession';
@@ -11,13 +11,13 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import { useLeadModal } from '@/contexts/LeadModalContext';
 
 type LeadStep = 'intent' | 'details' | 'success';
-type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
+type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'upgrade_urgente' | 'duvida_tecnica';
 
 export default function LeadModal() {
     const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, productIds, openModal, selectedProduct } = useLeadModal();
     const [step, setStep] = useState<LeadStep>('intent');
     const [intent, setIntent] = useState<IntentType | null>(null);
-    const [goal, setGoal] = useState<'compra' | 'manutencao' | 'duvida' | null>(null);
+    const [goal, setGoal] = useState<'compra' | 'upgrade' | 'duvida' | null>(null);
 
     // Form states
     const [name, setName] = useState('');
@@ -47,7 +47,7 @@ export default function LeadModal() {
                 setCountdown(prev => {
                     if (prev <= 1) {
                         clearInterval(timer);
-                        const text = whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${selectedProduct ? `o produto ${selectedProduct.name}` : (goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida')}.`;
+                        const text = whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${selectedProduct ? `o produto ${selectedProduct.name}` : (goal === 'upgrade' ? 'upgrade de hardware' : goal === 'compra' ? 'compra' : 'uma dúvida')}.`;
                         const url = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`;
                         window.open(url, '_blank');
                         closeModal();
@@ -67,7 +67,7 @@ export default function LeadModal() {
                 setGoal(initialGoal);
                 setStep('details');
                 // Auto-set intent based on goal
-                if (initialGoal === 'manutencao') setIntent('manutencao_urgente');
+                if (initialGoal === 'upgrade') setIntent('upgrade_urgente');
                 else if (initialGoal === 'duvida') setIntent('duvida_tecnica');
                 else setIntent('pesquisando_preco');
             } else {
@@ -102,10 +102,10 @@ export default function LeadModal() {
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen, initialGoal]);
 
-    const handleIntentSelection = (selectedGoal: 'compra' | 'manutencao' | 'duvida') => {
+    const handleIntentSelection = (selectedGoal: 'compra' | 'upgrade' | 'duvida') => {
         setGoal(selectedGoal);
         setStep('details');
-        if (selectedGoal === 'manutencao') setIntent('manutencao_urgente');
+        if (selectedGoal === 'upgrade') setIntent('upgrade_urgente');
         else if (selectedGoal === 'duvida') setIntent('duvida_tecnica');
         else setIntent('pesquisando_preco');
     };
@@ -120,7 +120,7 @@ export default function LeadModal() {
         
         // Merge descriptions
         let finalDescription = description;
-        if (goal === 'manutencao') {
+        if (goal === 'upgrade') {
             finalDescription = `Modelo: ${deviceModel} | Problema: ${description}`;
         } else if (goal === 'compra') {
             const details = [];
@@ -154,7 +154,7 @@ export default function LeadModal() {
         const code = await trackLead({
             client_name: name,
             whatsapp: whatsapp,
-            interest_type: goal === 'manutencao' ? 'manutencao' : 'venda',
+            interest_type: goal === 'upgrade' ? 'contato' : 'venda',
             intent_type: currentIntent || 'duvida_tecnica',
             description: finalDescription,
             marketing_source: utm_params.source || 'direct',
@@ -225,9 +225,9 @@ export default function LeadModal() {
                                                 <Smartphone className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
                                                 <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar Celular</span>
                                             </button>
-                                            <button onClick={() => handleIntentSelection('manutencao')} className={intentClasses}>
-                                                <Wrench className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
-                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Consertar Dispositivo</span>
+                                            <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
+                                                <Zap className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Upgrade de Hardware</span>
                                             </button>
                                             <button onClick={() => handleIntentSelection('duvida')} className={intentClasses}>
                                                 <HelpCircle className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
@@ -280,7 +280,7 @@ export default function LeadModal() {
                                                     </div>
                                                 </div>
                                             </>
-                                        ) : goal === 'manutencao' ? (
+                                        ) : goal === 'upgrade' ? (
                                             <div className="space-y-4">
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Modelo do Dispositivo</label>
@@ -328,7 +328,7 @@ export default function LeadModal() {
                                         </div>
 
                                         <div className="space-y-3 px-4">
-                                            <a href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${selectedProduct ? `a compra do ${selectedProduct.name}` : (goal === 'manutencao' ? 'conserto' : goal === 'compra' ? 'compra' : 'uma dúvida')}.`)}`} target="_blank" rel="noreferrer" className="btn-primary w-full py-5 flex items-center justify-center gap-3" onClick={closeModal} >
+                                            <a href={`https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage || `Olá, acabei de gerar um voucher no site (Código: ${voucher}). Gostaria de atendimento para ${selectedProduct ? `a compra do ${selectedProduct.name}` : (goal === 'upgrade' ? 'upgrade' : goal === 'compra' ? 'compra' : 'uma dúvida')}.`)}`} target="_blank" rel="noreferrer" className="btn-primary w-full py-5 flex items-center justify-center gap-3" onClick={closeModal} >
                                                 <Send size={18} /> INICIAR NO WHATSAPP
                                             </a>
                                             <button onClick={closeModal} className="w-full py-3 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--text-primary)] transition-colors">

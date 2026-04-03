@@ -34,8 +34,8 @@ export async function sendWhatsAppMessage({ to, body, templateName, variables }:
 /**
  * Formats a message for the "Service Ready" notification.
  */
-export function formatReadyMessage(customerName: string, voucherCode: string, equipment: string) {
-  return `Olá ${customerName}! Tudo bem? Seu ${equipment} (Voucher: ${voucherCode}) está pronto para retirada na Cyber Informática.\n\nHorário de funcionamento: ${brand.openingHours}\nLocal: ${brand.address.street}, ${brand.address.number}`
+export function formatReadyMessage(customerName: string, voucherCode: string, productName: string) {
+  return `Olá ${customerName}! Tudo bem? Seu ${productName} (Voucher: ${voucherCode}) já está disponível para retirada na Cyber Informática.\n\nHorário de funcionamento: ${brand.openingHours}\nLocal: ${brand.address.street}, ${brand.address.number}`
 }
 
 /**
@@ -47,5 +47,5 @@ export function formatInternalOrderMessage(order: {
   equipment_type: string
   problem_description: string
 }) {
-  return `🚀 *NOVA ORDEM DE MANUTENÇÃO*\n\n*Voucher:* ${order.voucher_code}\n*Cliente:* ${order.customer_name}\n*Equipamento:* ${order.equipment_type}\n*Problema:* ${order.problem_description}\n\nVerifique o painel administrativo para mais detalhes.`
+  return `🚀 *NOVO INTERESSE EM HARDWARE*\n\n*Voucher:* ${order.voucher_code}\n*Cliente:* ${order.customer_name}\n*Item/Upgrade:* ${order.equipment_type}\n*Detalhes:* ${order.problem_description}\n\nVerifique o painel administrativo para mais detalhes.`
 }

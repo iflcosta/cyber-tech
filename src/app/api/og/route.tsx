@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
                         <div style={{ display: 'flex', gap: 20 }}>
                             {[
                                 { id: '01', label: 'PC GAMER' },
-                                { id: '02', label: 'MANUTENÇÃO' },
+                                { id: '02', label: 'HARDWARE' },
                                 { id: '03', label: 'SMARTPHONE' },
                             ].map(tag => (
                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.1)', paddingLeft: 20, paddingRight: 20, paddingTop: 10, paddingBottom: 10, backgroundColor: 'rgba(13,13,17,0.8)', position: 'relative' }}>

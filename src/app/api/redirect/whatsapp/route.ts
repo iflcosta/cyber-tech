@@ -5,14 +5,14 @@ import { utmToVoucherSource } from '@/lib/tracking/sources'
 import { brand } from '@/lib/brand'
 
 const SERVICE_LABELS: Record<string, string> = {
-  reparo_celular:  'reparo de celular',
-  reparo_notebook: 'reparo de notebook',
-  reparo_desktop:  'reparo de desktop/PC',
-  montagem_pc:     'montagem de PC',
-  celular:         'reparo de celular',
-  notebook:        'reparo de notebook',
-  desktop:         'reparo de desktop/PC',
-  outro:           'atendimento',
+  hardware_premium: 'hardware premium',
+  notebook_gamer:   'notebook gamer',
+  estacao_trabalho: 'estação de trabalho',
+  montagem_pc:      'montagem de PC',
+  celular:          'hardware premium',
+  notebook:         'notebook gamer',
+  desktop:          'estação de trabalho',
+  outro:            'atendimento',
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       const { error: leadError } = await supabaseAdmin.from('leads').insert({
         voucher_code:     code,
         client_name:      'Lead via Link Direto',
-        interest_type:    ['reparo_celular', 'celular', 'reparo_notebook', 'notebook'].includes(serviceKey) ? 'manutencao' : 'contato',
+        interest_type:    ['hardware_premium', 'celular', 'notebook_gamer', 'notebook'].includes(serviceKey) ? 'venda' : 'contato',
         marketing_source: source,
         status:           'pending',
         utm_parameters:   { source: utmSource, campaign: utmCampaign, ref },

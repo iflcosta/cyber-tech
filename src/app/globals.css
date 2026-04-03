@@ -163,7 +163,7 @@ code, .mono {
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-/* Para fundos claros (manutenção, showroom, pc builder) */
+/* Para fundos claros (showroom, pc builder) */
 .glass-light {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px);

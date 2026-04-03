@@ -50,7 +50,7 @@ export function CommissionModal({
     : commissionForm.isAssembly && !_isCelular && commissionForm.executor === 'partner'
       ? (_customAmt > 0 ? _customComm : _val * 0.03) : 0;
   const _totalIago = _val * _baseRate + _iagoAssembly;
-  const _isMaintenance = ('interest_type' in selectedLead && selectedLead.interest_type === 'manutencao')
+  const _isMaintenance = ('interest_type' in selectedLead && selectedLead.interest_type === 'upgrade')
     || ('equipment_type' in selectedLead && !!selectedLead.equipment_type);
 
   const clientName = 'client_name' in selectedLead ? selectedLead.client_name : selectedLead.customer_name;

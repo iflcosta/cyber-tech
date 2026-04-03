@@ -214,7 +214,7 @@ export default function AdminDashboard() {
         }
     };
 
-    const convertLead = async (lead: Lead, type: 'venda' | 'manutencao') => {
+    const convertLead = async (lead: Lead, type: 'venda' | 'upgrade') => {
         const edit = inboxEdit[lead.id];
         const updates: any = { interest_type: type };
         if (edit?.name) updates.client_name = edit.name;
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
     const pendingLeads = leads.filter(
         l =>
             l.status !== 'dismissed' &&
-            !['manutencao', 'venda', 'pc_build', 'compra', 'showroom'].includes(l.interest_type || '')
+            !['upgrade', 'venda', 'pc_build', 'compra', 'showroom'].includes(l.interest_type || '')
     );
     const tabs = [
         { id: 'dashboard' as TabId, label: 'Painel', icon: LayoutDashboard, badge: null },
@@ -549,12 +549,12 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-mono font-black uppercase tracking-widest mb-6 ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                    socialCardLead.interest_type === 'manutencao' ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20' :
+                                    socialCardLead.interest_type === 'upgrade' ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20' :
                                         'bg-green-500/10 text-green-400 border border-green-500/20'
                                     }`}>
-                                    <div className={`w-1.5 h-1.5 rounded-full animate-ping ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-400' : socialCardLead.interest_type === 'manutencao' ? 'bg-[var(--accent-primary)]' : 'bg-green-400'}`} />
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-ping ${socialCardLead.interest_type === 'pc_build' ? 'bg-purple-400' : socialCardLead.interest_type === 'upgrade' ? 'bg-[var(--accent-primary)]' : 'bg-green-400'}`} />
                                     {socialCardLead.interest_type === 'pc_build' ? 'Montagem de Sistema' :
-                                        socialCardLead.interest_type === 'manutencao' ? 'Protocolo de Manutenção' :
+                                        socialCardLead.interest_type === 'upgrade' ? 'Protocolo de Manutenção' :
                                             'Sucesso Gerenciado'}
                                 </div>
 

@@ -1,7 +1,7 @@
 {
     "name": "Cyber Tech Admin",
     "short_name": "CyberAdmin",
-    "description": "Painel de Gestão Cyber Tech - Assistência e PC Gamer",
+    "description": "Painel de Gestão Cyber Tech - Hardware e PC Gamer",
     "start_url": "/admin",
     "display": "standalone",
     "background_color": "#000000",

@@ -54,7 +54,7 @@ export function GlobalSearch({ globalSearch, setGlobalSearch, leads, maintenance
               onClick={() => {
                 const tab: TabId = item._type === 'maintenance'
                   ? 'maintenance'
-                  : 'interest_type' in item && item.interest_type === 'manutencao'
+                  : 'interest_type' in item && item.interest_type === 'upgrade'
                     ? 'maintenance'
                     : 'interest_type' in item && ['venda', 'pc_build', 'compra', 'showroom'].includes(item.interest_type ?? '')
                       ? 'vendas'

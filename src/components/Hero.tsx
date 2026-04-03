@@ -61,14 +61,14 @@ export default function Hero() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="text-balance text-sm md:text-lg text-slate-300 max-w-2xl mx-auto mb-16 leading-relaxed relative z-10 font-medium tracking-wide"
                 >
-                    {formattedService ? (
+                    {formattedService && !['conserto', 'reparo', 'upgrade', 'assistencia'].some(k => formattedService.toLowerCase().includes(k)) ? (
                         <>
                             Especialistas em <span className="text-[var(--accent-primary)] font-bold">{formattedService}</span>. <br className="hidden md:block" />
-                            Atendimento técnico certificado com estoque real em Bragança Paulista, SP.
+                            Loja de Hardware com estoque real em Bragança Paulista, SP.
                         </>
                     ) : (
                         <>
-                            Hardware de Alta Performance e Sistemas Customizados <br className="hidden md:block" />
+                            Especialistas em Venda de Hardware e Montagem de PC Gamer <br className="hidden md:block" />
                             com estoque real em Bragança Paulista, SP.
                         </>
                     )}
@@ -81,7 +81,7 @@ export default function Hero() {
                     className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-3xl mx-auto"
                 >
                     <button
-                        onClick={() => document.getElementById('assistencia')?.scrollIntoView({ behavior: 'smooth' })}
+                        onClick={() => document.getElementById('showroom')?.scrollIntoView({ behavior: 'smooth' })}
                         className="btn-primary w-full sm:flex-1 py-6 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs"
                     >
                         VER COMPONENTES
@@ -94,12 +94,11 @@ export default function Hero() {
                         MONTE SEU PC
                     </button>
                 </motion.div>
-
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-24 md:mt-32 pt-16 border-t border-white/10">
                     {[
-                        { value: '2500+', label: 'Dispositivos Otimizados', color: 'text-white' },
-                        { value: '800+',  label: 'Setups Montados',    color: 'text-white' },
+                        { value: '2500+', label: 'Módulos de Hardware', color: 'text-white' },
+                        { value: '800+',  label: 'Workstations Entregues',    color: 'text-white' },
                         { value: '4.9/5', label: 'Google Reviews',     color: 'text-white' },
                         { value: '100%',  label: 'Qualidade Garantida',   color: 'text-[var(--accent-success)]' },
                     ].map((stat) => (

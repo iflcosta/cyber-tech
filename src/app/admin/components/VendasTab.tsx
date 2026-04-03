@@ -84,7 +84,7 @@ export function VendasTab({
                                     <div className="flex flex-col gap-2">
                                         <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest w-fit ${
                                             lead.interest_type === 'pc_build' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                            lead.interest_type === 'manutencao' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                            lead.interest_type === 'upgrade' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
                                             'bg-green-500/10 text-green-400 border border-green-500/20'
                                         }`}>
                                             {lead.interest_type}
@@ -127,7 +127,7 @@ export function VendasTab({
                                                     'text-yellow-500 border-yellow-500/20'
                                             }`}
                                     >
-                                        {lead.interest_type === 'manutencao' ? (
+                                        {lead.interest_type === 'upgrade' ? (
                                             <>
                                                 <option value="pending" className="bg-black">PENDENTE</option>
                                                 <option value="analysis" className="bg-black">EM ANÁLISE</option>
@@ -188,7 +188,7 @@ export function VendasTab({
                                                 <div className="flex items-center justify-between gap-4">
                                                     <span className="text-[10px] text-purple-400 font-bold">Jeff.:</span>
                                                     <span className="text-[10px] font-bold text-purple-400">
-                                                        R$ {(lead.interest_type === 'manutencao'
+                                                        R$ {(lead.interest_type === 'upgrade'
                                                             ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5
                                                             : (lead.final_value || 0) * 0.03).toLocaleString('pt-BR')}
                                                     </span>
@@ -197,7 +197,7 @@ export function VendasTab({
                                             <div className="flex items-center justify-between gap-4 border-t border-white/5 pt-1 opacity-60 italic">
                                                 <span className="text-[10px] text-white/40">Loja:</span>
                                                 <span className="text-[10px] text-white/40">
-                                                    R$ {((lead.final_value || 0) - (lead.commission_value || 0) - (lead.performed_by_partner ? (lead.interest_type === 'manutencao' ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5 : (lead.final_value || 0) * 0.03) : 0)).toLocaleString('pt-BR')}
+                                                    R$ {((lead.final_value || 0) - (lead.commission_value || 0) - (lead.performed_by_partner ? (lead.interest_type === 'upgrade' ? ((lead.final_value || 0) - (lead.cost_value || 0)) * 0.5 : (lead.final_value || 0) * 0.03) : 0)).toLocaleString('pt-BR')}
                                                 </span>
                                             </div>
                                             {(lead.utm_parameters as any)?.executor && (

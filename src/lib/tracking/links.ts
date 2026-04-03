@@ -8,7 +8,7 @@ const BASE = brand.url;
  * Estrutura da URL:
  *   utm_source  = canal principal  (instagram, facebook, whatsapp, google)
  *   utm_medium  = formato/local    (bio, stories, post, status, cpc)
- *   utm_campaign = intenção         (manutencao, vendas, gamer) — opcional
+ *   utm_campaign = intenção         (upgrade, vendas, gamer) — opcional
  *
  * O que acontece quando alguém acessa um desses links:
  *   1. O site salva o utm_source na sessão (sessionStorage)

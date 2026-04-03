@@ -9,14 +9,14 @@ import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
 import { useVoucherSession } from "@/hooks/useVoucherSession";
 
 type Message = { role: 'user' | 'ai', content: string };
-type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'manutencao_urgente' | 'duvida_tecnica';
+type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'upgrade_urgente' | 'duvida_tecnica';
 
 
 const GUIDED_PROMPTS = [
-    { label: "Meu PC não liga", icon: Monitor, prompt: "Olá! Meu computador parou de ligar hoje. O que pode ser?" },
-    { label: "Notebook lento", icon: Cpu, prompt: "Meu notebook está muito lento ultimamente, demora pra abrir tudo. Tem como melhorar?" },
-    { label: "iPhone quebrado", icon: Smartphone, prompt: "Quebrei a tela do meu iPhone, vocês trocam em quanto tempo?" },
-    { label: "Orçamento PC Gamer", icon: Sparkles, prompt: "Quero montar um PC Gamer pra jogar CS2 e Valorant. Qual o orçamento inicial?" }
+    { label: "Upgrade de PC", icon: Monitor, prompt: "Olá! Meu computador atual está ultrapassado. Quais upgrades você sugere para performance?" },
+    { label: "PC Gamer Ideal", icon: Cpu, prompt: "Quero montar um PC de alta performance. Quais as melhores peças por custo-benefício hoje?" },
+    { label: "Sugestão p/ Trabalho", icon: Smartphone, prompt: "Preciso de um notebook potente para edição de vídeo e trabalho pesado. O que tem no estoque?" },
+    { label: "Orçamento Workstation", icon: Sparkles, prompt: "Quanto custa em média uma workstation para Inteligência Artificial em Bragança?" }
 ];
 
 export default function CyberIA() {
@@ -50,10 +50,10 @@ export default function CyberIA() {
             try {
                 setMessages(JSON.parse(saved));
             } catch (e) {
-                setMessages([{ role: 'ai', content: 'Fala! Sou o Cyber IA, seu consultor técnico aqui em Bragança Paulista. Como posso salvar seu dia (ou seu dispositivo) hoje?' }]);
+                setMessages([{ role: 'ai', content: 'Fala! Sou o Cyber IA, seu consultor de hardware aqui em Bragança Paulista. Buscando as melhores peças ou um PC novo de elite? Como posso ajudar?' }]);
             }
         } else {
-            setMessages([{ role: 'ai', content: 'Fala! Sou o Cyber IA, seu consultor técnico aqui em Bragança Paulista. Como posso salvar seu dia (ou seu dispositivo) hoje?' }]);
+            setMessages([{ role: 'ai', content: 'Fala! Sou o Cyber IA, seu consultor de hardware aqui em Bragança Paulista. Buscando as melhores peças ou um PC novo de elite? Como posso ajudar?' }]);
         }
 
         preloadProducts();
@@ -80,34 +80,27 @@ export default function CyberIA() {
         setLoading(true);
 
         const recentMessages = messages.slice(-6);
-        const context = `Você é a Cyber IA, assistente técnica da Cyber Informática em Bragança Paulista, SP.
+        const context = `Você é a Cyber IA, especialista em Hardware da Cyber Informática em Bragança Paulista, SP.
 
 REGRAS CRÍTICAS:
-- Seja direto e técnico (industrial refined). Use sotaque leve do interior paulista, mas mantenha o profissionalismo.
-- MÁXIMO 3 perguntas antes de dar um diagnóstico provável ou estimativa.
-- Nunca diga que não sabe. Se incerto, dê uma faixa de preço ("entre R$80 e R$150") baseada nos preços de mão de obra.
-- Sempre termine com uma ação clara: visitar a loja, orçamento via WhatsApp ou previsão de preço.
-- Conheça o contexto: a loja conserta notebooks, PCs, celulares e vende hardware de alta performance.
+- Seja direto, técnico e focado em PERFORMANCE. Use sotaque leve do interior paulista, mas mantenha o profissionalismo de elite.
+- Sua missão exclusiva é vender HARDWARE e sugerir MONTAGENS DE PC.
+- Foco absoluto em UPGRADES e VENDA de sistemas novos. Nunca mencione reparos técnicos em dispositivos existentes.
+- Sempre termine com uma ação clara: visitar o showroom, orçamento de peças via WhatsApp ou fechar a configuração do PC Gamer.
+- Conheça o contexto: a loja é premium e foca em Componentes de Elite e PCs sob medida.
 
-FLUXO PARA MANUTENÇÃO:
-1. Identifique o dispositivo e sintoma.
-2. Faça no máximo 2 perguntas sobre o comportamento específico.
-3. Forneça o diagnóstico provável + faixa de preço + CTA WhatsApp.
-
-FLUXO PARA COMPRA:
-1. Pergunte o uso principal (games, trabalho, etc.) e o orçamento do cliente.
-2. Sugira opções do estoque real disponível (abaixo).
-3. Se houver poucas unidades, mencione a urgência ("temos apenas X unidades").
-4. CTA WhatsApp ou convite para visitar a loja em Bragança.
+FLUXO PARA VENDA/UPGRADE:
+1. Entenda a necessidade do cliente (Gamer, IA, Trabalho Pesado, etc.) e o orçamento.
+2. Sugira as melhores peças do estoque real disponível (lista abaixo).
+3. Caso o item não esteja no estoque, ofereça encomendar ou sugira um setup equivalente de alta performance.
+4. CTA WhatsApp para fechar o pedido ou visita à loja.
 
 ESTOQUE ATUAL:
-${productsString || "Consulte-nos sobre disponibilidade imediata."}
+${productsString || "Consulte-nos sobre disponibilidade imediata de novos hardwares."}
 
-PREÇOS DE MÃO DE OBRA (BASE):
-- Celulares: R$ 80 - R$ 350
-- Notebooks: R$ 120 - R$ 450
-- PCs/Desktop: R$ 150 - R$ 500
-- Limpeza/Formatação: R$ 150
+ESTRATÉGIA DE FECHAMENTO:
+- Destaque a garantia nacional e a procedência de elite das peças.
+- Mencione que a montagem é feita por especialistas em PC High-End.
 
 HISTÓRICO DA CONVERSA:
 ${recentMessages.map(m => `${m.role === 'user' ? 'Cliente' : 'Cyber IA'}: ${m.content}`).join('\n')}
@@ -120,7 +113,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
         const determineIntent = (text: string): IntentType => {
             const t = text.toLowerCase();
             if (t.includes('comprar') || t.includes('preço') || t.includes('estoque') || t.includes('disponível')) return 'compra_imediata';
-            if (t.includes('consertar') || t.includes('quebrado') || t.includes('não liga') || t.includes('ajuda técnica')) return 'manutencao_urgente';
+            if (t.includes('consertar') || t.includes('quebrado') || t.includes('não liga') || t.includes('ajuda técnica')) return 'upgrade_urgente';
             if (t.includes('pesquisando') || t.includes('olhando') || t.includes('comparando')) return 'pesquisando_preco';
             return 'duvida_tecnica';
         };

@@ -8,9 +8,9 @@ import { utmToVoucherSource } from '@/lib/tracking/sources'
 import type { InterestType } from '@/types/lead'
 
 export type WhatsAppServiceType =
-  | 'reparo_celular'
-  | 'reparo_notebook'
-  | 'reparo_desktop'
+  | 'hardware_premium'
+  | 'notebook_gamer'
+  | 'estacao_trabalho'
   | 'montagem_pc'
   | 'venda'
   | 'outro'
@@ -21,17 +21,17 @@ export interface UseWhatsAppLeadParams {
 }
 
 const SERVICE_LABELS: Record<WhatsAppServiceType, string> = {
-  reparo_celular:  'reparo de celular',
-  reparo_notebook: 'reparo de notebook',
-  reparo_desktop:  'reparo de desktop/PC',
-  montagem_pc:     'montagem de PC',
-  venda:           'compra de produto',
-  outro:           'atendimento',
+  hardware_premium: 'hardware premium',
+  notebook_gamer:   'notebook gamer',
+  estacao_trabalho: 'estação de trabalho',
+  montagem_pc:      'montagem de PC',
+  venda:            'compra de produto',
+  outro:            'atendimento',
 }
 
 function serviceTypeToInterestType(serviceType?: string): InterestType {
   if (!serviceType) return 'contato'
-  if (serviceType.includes('reparo')) return 'manutencao'
+  if (serviceType.includes('reparo')) return 'venda'
   if (serviceType === 'montagem_pc') return 'pc_build'
   if (serviceType === 'venda') return 'venda'
   return 'contato'

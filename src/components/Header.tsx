@@ -18,7 +18,6 @@ export default function Header() {
 
     const menuItems = [
         { label: "PC Builder", href: "/#pc-builder" },
-        { label: "Calculadora", href: "/calculadora" },
     ];
 
     const pathname = usePathname();

@@ -1,6 +1,6 @@
 export const brand = {
   name: "Cyber Informática",
-  slogan: "Hardware de Alta Performance e Sistemas Customizados",
+  slogan: "Especialistas em Venda de Hardware e Montagem de PC Gamer",
   whatsapp: "5511954369269",
   phone: "5511954369269",
   url: "https://cyberinformatica.tech",
@@ -27,7 +27,8 @@ export const brand = {
     min: 0.05,
     max: 0.08,
   },
-  description: "Cyber Informática Bragança - Loja de Hardware Especializada em PC Gamer, Workstations de IA e Componentes de Alta Performance no interior de SP.",
+  description: "Especialistas em Venda de Hardware e Montagem de PC Gamer em Bragança Paulista. Loja especializada em componentes de alta performance e workstations.",
+
   seo: {
     keywords: [
       "Loja de Informática Bragança Paulista",

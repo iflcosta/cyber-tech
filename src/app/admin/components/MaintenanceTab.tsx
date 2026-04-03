@@ -46,7 +46,7 @@ export function MaintenanceTab({
             isLead: false,
         })),
         ...leads
-            .filter(l => l.interest_type === 'manutencao' && !seenCodes.has((l.voucher_code || '').toUpperCase()))
+            .filter(l => l.interest_type === 'upgrade' && !seenCodes.has((l.voucher_code || '').toUpperCase()))
             .map(l => ({
                 id: l.id,
                 voucher_code: l.voucher_code,

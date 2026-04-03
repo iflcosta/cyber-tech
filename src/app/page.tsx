@@ -2,11 +2,9 @@ import { Instagram } from "lucide-react";
 import { Suspense } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Maintenance from "@/components/Maintenance";
-import Showroom from "@/components/Showroom";
 import CyberIA from "@/components/CyberIA";
 import PCBuilder from "@/components/PCBuilder";
-import ServiceSearch from "@/components/ServiceSearch";
+import Showroom from "@/components/Showroom";
 import Reviews from "@/components/Reviews";
 
 export default function Home() {
@@ -16,15 +14,13 @@ export default function Home() {
       <Suspense fallback={<div className="h-screen bg-[var(--bg-primary)]" />}>
         <Hero />
       </Suspense>
-      {/* <Suspense fallback={<div className="min-h-[400px]" />}>
-        <Maintenance />
-      </Suspense>
-      <ServiceSearch /> */}
-      {/* <Suspense fallback={<div className="min-h-[400px]" />}>
+      <Suspense fallback={<div className="min-h-[400px]" />}>
         <Showroom />
-      </Suspense> */}
+      </Suspense>
       <PCBuilder />
       <Reviews />
+
+
       <Suspense fallback={null}>
         <CyberIA />
       </Suspense>

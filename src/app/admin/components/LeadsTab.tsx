@@ -7,7 +7,7 @@ interface LeadsTabProps {
     loading: boolean;
     inboxEdit: Record<string, { name: string; phone: string }>;
     setInboxEdit: React.Dispatch<React.SetStateAction<Record<string, { name: string; phone: string }>>>;
-    onConvertLead: (lead: Lead, type: 'venda' | 'manutencao') => void;
+    onConvertLead: (lead: Lead, type: 'venda' | 'upgrade') => void;
     onDismissLead: (leadId: string) => void;
     onRefresh: () => void;
 }
@@ -24,7 +24,7 @@ export function LeadsTab({
     const inboxLeads = leads.filter(
         l =>
             l.status !== 'dismissed' &&
-            !['manutencao', 'venda', 'pc_build', 'compra', 'showroom'].includes(l.interest_type || '')
+            !['upgrade', 'venda', 'pc_build', 'compra', 'showroom'].includes(l.interest_type || '')
     );
 
     const getSourceIcon = (source: string | null) => {
@@ -99,7 +99,7 @@ export function LeadsTab({
                                         → Venda
                                     </button>
                                     <button
-                                        onClick={() => onConvertLead(lead, 'manutencao')}
+                                        onClick={() => onConvertLead(lead, 'upgrade')}
                                         className="w-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-[10px] font-black px-4 py-2.5 rounded-lg transition-all uppercase tracking-widest"
                                     >
                                         → Manutenção
