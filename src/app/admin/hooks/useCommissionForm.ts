@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Lead } from '@/types/lead';
 import type { Product } from '@/types/product';
-import type { CommissionForm, ConsumedProduct } from '@/types/admin';
+import type { CommissionForm, ConsumedProduct, Executor } from '@/types/admin';
 
 const defaultCommissionForm: CommissionForm = {
     finalValue: '',
@@ -37,17 +37,7 @@ export function useCommissionForm({
     const [selectedLeadForCommission, setSelectedLeadForCommission] = useState<any>(null);
     const [commissionForm, setCommissionForm] = useState<CommissionForm>(defaultCommissionForm);
 
-    const isCelularLead = (lead: any) => {
-        const t = (lead?.interest_type || lead?.equipment_type || '').toLowerCase();
-        return (
-            t.includes('celular') ||
-            t.includes('smartphone') ||
-            t.includes('phone') ||
-            t.includes('mobile')
-        );
-    };
-
-    const getAssemblyExecutor = (lead: any) => 'owner';
+    const getAssemblyExecutor = (lead: any): Executor => 'owner';
 
     const openCommissionModal = (lead: any, preset: Partial<CommissionForm>) => {
         setSelectedLeadForCommission(lead);
@@ -168,7 +158,6 @@ export function useCommissionForm({
         submitCommissionForm,
         openCommissionModal,
         closeCommissionModal,
-        isCelularLead,
         getAssemblyExecutor,
     };
 }

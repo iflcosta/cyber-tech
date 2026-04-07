@@ -74,7 +74,6 @@ export default function AdminDashboard() {
         submitCommissionForm,
         openCommissionModal,
         closeCommissionModal,
-        isCelularLead,
         getAssemblyExecutor,
     } = useCommissionForm({
         leads,
@@ -643,7 +642,6 @@ export default function AdminDashboard() {
                 products={products}
                 manualProductSelect={manualProductSelect}
                 setManualProductSelect={setManualProductSelect}
-                isCelularLead={isCelularLead}
                 onSubmit={submitCommissionForm}
                 onClose={closeCommissionModal}
             />

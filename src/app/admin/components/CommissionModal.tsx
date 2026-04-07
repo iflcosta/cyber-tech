@@ -15,7 +15,6 @@ interface CommissionModalProps {
   products: Product[];
   manualProductSelect: string;
   setManualProductSelect: (v: string) => void;
-  isCelularLead: (lead: SelectedLead) => boolean;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
 }
@@ -28,7 +27,6 @@ export function CommissionModal({
   products,
   manualProductSelect,
   setManualProductSelect,
-  isCelularLead,
   onSubmit,
   onClose,
 }: CommissionModalProps) {
@@ -39,15 +37,12 @@ export function CommissionModal({
   const _isDigital = ['site', 'instagram', 'facebook', 'insta', 'face', 'direct', 'direto'].includes(
     (('marketing_source' in selectedLead ? selectedLead.marketing_source : '') ?? '').toLowerCase()
   );
-  const _isCelular = isCelularLead(selectedLead);
   const _baseRate = commissionForm.ecosystemCaptured ? (_val > 8000 ? 0.05 : 0.08) : 0;
   const _customAmt = parseFloat(commissionForm.customCommissionAmount) || 0;
   const _customComm = commissionForm.customCommissionType === 'percent' ? _val * (_customAmt / 100) : _customAmt;
   const _iagoAssembly = commissionForm.isAssembly && commissionForm.executor === 'iago'
     ? (_customAmt > 0 ? _customComm : _val * 0.03) : 0;
-  const _jeffAssembly = commissionForm.isAssembly && _isCelular && commissionForm.executor === 'partner'
-    ? (_val - _cost) * 0.5
-    : commissionForm.isAssembly && !_isCelular && commissionForm.executor === 'partner'
+  const _jeffAssembly = commissionForm.isAssembly && commissionForm.executor === 'partner'
       ? (_customAmt > 0 ? _customComm : _val * 0.03) : 0;
   const _totalIago = _val * _baseRate + _iagoAssembly;
   const _isMaintenance = ('interest_type' in selectedLead && selectedLead.interest_type === 'upgrade')
@@ -166,7 +161,7 @@ export function CommissionModal({
           {/* Executor */}
           {commissionForm.isAssembly && (
             <div className="space-y-2">
-              <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">{_isCelular ? 'Técnico responsável' : 'Executor da montagem'}</div>
+            <div className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)]">Executor da montagem</div>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { value: 'owner', label: 'Felipe', role: 'Dono', color: 'white/60' },
@@ -188,14 +183,9 @@ export function CommissionModal({
                 ))}
               </div>
 
-              {_isCelular && commissionForm.executor === 'partner' && _val > 0 && (
-                <div className="flex items-center justify-between bg-purple-500/5 border border-purple-500/20 rounded-xl px-4 py-2.5">
-                  <span className="text-[9px] font-mono text-purple-400">Jefferson (50% líquido)</span>
-                  <span className="text-[10px] font-mono font-black text-purple-400">R$ {_jeffAssembly.toFixed(2)}</span>
-                </div>
-              )}
 
-              {!_isCelular && (commissionForm.executor === 'iago' || commissionForm.executor === 'partner') && (
+
+              {(commissionForm.executor === 'iago' || commissionForm.executor === 'partner') && (
                 <div className="flex items-center gap-2">
                   <div className="flex rounded-lg overflow-hidden border border-white/10">
                     <button type="button" onClick={() => setCommissionForm({ ...commissionForm, customCommissionType: 'percent' })}
