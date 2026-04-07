@@ -142,7 +142,7 @@ export default function RootLayout({
                "image": "https://cyberinformatica.tech/og-image.jpg",
                "@id": "https://cyberinformatica.tech",
                "url": "https://cyberinformatica.tech",
-               "telephone": "+5511997457718",
+               "telephone": "+55 11 95436-9269",
                "priceRange": "$$$",
                "address": {
                  "@type": "PostalAddress",
