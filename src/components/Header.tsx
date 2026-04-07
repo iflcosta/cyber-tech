@@ -94,7 +94,7 @@ export default function Header() {
                     </div>
 
                     <button
-                        onClick={() => openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Desktop)' })}
+                        onClick={() => openWhatsAppLead({ intent: 'consultoria', description: 'Clique no Header (Desktop)' })}
                         disabled={waLoading}
                         className="btn-primary flex items-center gap-2 text-[11px] font-display font-bold uppercase tracking-wider text-white px-5 py-2.5 transition-all duration-300 hover:-translate-y-[1px] disabled:opacity-70"
                     >
@@ -163,7 +163,7 @@ export default function Header() {
                         </nav>
                         <div className="mt-auto">
                             <button
-                                onClick={() => { openWhatsAppLead({ intent: 'duvida_tecnica', description: 'Clique no Header (Mobile)' }); toggleMenu(); }}
+                                onClick={() => { openWhatsAppLead({ intent: 'consultoria', description: 'Clique no Header (Mobile)' }); toggleMenu(); }}
                                 disabled={waLoading}
                                 className="btn-primary w-full py-4 flex items-center justify-center gap-2 text-[13px] font-display font-bold uppercase tracking-wider text-white transition-all disabled:opacity-70"
                             >

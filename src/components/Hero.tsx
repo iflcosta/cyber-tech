@@ -10,7 +10,7 @@ export default function Hero() {
     const searchParams = useSearchParams();
     const serviceParam = searchParams.get('service');
 
-    // Formata o serviço vindo da URL (ex: conserto_iphone -> Conserto de iPhone)
+    // Formata o serviço vindo da URL (ex: hardware_premium -> Hardware Premium)
     const formattedService = serviceParam 
         ? serviceParam.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
         : null;
@@ -42,7 +42,7 @@ export default function Hero() {
                     transition={{ duration: 0.5 }}
                     className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5 backdrop-blur-md text-[var(--accent-primary)] text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] mb-12 rounded-full shadow-[0_0_20px_var(--accent-glow)]"
                 >
-                    ALTA PERFORMANCE EM HARDWARE · BRAGANÇA PAULISTA
+                    HARDWARE DE IMPACTO · BRAGANÇA PAULISTA
                 </motion.div>
 
                 <motion.h1
@@ -61,18 +61,19 @@ export default function Hero() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="text-balance text-sm md:text-lg text-slate-300 max-w-2xl mx-auto mb-16 leading-relaxed relative z-10 font-medium tracking-wide"
                 >
-                    {formattedService && !['conserto', 'reparo', 'upgrade', 'assistencia'].some(k => formattedService.toLowerCase().includes(k)) ? (
+                    {formattedService && !['conserto', 'reparo', 'manutencao', 'assistencia'].some(k => formattedService.toLowerCase().includes(k)) ? (
                         <>
-                            Especialistas em <span className="text-[var(--accent-primary)] font-bold">{formattedService}</span>. <br className="hidden md:block" />
+                            Soluções em <span className="text-[var(--accent-primary)] font-bold">{formattedService}</span>. <br className="hidden md:block" />
                             Loja de Hardware com estoque real em Bragança Paulista, SP.
                         </>
                     ) : (
                         <>
-                            Especialistas em Venda de Hardware e Montagem de PC Gamer <br className="hidden md:block" />
+                            Especialistas em Venda de Hardware e Projetos Customizados <br className="hidden md:block" />
                             com estoque real em Bragança Paulista, SP.
                         </>
                     )}
                 </motion.p>
+
 
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}

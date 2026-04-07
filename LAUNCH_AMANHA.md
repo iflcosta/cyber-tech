@@ -13,17 +13,17 @@
 - **Horário:** Seg-Sex 09h–18h, Sáb 09h–13h
 
 ### Serviços principais
-- Manutenção de celular (reparo de tela, bateria, molhado)
-- Manutenção de notebook e PC
-- Montagem de PC Gamer e Workstation
-- Venda de produtos e periféricos
+- Otimização de Sistemas e Hardware
+- Upgrades de Alta Performance (PC e Workstations)
+- Montagem de PC Gamer de Elite
+- Venda de Componentes e Periféricos Premium
 
 ---
 
 ## O que já está pronto (não precisa mexer)
 
 - [x] Site no ar com captacao de leads
-- [x] Admin em `/admin` com abas: Leads, Vendas, Manutenção, Produtos
+- [x] Admin em `/admin` com abas: Leads, Vendas, Upgrades, Produtos
 - [x] Links de campanha com UTM já mapeados para as abas certas
 - [x] QR code com deduplicação (não gera lead duplicado)
 - [x] Vouchers automaticos para cada lead
@@ -45,13 +45,13 @@ Abrir no celular e no computador:
 
 Entrar no **Meta Ads Manager** e criar 3 campanhas:
 
-#### Campanha A — Manutenção de Celular
+#### Campanha A — Upgrades de Hardware
 - Objetivo: **Leads** ou **Mensagens**
 - Público: Raio 15km de Bragança Paulista, 18–45 anos
 - Formatos: Stories + Reels
 - Link de destino:
 ```
-https://cyberinformatica.tech/api/redirect/whatsapp?utm_source=instagram&utm_medium=cpc&utm_campaign=manutencao-celular&service=reparo_celular
+https://cyberinformatica.tech/api/redirect/whatsapp?utm_source=instagram&utm_medium=cpc&utm_campaign=upgrade-performance&service=hardware_premium
 ```
 
 #### Campanha B — Montagem PC Gamer
@@ -75,16 +75,18 @@ https://cyberinformatica.tech/produtos?utm_source=facebook&utm_medium=cpc&utm_ca
 
 ### 3. Criar as campanhas no Google Ads
 
-#### Campanha A — Manutenção (Search)
+#### Campanha A — High-Performance (Search)
 - Tipo: Rede de Pesquisa
 - Palavras-chave sugeridas:
-  - conserto de celular bragança paulista
-  - assistência técnica celular bragança
-  - tela quebrada iphone bragança
-  - reparo notebook bragança paulista
+  - hardware premium bragança
+  - pc gamer customizado bragança
+  - montagem workstation bragança
+  - upgrade de performance pc
+  - loja de hardware elite sp
+  - setup gamer pronto bragança
 - Link de destino:
 ```
-https://cyberinformatica.tech/manutencao?utm_source=google&utm_medium=cpc&utm_campaign=manutencao-search
+https://cyberinformatica.tech/?utm_source=google&utm_medium=cpc&utm_campaign=performance-search
 ```
 
 #### Campanha B — Montagem PC (Search)
@@ -103,9 +105,9 @@ https://cyberinformatica.tech/?utm_source=google&utm_medium=cpc&utm_campaign=mon
 ### 4. Monitorar os primeiros leads
 
 Abrir o admin em `/admin` e ficar de olho:
-- **Aba Leads** — cliques genéricos sem serviço definido
-- **Aba Manutenção** — quem clicou nos links de reparo
-- **Aba Vendas** — quem clicou no link de montagem PC
+- **Aba Leads** — cliques genéricos sem interesse definido
+- **Aba Upgrades** — quem clicou nos links de otimização/estoque
+- **Aba Vendas** — quem clicou no link de montagem PC / Showroom
 
 Responder o WhatsApp em até 5 minutos — isso aumenta muito a conversão.
 

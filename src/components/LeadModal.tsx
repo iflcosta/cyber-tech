@@ -11,7 +11,7 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import { useLeadModal } from '@/contexts/LeadModalContext';
 
 type LeadStep = 'intent' | 'details' | 'success';
-type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'upgrade_urgente' | 'duvida_tecnica';
+type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'upgrade_urgente' | 'consultoria';
 
 export default function LeadModal() {
     const { isOpen, closeModal, goal: initialGoal, customDescription, whatsappMessage, productIds, openModal, selectedProduct } = useLeadModal();
@@ -68,7 +68,7 @@ export default function LeadModal() {
                 setStep('details');
                 // Auto-set intent based on goal
                 if (initialGoal === 'upgrade') setIntent('upgrade_urgente');
-                else if (initialGoal === 'duvida') setIntent('duvida_tecnica');
+                else if (initialGoal === 'duvida') setIntent('consultoria');
                 else setIntent('pesquisando_preco');
             } else {
                 setStep('intent');
@@ -106,7 +106,7 @@ export default function LeadModal() {
         setGoal(selectedGoal);
         setStep('details');
         if (selectedGoal === 'upgrade') setIntent('upgrade_urgente');
-        else if (selectedGoal === 'duvida') setIntent('duvida_tecnica');
+        else if (selectedGoal === 'duvida') setIntent('consultoria');
         else setIntent('pesquisando_preco');
     };
 
@@ -121,7 +121,7 @@ export default function LeadModal() {
         // Merge descriptions
         let finalDescription = description;
         if (goal === 'upgrade') {
-            finalDescription = `Modelo: ${deviceModel} | Problema: ${description}`;
+            finalDescription = `Configuração Atual: ${deviceModel} | Objetivo do Upgrade: ${description}`;
         } else if (goal === 'compra') {
             const details = [];
             if (budget) details.push(`Orçamento: ${budget}`);
@@ -154,8 +154,8 @@ export default function LeadModal() {
         const code = await trackLead({
             client_name: name,
             whatsapp: whatsapp,
-            interest_type: goal === 'upgrade' ? 'contato' : 'venda',
-            intent_type: currentIntent || 'duvida_tecnica',
+            interest_type: goal === 'upgrade' ? 'venda' : 'venda',
+            intent_type: currentIntent || 'consultoria',
             description: finalDescription,
             marketing_source: utm_params.source || 'direct',
             utm_parameters: utm_params,
@@ -219,11 +219,7 @@ export default function LeadModal() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
                                                 <Monitor className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
-                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar PC/Notebook</span>
-                                            </button>
-                                            <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
-                                                <Smartphone className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
-                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar Celular</span>
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Comprar PC/Workstation</span>
                                             </button>
                                             <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
                                                 <Zap className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
@@ -231,7 +227,11 @@ export default function LeadModal() {
                                             </button>
                                             <button onClick={() => handleIntentSelection('duvida')} className={intentClasses}>
                                                 <HelpCircle className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
-                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Tirar uma Dúvida</span>
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Falar com Consultor</span>
+                                            </button>
+                                            <button onClick={() => handleIntentSelection('compra')} className={intentClasses}>
+                                                <Smartphone className="mb-3 text-[var(--accent-primary)] group-hover:scale-110 transition-transform" size={32} />
+                                                <span className="text-xs font-display font-bold uppercase tracking-wider">Periféricos e Outros</span>
                                             </button>
                                         </div>
                                     </div>
@@ -262,7 +262,7 @@ export default function LeadModal() {
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que você procura?</label>
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        {['Smartphone', 'PC Gamer', 'Periféricos', 'Outros'].map((val) => (
+                                                        {['Componentes', 'PC Gamer', 'Periféricos', 'Workstation'].map((val) => (
                                                             <button 
                                                                 key={val} 
                                                                 type="button" 
@@ -283,12 +283,12 @@ export default function LeadModal() {
                                         ) : goal === 'upgrade' ? (
                                             <div className="space-y-4">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Modelo do Dispositivo</label>
-                                                    <input required type="text" value={deviceModel} onChange={(e) => setDeviceModel(e.target.value)} placeholder="Ex: iPhone 13, Notebook Dell G15..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">Configuração Atual (Opcional)</label>
+                                                    <input type="text" value={deviceModel} onChange={(e) => setDeviceModel(e.target.value)} placeholder="Ex: i5 12th gen, 16GB RAM, RTX 3060..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all font-sans text-sm" />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que está acontecendo?</label>
-                                                    <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva brevemente o problema..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
+                                                    <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest ml-1">O que você deseja melhorar?</label>
+                                                    <textarea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Quero mais FPS nos jogos, melhorar tempo de render..." className="w-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-all h-24 font-sans text-sm resize-none" />
                                                 </div>
                                             </div>
                                         ) : (

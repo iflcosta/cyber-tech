@@ -47,8 +47,7 @@ export function useCommissionForm({
         );
     };
 
-    const getAssemblyExecutor = (lead: any) =>
-        isCelularLead(lead) ? 'partner' : 'owner';
+    const getAssemblyExecutor = (lead: any) => 'owner';
 
     const openCommissionModal = (lead: any, preset: Partial<CommissionForm>) => {
         setSelectedLeadForCommission(lead);
@@ -81,7 +80,7 @@ export function useCommissionForm({
         // Assembly commission
         let assemblyRate = 0;
         let techCommission = 0;
-        const isCelular = isCelularLead(selectedLeadForCommission);
+        const isCelular = false;
 
         if (commissionForm.isAssembly) {
             if (isCelular && commissionForm.executor === 'partner') {

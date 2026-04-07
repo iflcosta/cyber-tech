@@ -34,7 +34,7 @@ export function MaintenanceTab({
             customer_name: (o as any).customer_name,
             customer_phone: (o as any).customer_phone || (o as any).customer_email,
             equipment_type: (o as any).equipment_type,
-            problem_description: (o as any).problem_description || (o as any).description,
+            problem_description: (o as any).details || (o as any).description,
             source: (o as any).source ?? 'organic',
             status: o.status,
             payment_status: o.payment_status,
@@ -99,12 +99,10 @@ export function MaintenanceTab({
                                     <div className="font-mono text-[var(--accent-primary)] font-black text-xs mb-1 tracking-tight">{order.voucher_code}</div>
                                     <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{order.customer_name || 'Cliente'}</div>
                                     <div className="font-mono text-[10px] text-[var(--text-muted)] mb-3">{order.customer_phone || (order as any).customer_email}</div>
-                                    {order.problem_description && (
-                                        <div className="text-[10px] font-medium bg-[var(--bg-primary)] p-3 rounded-xl text-[var(--text-secondary)] border border-[var(--border-subtle)] max-w-xs italic leading-relaxed relative overflow-hidden">
-                                            <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--accent-primary)] opacity-40" />
-                                            "{order.problem_description}"
-                                        </div>
-                                    )}
+                                            <div className="text-[10px] font-medium bg-[var(--bg-primary)] p-3 rounded-xl text-[var(--text-secondary)] border border-[var(--border-subtle)] max-w-xs italic leading-relaxed relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-0.5 h-full bg-[var(--accent-primary)] opacity-40" />
+                                                "{order.problem_description || 'Sem detalhes fornecidos'}"
+                                            </div>
                                 </td>
                                 <td className="p-6">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)] bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 px-3 py-1 rounded-full">

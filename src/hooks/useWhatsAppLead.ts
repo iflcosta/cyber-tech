@@ -31,7 +31,6 @@ const SERVICE_LABELS: Record<WhatsAppServiceType, string> = {
 
 function serviceTypeToInterestType(serviceType?: string): InterestType {
   if (!serviceType) return 'contato'
-  if (serviceType.includes('reparo')) return 'venda'
   if (serviceType === 'montagem_pc') return 'pc_build'
   if (serviceType === 'venda') return 'venda'
   return 'contato'
@@ -114,7 +113,7 @@ export function useWhatsAppLead({
         const utmSource = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('utm_source') : null
         await trackLead({
             voucher_code:     voucher,
-            intent_type:      'duvida_tecnica',
+            intent_type:      'consultoria',
             description:      overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
             interest_type:    effectiveInterestType,
             client_name:      'Lead Direto (WhatsApp)',

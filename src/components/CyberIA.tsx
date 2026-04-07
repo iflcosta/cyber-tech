@@ -9,7 +9,7 @@ import { useWhatsAppLead } from "@/hooks/useWhatsAppLead";
 import { useVoucherSession } from "@/hooks/useVoucherSession";
 
 type Message = { role: 'user' | 'ai', content: string };
-type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'upgrade_urgente' | 'duvida_tecnica';
+type IntentType = 'compra_imediata' | 'pesquisando_preco' | 'upgrade_urgente' | 'consultoria';
 
 
 const GUIDED_PROMPTS = [
@@ -113,9 +113,9 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
         const determineIntent = (text: string): IntentType => {
             const t = text.toLowerCase();
             if (t.includes('comprar') || t.includes('preço') || t.includes('estoque') || t.includes('disponível')) return 'compra_imediata';
-            if (t.includes('consertar') || t.includes('quebrado') || t.includes('não liga') || t.includes('ajuda técnica')) return 'upgrade_urgente';
+            if (t.includes('melhorar') || t.includes('lento') || t.includes('mais rápido') || t.includes('ajuda técnica')) return 'upgrade_urgente';
             if (t.includes('pesquisando') || t.includes('olhando') || t.includes('comparando')) return 'pesquisando_preco';
-            return 'duvida_tecnica';
+            return 'consultoria';
         };
 
         const currentIntent = determineIntent(userMsg + " " + aiResponse);
@@ -160,7 +160,7 @@ PERGUNTA ATUAL DO CLIENTE: ${userMsg}`;
         try {
             const lastMessages = messages.slice(-8);
             const summaryContext = `Abaixo está uma conversa entre um cliente e a Cyber IA.
-            Extraia SOMENTE o objetivo principal do cliente (ex: "Conserto de tela de iPhone" ou "Orçamento de PC Gamer") em uma frase curta de no máximo 80 caracteres.
+            Extraia SOMENTE o objetivo principal do cliente (ex: "Upgrade de GPU" ou "Orçamento de PC Gamer") em uma frase curta de no máximo 80 caracteres.
             Seja direto e não adicione saudações.
 
             Conversa:

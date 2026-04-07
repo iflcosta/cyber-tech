@@ -1,6 +1,6 @@
 # ⚡ Cyber Informática: Ecossistema de Performance & Tecnãologia
 
-Este documento apresenta o estado atual do projeto **Cyber Informática**, uma plataforma de e-commerce e gestão de assistência técnica de alta performance, desenvolvida com as tecnãologias mais modernas do mercado.
+Este documento apresenta o estado atual do projeto **Cyber Informática**, uma plataforma de e-commerce e gestão de Hardware de Alta Performance, desenvolvida com as tecnologias mais modernas do mercado.
 
 ---
 
