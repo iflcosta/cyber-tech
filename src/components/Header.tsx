@@ -17,6 +17,8 @@ export default function Header() {
     const { storeStatus } = useShopStatus();
 
     const menuItems = [
+        { label: "Showroom", href: "/#showroom" },
+        { label: "Produtos", href: "/produtos" },
         { label: "PC Builder", href: "/#pc-builder" },
     ];
 

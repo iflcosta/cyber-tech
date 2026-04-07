@@ -331,6 +331,7 @@ export default function AdminDashboard() {
     const tabs = [
         { id: 'dashboard' as TabId, label: 'Painel', icon: LayoutDashboard, badge: null },
         { id: 'leads' as TabId, label: 'Leads', icon: Sparkles, badge: pendingLeads.length > 0 ? pendingLeads.length : null },
+        { id: 'products' as TabId, label: 'Produtos', icon: Package, badge: null },
         { id: 'vendas' as TabId, label: 'Vendas', icon: ShoppingCart, badge: null },
         { id: 'upgrade' as TabId, label: 'Upgrades', icon: RefreshCw, badge: null },
         { id: 'reviews' as TabId, label: 'Depoimentos', icon: Star, badge: null },
@@ -415,16 +416,34 @@ export default function AdminDashboard() {
                         maintenanceOrders={maintenanceOrders}
                         onOpenPdv={openPdvModal}
                         onEditProduct={p => {
-                            // Redirecionamento desativado temporariamente
-                            /* 
                             setEditingProduct(p);
                             setSlugDraft(p.slug || '');
                             setPreviewUrls(p.image_urls || []);
                             setShowProductForm(true);
                             setActiveTab('products');
-                            */
-                            alert('A edição de produtos está desativada temporariamente.');
                         }}
+                    />
+                )}
+
+                {activeTab === 'products' && (
+                    <ProductsTab
+                        products={products}
+                        loading={loading}
+                        onSaveProduct={handleSaveProduct}
+                        onDeleteProduct={deleteProduct}
+                        editingProduct={editingProduct}
+                        setEditingProduct={setEditingProduct}
+                        showProductForm={showProductForm}
+                        setShowProductForm={setShowProductForm}
+                        productFilter={productFilter}
+                        setProductFilter={setProductFilter}
+                        productSort={productSort}
+                        setProductSort={setProductSort}
+                        previewUrls={previewUrls}
+                        setPreviewUrls={setPreviewUrls}
+                        slugDraft={slugDraft}
+                        setSlugDraft={setSlugDraft}
+                        setLoading={setLoading}
                     />
                 )}
 
