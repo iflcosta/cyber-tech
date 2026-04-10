@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
+import Link from "next/link";
 import { X, Zap, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { getProducts } from "@/lib/products";
 import { ProductCard, Product } from "./ProductCard";
@@ -275,6 +276,17 @@ function ShowroomContent() {
               ))}
             </div>
           )}
+
+          <div className="flex justify-center mt-12">
+            <Link 
+              href="/produtos"
+              className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors flex items-center gap-2 group"
+            >
+              <div className="w-8 h-px bg-current opacity-30 group-hover:w-12 transition-all" />
+              VER CATÁLOGO COMPLETO
+              <div className="w-8 h-px bg-current opacity-30 group-hover:w-12 transition-all" />
+            </Link>
+          </div>
         </>
       )}
     </div>

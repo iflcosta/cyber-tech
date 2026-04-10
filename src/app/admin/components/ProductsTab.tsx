@@ -261,34 +261,56 @@ export function ProductsTab({
                             <div className="space-y-4">
                                 <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Upload de Imagens</label>
                                 <div className="flex items-center justify-center w-full">
-                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[var(--border-subtle)] rounded-2xl cursor-pointer bg-[var(--bg-primary)] hover:bg-[var(--bg-elevated)] transition-all group/upload">
+                                    <label 
+                                        htmlFor="product-image-upload"
+                                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[var(--border-subtle)] rounded-2xl cursor-pointer bg-[var(--bg-primary)] hover:bg-[var(--bg-elevated)] transition-all group/upload"
+                                    >
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Plus className="w-8 h-8 text-[var(--text-muted)] group-hover/upload:text-[var(--accent-primary)] transition-colors" />
-                                            <p className="mt-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)]">Upload Local (Supabase Storage)</p>
+                                            {loading ? (
+                                                <>
+                                                    <RefreshCw className="w-8 h-8 text-[var(--accent-primary)] animate-spin" />
+                                                    <p className="mt-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--accent-primary)]">Enviando arquivos...</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Plus className="w-8 h-8 text-[var(--text-muted)] group-hover/upload:text-[var(--accent-primary)] transition-colors" />
+                                                    <p className="mt-2 text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)]">Upload Local (Supabase Storage)</p>
+                                                </>
+                                            )}
                                         </div>
-                                        <input
-                                            type="file"
-                                            multiple
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={async e => {
-                                                const files = Array.from(e.target.files || []);
-                                                if (files.length === 0) return;
+                                    </label>
+                                    <input
+                                        id="product-image-upload"
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={async e => {
+                                            const files = Array.from(e.target.files || []);
+                                            if (files.length === 0) return;
 
-                                                setLoading(true);
-                                                const urls = [...previewUrls];
+                                            console.log('[UPLOAD] Iniciando upload de', files.length, 'arquivos...');
+                                            setLoading(true);
+                                            const urls = [...previewUrls];
 
+                                            try {
                                                 for (const file of files) {
                                                     const fileExt = file.name.split('.').pop();
                                                     const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
                                                     const filePath = `${fileName}`;
 
-                                                    const { error: uploadError } = await supabase.storage
+                                                    console.log(`[UPLOAD] Enviando: ${file.name} -> ${filePath}`);
+                                                    
+                                                    const { error: uploadError, data } = await supabase.storage
                                                         .from('products')
-                                                        .upload(filePath, file);
+                                                        .upload(filePath, file, {
+                                                            cacheControl: '3600',
+                                                            upsert: false
+                                                        });
 
                                                     if (uploadError) {
-                                                        alert('Erro no upload: ' + uploadError.message);
+                                                        console.error('[UPLOAD ERROR]', uploadError);
+                                                        alert(`Erro no upload (${file.name}): ${uploadError.message}\n\nVerifique se o bucket "products" existe no Supabase.`);
                                                         continue;
                                                     }
 
@@ -296,14 +318,20 @@ export function ProductsTab({
                                                         .from('products')
                                                         .getPublicUrl(filePath);
 
+                                                    console.log(`[UPLOAD SUCCESS] URL: ${publicUrl}`);
                                                     urls.push(publicUrl);
                                                 }
-
                                                 setPreviewUrls(urls);
+                                            } catch (err: any) {
+                                                console.error('[UPLOAD FATAL ERROR]', err);
+                                                alert('Erro crítico no processo de upload. Veja o console para detalhes.');
+                                            } finally {
                                                 setLoading(false);
-                                            }}
-                                        />
-                                    </label>
+                                                // Limpar o input para permitir selecionar o mesmo arquivo novamente se necessário
+                                                e.target.value = '';
+                                            }
+                                        }}
+                                    />
                                 </div>
                             </div>
 

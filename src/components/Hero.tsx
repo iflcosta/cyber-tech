@@ -1,5 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { ShieldCheck, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -81,12 +82,12 @@ export default function Hero() {
                     transition={{ duration: 0.5, delay: 0.3 }}
                     className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-3xl mx-auto"
                 >
-                    <button
-                        onClick={() => document.getElementById('showroom')?.scrollIntoView({ behavior: 'smooth' })}
+                    <Link
+                        href="/produtos"
                         className="btn-primary w-full sm:flex-1 py-6 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs"
                     >
-                        VER COMPONENTES
-                    </button>
+                        EXPLORAR CATÁLOGO
+                    </Link>
                     <button
                         onClick={() => document.getElementById('pc-builder')?.scrollIntoView({ behavior: 'smooth' })}
                         className="btn-ghost w-full sm:flex-1 py-6 flex items-center justify-center gap-3 !border-white/30 !text-white/90 hover:!bg-white/10 hover:!border-white/50 transition-all uppercase font-bold tracking-widest text-xs"

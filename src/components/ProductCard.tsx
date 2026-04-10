@@ -139,8 +139,8 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
 
         <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
           {product.in_stock && (
-            <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[8px] uppercase font-bold tracking-widest px-2 py-1 backdrop-blur-md">
-              <Zap className="h-2 w-2 mr-1 fill-current" /> Em Estoque
+            <Badge className="bg-emerald-500 text-white border-none text-[9px] uppercase font-black tracking-widest px-3 py-1 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+              <Zap className="h-2.5 w-2.5 mr-1 fill-current" /> PRONTA ENTREGA
             </Badge>
           )}
         </div>
@@ -164,14 +164,14 @@ export function ProductCard({ product, onOpenGallery, onInterest }: ProductCardP
       {/* Footer */}
       <CardFooter className="p-4 pt-0">
         <Button
-          className="w-full h-9"
+          className="w-full h-11 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.5)] transition-all group/btn"
           onClick={(e) => {
             e.stopPropagation();
             onInterest?.();
           }}
         >
-          <MessageSquare className="h-4 w-4" />
-          {isOpen ? "ORÇAMENTO AGORA" : "TENHO INTERESSE"}
+          <MessageSquare className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+          <span className="font-black tracking-widest">{isOpen ? "CONSULTAR AGORA" : "INTERESSE IMEDIATO"}</span>
         </Button>
       </CardFooter>
     </Card>
