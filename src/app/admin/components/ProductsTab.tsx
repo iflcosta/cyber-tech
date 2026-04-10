@@ -302,7 +302,7 @@ export function ProductsTab({
                                                     console.log(`[UPLOAD] Enviando: ${file.name} -> ${filePath}`);
                                                     
                                                     const { error: uploadError, data } = await supabase.storage
-                                                        .from('products')
+                                                        .from('PRODUCTS')
                                                         .upload(filePath, file, {
                                                             cacheControl: '3600',
                                                             upsert: false
@@ -315,7 +315,7 @@ export function ProductsTab({
                                                     }
 
                                                     const { data: { publicUrl } } = supabase.storage
-                                                        .from('products')
+                                                        .from('PRODUCTS')
                                                         .getPublicUrl(filePath);
 
                                                     console.log(`[UPLOAD SUCCESS] URL: ${publicUrl}`);
