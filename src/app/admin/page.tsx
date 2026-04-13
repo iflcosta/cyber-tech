@@ -2,7 +2,7 @@
 "use client";
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Package, RefreshCw, LogOut, X, CheckCircle2, Star, Sparkles, Smartphone, ShoppingCart, Tag, Zap } from 'lucide-react';
+import { LayoutDashboard, Package, RefreshCw, LogOut, X, CheckCircle2, Star, Sparkles, Smartphone, ShoppingCart, Tag, Zap, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { useAdminData } from './hooks/useAdminData';
@@ -21,6 +21,7 @@ import { CommissionModal } from './components/CommissionModal';
 import { PdvModal } from './components/PdvModal';
 import { GlobalSearch } from './components/GlobalSearch';
 import { SimulatorTab } from './components/SimulatorTab';
+import { MediaTab } from './components/MediaTab';
 
 import type { TabId } from '@/types/admin';
 import type { Lead } from '@/types/lead';
@@ -337,6 +338,7 @@ export default function AdminDashboard() {
         { id: 'reviews' as TabId, label: 'Depoimentos', icon: Star, badge: null },
         { id: 'coupons' as TabId, label: 'Cupons', icon: Tag, badge: null },
         { id: 'simulator' as TabId, label: 'Simulador', icon: Zap, badge: null },
+        { id: 'media' as TabId, label: 'Galeria', icon: ImageIcon, badge: null },
     ];
 
     return (
@@ -530,6 +532,10 @@ export default function AdminDashboard() {
                 
                 {activeTab === 'simulator' && (
                     <SimulatorTab />
+                )}
+
+                {activeTab === 'media' && (
+                    <MediaTab />
                 )}
             </div>
 

@@ -302,7 +302,7 @@ export function ProductsTab({
                                                     console.log(`[UPLOAD] Enviando: ${file.name} -> ${filePath}`);
                                                     
                                                     const { error: uploadError, data } = await supabase.storage
-                                                        .from('PRODUCTS')
+                                                        .from('products')
                                                         .upload(filePath, file, {
                                                             cacheControl: '3600',
                                                             upsert: false
@@ -310,12 +310,12 @@ export function ProductsTab({
 
                                                     if (uploadError) {
                                                         console.error('[UPLOAD ERROR]', uploadError);
-                                                        alert(`Erro no upload (${file.name}): ${uploadError.message}\n\nVerifique se o bucket "products" existe no Supabase.`);
+                                                        alert(`Erro no upload (${file.name}): ${uploadError.message}\n\nVerifique se o bucket "products" existe no Supabase e tem políticas de acesso.`);
                                                         continue;
                                                     }
 
                                                     const { data: { publicUrl } } = supabase.storage
-                                                        .from('PRODUCTS')
+                                                        .from('products')
                                                         .getPublicUrl(filePath);
 
                                                     console.log(`[UPLOAD SUCCESS] URL: ${publicUrl}`);
