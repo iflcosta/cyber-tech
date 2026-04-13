@@ -194,6 +194,19 @@ export function ProductsTab({
                             </div>
                         </div>
                         <div className="space-y-2">
+                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Nível de Desempenho (Selo)</label>
+                            <select
+                                name="performance_score"
+                                defaultValue={editingProduct?.performance_score || 0}
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all uppercase appearance-none"
+                            >
+                                <option value="10">ENTRY (Entrada)</option>
+                                <option value="50">MID (Intermediário)</option>
+                                <option value="80">HIGH (Alto Desempenho)</option>
+                                <option value="100">ULTRA (Performance Elite)</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
                             <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Estoque</label>
                             <input
                                 name="stock"

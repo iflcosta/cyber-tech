@@ -135,6 +135,7 @@ export default function AdminDashboard() {
                 show_in_pcbuilder: formData.get('show_in_pcbuilder') === 'on',
                 stock_alert: formData.get('stock_alert') === 'on',
                 stock_alert_min: parseInt(formData.get('stock_alert_min') as string) || 1,
+                performance_score: parseInt(formData.get('performance_score') as string) || 0,
             };
 
             let error;
