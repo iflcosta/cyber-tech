@@ -1,6 +1,6 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { Package, RefreshCw, Plus, Edit, Trash2, Eye, X } from 'lucide-react';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/types/product';
 
@@ -23,6 +23,16 @@ interface ProductsTabProps {
     setSlugDraft: React.Dispatch<React.SetStateAction<string>>;
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+const formatCurrency = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    if (!digits) return '';
+    const numberValue = parseInt(digits) / 100;
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(numberValue);
+};
 
 const generateSlug = (name: string) =>
     name
@@ -51,6 +61,21 @@ export function ProductsTab({
     setSlugDraft,
     setLoading,
 }: ProductsTabProps) {
+    const [priceDisplay, setPriceDisplay] = useState('');
+
+    useEffect(() => {
+        if (editingProduct) {
+            setPriceDisplay(formatCurrency(editingProduct.price.toString().replace('.', '')));
+        } else {
+            setPriceDisplay('');
+        }
+    }, [editingProduct]);
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const formatted = formatCurrency(e.target.value);
+        setPriceDisplay(formatted);
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-[var(--bg-elevated)] p-6 rounded-2xl border border-[var(--border-subtle)]">
@@ -153,16 +178,20 @@ export function ProductsTab({
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Preço (R$)</label>
-                            <input
-                                name="price"
-                                type="number"
-                                step="0.01"
-                                defaultValue={editingProduct?.price}
-                                placeholder="0.00"
-                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all"
-                                required
-                            />
+                            <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Preço</label>
+                            <div className="relative group">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold text-sm pointer-events-none group-focus-within:text-[var(--accent-primary)] transition-colors">R$</span>
+                                <input
+                                    name="price"
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={priceDisplay}
+                                    onChange={handlePriceChange}
+                                    placeholder="0,00"
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl pl-12 pr-4 py-3 text-sm font-bold focus:border-[var(--accent-primary)]/50 outline-none transition-all"
+                                    required
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-[9px] font-mono font-black uppercase tracking-widest text-[var(--text-muted)] ml-1">Estoque</label>

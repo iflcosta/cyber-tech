@@ -117,12 +117,15 @@ export default function AdminDashboard() {
                 ? imageUrlsRaw.split('\n').map(url => url.trim()).filter(url => url.length > 0)
                 : [];
 
+            const rawPrice = formData.get('price') as string;
+            const parsedPrice = parseFloat(rawPrice.replace(/\./g, '').replace(',', '.'));
+
             const productData = {
                 name: formData.get('name'),
                 slug: slugDraft || null,
                 description: formData.get('description') || null,
                 category: formData.get('category'),
-                price: parseFloat(formData.get('price') as string),
+                price: parsedPrice,
                 stock_quantity: parseInt(formData.get('stock') as string),
                 specs: JSON.parse((formData.get('specs') as string) || '{}'),
                 image_urls: imageUrls,
