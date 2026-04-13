@@ -14,6 +14,7 @@ export interface Product {
   show_in_pcbuilder: boolean
   stock_alert: boolean
   stock_alert_min: number
+  performance_score: number | null
   views: number | null
   created_at: string
 }
@@ -33,4 +34,5 @@ export interface ProductFormData {
   show_in_pcbuilder: boolean
   stock_alert: boolean
   stock_alert_min: number
+  performance_score: number | null
 }

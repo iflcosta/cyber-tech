@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Package, RefreshCw, Plus, Edit, Trash2, Eye, X } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/types/product';
 
@@ -65,7 +66,9 @@ export function ProductsTab({
 
     useEffect(() => {
         if (editingProduct) {
-            setPriceDisplay(formatCurrency(editingProduct.price.toString().replace('.', '')));
+            // Garante que o número seja tratado como centavos para a máscara (ex: 7890.90 -> 789090)
+            const centsValue = Math.round(editingProduct.price * 100).toString();
+            setPriceDisplay(formatCurrency(centsValue));
         } else {
             setPriceDisplay('');
         }
