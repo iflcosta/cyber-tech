@@ -18,7 +18,9 @@ export default function Home() {
         <Showroom />
       </Suspense>
       <PCBuilder />
-      <Reviews />
+      <Suspense fallback={<div className="min-h-[400px]" />}>
+        <Reviews />
+      </Suspense>
 
       <Suspense fallback={null}>
         <CyberIA />

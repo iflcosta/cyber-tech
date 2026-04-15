@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Star, MessageSquareQuote, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Star, MessageSquareQuote, CheckCircle2, AlertCircle, Loader2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { cn } from './ui/Button';
@@ -21,10 +22,26 @@ export default function Reviews() {
     const [newReview, setNewReview] = useState({ name: '', comment: '', rating: 5, voucher: '' });
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [showAll, setShowAll] = useState(false);
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         fetchReviews();
-    }, []);
+        
+        // Capturar parâmetros da URL
+        const voucher = searchParams.get('voucher');
+        const nome = searchParams.get('nome');
+        const avaliar = searchParams.get('avaliar');
+
+        if (avaliar === 'true' || voucher) {
+            setNewReview(prev => ({
+                ...prev,
+                voucher: voucher || prev.voucher,
+                name: nome || prev.name
+            }));
+            setIsModalOpen(true);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -146,8 +163,9 @@ export default function Reviews() {
                         <Loader2 className="h-10 w-10 animate-spin text-[var(--text-muted)]" />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {reviews.length > 0 ? reviews.map((review) => (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {(showAll ? reviews : reviews.slice(0, 6)).map((review) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -169,12 +187,28 @@ export default function Reviews() {
                                     <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest">{new Date(review.created_at).toLocaleDateString()}</span>
                                 </div>
                             </motion.div>
-                        )) : (
+                        ))}
+                        {reviews.length === 0 && (
                             <div className="md:col-span-3 text-center py-24 bg-[var(--bg-secondary)] rounded-lg border border-dashed border-[var(--border-subtle)] text-[var(--text-muted)] font-bold uppercase tracking-widest text-[10px]">
                                 Nenhuma avaliação aprovada no momento. Seja o primeiro!
                             </div>
                         )}
                     </div>
+
+                    {!showAll && reviews.length > 6 && (
+                        <div className="mt-16 text-center">
+                            <button 
+                                onClick={() => setShowAll(true)}
+                                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors group"
+                            >
+                                <span className="w-12 h-[1px] bg-[var(--border-subtle)] group-hover:bg-[var(--accent-primary)] transition-colors" />
+                                CARREGAR MAIS CLIENTES
+                                <ChevronDown size={14} className="group-hover:translate-y-1 transition-transform" />
+                                <span className="w-12 h-[1px] bg-[var(--border-subtle)] group-hover:bg-[var(--accent-primary)] transition-colors" />
+                            </button>
+                        </div>
+                    )}
+                    </>
                 )}
             </div>
 
