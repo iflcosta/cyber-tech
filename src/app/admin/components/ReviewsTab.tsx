@@ -12,6 +12,7 @@ interface ReviewsTabProps {
   onAnalyze: () => void;
   onRefresh: () => void;
   onClearSentiment: () => void;
+  onOpenManual: () => void;
 }
 
 export function ReviewsTab({
@@ -24,6 +25,7 @@ export function ReviewsTab({
   onAnalyze,
   onRefresh,
   onClearSentiment,
+  onOpenManual,
 }: ReviewsTabProps) {
   return (
     <div className="glass rounded-3xl overflow-hidden border border-white/10 bg-white/5">
@@ -32,6 +34,13 @@ export function ReviewsTab({
           <Star size={20} className="text-yellow-500" /> Moderação de Depoimentos
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenManual}
+            className="px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border border-yellow-500/20 rounded-xl text-xs font-bold flex items-center gap-2 transition-all"
+          >
+            <Star size={14} className="fill-yellow-500" />
+            Novo Link de Avaliação
+          </button>
           <button
             onClick={onAnalyze}
             disabled={isAnalyzing || reviews.length === 0}

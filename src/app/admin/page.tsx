@@ -22,6 +22,7 @@ import { PdvModal } from './components/PdvModal';
 import { GlobalSearch } from './components/GlobalSearch';
 import { SimulatorTab } from './components/SimulatorTab';
 import { MediaTab } from './components/MediaTab';
+import { ManualReviewModal } from './components/ManualReviewModal';
 
 import type { TabId } from '@/types/admin';
 import type { Lead } from '@/types/lead';
@@ -46,6 +47,7 @@ export default function AdminDashboard() {
 
     const [sentimentAnalysis, setSentimentAnalysis] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isManualReviewOpen, setIsManualReviewOpen] = useState(false);
 
     const [manualProductSelect, setManualProductSelect] = useState('');
 
@@ -522,6 +524,7 @@ export default function AdminDashboard() {
                         onAnalyze={analyzeReviews}
                         onRefresh={fetchReviews}
                         onClearSentiment={() => setSentimentAnalysis(null)}
+                        onOpenManual={() => setIsManualReviewOpen(true)}
                     />
                 )}
 
@@ -673,6 +676,12 @@ export default function AdminDashboard() {
                 setManualProductSelect={setManualProductSelect}
                 onSubmit={submitCommissionForm}
                 onClose={closeCommissionModal}
+            />
+
+            <ManualReviewModal
+                isOpen={isManualReviewOpen}
+                onClose={() => setIsManualReviewOpen(false)}
+                onSuccess={fetchReviews}
             />
         </div>
     );
