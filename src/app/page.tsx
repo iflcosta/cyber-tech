@@ -18,8 +18,7 @@ export default function Home() {
         <Showroom />
       </Suspense>
       <PCBuilder />
-      {/* <Reviews /> */}
-
+      <Reviews />
 
       <Suspense fallback={null}>
         <CyberIA />

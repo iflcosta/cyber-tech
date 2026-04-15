@@ -78,7 +78,7 @@ export function ReviewsTab({
             {reviews.length > 0 ? reviews.map((review) => (
               <tr key={review.id} className={`hover:bg-[var(--bg-elevated)]/[0.5] transition-colors group ${!review.is_approved ? 'bg-[var(--accent-primary)]/5' : ''}`}>
                 <td className="p-6">
-                  <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{(review as any).user_name}</div>
+                  <div className="font-display font-black uppercase tracking-tighter text-sm mb-0.5">{review.client_name}</div>
                   <div className="font-mono text-[10px] text-[var(--accent-primary)]">{review.voucher_code}</div>
                 </td>
                 <td className="p-6">

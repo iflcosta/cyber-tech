@@ -8,7 +8,7 @@ import { cn } from './ui/Button';
 
 interface Review {
     id: string;
-    user_name: string;
+    client_name: string;
     rating: number;
     comment: string;
     created_at: string;
@@ -97,7 +97,7 @@ export default function Reviews() {
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
-                    user_name: newReview.name,
+                    client_name: newReview.name,
                     comment: newReview.comment,
                     rating: newReview.rating,
                     voucher_code: voucherCode,
@@ -165,7 +165,7 @@ export default function Reviews() {
                                 </div>
                                 <p className="text-[var(--text-secondary)] font-medium leading-relaxed mb-8 flex-1 italic">"{review.comment}"</p>
                                 <div className="pt-8 border-t border-[var(--border-subtle)] flex items-center justify-between">
-                                    <span className="font-display font-bold text-[var(--text-primary)] uppercase tracking-tight">{review.user_name}</span>
+                                    <span className="font-display font-bold text-[var(--text-primary)] uppercase tracking-tight">{review.client_name}</span>
                                     <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest">{new Date(review.created_at).toLocaleDateString()}</span>
                                 </div>
                             </motion.div>

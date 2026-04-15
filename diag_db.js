@@ -9,10 +9,14 @@ async function check() {
     if (pError) console.error("Erro Produtos:", pError.message);
     else console.log("Colunas Produtos:", Object.keys(pData[0] || {}));
 
-    console.log("\n--- LEADS ---");
-    const { data: lData, error: lError } = await supabase.from('leads').select('*').limit(1);
-    if (lError) console.error("Erro Leads:", lError.message);
-    else console.log("Colunas Leads:", Object.keys(lData[0] || {}));
+    console.log("\n--- REVIEWS ---");
+    const { data: rData, error: rError } = await supabase.from('reviews').select('*').limit(5);
+    if (rError) console.error("Erro Reviews:", rError.message);
+    else {
+        console.log("Número de reviews:", rData.length);
+        console.log("Colunas Reviews:", Object.keys(rData[0] || {}));
+        console.log("Reviews:", rData);
+    }
 }
 
 check();
