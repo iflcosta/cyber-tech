@@ -43,7 +43,7 @@ export function ManualReviewModal({ isOpen, onClose, onSuccess }: ManualReviewMo
 
             if (error) throw error;
 
-            const message = `Olá ${clientName || 'amigo'}, tudo bem? Aqui é o Iago da Cyber Informática. Passando para saber se o seu aparelho está funcionando perfeitamente e se ficou satisfeito com o serviço!\nAcabamos de inaugurar nosso novo site e sua opinião seria muito importante para nós. Poderia dedicar 30 segundos para deixar uma avaliação sobre o seu atendimento?\n\nLink para avaliar: https://cyber-tech-seven.vercel.app/?avaliar=true&nome=${encodeURIComponent(clientName)}&voucher=${voucher.toUpperCase()}`;
+            const message = `Olá ${clientName || 'amigo'}, tudo bem? Aqui é o Iago da Cyber Informática. Passando para saber se o seu aparelho está funcionando perfeitamente e se ficou satisfeito com o serviço!\nAcabamos de inaugurar nosso novo site e sua opinião seria muito importante para nós. Poderia dedicar 30 segundos para deixar uma avaliação sobre o seu atendimento?\n\nLink para avaliar: https://cyberinformatica.tech/?avaliar=true&nome=${encodeURIComponent(clientName)}&voucher=${voucher.toUpperCase()}`;
             
             setGeneratedLink(message);
             setSuccess(true);

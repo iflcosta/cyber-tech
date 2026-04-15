@@ -246,7 +246,7 @@ export function VendasTab({
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    const message = encodeURIComponent(`Olá ${lead.client_name || 'amigo'}, tudo bem? Aqui é o Iago da Cyber Informática. Passando para saber se o seu aparelho está funcionando perfeitamente e se ficou satisfeito com o serviço!\nAcabamos de inaugurar nosso novo site e sua opinião seria muito importante para nós. Poderia dedicar 30 segundos para deixar uma avaliação sobre o seu atendimento?\n\nLink para avaliar: https://cyber-tech-seven.vercel.app/?avaliar=true&nome=${encodeURIComponent(lead.client_name || '')}&voucher=${lead.voucher_code}`);
+                                                    const message = encodeURIComponent(`Olá ${lead.client_name || 'amigo'}, tudo bem? Aqui é o Iago da Cyber Informática. Passando para saber se o seu aparelho está funcionando perfeitamente e se ficou satisfeito com o serviço!\nAcabamos de inaugurar nosso novo site e sua opinião seria muito importante para nós. Poderia dedicar 30 segundos para deixar uma avaliação sobre o seu atendimento?\n\nLink para avaliar: https://cyberinformatica.tech/?avaliar=true&nome=${encodeURIComponent(lead.client_name || '')}&voucher=${lead.voucher_code}`);
                                                     const phone = lead.whatsapp?.replace(/\D/g, '');
                                                     window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
                                                 }}
