@@ -190,6 +190,16 @@ export function MaintenanceTab({
                                             >
                                                 Ajustar Log
                                             </button>
+                                            <button
+                                                onClick={() => {
+                                                    const message = encodeURIComponent(`Olá ${order.customer_name || 'amigo'}, tudo bem? Aqui é o Iago da Cyber Informática. Passando para saber se o seu aparelho está funcionando perfeitamente e se ficou satisfeito com o serviço!\nAcabamos de inaugurar nosso novo site e sua opinião seria muito importante para nós. Poderia dedicar 30 segundos para deixar uma avaliação sobre o seu atendimento?\n\nLink para avaliar: https://cyber-tech-seven.vercel.app/?avaliar=true&nome=${encodeURIComponent(order.customer_name || '')}&voucher=${order.voucher_code}`);
+                                                    const phone = order.customer_phone?.replace(/\D/g, '');
+                                                    window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
+                                                }}
+                                                className="w-full h-8 text-[9px] font-mono font-black uppercase tracking-widest bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 rounded-lg border border-yellow-500/20 transition-all"
+                                            >
+                                                ⭐ PEDIR AVALIAÇÃO
+                                            </button>
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
