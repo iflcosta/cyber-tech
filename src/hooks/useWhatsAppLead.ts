@@ -64,10 +64,10 @@ function buildMessage(
   }
   
   return (
-    `Olá! Vim pelo site da Cyber Informática.\n\n` +
-    `🎫 Meu voucher: *${code}*\n\n` +
-    `Gostaria de informações sobre ${service}.\n\n` +
-    `Pode me atender?`
+    `Olá! Gostaria de um atendimento especializado.\n\n` +
+    `◆ Voucher: *${code}*\n\n` +
+    `Interesse: ${service.toUpperCase()}\n\n` +
+    `Pode me ajudar?`
   )
 }
 
@@ -92,7 +92,7 @@ export function useWhatsAppLead({
     }
   }, [])
 
-  const openWhatsApp = async (overrideMessage?: string, overrideServiceType?: WhatsAppServiceType, overrideInterestType?: InterestType): Promise<void> => {
+  const openWhatsApp = async (overrideMessage?: string, overrideServiceType?: WhatsAppServiceType, overrideInterestType?: InterestType, internalDescription?: string): Promise<void> => {
     if (isLoading) return
     setIsLoading(true)
 
@@ -114,7 +114,7 @@ export function useWhatsAppLead({
         await trackLead({
             voucher_code:     voucher,
             intent_type:      'consultoria',
-            description:      overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
+            description:      internalDescription || overrideMessage || defaultMessage || 'Clique no botão do WhatsApp',
             interest_type:    effectiveInterestType,
             client_name:      'Lead Direto (WhatsApp)',
             whatsapp:         '00000000000',
@@ -144,7 +144,7 @@ export function useWhatsAppLead({
   const openWhatsAppLead = async (params: { intent?: string, description?: string, messageTemplate?: string, serviceType?: WhatsAppServiceType } = {}) => {
       const effectiveServiceType = params.serviceType ?? serviceType
       const effectiveInterestType: InterestType = serviceTypeToInterestType(effectiveServiceType)
-      await openWhatsApp(params.messageTemplate || params.description, effectiveServiceType, effectiveInterestType)
+      await openWhatsApp(params.messageTemplate, effectiveServiceType, effectiveInterestType, params.description)
   }
 
   return { isLoading, openWhatsApp, openWhatsAppLead }

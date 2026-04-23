@@ -13,6 +13,7 @@ interface DashboardTabProps {
     maintenanceOrders: MaintenanceOrder[];
     onOpenPdv: () => void;
     onEditProduct: (product: Product) => void;
+    onOpenLeadAnalytics?: () => void;
 }
 
 export function DashboardTab({
@@ -23,6 +24,7 @@ export function DashboardTab({
     maintenanceOrders,
     onOpenPdv,
     onEditProduct,
+    onOpenLeadAnalytics,
 }: DashboardTabProps) {
     return (
         <div className="space-y-10">
@@ -43,16 +45,23 @@ export function DashboardTab({
                     { label: 'Leads Ativos', val: leads.length, sub: `${stats.pendingCount} pendentes`, color: 'var(--accent-primary)', icon: Users },
                     { label: 'Ticket Médio', val: `R$ ${stats.avgTicket.toFixed(0)}`, sub: 'Faturamento/Conversão', color: 'var(--accent-primary)', icon: Package },
                     { label: 'Alerta de Estoque', val: products.filter(p => p.stock_alert && p.stock_quantity <= (p.stock_alert_min || 1)).length, sub: 'Produtos sinalizados', color: 'red-500', icon: AlertTriangle },
-                ].map((kpi, i) => (
-                    <div key={i} className="bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group hover:border-[var(--accent-primary)]/30 transition-all">
-                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <kpi.icon size={40} />
+                ].map((kpi, i) => {
+                    const isLeadsCard = kpi.label === 'Leads Ativos';
+                    return (
+                        <div 
+                            key={i} 
+                            onClick={isLeadsCard && onOpenLeadAnalytics ? onOpenLeadAnalytics : undefined}
+                            className={`bg-[var(--bg-elevated)] p-8 rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group hover:border-[var(--accent-primary)]/30 transition-all ${isLeadsCard && onOpenLeadAnalytics ? 'cursor-pointer active:scale-95' : ''}`}
+                        >
+                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <kpi.icon size={40} />
+                            </div>
+                            <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-[0.3em] mb-3">{kpi.label}</div>
+                            <div className="text-3xl font-display font-bold chrome-text mb-2">{kpi.val}</div>
+                            <div className="text-[9px] font-mono font-bold text-[var(--accent-primary)] opacity-70 uppercase">{kpi.sub}</div>
                         </div>
-                        <div className="text-[9px] font-mono font-black text-[var(--text-muted)] uppercase tracking-[0.3em] mb-3">{kpi.label}</div>
-                        <div className="text-3xl font-display font-bold chrome-text mb-2">{kpi.val}</div>
-                        <div className="text-[9px] font-mono font-bold text-[var(--accent-primary)] opacity-70 uppercase">{kpi.sub}</div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Secondary View */}

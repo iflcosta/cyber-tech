@@ -23,6 +23,7 @@ import { GlobalSearch } from './components/GlobalSearch';
 import { SimulatorTab } from './components/SimulatorTab';
 import { MediaTab } from './components/MediaTab';
 import { ManualReviewModal } from './components/ManualReviewModal';
+import { LeadAnalyticsModal } from './components/LeadAnalyticsModal';
 
 import type { TabId } from '@/types/admin';
 import type { Lead } from '@/types/lead';
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
     const [sentimentAnalysis, setSentimentAnalysis] = useState<string | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isManualReviewOpen, setIsManualReviewOpen] = useState(false);
+    const [isLeadAnalyticsOpen, setIsLeadAnalyticsOpen] = useState(false);
 
     const [manualProductSelect, setManualProductSelect] = useState('');
 
@@ -423,6 +425,7 @@ export default function AdminDashboard() {
                         coupons={coupons}
                         maintenanceOrders={maintenanceOrders}
                         onOpenPdv={openPdvModal}
+                        onOpenLeadAnalytics={() => setIsLeadAnalyticsOpen(true)}
                         onEditProduct={p => {
                             setEditingProduct(p);
                             setSlugDraft(p.slug || '');
@@ -682,6 +685,12 @@ export default function AdminDashboard() {
                 isOpen={isManualReviewOpen}
                 onClose={() => setIsManualReviewOpen(false)}
                 onSuccess={fetchReviews}
+            />
+
+            <LeadAnalyticsModal
+                isOpen={isLeadAnalyticsOpen}
+                onClose={() => setIsLeadAnalyticsOpen(false)}
+                leads={leads}
             />
         </div>
     );

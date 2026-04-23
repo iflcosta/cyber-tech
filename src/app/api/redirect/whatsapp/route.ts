@@ -92,10 +92,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const message =
-    `Olá! Vim pelo site da Cyber Informática.\n\n` +
-    `🎫 Meu voucher: *${code}*\n\n` +
-    `Gostaria de informações sobre ${service}.\n\n` +
-    `Pode me atender?`
+    `Olá! Gostaria de um atendimento especializado.\n\n` +
+    `◆ Voucher: *${code}*\n\n` +
+    `Interesse: ${service.toUpperCase()}\n\n` +
+    `Pode me ajudar?`
 
   const waUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`
   
