@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCRMBrowserClient } from '../../../../lib/supabase/client';
-import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '../../../../types/database';
+import { createCRMBrowserClient } from '@/app/admin/crm/lib/supabase/client';
+import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 type Profile = { id: string; full_name: string };
 

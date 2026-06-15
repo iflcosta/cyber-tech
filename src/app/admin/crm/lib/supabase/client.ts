@@ -10,7 +10,7 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '../../types/database';
+import type { Database } from '@/app/admin/crm/types/database';
 
 export function createCRMBrowserClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL;
@@ -22,5 +22,5 @@ export function createCRMBrowserClient() {
     );
   }
 
-  return createBrowserClient<Database>(url, anon);
+  return createBrowserClient<any>(url, anon);
 }

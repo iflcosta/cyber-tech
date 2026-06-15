@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createCRMServerClient } from '../lib/supabase/server';
-import { LogoutButton } from '../components/LogoutButton';
+import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
+import { LogoutButton } from '@/app/admin/crm/components/LogoutButton';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createCRMServerClient();
@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .from('profiles')
     .select('full_name, role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   return (
     <div className="min-h-screen bg-slate-50">

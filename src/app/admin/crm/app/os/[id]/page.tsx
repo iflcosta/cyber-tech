@@ -1,11 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createCRMServerClient } from '../../../../../lib/supabase/server';
-import { StatusBadge } from '../../../../../components/StatusBadge';
-import { StaleBadge } from '../../../../../components/StaleBadge';
+import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
+import { StatusBadge } from '@/app/admin/crm/components/StatusBadge';
+import { StaleBadge } from '@/app/admin/crm/components/StaleBadge';
 import { OSDetailActions } from './OSDetailActions';
-import { OSTimeline } from '../../../../../components/OSTimeline';
-import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '../../../../../types/database';
+import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
+import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
 
