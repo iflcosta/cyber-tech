@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCRMBrowserClient } from '../../../../lib/supabase/client';
-import { OS_STATUSES, type OSStatusValue } from '../../../../types/database';
+import { createCRMBrowserClient } from '../../../../../lib/supabase/client';
+import { OS_STATUSES, type OSStatusValue } from '../../../../../types/database';
 
 type Profile = { id: string; full_name: string };
 

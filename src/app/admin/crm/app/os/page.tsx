@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { createCRMServerClient } from '../../lib/supabase/server';
-import { OSCard } from '../../components/OSCard';
+import { createCRMServerClient } from '../../../lib/supabase/server';
+import { OSCard } from '../../../components/OSCard';
 import { OSFilter } from './OSFilter';
 
 export const dynamic = 'force-dynamic';

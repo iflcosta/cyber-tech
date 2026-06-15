@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCRMBrowserClient } from '../../lib/supabase/client';
+import { createCRMBrowserClient } from '../../../lib/supabase/client';
 
 export function LoginForm() {
   const router = useRouter();

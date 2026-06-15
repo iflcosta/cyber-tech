@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createCRMServerClient } from './lib/supabase/server';
-import { LogoutButton } from './components/LogoutButton';
+import { createCRMServerClient } from '../lib/supabase/server';
+import { LogoutButton } from '../components/LogoutButton';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createCRMServerClient();

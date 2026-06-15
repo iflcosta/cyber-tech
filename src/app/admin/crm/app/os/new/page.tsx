@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createCRMServerClient } from '../../../lib/supabase/server';
+import { createCRMServerClient } from '../../../../lib/supabase/server';
 import { NewOSForm } from './NewOSForm';
 
 export const dynamic = 'force-dynamic';
