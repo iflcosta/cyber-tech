@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCRMBrowserClient } from '../../../lib/supabase/client';
-import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '../../../types/database';
+import { createCRMBrowserClient } from '@/app/admin/crm/lib/supabase/client';
+import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 type Profile = { id: string; full_name: string };
 
@@ -109,7 +109,7 @@ export function NewOSForm({
         note: assignedTo ? `Atribuída a ${technicians.concat(owners).find((p) => p.id === assignedTo)?.full_name ?? '—'}` : null,
       });
 
-      router.push(`/admin/os/${newOS.id}`);
+      router.push(`/admin/crm/os/${newOS.id}`);
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);

@@ -30,7 +30,7 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
 
   return (
     <Link
-      href={`/admin/os/${so.id}`}
+      href={`/admin/crm/os/${so.id}`}
       className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow active:scale-[0.99] sm:p-5"
     >
       <div className="flex items-start justify-between gap-3">

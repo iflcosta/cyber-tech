@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCRMBrowserClient } from '../../lib/supabase/client';
+import { createCRMBrowserClient } from '@/app/admin/crm/lib/supabase/client';
 
 export function LoginForm() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push('/admin/os');
+    router.push('/admin/crm/os');
     router.refresh();
   }
 

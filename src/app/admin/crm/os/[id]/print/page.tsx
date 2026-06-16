@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
-import { createCRMServerClient } from '../../../../lib/supabase/server';
-import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '../../../../types/database';
+import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
+import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +8,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const supabase = await createCRMServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/admin/login');
+  if (!user) redirect('/admin/crm/login');
 
   const { data: so } = await supabase
     .from('service_orders_with_stale')

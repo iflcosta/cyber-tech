@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createCRMServerClient } from '../../../lib/supabase/server';
+import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { NewOSForm } from './NewOSForm';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default async function NewOSPage() {
   const supabase = await createCRMServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/admin/login');
+  if (!user) redirect('/admin/crm/login');
 
   const { data: profiles } = await supabase
     .from('profiles')

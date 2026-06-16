@@ -9,7 +9,7 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { Database } from '../../types/database';
+import type { Database } from '@/app/admin/crm/types/database';
 
 export async function createCRMServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL;
@@ -23,7 +23,7 @@ export async function createCRMServerClient() {
 
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(url, anon, {
+  return createServerClient<any>(url, anon, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

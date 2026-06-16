@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { OS_STATUSES } from '../../types/database';
+import { OS_STATUSES } from '@/app/admin/crm/types/database';
 
 export function OSFilter() {
   const router = useRouter();
