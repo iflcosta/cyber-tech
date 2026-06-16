@@ -29,7 +29,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push('/admin/os');
+    router.push('/admin/crm/os');
     router.refresh();
   }
 

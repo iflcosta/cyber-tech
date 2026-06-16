@@ -109,7 +109,7 @@ export function NewOSForm({
         note: assignedTo ? `Atribuída a ${technicians.concat(owners).find((p) => p.id === assignedTo)?.full_name ?? '—'}` : null,
       });
 
-      router.push(`/admin/os/${newOS.id}`);
+      router.push(`/admin/crm/os/${newOS.id}`);
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);

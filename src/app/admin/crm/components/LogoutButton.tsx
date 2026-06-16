@@ -9,7 +9,7 @@ export function LogoutButton() {
   async function logout() {
     const supabase = createCRMBrowserClient();
     await supabase.auth.signOut();
-    router.push('/admin/login');
+    router.push('/admin/crm/login');
     router.refresh();
   }
 

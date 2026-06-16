@@ -13,7 +13,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   const { id } = await params;
   const supabase = await createCRMServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/admin/login');
+  if (!user) redirect('/admin/crm/login');
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -56,7 +56,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link href="/admin/os" className="text-sm text-blue-600 hover:text-blue-700">
+          <Link href="/admin/crm/os" className="text-sm text-blue-600 hover:text-blue-700">
             ← Todas as OS
           </Link>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-slate-900">
@@ -71,7 +71,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </p>
         </div>
         <Link
-          href={`/admin/os/${so.id}/print`}
+          href={`/admin/crm/os/${so.id}/print`}
           target="_blank"
           className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >

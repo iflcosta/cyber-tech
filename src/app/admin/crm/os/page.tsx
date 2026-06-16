@@ -70,7 +70,7 @@ export default async function OSListPage({
           </p>
         </div>
         <Link
-          href="/admin/os/new"
+          href="/admin/crm/os/new"
           className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 sm:hidden"
         >
           + Nova
@@ -89,7 +89,7 @@ export default async function OSListPage({
         <div className="rounded-lg border-2 border-dashed border-slate-200 bg-white p-8 text-center">
           <p className="text-slate-500">Nenhuma OS encontrada com esses filtros.</p>
           <Link
-            href="/admin/os/new"
+            href="/admin/crm/os/new"
             className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
           >
             Cadastrar a primeira →
