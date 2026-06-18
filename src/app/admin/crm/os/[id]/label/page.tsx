@@ -45,22 +45,22 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
       {/* Banner so na tela — some na impressao */}
       <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-lg border border-blue-200 bg-blue-50 p-4">
         <p className="text-sm text-blue-800">
-          <strong>Etiqueta física 62mm</strong> — otimizada pra impressora de etiqueta
-          (Brother QL-600/800 com rolo DK-22210, ou similar).
+          <strong>Etiqueta física 58mm</strong> — otimizada pra impressora térmica fiscal
+          (Bematech MP-100S TH / MPT-II) usando bobina de cupom comum.
         </p>
         <p className="mt-1 text-xs text-blue-700">
-          Conteúdo: <strong>short_id</strong> (OS-0001) em destaque, nome do cliente,
-          telefone, aparelho, data de entrada. Sem QR (conforme decisão).
+          Cola no notebook com fita adesiva transparente. Conteúdo: <strong>short_id</strong>
+          (OS-0001) em destaque, nome do cliente, telefone, aparelho, data de entrada.
         </p>
         <LabelPrintButton />
       </div>
 
       {/* ============ ETIQUETA ============ */}
-      {/* 62mm de largura; altura variavel (~50mm) — Brother recorta automaticamente */}
+      {/* 58mm de largura (MPT-II / bobina cupom 58mm) */}
       <article
         className="label mx-auto bg-white text-slate-900 shadow print:shadow-none"
         style={{
-          width: '62mm',
+          width: '58mm',
           padding: '2mm 3mm',
           fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
         }}
@@ -89,7 +89,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           <div
             style={{
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              fontSize: '22pt',
+              fontSize: '20pt',
               fontWeight: 700,
               lineHeight: 1,
               letterSpacing: '-0.02em',
@@ -115,7 +115,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           </div>
           <div
             style={{
-              fontSize: '11pt',
+              fontSize: '10.5pt',
               fontWeight: 700,
               lineHeight: 1.1,
               marginTop: '0.5mm',
@@ -129,7 +129,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           {so.customer_phone && (
             <div
               style={{
-                fontSize: '9pt',
+                fontSize: '8.5pt',
                 fontWeight: 500,
                 lineHeight: 1.2,
                 marginTop: '0.5mm',
@@ -157,7 +157,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
             >
               Aparelho
             </div>
-            <div style={{ fontSize: '8.5pt', fontWeight: 500, lineHeight: 1.1, marginTop: '0.5mm' }}>
+            <div style={{ fontSize: '8pt', fontWeight: 500, lineHeight: 1.1, marginTop: '0.5mm' }}>
               {typeMeta?.label}
               {equip ? ` · ${equip}` : ''}
             </div>
@@ -187,7 +187,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
 
       <style>{`
         @page {
-          size: 62mm auto;
+          size: 58mm auto;
           margin: 0;
         }
         @media print {
