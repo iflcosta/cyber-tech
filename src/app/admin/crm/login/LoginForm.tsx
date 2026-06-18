@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/crm/lib/supabase/client';
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,8 +27,12 @@ export function LoginForm() {
       return;
     }
 
-    router.push('/admin/crm/os');
-    router.refresh();
+    // Recarrega a pagina inteira pra que o cookie de sessao esteja
+    // disponivel nas Server Components. router.push() no Next 16 + RSC
+    // pode levar a um estado intermediario onde o cookie foi escrito
+    // mas o server ainda nao viu, causando o usuario ficar na tela
+    // de login mesmo apos autenticacao.
+    window.location.href = '/admin/crm/os';
   }
 
   return (
