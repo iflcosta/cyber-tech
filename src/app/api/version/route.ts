@@ -17,3 +17,5 @@ export async function GET() {
     deployed_at: new Date().toISOString(),
   });
 }
+
+// trigger: force-rebuild-112252
