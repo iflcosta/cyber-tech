@@ -35,8 +35,8 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold tracking-tight text-slate-900">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg">
               {so.short_id}
             </span>
             <span className="font-mono text-[10px] font-medium text-slate-400">
@@ -57,7 +57,9 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
         <div className="flex flex-col items-end gap-1 text-right">
           <span className="text-xs text-slate-500">{timeAgo(so.updated_at)}</span>
           {so.assigned_to_name && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">@{so.assigned_to_name}</span>
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">
+              {so.assigned_to_name.split(' ')[0]}
+            </span>
           )}
         </div>
       </div>
