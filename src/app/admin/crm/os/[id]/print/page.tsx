@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
+import { PrintButton } from './PrintButton';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -24,12 +25,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
     <>
       <div className="print:hidden mb-4 flex items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
         <span className="text-blue-800">Esta página é otimizada pra impressão A4.</span>
-        <button
-          onClick={() => typeof window !== 'undefined' && window.print()}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-        >
-          🖨️ Imprimir agora
-        </button>
+        <PrintButton />
       </div>
 
       <article className="print:bg-white mx-auto max-w-2xl bg-white p-6 shadow print:max-w-none print:shadow-none print:p-8 sm:p-8">

@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
+import { LabelPrintButton } from './LabelPrintButton';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -42,12 +43,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           Conteúdo: <strong>short_id</strong> (OS-0001) em destaque, nome do cliente,
           aparelho, data de entrada. Sem QR (conforme decisão).
         </p>
-        <button
-          onClick={() => typeof window !== 'undefined' && window.print()}
-          className="mt-3 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-        >
-          🏷️ Imprimir etiqueta
-        </button>
+        <LabelPrintButton />
       </div>
 
       {/* ============ ETIQUETA ============ */}
