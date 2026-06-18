@@ -60,7 +60,8 @@ cyber-tech/                      ← repo raiz (ja existe, NAO MODIFICAR)
     │   │   ├── new/page.tsx     ← cadastro rapido
     │   │   └── [id]/
     │   │       ├── page.tsx     ← detalhe + timeline
-    │   │       └── print/page.tsx ← comprovante A4
+    │   │       ├── print/page.tsx ← comprovante A4
+    │   │       └── label/page.tsx ← etiqueta 62mm (etiqueteira)
     │   └── layout.tsx           ← shell do admin (header + nav)
     ├── components/              ← OSList, OSCard, OSTimeline, OSForm, etc.
     ├── lib/
@@ -95,7 +96,12 @@ Migrations em `supabase/migrations/0001_init.sql` (e futuras). Rodar via
 
 #### `service_orders` (a OS em si)
 - `id` uuid PK
-- `os_number` text NOT NULL UNIQUE (formato `OS-2026-0001`)
+- `os_number` text NOT NULL UNIQUE (formato `OS-2026-0001`) — auditoria/legado
+- `short_id` text NOT NULL UNIQUE (formato `OS-0001`, sequencial simples) —
+  ID **canônico** pra falar no balcão, escrever na etiqueta, digitar na busca.
+  Gerado por trigger (`set_short_id`) na inserção, em paralelo ao `os_number`.
+  Backfill retroativo: na primeira migration (`0003_short_id.sql`),
+  OSs existentes recebem `short_id` em ordem cronológica de criação.
 - `customer_id` uuid FK -> customers
 - `equipment_type` text NOT NULL CHECK in ('computador', 'notebook', 'celular', 'tablet', 'outro')
 - `equipment_brand` text NULL

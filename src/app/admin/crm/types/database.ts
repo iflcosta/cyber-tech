@@ -58,6 +58,7 @@ export type Database = {
         Row: {
           id: string;
           os_number: string | null;
+          short_id: string;
           customer_id: string;
           equipment_type: 'computador' | 'notebook' | 'celular' | 'tablet' | 'outro';
           equipment_brand: string | null;
@@ -88,6 +89,7 @@ export type Database = {
         Insert: {
           id?: string;
           os_number?: string | null;
+          short_id?: string;
           customer_id: string;
           equipment_type:
             | 'computador'

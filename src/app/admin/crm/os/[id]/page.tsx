@@ -62,8 +62,13 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           <Link href="/admin/crm/os" className="text-sm text-blue-600 hover:text-blue-700">
             ← Todas as OS
           </Link>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-slate-900">
-            <span className="font-mono text-base font-semibold text-slate-500">{so.os_number}</span>
+          <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
+            <span className="font-mono text-2xl font-bold tracking-tight text-slate-900">
+              {so.short_id}
+            </span>
+            <span className="font-mono text-sm font-medium text-slate-400">
+              {so.os_number}
+            </span>
             <StatusBadge status={so.status} />
             <StaleBadge days={so.days_since_update} />
           </h1>
@@ -73,13 +78,22 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             {so.equipment_model ? ` ${so.equipment_model}` : ''}
           </p>
         </div>
-        <Link
-          href={`/admin/crm/os/${so.id}/print`}
-          target="_blank"
-          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          🖨️ Imprimir
-        </Link>
+        <div className="flex flex-shrink-0 gap-2">
+          <Link
+            href={`/admin/crm/os/${so.id}/label`}
+            target="_blank"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            🏷️ Etiqueta
+          </Link>
+          <Link
+            href={`/admin/crm/os/${so.id}/print`}
+            target="_blank"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            🖨️ Imprimir
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">

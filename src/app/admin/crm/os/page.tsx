@@ -48,9 +48,13 @@ export default async function OSListPage({
   let filtered = orders ?? [];
   if (params.q) {
     const q = params.q.toLowerCase().trim();
+    // Aceita busca com ou sem prefixo "OS-": "OS-0001" e "0001" dao match
+    const qBare = q.replace(/^os-/, '');
     filtered = filtered.filter((o) =>
       o.customer_name?.toLowerCase().includes(q) ||
       o.os_number?.toLowerCase().includes(q) ||
+      (o.short_id?.toLowerCase().includes(q) ?? false) ||
+      (o.short_id?.toLowerCase().replace(/^os-/, '').includes(qBare) ?? false) ||
       o.customer_phone?.toLowerCase().includes(q) ||
       o.equipment_serial?.toLowerCase().includes(q) ||
       o.equipment_model?.toLowerCase().includes(q) ||

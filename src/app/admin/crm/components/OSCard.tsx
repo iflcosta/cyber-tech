@@ -36,7 +36,12 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-semibold text-slate-500">{so.os_number}</span>
+            <span className="font-mono text-lg font-bold tracking-tight text-slate-900">
+              {so.short_id}
+            </span>
+            <span className="font-mono text-[10px] font-medium text-slate-400">
+              {so.os_number}
+            </span>
             <StatusBadge status={so.status} />
           </div>
           <h3 className="mt-1 truncate text-base font-semibold text-slate-900">{so.customer_name}</h3>
