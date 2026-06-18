@@ -102,9 +102,8 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
 
   const lines: string[] = [];
 
-  // MARGEM DE RASGO: 4 linhas com '.' pra forcar avanco do papel
-// (algumas impressoras termicas ignoram linhas em branco puras)
-  lines.push('.', '.', '.', '.');
+  // MARGEM DE RASGO: 2 linhas com '.' pra forcar avanco do papel
+  lines.push('.', '.');
 
   // Header
   lines.push(padBoth('CYBER INFORMATICA', created));
@@ -162,13 +161,10 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     if (cur) lines.push(cur.trim());
   }
 
-  // Linha final + espaco extra pra puxar e margem pra nao cortar
+  // Linha final + 3 pontos no fim (margem anti-corte)
   lines.push(dashSep);
 
-  // 12 linhas com '.' no fim (algumas impressoras ignoram espaco puro):
-  //  - 4 linhas (~8mm) pra puxar/rasgar
-  //  - 8 linhas (~15mm) de margem de seguranca pra nao cortar conteudo
-  const plainText = lines.join('\n') + '\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n'; // 12 linhas com '.'
+  const plainText = lines.join('\n') + '\n.\n.\n.'; // 3 pontos no fim
 
   return (
     <>
