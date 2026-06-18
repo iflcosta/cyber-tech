@@ -5,6 +5,7 @@ import { StatusBadge } from '@/app/admin/crm/components/StatusBadge';
 import { StaleBadge } from '@/app/admin/crm/components/StaleBadge';
 import { OSDetailActions } from './OSDetailActions';
 import { StatusQuickActions } from './StatusQuickActions';
+import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
@@ -229,6 +230,13 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               currentUserName={profile.full_name}
               technicians={(technicians ?? []).filter((t) => t.role === 'technician')}
               owners={(technicians ?? []).filter((t) => t.role === 'owner')}
+              isOwner={profile.role === 'owner'}
+            />
+          )}
+          {profile && (
+            <OSDeleteButton
+              osId={normalizedSo.id}
+              osShortId={normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
               isOwner={profile.role === 'owner'}
             />
           )}
