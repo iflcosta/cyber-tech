@@ -1,5 +1,4 @@
 "use client";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle, Zap } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,12 +6,12 @@ import { motion } from "framer-motion";
 import { useLeadModal } from "@/contexts/LeadModalContext";
 import { brand } from "@/lib/brand";
 
-export default function Hero() {
+export default function Hero({ serviceParam }: { serviceParam?: string | null } = {}) {
     const { openModal } = useLeadModal();
-    const searchParams = useSearchParams();
-    const serviceParam = searchParams.get('service');
 
-    // Formata o serviço vindo da URL (ex: hardware_premium -> Hardware Premium)
+    // Formata o serviço vindo da URL (ex: hardware_premium -> Hardware Premium).
+    // Recebido como prop do Server Component pai (page.tsx) — evita
+    // useSearchParams que causaria BAILOUT_TO_CLIENT_SIDE_RENDERING.
     const formattedService = serviceParam
         ? serviceParam.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
         : null;

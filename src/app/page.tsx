@@ -7,12 +7,15 @@ import PCBuilder from "@/components/PCBuilder";
 import Showroom from "@/components/Showroom";
 import Reviews from "@/components/Reviews";
 
-export default function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
+  const params = await searchParams;
+  const serviceParam = params?.service ?? null;
+
   return (
     <main className="min-h-screen bg-[var(--bg-primary)]">
       <Header />
       <Suspense fallback={<div className="h-screen bg-[var(--bg-primary)]" />}>
-        <Hero />
+        <Hero serviceParam={serviceParam} />
       </Suspense>
       <Suspense fallback={<div className="min-h-[400px]" />}>
         <Showroom />
