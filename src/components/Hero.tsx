@@ -1,10 +1,11 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, Zap } from "lucide-react";
+import { MessageCircle, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { useLeadModal } from "@/contexts/LeadModalContext";
+import { brand } from "@/lib/brand";
 
 export default function Hero() {
     const { openModal } = useLeadModal();
@@ -12,9 +13,20 @@ export default function Hero() {
     const serviceParam = searchParams.get('service');
 
     // Formata o serviço vindo da URL (ex: hardware_premium -> Hardware Premium)
-    const formattedService = serviceParam 
+    const formattedService = serviceParam
         ? serviceParam.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
         : null;
+
+    // B2B-safe: bloqueia servicos consumer-facing (manutencao, conserto, etc) que o
+    // Google Ads barra. Mantem apenas termos comerciais permitidos.
+    const blockedTerms = ['conserto', 'reparo', 'manutencao', 'manutenção', 'assistencia', 'assistência', 'diagnostico', 'diagnóstico', 'formatacao', 'formatação'];
+    const serviceIsSafe = formattedService && !blockedTerms.some(k => formattedService.toLowerCase().includes(k));
+
+    // Mensagem pre-formatada para WhatsApp
+    const whatsappMessage = serviceIsSafe
+        ? `Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica sobre ${formattedService}.`
+        : "Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica.";
+    const whatsappUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
 
     return (
         <section className="relative pt-32 pb-24 md:pt-48 md:pb-40 bg-[#121216] group">
@@ -43,34 +55,32 @@ export default function Hero() {
                     transition={{ duration: 0.5 }}
                     className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--accent-primary)]/20 bg-[var(--accent-primary)]/5 backdrop-blur-md text-[var(--accent-primary)] text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] mb-12 rounded-full shadow-[0_0_20px_var(--accent-glow)]"
                 >
-                    HARDWARE DE IMPACTO · BRAGANÇA PAULISTA
+                    LOJA TÉCNICA · BRAGANÇA PAULISTA · ATENDIMENTO PRESENCIAL
                 </motion.div>
 
                 <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.1 }}
-                    className="text-5xl sm:text-7xl md:text-[11vw] xl:text-[10rem] font-display font-bold mb-8 tracking-tighter relative z-10 leading-[0.85] uppercase text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] pb-3"
+                    className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold mb-8 tracking-tight relative z-10 leading-[0.95] text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] pb-3 max-w-5xl mx-auto"
                 >
-                    <span className="block opacity-95">TECNOLOGIA &</span>
-                    <span className="chrome-text !from-white !via-slate-200 !to-slate-400 brightness-110">PERFORMANCE</span>
+                    Tecnologia, montagem e curadoria técnica em Bragança Paulista.
                 </motion.h1>
 
                 <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="text-balance text-sm md:text-lg text-slate-300 max-w-2xl mx-auto mb-16 leading-relaxed relative z-10 font-medium tracking-wide"
+                    className="text-balance text-sm md:text-lg text-slate-300 max-w-3xl mx-auto mb-16 leading-relaxed relative z-10 font-medium tracking-wide"
                 >
-                    {formattedService && !['conserto', 'reparo', 'manutencao', 'assistencia'].some(k => formattedService.toLowerCase().includes(k)) ? (
+                    {serviceIsSafe ? (
                         <>
                             Soluções em <span className="text-[var(--accent-primary)] font-bold">{formattedService}</span>. <br className="hidden md:block" />
-                            Loja de Hardware com estoque real em Bragança Paulista, SP.
+                            Loja técnica de PC, notebook e celular — curadoria, montagem e atendimento humano.
                         </>
                     ) : (
                         <>
-                            Especialistas em Venda de Hardware e Projetos Customizados <br className="hidden md:block" />
-                            com estoque real em Bragança Paulista, SP.
+                            Loja técnica de PC, notebook e celular. Atendemos o cliente final com curadoria e montagem — e lojistas e assistências parceiras com indicação técnica e pós-venda estendido.
                         </>
                     )}
                 </motion.p>
@@ -86,15 +96,17 @@ export default function Hero() {
                         href="/produtos"
                         className="btn-primary w-full sm:flex-1 py-6 flex items-center justify-center gap-3 uppercase font-bold tracking-widest text-xs"
                     >
-                        EXPLORAR CATÁLOGO
+                        VER CATÁLOGO
                     </Link>
-                    <button
-                        onClick={() => document.getElementById('pc-builder')?.scrollIntoView({ behavior: 'smooth' })}
+                    <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="btn-ghost w-full sm:flex-1 py-6 flex items-center justify-center gap-3 !border-white/30 !text-white/90 hover:!bg-white/10 hover:!border-white/50 transition-all uppercase font-bold tracking-widest text-xs"
                     >
-                        <Zap size={20} />
-                        MONTE SEU PC
-                    </button>
+                        <MessageCircle size={20} />
+                        FALAR COM A CURADORIA
+                    </a>
                 </motion.div>
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-24 md:mt-32 pt-16 border-t border-white/10">

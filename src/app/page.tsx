@@ -32,11 +32,14 @@ export default function Home() {
           <p className="text-[var(--text-muted)] text-[10px] font-bold uppercase tracking-[0.3em] mb-4">
             &copy; 2026 CYBER INFORMÁTICA - BRAGANÇA PAULISTA
           </p>
-          <p className="text-[var(--text-secondary)] text-[9px] font-mono uppercase tracking-widest mb-8">
+          <p className="text-[var(--text-secondary)] text-xs md:text-sm font-medium mb-2 max-w-2xl mx-auto leading-relaxed">
+            Loja técnica de PC, notebook e celular. Atendemos cliente final com curadoria e montagem — e lojistas e assistências parceiras com indicação técnica e pós-venda estendido.
+          </p>
+          <p className="text-[var(--text-muted)] text-[9px] font-mono uppercase tracking-widest mb-8">
             Sólida. Técnica. Confiável.
           </p>
           <div className="flex justify-center gap-6 text-[var(--text-secondary)]">
-            <a href="https://instagram.com/cyberinfo.brag" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors">
+            <a href="https://instagram.com/cyberinfo.brag" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] transition-colors" aria-label="Instagram da Cyber Informática">
               <Instagram size={20} />
             </a>
           </div>
