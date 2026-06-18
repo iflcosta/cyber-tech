@@ -213,14 +213,14 @@ export function NewOSForm({
           <Field label="Checklist de entrada">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {ENTRY_CHECKLIST_FIELDS.map((f) => (
-                <label key={f.key} className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm">
+                <label key={f.key} className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900">
                   <input
                     type="checkbox"
                     checked={checklist[f.key] ?? false}
                     onChange={(e) => setChecklist({ ...checklist, [f.key]: e.target.checked })}
                     className="h-4 w-4 rounded border-slate-300 text-blue-600"
                   />
-                  {f.label}
+                  <span className="text-slate-900">{f.label}</span>
                 </label>
               ))}
             </div>

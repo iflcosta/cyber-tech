@@ -182,9 +182,10 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
       {/* ============ ETIQUETA ============ */}
       {/* Preview visual: pre-formatted text */}
       <pre
-        className="label mx-auto whitespace-pre-wrap rounded border border-slate-300 bg-white p-3 font-mono text-xs text-slate-900 shadow print:border-0 print:bg-white print:p-0 print:shadow-none"
+        className="label whitespace-pre-wrap rounded border border-slate-300 bg-white p-3 font-mono text-xs text-slate-900 shadow print:border-0 print:bg-white print:p-0 print:shadow-none"
         style={{
           width: '58mm',
+          margin: '0',
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
           fontSize: '10pt',
           lineHeight: '1.3',
@@ -210,7 +211,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
             position: absolute;
             top: 0;
             left: 0;
-            margin: 0;
+            margin: 0 !important;
             padding: 2mm 3mm;
             background: white;
             border: 0 !important;
