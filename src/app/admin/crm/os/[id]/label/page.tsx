@@ -31,6 +31,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
 
   // Normalizar campos que vinham da view
   ;(so as any).customer_name = (so as any).customer?.name ?? '(cliente removido)';
+  ;(so as any).customer_phone = (so as any).customer?.phone ?? '';
   ;(so as any).assigned_to_name = (so as any).assigned?.full_name ?? null;
 
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
@@ -49,18 +50,17 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
         </p>
         <p className="mt-1 text-xs text-blue-700">
           Conteúdo: <strong>short_id</strong> (OS-0001) em destaque, nome do cliente,
-          aparelho, data de entrada. Sem QR (conforme decisão).
+          telefone, aparelho, data de entrada. Sem QR (conforme decisão).
         </p>
         <LabelPrintButton />
       </div>
 
       {/* ============ ETIQUETA ============ */}
-      {/* 62mm de largura = 245px @ 100dpi; usamos mm no @page pra ficar portavel */}
+      {/* 62mm de largura; altura variavel (~50mm) — Brother recorta automaticamente */}
       <article
         className="label mx-auto bg-white text-slate-900 shadow print:shadow-none"
         style={{
           width: '62mm',
-          minHeight: '40mm',
           padding: '2mm 3mm',
           fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
         }}
@@ -100,7 +100,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Cliente */}
+        {/* Cliente (nome grande) + telefone (logo abaixo) */}
         <div style={{ marginBottom: '1mm' }}>
           <div
             style={{
@@ -121,10 +121,26 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
               marginTop: '0.5mm',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {so.customer_name}
           </div>
+          {so.customer_phone && (
+            <div
+              style={{
+                fontSize: '9pt',
+                fontWeight: 500,
+                lineHeight: 1.2,
+                marginTop: '0.5mm',
+                color: '#0f172a',
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '0.01em',
+              }}
+            >
+              📞 {so.customer_phone}
+            </div>
+          )}
         </div>
 
         {/* Aparelho */}
