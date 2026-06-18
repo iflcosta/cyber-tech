@@ -27,9 +27,16 @@ export default async function OSListPage({
 
   const showOnlyMine = params.mine === '1' && profile?.role !== 'owner';
 
+  // Query direto na tabela (nao na view) pra permitir ver OSs
+  // entregues/canceladas via filtro de status especifico.
+  // Joins manuais replicam os campos da view (customer_name etc).
   let query = supabase
-    .from('service_orders_with_stale')
-    .select('*')
+    .from('service_orders')
+    .select(`
+      *,
+      customer:customers(name, phone),
+      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+    `)
     .order('updated_at', { ascending: false })
     .limit(100);
 
@@ -46,10 +53,22 @@ export default async function OSListPage({
 
   const { data: orders, error } = await query;
 
-  let filtered = orders ?? [];
+  // Normalizar shape (a view retornava customer_name no root e
+  // days_since_update calculado). Reproduzimos os dois aqui.
+  const normalized = (orders ?? []).map((o: any) => ({
+    ...o,
+    customer_name: o.customer?.name ?? '(cliente removido)',
+    customer_phone: o.customer?.phone ?? null,
+    assigned_to_name: o.assigned?.full_name ?? null,
+    days_since_update: Math.max(
+      0,
+      Math.floor((Date.now() - new Date(o.updated_at).getTime()) / 86400000),
+    ),
+  }));
+
+  let filtered = normalized;
   if (params.q) {
     const q = params.q.toLowerCase().trim();
-    // Aceita busca com ou sem prefixo "OS-": "OS-0001" e "0001" dao match
     const qBare = q.replace(/^os-/, '');
     filtered = filtered.filter((o) =>
       o.customer_name?.toLowerCase().includes(q) ||

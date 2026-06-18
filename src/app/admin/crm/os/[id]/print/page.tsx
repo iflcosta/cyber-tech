@@ -12,11 +12,19 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
   if (!user) redirect('/admin/crm/login');
 
   const { data: so } = await supabase
-    .from('service_orders_with_stale')
-    .select('*')
+    .from('service_orders')
+    .select(`
+      *,
+      customer:customers(name, phone),
+      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+    `)
     .eq('id', id)
     .single();
   if (!so) notFound();
+
+  // Normalizar campos que vinham da view
+  ;(so as any).customer_name = (so as any).customer?.name ?? '(cliente removido)';
+  ;(so as any).assigned_to_name = (so as any).assigned?.full_name ?? null;
 
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
   const checklist = so.entry_checklist ?? {};
