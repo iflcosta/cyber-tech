@@ -108,11 +108,8 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   lines.push(padBoth('CYBER INFORMATICA', created));
   lines.push(lineSep);
 
-  // OS em destaque
+  // OS em destaque (sem duplicacao - so o short_id "OS-0626004")
   lines.push(shortId);
-  if (osNumber && osNumber !== shortId) {
-    lines.push(`(${osNumber})`);
-  }
   lines.push('');
 
   // Cliente
