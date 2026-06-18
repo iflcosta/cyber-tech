@@ -75,6 +75,19 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         }}
       >
+        {/* Margem de rasgo no topo: 10mm de papel em branco */}
+        {/* pra voce poder segurar e rasgar no dente da impressora */}
+        <div style={{ height: '10mm' }} aria-hidden="true" />
+
+        {/* Linha de corte sutil (visual) — ajuda a saber ONDE rasgar */}
+        <div
+          style={{
+            borderTop: '0.5pt dashed #cbd5e1',
+            marginBottom: '1.5mm',
+          }}
+          aria-hidden="true"
+        />
+
         {/* Header: marca + data (linha fina) */}
         <header
           style={{
@@ -224,6 +237,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
             left: 0;
             margin: 0;
             box-shadow: none;
+            /* A margem de rasgo (10mm) ja' esta' dentro do article */
           }
         }
       `}</style>
