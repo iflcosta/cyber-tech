@@ -5,6 +5,8 @@ import { StatusBadge } from '@/app/admin/crm/components/StatusBadge';
 import { StaleBadge } from '@/app/admin/crm/components/StaleBadge';
 import { OSDetailActions } from './OSDetailActions';
 import { StatusQuickActions } from './StatusQuickActions';
+import { OSPhotoUpload } from './OSPhotoUpload';
+import { OSChargePanel } from './OSChargePanel';
 import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
@@ -230,6 +232,20 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               technicians={(technicians ?? []).filter((t) => t.role === 'technician')}
               owners={(technicians ?? []).filter((t) => t.role === 'owner')}
               isOwner={profile.role === 'owner'}
+            />
+          )}
+          {profile && canEdit && (
+            <OSPhotoUpload osId={normalizedSo.id} currentPhotoUrl={(normalizedSo as any).photo_url ?? null} />
+          )}
+          {profile && (
+            <OSChargePanel
+              osId={normalizedSo.id}
+              currentUserId={profile.id}
+              currentUserName={profile.full_name}
+              priceValue={(normalizedSo as any).price_value ?? null}
+              priceStatus={(normalizedSo as any).price_status ?? null}
+              canEdit={canEdit}
+              pixKey={process.env.NEXT_PUBLIC_PIX_KEY ?? '11999990000'}
             />
           )}
         </aside>
