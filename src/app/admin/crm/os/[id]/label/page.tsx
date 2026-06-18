@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
+import { LabelPrintButton } from './LabelPrintButton';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -177,6 +178,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           Conteudo em ASCII com quebras de linha explicitas. Margem de rasgo no topo.
           Cola no notebook com fita adesiva.
         </p>
+        <LabelPrintButton />
       </div>
 
       {/* ============ ETIQUETA ============ */}
