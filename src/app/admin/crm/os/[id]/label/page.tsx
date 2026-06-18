@@ -117,7 +117,8 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   lines.push('[CLIENTE]');
   lines.push(customerName);
   if (customerPhone) lines.push('Tel: ' + customerPhone);
-  lines.push('');
+  // Espaco maior entre secoes (~6mm, igual margem de rasgo)
+  lines.push('', '', '');
 
   // Aparelho
   if (typeLabel || equipNorm) {
@@ -140,7 +141,8 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
       }
       if (cur) lines.push(cur.trim());
     }
-    lines.push('');
+    // Espaco maior entre secoes
+    lines.push('', '', '');
   }
 
   // Defeito
@@ -158,8 +160,6 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
       }
     }
     if (cur) lines.push(cur.trim());
-    // Espaco maior de "paragrafo" depois da ultima secao (mais leve que tracejado)
-    lines.push('');
   }
 
   // Linha final + espaco extra pra puxar e margem pra nao cortar
