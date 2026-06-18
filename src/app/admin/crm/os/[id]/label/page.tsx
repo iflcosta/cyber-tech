@@ -114,14 +114,14 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   lines.push('');
 
   // Cliente
-  lines.push('CLIENTE:');
+  lines.push('[CLIENTE]');
   lines.push(customerName);
   if (customerPhone) lines.push('Tel: ' + customerPhone);
   lines.push('');
 
   // Aparelho
   if (typeLabel || equipNorm) {
-    lines.push('APARELHO:');
+    lines.push('[APARELHO]');
     const equipLine = typeLabel + (equipNorm ? ' - ' + equipNorm : '');
     // Quebra em linhas se muito longo
     if (equipLine.length <= WIDTH) {
@@ -145,7 +145,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
 
   // Defeito
   if (defectNorm) {
-    lines.push('DEFEITO:');
+    lines.push('[DEFEITO]');
     // Quebra em linhas de ate WIDTH chars
     const words = defectNorm.split(' ');
     let cur = '';
@@ -158,6 +158,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
       }
     }
     if (cur) lines.push(cur.trim());
+    // Espaco maior de "paragrafo" depois da ultima secao (mais leve que tracejado)
     lines.push('');
   }
 
