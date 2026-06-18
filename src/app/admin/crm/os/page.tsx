@@ -12,7 +12,7 @@ const ACTIVE_STATUSES = [
 export default async function OSListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; mine?: string; assigned?: string; imei?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; mine?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createCRMServerClient();
@@ -26,19 +26,10 @@ export default async function OSListPage({
     .single();
 
   const showOnlyMine = params.mine === '1' && profile?.role !== 'owner';
-  const assignedFilter = params.assigned || null;
-  const imeiFilter = params.imei || null;
-
-  // Buscar tecnicos pro filtro
-  const { data: techniciansRaw } = await supabase
-    .from('profiles')
-    .select('id, full_name, role, active')
-    .eq('active', true)
-    .in('role', ['technician', 'owner']);
-  const technicians = techniciansRaw ?? [];
 
   // Query direto na tabela (nao na view) pra permitir ver OSs
   // entregues/canceladas via filtro de status especifico.
+  // Joins manuais replicam os campos da view (customer_name etc).
   let query = supabase
     .from('service_orders')
     .select(`
@@ -58,13 +49,6 @@ export default async function OSListPage({
 
   if (showOnlyMine) {
     query = query.eq('assigned_to', user.id);
-  } else if (assignedFilter) {
-    query = query.eq('assigned_to', assignedFilter);
-  }
-
-  // Busca por IMEI: match exato (mais rapido e confiavel que LIKE)
-  if (imeiFilter) {
-    query = query.eq('equipment_serial', imeiFilter);
   }
 
   const { data: orders, error } = await query;
@@ -82,7 +66,6 @@ export default async function OSListPage({
     ),
   }));
 
-  // Busca textual generica (q): se nao tiver IMEI exato, filtra em JS
   let filtered = normalized;
   if (params.q) {
     const q = params.q.toLowerCase().trim();
@@ -100,10 +83,6 @@ export default async function OSListPage({
     );
   }
 
-  const assignedName = assignedFilter
-    ? technicians.find((t) => t.id === assignedFilter)?.full_name
-    : null;
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
@@ -112,8 +91,7 @@ export default async function OSListPage({
           <p className="text-sm text-slate-500">
             {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
             {showOnlyMine && ' (atribuídas a mim)'}
-            {assignedName && ` · técnico: ${assignedName}`}
-            {params.status && params.status !== 'all' && ` · status: ${params.status}`}
+            {params.status && params.status !== 'all' && ` (filtrado por ${params.status})`}
           </p>
         </div>
         <Link
@@ -124,7 +102,7 @@ export default async function OSListPage({
         </Link>
       </div>
 
-      <OSFilter technicians={technicians} />
+      <OSFilter />
 
       {error && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
