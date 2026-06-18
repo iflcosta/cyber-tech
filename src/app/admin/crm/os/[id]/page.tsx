@@ -48,8 +48,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     (authorProfiles ?? []).map((p) => [p.id, p.full_name]),
   );
 
+  // Qualquer tecnico logado pode editar qualquer OS (regra do Felipe 2026-06-18).
+  // Owner tambem pode tudo. Isso permite Iago/Jefferson redistribuirem entre si
+  // sem depender do Felipe. A timeline registra toda mudanca.
   const canEdit =
-    profile?.role === 'owner' || so.assigned_to === profile?.id;
+    profile?.role === 'owner' || profile?.role === 'technician';
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
 
   return (

@@ -32,6 +32,12 @@ export function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
+    // /admin/crm (sem sub-rota) -> redireciona pro login
+    if (pathname === '/admin/crm' || pathname === '/admin/crm/') {
+        const loginUrl = new URL('/admin/crm/login', request.url);
+        return NextResponse.redirect(loginUrl);
+    }
+
     // Verifica se ha sessao do CRM no cookie
     // O CRM usa @supabase/ssr que grava cookies com prefixo 'sb-'
     const hasSession = request.cookies.getAll().some((c) =>
