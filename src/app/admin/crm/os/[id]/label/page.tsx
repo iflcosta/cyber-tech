@@ -5,13 +5,10 @@ import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/
 
 export const dynamic = 'force-dynamic';
 
-// Impressora alvo: Brother QL-600 / QL-800 com rolo DK-22210
-// (papel continuo 62mm, recorte automatico).
-// Outras opcoes compativeis: qualquer impressora termica 58-62mm
-// (Mercado Livre, AliExpress, R$150-300) — o conteudo escala.
-//
-// @page size: 62mm x altura variavel (Brother recorta automaticamente).
-// Margem 2mm pra nao cortar conteudo nas bordas.
+// Impressora alvo: Bematech MPT-II (termica fiscal) via Bluetooth COM9.
+// Outras opcoes compativeis: qualquer termica 58mm (Elgin i9, Daruma, GENXP).
+// NOTA: driver Generic / Text Only so' imprime ASCII. Sem acentos,
+// sem emoji. Veja normalizacoes em normalize().
 export default async function OSLabelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createCRMServerClient();
@@ -29,7 +26,6 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     .single();
   if (!so) notFound();
 
-  // Normalizar campos que vinham da view
   ;(so as any).customer_name = (so as any).customer?.name ?? '(cliente removido)';
   ;(so as any).customer_phone = (so as any).customer?.phone ?? '';
   ;(so as any).assigned_to_name = (so as any).assigned?.full_name ?? null;
@@ -40,29 +36,43 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     .join(' ');
   const created = new Date(so.created_at).toLocaleDateString('pt-BR');
 
+  // Normaliza texto pra ASCII puro (compativel com driver Generic / Text Only)
+  // IMPORTANTE: chamadas de normalize sao feitas ANTES do JSX porque
+  // mudam a string que vai pro DOM. Nao altera acentuacao do CSS.
+  const norm = (s: string) => (s ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove diacriticos
+    .replace(/[^\x20-\x7E\n]/g, '?')                  // remove qualquer nao-ASCII
+    .trim();
+
+  const customerName = norm((so as any).customer_name);
+  const customerPhone = norm((so as any).customer_phone);
+  const equipNorm = norm(equip);
+  const shortId = norm((so as any).short_id ?? '');
+  const osNumber = norm((so as any).os_number ?? '');
+  const createdNorm = norm(created);
+
   return (
     <>
       {/* Banner so na tela — some na impressao */}
       <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-lg border border-blue-200 bg-blue-50 p-4">
         <p className="text-sm text-blue-800">
-          <strong>Etiqueta física 58mm</strong> — otimizada pra impressora térmica fiscal
-          (Bematech MP-100S TH / MPT-II) usando bobina de cupom comum.
+          <strong>Etiqueta ASCII 58mm</strong> — otimizada pra impressora termica via
+          driver Generic / Text Only (MPT-II Bluetooth, Elgin i9, etc).
         </p>
         <p className="mt-1 text-xs text-blue-700">
-          Cola no notebook com fita adesiva transparente. Conteúdo: <strong>short_id</strong>
-          (OS-0001) em destaque, nome do cliente, telefone, aparelho, data de entrada.
+          Texto sem acentos e sem emoji pra compatibilidade com drivers basicos.
+          Cola no notebook com fita adesiva.
         </p>
         <LabelPrintButton />
       </div>
 
       {/* ============ ETIQUETA ============ */}
-      {/* 58mm de largura (MPT-II / bobina cupom 58mm) */}
       <article
         className="label mx-auto bg-white text-slate-900 shadow print:shadow-none"
         style={{
           width: '58mm',
           padding: '2mm 3mm',
-          fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
         }}
       >
         {/* Header: marca + data (linha fina) */}
@@ -76,11 +86,11 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
             marginBottom: '1.5mm',
           }}
         >
-          <span style={{ fontSize: '7pt', fontWeight: 600, letterSpacing: '0.05em' }}>
-            CYBER INFORMÁTICA
+          <span style={{ fontSize: '8pt', fontWeight: 700, letterSpacing: '0.05em' }}>
+            CYBER INFORMATICA
           </span>
-          <span style={{ fontSize: '6.5pt', color: '#64748b', fontVariantNumeric: 'tabular-nums' }}>
-            {created}
+          <span style={{ fontSize: '7.5pt', color: '#64748b' }}>
+            {createdNorm}
           </span>
         </header>
 
@@ -88,78 +98,88 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
         <div style={{ marginBottom: '1.5mm' }}>
           <div
             style={{
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              fontSize: '20pt',
+              fontSize: '22pt',
               fontWeight: 700,
               lineHeight: 1,
               letterSpacing: '-0.02em',
               color: '#0f172a',
             }}
           >
-            {so.short_id}
+            {shortId}
           </div>
+          {osNumber && (
+            <div
+              style={{
+                fontSize: '6.5pt',
+                color: '#64748b',
+                marginTop: '0.3mm',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              ({osNumber})
+            </div>
+          )}
         </div>
 
         {/* Cliente (nome grande) + telefone (logo abaixo) */}
         <div style={{ marginBottom: '1mm' }}>
           <div
             style={{
-              fontSize: '6pt',
+              fontSize: '6.5pt',
               fontWeight: 600,
               letterSpacing: '0.08em',
               color: '#64748b',
               textTransform: 'uppercase',
             }}
           >
-            Cliente
+            CLIENTE
           </div>
           <div
             style={{
-              fontSize: '10.5pt',
+              fontSize: '11pt',
               fontWeight: 700,
               lineHeight: 1.1,
-              marginTop: '0.5mm',
+              marginTop: '0.4mm',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}
           >
-            {so.customer_name}
+            {customerName}
           </div>
-          {so.customer_phone && (
+          {customerPhone && (
             <div
               style={{
-                fontSize: '8.5pt',
+                fontSize: '9pt',
                 fontWeight: 500,
                 lineHeight: 1.2,
                 marginTop: '0.5mm',
                 color: '#0f172a',
                 fontVariantNumeric: 'tabular-nums',
-                letterSpacing: '0.01em',
               }}
             >
-              📞 {so.customer_phone}
+              Tel: {customerPhone}
             </div>
           )}
         </div>
 
         {/* Aparelho */}
-        {equip && (
+        {equipNorm && (
           <div style={{ marginBottom: '1mm' }}>
             <div
               style={{
-                fontSize: '6pt',
+                fontSize: '6.5pt',
                 fontWeight: 600,
                 letterSpacing: '0.08em',
                 color: '#64748b',
                 textTransform: 'uppercase',
               }}
             >
-              Aparelho
+              APARELHO
             </div>
-            <div style={{ fontSize: '8pt', fontWeight: 500, lineHeight: 1.1, marginTop: '0.5mm' }}>
-              {typeMeta?.label}
-              {equip ? ` · ${equip}` : ''}
+            <div style={{ fontSize: '9pt', fontWeight: 500, lineHeight: 1.15, marginTop: '0.4mm' }}>
+              {norm(typeMeta?.label ?? '')}
+              {equipNorm ? ` - ${equipNorm}` : ''}
             </div>
           </div>
         )}
@@ -171,8 +191,8 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
               marginTop: '1.5mm',
               paddingTop: '1mm',
               borderTop: '0.3pt dashed #e2e8f0',
-              fontSize: '7pt',
-              lineHeight: 1.15,
+              fontSize: '7.5pt',
+              lineHeight: 1.2,
               color: '#475569',
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -180,7 +200,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
               overflow: 'hidden',
             }}
           >
-            {so.reported_defect}
+            {norm(so.reported_defect)}
           </div>
         )}
       </article>
