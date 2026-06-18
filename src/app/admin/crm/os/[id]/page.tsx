@@ -22,12 +22,34 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('id', user.id)
     .single();
 
+  // Busca direto da tabela (nao da view) pra OSs finalizadas
+  // (delivered/cancelled) nao darem 404. A view filtra essas fora.
   const { data: so } = await supabase
-    .from('service_orders_with_stale')
-    .select('*')
+    .from('service_orders')
+    .select(`
+      *,
+      customer:customers(name, phone),
+      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+    `)
     .eq('id', id)
     .single();
   if (!so) notFound();
+
+  // Normalizar campos que a view fornecia
+  const customerName = (so as any).customer?.name ?? '(cliente removido)';
+  const customerPhone = (so as any).customer?.phone ?? null;
+  const assignedToName = (so as any).assigned?.full_name ?? null;
+  const daysSinceUpdate = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(so.updated_at).getTime()) / 86400000),
+  );
+  const normalizedSo = {
+    ...so,
+    customer_name: customerName,
+    customer_phone: customerPhone,
+    assigned_to_name: assignedToName,
+    days_since_update: daysSinceUpdate,
+  };
 
   const { data: events } = await supabase
     .from('service_order_events')
@@ -49,15 +71,20 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     (authorProfiles ?? []).map((p) => [p.id, p.full_name]),
   );
 
-  // Qualquer tecnico logado pode editar qualquer OS (regra do Felipe 2026-06-18).
-  // Owner tambem pode tudo. Isso permite Iago/Jefferson redistribuirem entre si
-  // sem depender do Felipe. A timeline registra toda mudanca.
   const canEdit =
     profile?.role === 'owner' || profile?.role === 'technician';
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
+  const isFinal = so.status === 'delivered' || so.status === 'cancelled';
 
   return (
     <div className="space-y-6">
+      {isFinal && (
+        <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
+          <strong>OS finalizada</strong> — status <em>{so.status === 'delivered' ? 'entregue' : 'cancelada'}</em>.
+          A OS nao aparece na lista de ativas mas pode ser consultada por este link.
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-3">
         <div>
           <Link href="/admin/crm/os" className="text-sm text-blue-600 hover:text-blue-700">
@@ -65,32 +92,32 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </Link>
           <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
             <span className="font-mono text-2xl font-bold tracking-tight text-slate-900">
-              {so.short_id ?? so.os_number ?? so.id.slice(0, 8)}
+              {normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
             </span>
-            {so.os_number && (
+            {normalizedSo.os_number && (
               <span className="font-mono text-sm font-medium text-slate-400">
-                {so.os_number}
+                {normalizedSo.os_number}
               </span>
             )}
-            <StatusBadge status={so.status} />
-            <StaleBadge days={so.days_since_update} />
+            <StatusBadge status={normalizedSo.status} />
+            <StaleBadge days={normalizedSo.days_since_update} />
           </h1>
           <p className="text-sm text-slate-500">
-            {so.customer_name} · {typeMeta?.label}
-            {so.equipment_brand ? ` · ${so.equipment_brand}` : ''}
-            {so.equipment_model ? ` ${so.equipment_model}` : ''}
+            {normalizedSo.customer_name} · {typeMeta?.label}
+            {normalizedSo.equipment_brand ? ` · ${normalizedSo.equipment_brand}` : ''}
+            {normalizedSo.equipment_model ? ` ${normalizedSo.equipment_model}` : ''}
           </p>
         </div>
         <div className="flex flex-shrink-0 gap-2">
           <Link
-            href={`/admin/crm/os/${so.id}/label`}
+            href={`/admin/crm/os/${normalizedSo.id}/label`}
             target="_blank"
             className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             🏷️ Etiqueta
           </Link>
           <Link
-            href={`/admin/crm/os/${so.id}/print`}
+            href={`/admin/crm/os/${normalizedSo.id}/print`}
             target="_blank"
             className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
@@ -103,10 +130,10 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         <div className="space-y-4 lg:col-span-2">
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Defeito relatado</h2>
-            <p className="mt-1 whitespace-pre-wrap text-slate-900">{so.reported_defect}</p>
-            {so.blocking_reason && (
+            <p className="mt-1 whitespace-pre-wrap text-slate-900">{normalizedSo.reported_defect}</p>
+            {normalizedSo.blocking_reason && (
               <div className="mt-3 rounded-md bg-orange-50 p-3 text-sm text-orange-800 ring-1 ring-orange-200">
-                <strong>Travado em:</strong> {so.blocking_reason}
+                <strong>Travado em:</strong> {normalizedSo.blocking_reason}
               </div>
             )}
           </section>
@@ -115,7 +142,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Checklist de entrada</h2>
             <ul className="mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
               {ENTRY_CHECKLIST_FIELDS.map((f) => {
-                const val = so.entry_checklist?.[f.key];
+                const val = normalizedSo.entry_checklist?.[f.key];
                 return (
                   <li key={f.key} className="flex items-center gap-2">
                     <span className={val ? 'text-emerald-600' : 'text-red-500'}>
@@ -126,9 +153,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 );
               })}
             </ul>
-            {so.accessories_in && (
+            {normalizedSo.accessories_in && (
               <p className="mt-3 text-sm text-slate-600">
-                <strong>Acessórios:</strong> {so.accessories_in}
+                <strong>Acessórios:</strong> {normalizedSo.accessories_in}
               </p>
             )}
           </section>
@@ -142,10 +169,10 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         <aside className="space-y-4">
-          {profile && (
+          {profile && !isFinal && (
             <StatusQuickActions
-              osId={so.id}
-              currentStatus={so.status}
+              osId={normalizedSo.id}
+              currentStatus={normalizedSo.status}
               currentUserId={profile.id}
               currentUserName={profile.full_name}
               canEdit={canEdit}
@@ -153,11 +180,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           )}
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Cliente</h2>
-            <p className="mt-1 font-medium text-slate-900">{so.customer_name}</p>
-            {so.customer_phone && (
+            <p className="mt-1 font-medium text-slate-900">{normalizedSo.customer_name}</p>
+            {normalizedSo.customer_phone && (
               <p className="text-sm text-slate-600">
-                <a href={`tel:${so.customer_phone}`} className="text-blue-600 hover:underline">
-                  📞 {so.customer_phone}
+                <a href={`tel:${normalizedSo.customer_phone}`} className="text-blue-600 hover:underline">
+                  📞 {normalizedSo.customer_phone}
                 </a>
               </p>
             )}
@@ -167,12 +194,12 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Aparelho</h2>
             <dl className="mt-1 space-y-1 text-sm">
               <Row label="Tipo" value={typeMeta?.label} />
-              {so.equipment_brand && <Row label="Marca" value={so.equipment_brand} />}
-              {so.equipment_model && <Row label="Modelo" value={so.equipment_model} />}
-              {so.equipment_color && <Row label="Cor" value={so.equipment_color} />}
-              {so.equipment_serial && <Row label="IMEI / Serial" value={so.equipment_serial} />}
-              {so.equipment_password && (
-                <Row label="Senha" value={<code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{so.equipment_password}</code>} />
+              {normalizedSo.equipment_brand && <Row label="Marca" value={normalizedSo.equipment_brand} />}
+              {normalizedSo.equipment_model && <Row label="Modelo" value={normalizedSo.equipment_model} />}
+              {normalizedSo.equipment_color && <Row label="Cor" value={normalizedSo.equipment_color} />}
+              {normalizedSo.equipment_serial && <Row label="IMEI / Serial" value={normalizedSo.equipment_serial} />}
+              {normalizedSo.equipment_password && (
+                <Row label="Senha" value={<code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{normalizedSo.equipment_password}</code>} />
               )}
             </dl>
           </section>
@@ -180,23 +207,23 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Atribuição</h2>
             <p className="mt-1 text-sm">
-              {so.assigned_to_name ? (
-                <>Técnico: <strong>{so.assigned_to_name}</strong></>
+              {normalizedSo.assigned_to_name ? (
+                <>Técnico: <strong>{normalizedSo.assigned_to_name}</strong></>
               ) : (
                 <span className="text-slate-500">Sem técnico atribuído</span>
               )}
             </p>
-            {so.estimated_ready_at && (
-              <p className="mt-1 text-sm">Previsão: <strong>{new Date(so.estimated_ready_at).toLocaleDateString('pt-BR')}</strong></p>
+            {normalizedSo.estimated_ready_at && (
+              <p className="mt-1 text-sm">Previsão: <strong>{new Date(normalizedSo.estimated_ready_at).toLocaleDateString('pt-BR')}</strong></p>
             )}
           </section>
 
-          {profile && (
+          {profile && !isFinal && (
             <OSDetailActions
-              osId={so.id}
-              currentStatus={so.status}
-              currentAssignedTo={so.assigned_to}
-              currentBlocking={so.blocking_reason}
+              osId={normalizedSo.id}
+              currentStatus={normalizedSo.status}
+              currentAssignedTo={normalizedSo.assigned_to}
+              currentBlocking={normalizedSo.blocking_reason}
               canEdit={canEdit}
               currentUserId={profile.id}
               currentUserName={profile.full_name}

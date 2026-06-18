@@ -36,6 +36,7 @@ export default async function OSListPage({
   if (params.status && params.status !== 'all') {
     query = query.eq('status', params.status);
   } else {
+    // Sem filtro: ativas (exclui delivered/cancelled)
     query = query.in('status', ACTIVE_STATUSES);
   }
 
@@ -69,8 +70,9 @@ export default async function OSListPage({
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Ordens de Serviço</h1>
           <p className="text-sm text-slate-500">
-            {filtered.length} ativa{filtered.length === 1 ? '' : 's'}
+            {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
             {showOnlyMine && ' (atribuídas a mim)'}
+            {params.status && params.status !== 'all' && ` (filtrado por ${params.status})`}
           </p>
         </div>
         <Link

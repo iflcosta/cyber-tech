@@ -51,7 +51,7 @@ export function OSFilter() {
           active={!params.get('status') || params.get('status') === 'all'}
           onClick={() => update('status', null)}
         />
-        {OS_STATUSES.filter((s) => s.value !== 'cancelled').map((s) => (
+        {OS_STATUSES.map((s) => (
           <FilterChip
             key={s.value}
             label={s.label}
