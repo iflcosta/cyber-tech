@@ -36,18 +36,22 @@ export async function proxy(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
+    const pathname = request.nextUrl.pathname;
+    const isLoginRoute = pathname === '/admin/crm/login' || pathname === '/admin/login';
+    const isAuthed = !!user;
+
     // Se estiver tentando acessar o admin e NÃO houver usuário logado
-    if (request.nextUrl.pathname.startsWith('/admin') && !user) {
+    if (pathname.startsWith('/admin') && !isAuthed) {
         // Permite acesso à página de login para evitar loop infinito
-        if (request.nextUrl.pathname === '/admin/login') {
+        if (isLoginRoute) {
             return response;
         }
-        // Redireciona para o login
-        return NextResponse.redirect(new URL('/admin/login', request.url));
+        // Redireciona para o login do CRM (rota nova, apos remocao da Cyber Control)
+        return NextResponse.redirect(new URL('/admin/crm/login', request.url));
     }
 
-    // Se estiver logado e tentar ir para o login, manda pro admin
-    if (request.nextUrl.pathname === '/admin/login' && user) {
+    // Se estiver logado e tentar ir para qualquer pagina de login, manda pro /admin (aviso)
+    if (isLoginRoute && isAuthed) {
         return NextResponse.redirect(new URL('/admin', request.url));
     }
 
