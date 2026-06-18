@@ -4,6 +4,7 @@ import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { StatusBadge } from '@/app/admin/crm/components/StatusBadge';
 import { StaleBadge } from '@/app/admin/crm/components/StaleBadge';
 import { OSDetailActions } from './OSDetailActions';
+import { StatusQuickActions } from './StatusQuickActions';
 import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
@@ -141,6 +142,15 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         <aside className="space-y-4">
+          {profile && (
+            <StatusQuickActions
+              osId={so.id}
+              currentStatus={so.status}
+              currentUserId={profile.id}
+              currentUserName={profile.full_name}
+              canEdit={canEdit}
+            />
+          )}
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Cliente</h2>
             <p className="mt-1 font-medium text-slate-900">{so.customer_name}</p>
