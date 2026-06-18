@@ -7,15 +7,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const supabase = await createCRMServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/admin/crm/login');
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, role')
-    .eq('id', user.id)
-    .maybeSingle();
+  // Layout nao faz redirect (causa loop com /admin/crm/login).
+  // Cada pagina filha verifica auth e redireciona se necessario.
+  // O profile so e carregado quando ha usuario.
+  const profile = user
+    ? (await supabase
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', user.id)
+        .maybeSingle()).data
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-50">
