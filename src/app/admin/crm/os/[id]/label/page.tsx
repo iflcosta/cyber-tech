@@ -161,11 +161,14 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     lines.push('');
   }
 
-  // Linha final + espaco extra pra puxar
+  // Linha final + espaco extra pra puxar e margem pra nao cortar
   lines.push(dashSep);
   lines.push('');
 
-  const plainText = lines.join('\n') + '\n\n\n\n\n\n\n'; // 7 linhas em branco no fim = espaço pra puxar e rasgar
+  // 12 linhas em branco no fim (antes era 7):
+  //  - 4 linhas (~8mm) pra puxar/rasgar
+  //  - 8 linhas (~15mm) de margem de seguranca pra nao cortar conteudo
+  const plainText = lines.join('\n') + '\n\n\n\n\n\n\n\n\n\n\n\n'; // 12 linhas em branco
 
   return (
     <>
