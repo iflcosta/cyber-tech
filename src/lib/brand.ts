@@ -15,18 +15,6 @@ export const brand = {
     instagram: "https://instagram.com/cyberinfo.brag",
     facebook: "https://facebook.com/cyberinformatica"
   },
-  voucher: {
-    prefix: "BPC",
-    length: 4,
-  },
-  builder: {
-    laborCost: 150,
-  },
-  commission: {
-    default: 0.05,
-    min: 0.05,
-    max: 0.08,
-  },
   description: "Loja técnica em Bragança Paulista — PC, notebook e celular. Curadoria técnica, montagem profissional e atendimento humano. Atendemos cliente final e lojistas parceiros com indicação técnica e pós-venda estendido.",
 
   seo: {
@@ -43,11 +31,14 @@ export const brand = {
       "Workstation sob medida"
     ]
   },
+
+  // Paleta alinhada ao Brand Book (Cyber Blue + Circuit Green + Cyber Navy)
   colors: {
-    primary: "#1A1A1A",
-    accent: "#555555",
-    background: "#F0EFED",
-    surface: "#FFFFFF",
-    border: "#D4D2CF",
+    cyberNavy: "#0a1929",
+    cyberNavyMid: "#112240",
+    cyberBlue: "#0066ff",
+    cyberBlueHover: "#0052cc",
+    circuitGreen: "#00ff88",
+    cyberIce: "#f5f8ff",
   }
 };

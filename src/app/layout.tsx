@@ -1,30 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Rajdhani, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/providers";
-
-const rajdhani = Rajdhani({
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-rajdhani",
-  subsets: ["latin"],
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
-
 import { brand } from "@/lib/brand";
+
+const inter = Inter({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "700"],
+});
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#1A1A1A",
+  themeColor: "#0a1929",
 };
 
 export const metadata: Metadata = {
@@ -44,7 +38,7 @@ export const metadata: Metadata = {
         url: "https://cyberinformatica.tech/api/og",
         width: 1200,
         height: 630,
-        alt: "Cyber Informática - Hardware de Alta Performance",
+        alt: "Cyber Informática — Loja técnica em Bragança Paulista",
       },
     ],
     locale: "pt_BR",
@@ -67,7 +61,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#1A1A1A" />
+        <meta name="theme-color" content="#0a1929" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Google Ads Tag */}
@@ -90,8 +84,8 @@ export default function RootLayout({
               {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
               n.callMethod.apply(n,arguments):n.queue.push(arguments)};
               if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
+              n.queue=[];t=f.createElement(e);t.async=!0;
+              t.src=v;s=f.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
               fbq('init', '${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || ''}');
@@ -107,30 +101,6 @@ export default function RootLayout({
             src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || ''}&ev=PageView&noscript=1`}
           />
         </noscript>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                  }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                  });
-                });
-              }
-
-              // Captura o prompt de instalação
-              window.deferredPrompt = null;
-              window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                window.deferredPrompt = e;
-                // Dispara um evento customizado que componentes React podem ouvir
-                window.dispatchEvent(new Event('pwa-installable'));
-              });
-            `,
-          }}
-        />
         {/* Schema Markup for Local SEO */}
         <script
           type="application/ld+json"
@@ -157,12 +127,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${rajdhani.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased font-sans bg-[var(--bg-primary)] text-[var(--text-primary)]`}
-      >
-        <Providers>
-          {children}
-        </Providers>
+      <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased font-body bg-[var(--bg-primary)] text-[var(--color-text-on-dark)]`}>
+        {children}
       </body>
     </html>
   );
