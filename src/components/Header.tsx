@@ -18,7 +18,7 @@ export default function Header() {
     { href: "#monte-seu-pc", label: "Monte seu PC" },
     { href: "#curadoria", label: "Curadoria" },
     { href: "#parceiros", label: "Parceiros" },
-    { href: "#contato", label: "Contato" },
+    { href: "/contato", label: "Contato" },
   ];
 
   const whatsappUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent("Olá! Vim pelo site da Cyber.")}`;

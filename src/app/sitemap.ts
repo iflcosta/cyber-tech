@@ -8,6 +8,7 @@ const SITE_URL = 'https://cyberinformatica.tech';
 // /produtos, /showroom etc destruidos no reboot
 const PUBLIC_ROUTES = [
   { path: '/', priority: 1.0, changeFrequency: 'weekly' as const },
+  { path: '/contato', priority: 0.8, changeFrequency: 'monthly' as const },
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

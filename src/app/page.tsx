@@ -1,4 +1,5 @@
 import { Monitor, Smartphone, Laptop, Sparkles, Wrench, MessageCircle, ArrowRight, Building2 } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import Header from "@/components/Header";
@@ -189,8 +190,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           </div>
         </section>
 
-        {/* Seção 6 — Contato */}
-        <section id="contato" className="section bg-[var(--bg-secondary)]">
+        {/* Seção 6 — Contato (resumo + CTA pra /contato) */}
+        <section className="section bg-[var(--bg-secondary)]">
           <div className="container-narrow text-center">
             <Reveal>
               <span className="kicker">Venha nos visitar</span>
@@ -198,29 +199,33 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                 Loja física em Bragança Paulista.
               </h2>
               <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                Estamos na loja, prontos pra te atender com café e peça na mão. Sem agendamento, sem fila de call center.
+                Estamos na loja, prontos pra te atender com café e peça na mão. Sem agendamento, sem fila de call center. Quer orçamento ou dúvida técnica? Manda mensagem.
               </p>
-              <div className="inline-flex flex-col items-start gap-3 card" style={{ padding: "2rem", textAlign: "left" }}>
-                <div className="flex items-center gap-2 text-[var(--color-text-on-dark)]">
-                  <span className="font-semibold">Endereço:</span>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10">
+                <Link href="/contato" className="btn-primary w-full sm:w-auto">
+                  <Wrench size={18} />
+                  Mandar mensagem
+                </Link>
+                <a
+                  href={whatsappCuradoria}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-ghost w-full sm:w-auto"
+                >
+                  <MessageCircle size={18} />
+                  Prefere WhatsApp
+                </a>
+              </div>
+              <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 card text-sm" style={{ padding: "1.25rem 1.5rem", textAlign: "left" }}>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-[var(--color-text-on-dark)]">Endereço:</span>
                   <span className="text-[var(--color-text-on-dark-muted)]">
-                    {brand.address.street}, {brand.address.number} — {brand.address.city} / SP
+                    {brand.address.street}, {brand.address.number}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[var(--color-text-on-dark)]">
-                  <span className="font-semibold">Horário:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-[var(--color-text-on-dark)]">Horário:</span>
                   <span className="text-[var(--color-text-on-dark-muted)]">{brand.openingHours}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--color-text-on-dark)]">
-                  <span className="font-semibold">WhatsApp:</span>
-                  <a
-                    href={whatsappCuradoria}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[var(--color-cyber-blue)] hover:text-[var(--color-cyber-blue-hover)] transition-colors"
-                  >
-                    (11) 95436-9269
-                  </a>
                 </div>
               </div>
             </Reveal>
