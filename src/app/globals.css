@@ -80,6 +80,13 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scroll suave pra ancoras do header */
+html {
+  scroll-behavior: smooth;
+  /* Compensa o header fixo de 64px ao scrollar pra ancora */
+  scroll-padding-top: 80px;
+}
+
 body {
   font-size: 16px;
   line-height: 1.6;
@@ -147,11 +154,12 @@ h5, h6 {
 }
 .btn-primary:hover {
   background-color: var(--color-cyber-blue-hover);
-  box-shadow: 0 8px 25px rgba(0, 102, 255, 0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(0, 102, 255, 0.5), 0 0 0 1px rgba(0, 102, 255, 0.15);
+  transform: translateY(-2px);
 }
 .btn-primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
+  transition-duration: 80ms;
 }
 .btn-primary:focus-visible {
   outline: 2px solid var(--color-cyber-blue);
@@ -178,8 +186,14 @@ h5, h6 {
   text-decoration: none;
 }
 .btn-ghost:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.24);
+  background-color: rgba(0, 102, 255, 0.08);
+  border-color: rgba(0, 102, 255, 0.6);
+  color: var(--color-cyber-blue);
+  transform: translateY(-1px);
+}
+.btn-ghost:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 80ms;
 }
 .btn-ghost:focus-visible {
   outline: 2px solid var(--color-cyber-blue);
@@ -204,8 +218,12 @@ h5, h6 {
   text-decoration: none;
 }
 .btn-b2b:hover {
-  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.35);
-  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 255, 136, 0.5), 0 0 0 1px rgba(0, 255, 136, 0.2);
+  transform: translateY(-2px);
+}
+.btn-b2b:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 80ms;
 }
 
 /* Badge — variantes solid, outline, dot */
@@ -228,6 +246,22 @@ h5, h6 {
 .badge-b2b {
   background-color: var(--color-circuit-green);
   color: var(--color-cyber-navy);
+  position: relative;
+}
+.badge-b2b::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background-color: var(--color-circuit-green);
+  opacity: 0.4;
+  z-index: -1;
+  animation: pulse-b2b 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-b2b {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.15); opacity: 0; }
 }
 .badge-outline {
   background-color: transparent;
@@ -245,8 +279,8 @@ h5, h6 {
 }
 .card:hover {
   border-color: var(--color-border-on-dark-active);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 102, 255, 0.15);
 }
 .card-b2b {
   border-left: 3px solid var(--color-circuit-green);
