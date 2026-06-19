@@ -97,7 +97,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                       Felipe, Iago ou Jefferson vão te atender
                     </p>
                     <p className="text-sm text-[var(--color-text-on-dark-muted)] leading-relaxed">
-                      Time técnico real, no balcão dos fundos. Fala direto com quem entende — sem intermediário, sem script.
+                      Time técnico real, na loja. Fala direto com quem entende — sem intermediário, sem script.
                     </p>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
               Loja física em Bragança Paulista.
             </h2>
             <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
-              Estamos no balcão dos fundos, prontos pra te atender com café e peça na mão. Sem agendamento, sem fila de call center.
+              Estamos na loja, prontos pra te atender com café e peça na mão. Sem agendamento, sem fila de call center.
             </p>
             <div className="inline-flex flex-col items-start gap-3 card" style={{ padding: "2rem", textAlign: "left" }}>
               <div className="flex items-center gap-2 text-[var(--color-text-on-dark)]">
