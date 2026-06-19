@@ -1,6 +1,5 @@
 "use client";
-import Link from "next/link";
-import { MessageCircle, ArrowRight } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 import { brand } from "@/lib/brand";
 
@@ -63,16 +62,12 @@ export default function Hero({ serviceParam }: { serviceParam?: string | null } 
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-16">
-          <Link href="/produtos" className="btn-primary w-full sm:w-auto">
-            VER CATÁLOGO
-            <ArrowRight size={18} />
-          </Link>
+        <div className="flex flex-col items-center justify-center gap-3 mb-16">
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost w-full sm:w-auto"
+            className="btn-primary w-full sm:w-auto"
           >
             <MessageCircle size={18} />
             FALAR COM A CURADORIA
