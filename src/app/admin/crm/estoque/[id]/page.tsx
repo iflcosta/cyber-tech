@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { STOCK_MOVEMENT_TYPES } from '@/app/admin/crm/types/database';
+import { DeleteStockItemButton } from './DeleteStockItemButton';
+import { ToggleActiveButton } from './ToggleActiveButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +16,13 @@ export default async function StockItemDetailPage({
   const supabase = await createCRMServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/admin/crm/login');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+  const isOwner = profile?.role === 'owner';
 
   const { data: item } = await supabase
     .from('stock_items')
@@ -29,6 +38,13 @@ export default async function StockItemDetailPage({
     .eq('stock_item_id', id)
     .order('created_at', { ascending: false })
     .limit(50);
+
+  // Checar se item ja foi vendido (impede DELETE hard por FK)
+  const { count: salesCount } = await supabase
+    .from('sale_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('stock_item_id', id);
+  const hasSales = (salesCount ?? 0) > 0;
 
   const isLow = item.current_stock <= item.min_stock;
   const isOut = item.current_stock === 0;
@@ -49,6 +65,26 @@ export default async function StockItemDetailPage({
           {[item.brand, item.model].filter(Boolean).join(' ') || 'Sem marca/modelo'}
         </p>
       </div>
+
+      {/* Acoes perigosas (so owner) */}
+      {isOwner && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Acoes:
+          </span>
+          <ToggleActiveButton
+            itemId={item.id}
+            itemName={item.name}
+            active={item.active}
+          />
+          <DeleteStockItemButton
+            itemId={item.id}
+            itemName={item.name}
+            hasSales={hasSales}
+            salesCount={salesCount ?? 0}
+          />
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
