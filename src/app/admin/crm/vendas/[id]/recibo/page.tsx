@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { ReciboPrintButton } from './ReciboPrintButton';
+import { AutoPrint } from './AutoPrint';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,52 +18,17 @@ function pad(s: string, width: number, align: 'left' | 'right' = 'left'): string
 }
 
 function fmtBRL(n: number): string {
-  // "R$ 30,00" -> 8 chars pra coluna de valor
   return 'R$ ' + n.toFixed(2).replace('.', ',');
 }
 
 function buildRecibo(sale: any, items: any[], operatorName: string): string {
-  const cols = 40; // largura MPT-II (58mm) — driver Generic / Text Only usa ~40 cols
+  const cols = 40;
   const eq = '='.repeat(cols);
   const dash = '-'.repeat(cols);
   const now = new Date(sale.created_at);
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-  const lines: string[] = [];
-  lines.push(eq);
-  lines.push(pad('CYBER INFORMATICA', cols));
-  lines.push(eq);
-  lines.push(pad('RECIBO DE VENDA', cols));
-  lines.push('');
-  lines.push(pad('Numero: ' + sale.sale_number, cols));
-  lines.push(pad('Data:   ' + dateStr + '  ' + timeStr, cols));
-  lines.push(eq);
-  lines.push('');
-
-  // Itens: nome (esq) + qty + preco (dir)
-  lines.push(pad('ITEM', 24) + pad('QTY', 4) + pad('VALOR', 12, 'right'));
-  lines.push(dash);
-  for (const item of items) {
-    const nome = norm(item.item_name).substring(0, 24).padEnd(24);
-    const qty = String(item.quantity).padStart(4);
-    const valor = fmtBRL(item.subtotal).padStart(12);
-    lines.push(nome + qty + valor);
-  }
-  lines.push(dash);
-  lines.push('');
-
-  // Totais
-  lines.push(pad('Subtotal:', 28) + pad(fmtBRL(sale.subtotal), 12, 'right'));
-  if (sale.discount > 0) {
-    lines.push(pad('Desconto:', 28) + pad('-' + fmtBRL(sale.discount), 12, 'right'));
-  }
-  lines.push(eq);
-  lines.push(pad('TOTAL:', 28) + pad(fmtBRL(sale.total), 12, 'right'));
-  lines.push(eq);
-  lines.push('');
-
-  // Pagamento e cliente
   const payLabel: Record<string, string> = {
     cash: 'Dinheiro',
     pix: 'PIX',
@@ -70,18 +36,39 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
     transfer: 'Transferencia',
     other: 'Outro',
   };
-  lines.push(pad('Pagamento: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
+
+  const lines: string[] = [];
+  // Header compacto
+  lines.push(eq);
+  lines.push(pad('CYBER INFORMATICA - RECIBO', cols));
+  lines.push(eq);
+  // Numero + data na mesma linha
+  lines.push(pad(sale.sale_number, 20) + pad(dateStr + ' ' + timeStr, 20, 'right'));
+  lines.push(dash);
+  // Itens
+  for (const item of items) {
+    const nome = norm(item.item_name).substring(0, 22).padEnd(22);
+    const qty = String(item.quantity).padStart(3);
+    const valor = fmtBRL(item.subtotal).padStart(12);
+    lines.push(nome + ' x' + qty.trimStart() + valor);
+  }
+  lines.push(dash);
+  // Totais (subtotal so se tiver desconto)
+  if (sale.discount > 0) {
+    lines.push(pad('Subtotal:', 28) + pad(fmtBRL(sale.subtotal), 12, 'right'));
+    lines.push(pad('Desconto:', 28) + pad('-' + fmtBRL(sale.discount), 12, 'right'));
+  }
+  lines.push(eq);
+  lines.push(pad('TOTAL:', 28) + pad(fmtBRL(sale.total), 12, 'right'));
+  lines.push(eq);
+  // Pagamento + cliente + operador
+  lines.push(pad('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
   if (sale.customer_name) {
     lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 30), cols));
   }
   lines.push(pad('Operador: ' + norm(operatorName).substring(0, 30), cols));
   lines.push('');
-  lines.push(eq);
-  lines.push(pad('OBRIGADO PELA PREFERENCIA!', cols));
-  lines.push(eq);
-  lines.push('');
-  lines.push(''); // margem inferior (mesmo truque da etiqueta)
-  lines.push('');
+  lines.push(pad('OBRIGADO!', cols));
 
   return lines.join('\n');
 }
@@ -118,6 +105,9 @@ export default async function ReciboPage({
 
   return (
     <div className="space-y-4">
+      {/* Auto-print dispara window.print() 1x apos carregar (400ms) */}
+      <AutoPrint />
+
       <div className="no-print flex flex-wrap items-center justify-between gap-2">
         <div>
           <Link
@@ -128,7 +118,8 @@ export default async function ReciboPage({
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-slate-900">Recibo</h1>
           <p className="text-sm text-slate-500">
-            Clique em <strong>Imprimir</strong> para enviar à impressora (MPT-II ou outra).
+            Janela aberta automaticamente — impressão deve ter disparado.
+            Se cancelou, clique em <strong>Imprimir novamente</strong>.
           </p>
         </div>
         <ReciboPrintButton />
@@ -136,7 +127,7 @@ export default async function ReciboPage({
 
       {/* Preview do recibo */}
       <div className="mx-auto max-w-md rounded border border-slate-300 bg-white p-4 shadow-sm">
-        <pre className="whitespace-pre font-mono text-xs leading-snug text-black">
+        <pre className="whitespace-pre font-mono text-xs leading-tight text-black">
           {reciboText}
         </pre>
       </div>
@@ -144,15 +135,23 @@ export default async function ReciboPage({
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; }
+          body { background: white !important; margin: 0 !important; padding: 4mm !important; }
           main { max-width: none !important; padding: 0 !important; }
-          div[class*="space-y"] { all: unset; }
+          div[class*="space-y"] > *:not(.no-print):not(pre):not(div) { display: none !important; }
+          div[class*="rounded"][class*="border"][class*="bg-white"] {
+            box-shadow: none !important;
+            border: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+          }
           pre {
             font-family: 'Courier New', monospace !important;
-            font-size: 10pt !important;
-            line-height: 1.2 !important;
+            font-size: 8pt !important;
+            line-height: 1.1 !important;
             white-space: pre !important;
             color: black !important;
+            margin: 0 !important;
           }
         }
       `}</style>

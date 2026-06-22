@@ -192,7 +192,20 @@ export function PDV({
       );
       if (rpcErr) throw rpcErr;
 
-      router.push(`/admin/crm/vendas/${saleId}/recibo`);
+      // Abre recibo em NOVA JANELA: gesto do user (clique em "Confirmar venda")
+      // permite auto-print sem bloqueio do Chrome. Janela anterior fica no PDV
+      // pra iniciar proxima venda.
+      window.open(`/admin/crm/vendas/${saleId}/recibo`, '_blank');
+      // Limpa carrinho pra proxima venda
+      setCart([]);
+      setFinalizing(false);
+      setDiscount('');
+      setNotes('');
+      setCustomerName('');
+      setCustomerPhone('');
+      setSubmitting(false);
+      // Volta foco pro input de bipagem
+      inputRef.current?.focus();
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);
