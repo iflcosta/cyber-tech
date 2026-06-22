@@ -45,21 +45,25 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
   // Numero + data na mesma linha
   lines.push(pad(sale.sale_number, 20) + pad(dateStr + ' ' + timeStr, 20, 'right'));
   lines.push(dash);
-  // Itens
+  // Cabecalho das colunas pra deixar claro o formato
+  lines.push(pad('ITEM', 20) + pad('QTD', 4) + pad('UNIT', 8) + pad('TOTAL', 8, 'right'));
+  lines.push(dash);
+  // Itens: qty + unitario + subtotal (mostrar unitario evita ambiguidade)
   for (const item of items) {
-    const nome = norm(item.item_name).substring(0, 22).padEnd(22);
-    const qty = String(item.quantity).padStart(3);
-    const valor = fmtBRL(item.subtotal).padStart(12);
-    lines.push(nome + ' x' + qty.trimStart() + valor);
+    const nome = norm(item.item_name).substring(0, 20).padEnd(20);
+    const qty = String(item.quantity).padStart(4);
+    const unit = item.unit_price.toFixed(2).replace('.', ',').padStart(8);
+    const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(8);
+    lines.push(nome + qty + unit + sub);
   }
   lines.push(dash);
   // Totais (subtotal so se tiver desconto)
   if (sale.discount > 0) {
-    lines.push(pad('Subtotal:', 28) + pad(fmtBRL(sale.subtotal), 12, 'right'));
-    lines.push(pad('Desconto:', 28) + pad('-' + fmtBRL(sale.discount), 12, 'right'));
+    lines.push(pad('Subtotal:', 32) + pad(fmtBRL(sale.subtotal), 8, 'right'));
+    lines.push(pad('Desconto:', 32) + pad('-' + fmtBRL(sale.discount), 8, 'right'));
   }
   lines.push(eq);
-  lines.push(pad('TOTAL:', 28) + pad(fmtBRL(sale.total), 12, 'right'));
+  lines.push(pad('TOTAL:', 32) + pad(fmtBRL(sale.total), 8, 'right'));
   lines.push(eq);
   // Pagamento + cliente + operador
   lines.push(pad('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
