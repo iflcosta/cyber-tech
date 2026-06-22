@@ -76,15 +76,16 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
     lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 19), cols));
   }
   lines.push(pad('OBRIGADO!', cols));
-  // Avanco forcado de papel (~10mm = 6 linhas em MPT-II 58mm).
-  // Driver Generic/Text Only IGNORA linhas 100% vazias, entao usa '.'
-  // pra forcar line feed. Mesmo truque da etiqueta de OS (SPEC.md).
-  // Sem isso, fim do cupom gruda no inicio do proximo.
-  for (let i = 0; i < 6; i++) {
+  // Avanco forcado de papel. Em testes (2026-06-22):
+  // 6 pontos nao foram suficientes - OBRIGADO + pontos foram juntos
+  // pro "preso" e so sairam na proxima impressao.
+  // Aumentado pra 10 pontos (~16mm) + 4 newlines extras no fim
+  // (caso o driver aceite newlines como line feeds tambem).
+  for (let i = 0; i < 10; i++) {
     lines.push('.');
   }
 
-  return lines.join('\n');
+  return lines.join('\n') + '\n\n\n\n';
 }
 
 export default async function ReciboPage({
