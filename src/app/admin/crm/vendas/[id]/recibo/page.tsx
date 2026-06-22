@@ -22,9 +22,11 @@ function fmtBRL(n: number): string {
 }
 
 function buildRecibo(sale: any, items: any[], operatorName: string): string {
-  // MPT-II com driver Generic/Text Only quebra linha em ~36-37 chars.
-  // Usar cols=32 da margem de seguranca contra wrap feio.
-  const cols = 32;
+  // MPT-II com Generic/Text Only:
+  //   - wrap em ~30-31 chars VISUAIS (nao logicos)
+  //   - colapsa multiplos espacos em 1 (padding visual nao acumula)
+  // Solucao: cols=30 + remover coluna UNIT + usar 'Nx' no lugar de multiplicacao
+  const cols = 30;
   const eq = '='.repeat(cols);
   const dash = '-'.repeat(cols);
   const now = new Date(sale.created_at);
@@ -45,38 +47,35 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
   lines.push(pad('CYBER INFORMATICA', cols));
   lines.push(pad('RECIBO', cols));
   lines.push(eq);
-  // Numero + data em linhas SEPARADAS (evita wrap feio)
+  // Numero + data em linhas SEPARADAS (evita wrap)
   lines.push(pad(sale.sale_number, cols));
   lines.push(pad(dateStr + ' ' + timeStr, cols));
   lines.push(dash);
-  // Cabecalho das colunas
-  lines.push(
-    pad('ITEM', 14) + pad('QTD', 3) + pad('UNIT', 7) + pad('TOTAL', 8, 'right'),
-  );
+  // Cabecalho das colunas (sem UNIT - ambiguidade resolvida com 'Nx')
+  lines.push(pad('ITEM', 16) + pad('QTD', 4) + pad('TOTAL', 10, 'right'));
   lines.push(dash);
-  // Itens: nome(14) + qty(3) + unit(7) + total(8) = 32 cols
+  // Itens: nome(16) + ' Nx' (4) + total(10, 'XX,XX') = 30
   for (const item of items) {
-    const nome = norm(item.item_name).substring(0, 14).padEnd(14);
-    const qty = String(item.quantity).padStart(3);
-    const unit = item.unit_price.toFixed(2).replace('.', ',').padStart(7);
-    const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(8);
-    lines.push(nome + qty + unit + sub);
+    const nome = norm(item.item_name).substring(0, 16).padEnd(16);
+    const qtd = `${item.quantity}x`.padStart(4);  // ' 2x' ou ' 12x'
+    const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(10);  // '    60,00'
+    lines.push(nome + qtd + sub);
   }
   lines.push(dash);
   // Totais (subtotal so se tiver desconto)
   if (sale.discount > 0) {
-    lines.push(pad('Subtotal:', 24) + pad(fmtBRL(sale.subtotal), 8, 'right'));
-    lines.push(pad('Desconto:', 24) + pad('-' + fmtBRL(sale.discount), 8, 'right'));
+    lines.push(pad('Subtotal:', 20) + pad(fmtBRL(sale.subtotal), 10, 'right'));
+    lines.push(pad('Desconto:', 20) + pad('-' + fmtBRL(sale.discount), 10, 'right'));
   }
   lines.push(eq);
-  lines.push(pad('TOTAL:', 24) + pad(fmtBRL(sale.total), 8, 'right'));
+  lines.push(pad('TOTAL:', 20) + pad(fmtBRL(sale.total), 10, 'right'));
   lines.push(eq);
   // Pagamento + cliente + operador
   lines.push(pad('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
   if (sale.customer_name) {
-    lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 22), cols));
+    lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 19), cols));
   }
-  lines.push(pad('Operador: ' + norm(operatorName).substring(0, 22), cols));
+  lines.push(pad('Operador: ' + norm(operatorName).substring(0, 19), cols));
   lines.push('');
   lines.push(pad('OBRIGADO!', cols));
 
