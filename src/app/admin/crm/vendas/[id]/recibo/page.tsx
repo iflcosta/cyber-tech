@@ -70,12 +70,11 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
   lines.push(eq);
   lines.push(pad('TOTAL:', 20) + pad(fmtBRL(sale.total), 10, 'right'));
   lines.push(eq);
-  // Pagamento + cliente + operador
+  // Pagamento + cliente (sem operador)
   lines.push(pad('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
   if (sale.customer_name) {
     lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 19), cols));
   }
-  lines.push(pad('Operador: ' + norm(operatorName).substring(0, 19), cols));
   lines.push('');
   lines.push(pad('OBRIGADO!', cols));
 
