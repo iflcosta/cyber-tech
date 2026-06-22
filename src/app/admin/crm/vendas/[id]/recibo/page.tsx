@@ -75,8 +75,14 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
   if (sale.customer_name) {
     lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 19), cols));
   }
-  lines.push('');
   lines.push(pad('OBRIGADO!', cols));
+  // Avanco forcado de papel (~10mm = 6 linhas em MPT-II 58mm).
+  // Driver Generic/Text Only IGNORA linhas 100% vazias, entao usa '.'
+  // pra forcar line feed. Mesmo truque da etiqueta de OS (SPEC.md).
+  // Sem isso, fim do cupom gruda no inicio do proximo.
+  for (let i = 0; i < 6; i++) {
+    lines.push('.');
+  }
 
   return lines.join('\n');
 }
