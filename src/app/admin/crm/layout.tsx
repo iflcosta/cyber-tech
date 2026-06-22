@@ -71,6 +71,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   OS
                 </Link>
                 <Link
+                  href="/admin/crm/estoque"
+                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  Estoque
+                </Link>
+                <Link
                   href="/admin/crm/os/new"
                   className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                 >

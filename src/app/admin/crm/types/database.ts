@@ -161,6 +161,68 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['service_order_events']['Insert']>;
       };
+      stock_items: {
+        Row: {
+          id: string;
+          ean13: string | null;
+          name: string;
+          category: string | null;
+          brand: string | null;
+          model: string | null;
+          unit_cost: number | null;
+          unit_price: number;
+          current_stock: number;
+          min_stock: number;
+          active: boolean;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          ean13?: string | null;
+          name: string;
+          category?: string | null;
+          brand?: string | null;
+          model?: string | null;
+          unit_cost?: number | null;
+          unit_price: number;
+          current_stock?: number;
+          min_stock?: number;
+          active?: boolean;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['stock_items']['Insert']>;
+      };
+      stock_movements: {
+        Row: {
+          id: string;
+          stock_item_id: string;
+          movement_type: 'in' | 'out' | 'adjust' | 'sale';
+          quantity: number;
+          unit_price: number | null;
+          total_amount: number | null;
+          reference: string | null;
+          notes: string | null;
+          author_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          stock_item_id: string;
+          movement_type: 'in' | 'out' | 'adjust' | 'sale';
+          quantity: number;
+          unit_price?: number | null;
+          total_amount?: number | null;
+          reference?: string | null;
+          notes?: string | null;
+          author_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['stock_movements']['Insert']>;
+      };
     };
     Views: {
       service_orders_with_stale: {
@@ -169,6 +231,11 @@ export type Database = {
           customer_phone: string | null;
           assigned_to_name: string | null;
           days_since_update: number;
+        };
+      };
+      stock_low_alert: {
+        Row: Database['public']['Tables']['stock_items']['Row'] & {
+          units_to_reorder: number;
         };
       };
     };
@@ -185,6 +252,9 @@ export type Customer = Database['public']['Tables']['customers']['Row'];
 export type ServiceOrder = Database['public']['Tables']['service_orders']['Row'];
 export type ServiceOrderEvent = Database['public']['Tables']['service_order_events']['Row'];
 export type ServiceOrderWithStale = Database['public']['Views']['service_orders_with_stale']['Row'];
+export type StockItem = Database['public']['Tables']['stock_items']['Row'];
+export type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
+export type StockLowAlert = Database['public']['Views']['stock_low_alert']['Row'];
 
 /* ---------- Constantes de UI ---------- */
 
@@ -217,4 +287,28 @@ export const ENTRY_CHECKLIST_FIELDS = [
   { key: 'molhou', label: 'Teve contato com líquido' },
   { key: 'queda', label: 'Sofreu queda' },
   { key: 'senha_conhecida', label: 'Senha conhecida' },
+] as const;
+
+export const STOCK_MOVEMENT_TYPES = [
+  { value: 'in', label: 'Entrada (compra)', color: 'emerald' },
+  { value: 'out', label: 'Saída (uso)', color: 'orange' },
+  { value: 'adjust', label: 'Ajuste', color: 'slate' },
+  { value: 'sale', label: 'Venda', color: 'blue' },
+] as const;
+
+export type StockMovementTypeValue = (typeof STOCK_MOVEMENT_TYPES)[number]['value'];
+
+export const STOCK_CATEGORY_SUGGESTIONS = [
+  'Cabos',
+  'Fontes',
+  'Memórias',
+  'SSDs',
+  'HDs',
+  'Acessórios',
+  'Telas',
+  'Baterias',
+  'Teclados',
+  'Mouses',
+  'Adaptadores',
+  'Carregadores',
 ] as const;
