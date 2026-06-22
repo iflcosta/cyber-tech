@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { PAYMENT_METHODS } from '@/app/admin/crm/types/database';
+import { CancelSaleButton } from './CancelSaleButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,14 +67,17 @@ export default async function VendaDetailPage({
         </p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Link
           href={`/admin/crm/vendas/${sale.id}/recibo`}
           target="_blank"
           className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
         >
-          🖨️ Imprimir recibo
+          🖨️ {sale.voided_at ? 'Reimprimir recibo' : 'Imprimir recibo'}
         </Link>
+        {!sale.voided_at && (
+          <CancelSaleButton saleId={sale.id} saleNumber={sale.sale_number} />
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
