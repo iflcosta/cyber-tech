@@ -223,6 +223,64 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['stock_movements']['Insert']>;
       };
+      sales: {
+        Row: {
+          id: string;
+          sale_number: string;
+          subtotal: number;
+          discount: number;
+          total: number;
+          payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other';
+          customer_name: string | null;
+          customer_phone: string | null;
+          notes: string | null;
+          author_id: string;
+          created_at: string;
+          voided_at: string | null;
+          voided_by: string | null;
+          voided_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          sale_number?: string;
+          subtotal: number;
+          discount?: number;
+          total: number;
+          payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other';
+          customer_name?: string | null;
+          customer_phone?: string | null;
+          notes?: string | null;
+          author_id: string;
+          created_at?: string;
+          voided_at?: string | null;
+          voided_by?: string | null;
+          voided_reason?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['sales']['Insert']>;
+      };
+      sale_items: {
+        Row: {
+          id: string;
+          sale_id: string;
+          stock_item_id: string;
+          item_name: string;
+          quantity: number;
+          unit_price: number;
+          subtotal: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          sale_id: string;
+          stock_item_id: string;
+          item_name: string;
+          quantity: number;
+          unit_price: number;
+          subtotal: number;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['sale_items']['Insert']>;
+      };
     };
     Views: {
       service_orders_with_stale: {
@@ -255,6 +313,8 @@ export type ServiceOrderWithStale = Database['public']['Views']['service_orders_
 export type StockItem = Database['public']['Tables']['stock_items']['Row'];
 export type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
 export type StockLowAlert = Database['public']['Views']['stock_low_alert']['Row'];
+export type Sale = Database['public']['Tables']['sales']['Row'];
+export type SaleItem = Database['public']['Tables']['sale_items']['Row'];
 
 /* ---------- Constantes de UI ---------- */
 
@@ -312,3 +372,13 @@ export const STOCK_CATEGORY_SUGGESTIONS = [
   'Adaptadores',
   'Carregadores',
 ] as const;
+
+export const PAYMENT_METHODS = [
+  { value: 'cash', label: 'Dinheiro' },
+  { value: 'pix', label: 'PIX' },
+  { value: 'card', label: 'Cartão' },
+  { value: 'transfer', label: 'Transferência' },
+  { value: 'other', label: 'Outro' },
+] as const;
+
+export type PaymentMethodValue = (typeof PAYMENT_METHODS)[number]['value'];
