@@ -22,7 +22,9 @@ function fmtBRL(n: number): string {
 }
 
 function buildRecibo(sale: any, items: any[], operatorName: string): string {
-  const cols = 40;
+  // MPT-II com driver Generic/Text Only quebra linha em ~36-37 chars.
+  // Usar cols=32 da margem de seguranca contra wrap feio.
+  const cols = 32;
   const eq = '='.repeat(cols);
   const dash = '-'.repeat(cols);
   const now = new Date(sale.created_at);
@@ -38,39 +40,43 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
   };
 
   const lines: string[] = [];
-  // Header compacto
+  // Header
   lines.push(eq);
-  lines.push(pad('CYBER INFORMATICA - RECIBO', cols));
+  lines.push(pad('CYBER INFORMATICA', cols));
+  lines.push(pad('RECIBO', cols));
   lines.push(eq);
-  // Numero + data na mesma linha
-  lines.push(pad(sale.sale_number, 20) + pad(dateStr + ' ' + timeStr, 20, 'right'));
+  // Numero + data em linhas SEPARADAS (evita wrap feio)
+  lines.push(pad(sale.sale_number, cols));
+  lines.push(pad(dateStr + ' ' + timeStr, cols));
   lines.push(dash);
-  // Cabecalho das colunas pra deixar claro o formato
-  lines.push(pad('ITEM', 20) + pad('QTD', 4) + pad('UNIT', 8) + pad('TOTAL', 8, 'right'));
+  // Cabecalho das colunas
+  lines.push(
+    pad('ITEM', 14) + pad('QTD', 3) + pad('UNIT', 7) + pad('TOTAL', 8, 'right'),
+  );
   lines.push(dash);
-  // Itens: qty + unitario + subtotal (mostrar unitario evita ambiguidade)
+  // Itens: nome(14) + qty(3) + unit(7) + total(8) = 32 cols
   for (const item of items) {
-    const nome = norm(item.item_name).substring(0, 20).padEnd(20);
-    const qty = String(item.quantity).padStart(4);
-    const unit = item.unit_price.toFixed(2).replace('.', ',').padStart(8);
+    const nome = norm(item.item_name).substring(0, 14).padEnd(14);
+    const qty = String(item.quantity).padStart(3);
+    const unit = item.unit_price.toFixed(2).replace('.', ',').padStart(7);
     const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(8);
     lines.push(nome + qty + unit + sub);
   }
   lines.push(dash);
   // Totais (subtotal so se tiver desconto)
   if (sale.discount > 0) {
-    lines.push(pad('Subtotal:', 32) + pad(fmtBRL(sale.subtotal), 8, 'right'));
-    lines.push(pad('Desconto:', 32) + pad('-' + fmtBRL(sale.discount), 8, 'right'));
+    lines.push(pad('Subtotal:', 24) + pad(fmtBRL(sale.subtotal), 8, 'right'));
+    lines.push(pad('Desconto:', 24) + pad('-' + fmtBRL(sale.discount), 8, 'right'));
   }
   lines.push(eq);
-  lines.push(pad('TOTAL:', 32) + pad(fmtBRL(sale.total), 8, 'right'));
+  lines.push(pad('TOTAL:', 24) + pad(fmtBRL(sale.total), 8, 'right'));
   lines.push(eq);
   // Pagamento + cliente + operador
   lines.push(pad('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
   if (sale.customer_name) {
-    lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 30), cols));
+    lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 22), cols));
   }
-  lines.push(pad('Operador: ' + norm(operatorName).substring(0, 30), cols));
+  lines.push(pad('Operador: ' + norm(operatorName).substring(0, 22), cols));
   lines.push('');
   lines.push(pad('OBRIGADO!', cols));
 
