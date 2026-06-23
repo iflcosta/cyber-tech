@@ -37,6 +37,11 @@ const nextConfig = {
   // - Referrer-Policy: privacidade no referer
   // - Permissions-Policy: bloqueia camera/microfone nao autorizado
   // - CSP: limita origens de script/connect/img
+  //
+  // Cache-Control (2026-06-23): HTML estava com no-store (Vercel
+  // default pra dev). Forca refetch em cada visita, doendo
+  // PageSpeed. Agora HTML publico: s-maxage=300 + SWR=24h.
+  // /admin/* fica no-store (sessoes sao criticas).
   async headers() {
     return [
       {
@@ -56,6 +61,28 @@ const nextConfig = {
               "connect-src 'self' https://*.supabase.co https://*.google-analytics.com",
               "frame-ancestors 'self'",
             ].join('; '),
+          },
+        ],
+      },
+      {
+        // HTML publico (NÃO /admin): cache no edge (5min) + SWR (24h)
+        // - Visita em <5min: serve do edge (instant)
+        // - Visita em 5min-24h: serve do edge (stale) + atualiza em background
+        source: '/((?!admin).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      {
+        // /admin/* NUNCA cache (sessoes sao criticas)
+        source: '/admin/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, no-store, no-cache, must-revalidate',
           },
         ],
       },

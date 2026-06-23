@@ -4,7 +4,7 @@ export const brand = {
   whatsapp: "5511954369269",
   phone: "5511954369269",
   email: "contato@cyberinformatica.tech",
-  url: "https://cyberinformatica.tech",
+  url: "https://www.cyberinformatica.tech",
   openingHours: "Seg-Sex: 09h às 18h, Sáb: 09h às 13h",
   address: {
     street: "Rua Coronel Teófilo Leme",
