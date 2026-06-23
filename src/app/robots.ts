@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: ['/admin', '/api/'],
             },
         ],
-        sitemap: 'https://cyberinformatica.tech/sitemap.xml',
-        host: 'https://cyberinformatica.tech',
+        sitemap: 'https://www.cyberinformatica.tech/sitemap.xml',
+        host: 'https://www.cyberinformatica.tech',
     };
 }

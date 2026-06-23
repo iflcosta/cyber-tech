@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
+import { brand } from '@/lib/brand';
 
-const SITE_URL = 'https://cyberinformatica.tech';
+const SITE_URL = brand.url;
 
 // Rotas publicas reais do site institucional (junho/2026)
 // CRM (/admin/crm/*) intencionalmente excluido - URL privada
