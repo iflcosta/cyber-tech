@@ -9,18 +9,22 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Reveal, RevealGroup } from "@/components/Reveal";
 import { brand } from "@/lib/brand";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ service?: string; persona?: string; utm_source?: string; utm_campaign?: string }> }) {
   const params = await searchParams;
   const serviceParam = params?.service ?? null;
+  // persona=lojista (via URL) OU utm_campaign contendo 'b2b' OU utm_source=google + utm_campaign=lojistas
+  const isB2BFromUtm = params?.utm_campaign?.toLowerCase().includes('b2b') || params?.utm_campaign?.toLowerCase().includes('lojista') || params?.utm_campaign?.toLowerCase().includes('parceiro');
+  const personaParam = (params?.persona === 'lojista' || isB2BFromUtm) ? 'lojista' : null;
 
   const whatsappCuradoria = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent("Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica.")}`;
+  const whatsappB2B = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent("Olá! Sou lojista/assistência técnica. Vim pelo site da Cyber e gostaria de falar sobre parceria (indicação técnica, suporte ao parceiro e pós-venda estendido).")}`;
 
   return (
     <>
       <Header />
       <main className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
         <Suspense fallback={<div className="h-screen bg-[var(--bg-primary)]" />}>
-          <Hero serviceParam={serviceParam} />
+          <Hero serviceParam={serviceParam} personaParam={personaParam} />
         </Suspense>
 
         {/* Seção 2 — Categorias de produto */}
@@ -72,6 +76,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                 </Reveal>
               ))}
             </RevealGroup>
+
+            {/* Sub-CTA B2B - lojista que chegou aqui pulou pro produto */}
+            <Reveal delay={0.2}>
+              <div className="mt-10 text-center">
+                <p className="text-sm text-[var(--color-text-on-dark-muted)] mb-3">
+                  É lojista ou assistência? A gente atende parceiro com indicação técnica e suporte direto.
+                </p>
+                <a
+                  href="#parceiros"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-circuit-green)] hover:opacity-80 transition-opacity"
+                >
+                  <Building2 size={14} />
+                  Ver como funciona a parceria
+                  <ArrowRight size={14} />
+                </a>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -152,13 +173,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                   <div className="flex-1">
                     <span className="badge badge-b2b mb-4">Atende lojistas</span>
                     <h2 className="display mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark)] mb-4">
-                      Para lojistas e assistências parceiras.
+                      Pra lojista e assistência que quer indicação técnica no WhatsApp.
                     </h2>
                     <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] leading-relaxed mb-6">
-                      Indicação técnica especializada, suporte ao parceiro e pós-venda estendido pra quem revende ou atende PC, notebook e celular. Se você é lojista ou assistência técnica em Bragança e região, fala com a gente.
+                      Cliente te perguntou qual peça comprar e você não tem certeza? Manda mensagem. A gente orienta a peça certa pro caso — e você vende sem dor de cabeça. Suporte direto, sem espera, sem atravessador.
                     </p>
                     <a
-                      href={whatsappCuradoria}
+                      href={whatsappB2B}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-b2b"
@@ -166,13 +187,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                       <Building2 size={18} />
                       Falar com o time de parcerias
                     </a>
+                    <p className="text-xs text-[var(--color-text-on-dark-muted)] mt-3">
+                      Bragança Paulista · Atibaia · Socorro · Amparo · região
+                    </p>
                   </div>
                   <RevealGroup as="div" className="flex-1 grid gap-4 sm:grid-cols-2" stagger={0.1} delayChildren={0.2}>
                     {[
-                      { title: "Indicação técnica", copy: "Orientação de peça certa pro caso do seu cliente." },
-                      { title: "Suporte ao parceiro", copy: "Atendimento direto no WhatsApp pra tirar dúvida rápida." },
-                      { title: "Pós-venda estendido", copy: "Garantia ampliada pra quem revende." },
-                      { title: "Atendimento regional", copy: "Bragança Paulista, Atibaia, Socorro, Amparo." },
+                      {
+                        title: "Indicação técnica no WhatsApp",
+                        copy: "Manda o caso do seu cliente. A gente indica a peça certa, com justificativa técnica — em minutos."
+                      },
+                      {
+                        title: "Suporte ao parceiro",
+                        copy: "Atendimento direto com Felipe, Iago ou Jefferson. Sem fila, sem chatbot, sem call center."
+                      },
+                      {
+                        title: "Pós-venda estendido",
+                        copy: "Garantia ampliada pra quem revende. Cliente volta pra você, não pra assistência da marca."
+                      },
+                      {
+                        title: "Atendimento regional",
+                        copy: "Bragança Paulista, Atibaia, Socorro, Amparo, Jundiaí, Extrema e região."
+                      },
                     ].map((benefit) => (
                       <div key={benefit.title} className="card" style={{ padding: "1.25rem" }}>
                         <h3 className="text-sm font-bold mb-1 text-[var(--color-text-on-dark)]">
