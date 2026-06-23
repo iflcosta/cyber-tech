@@ -77,6 +77,17 @@ const nextConfig = {
         ],
       },
       {
+        // Home: regex explicito (rota raiz as vezes nao pega com
+        // source: /((?!admin).*) por causa do catch-all do Next.js)
+        source: '/',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      {
         // /admin/* NUNCA cache (sessoes sao criticas)
         source: '/admin/:path*',
         headers: [
