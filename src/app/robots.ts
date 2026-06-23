@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { brand } from '@/lib/brand';
 
 export default function robots(): MetadataRoute.Robots {
     return {
@@ -9,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: ['/admin', '/api/'],
             },
         ],
-        sitemap: 'https://www.cyberinformatica.tech/sitemap.xml',
-        host: 'https://www.cyberinformatica.tech',
+        sitemap: `${brand.url}/sitemap.xml`,
+        host: brand.url,
     };
 }

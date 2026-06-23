@@ -6,15 +6,15 @@ export const metadata: Metadata = {
   title: "Contato | Cyber Informática",
   description:
     "Fale com a curadoria técnica da Cyber Informática. PC, notebook, celular e parceria com lojistas. Resposta rápida no WhatsApp.",
-  alternates: { canonical: "https://cyberinformatica.tech/contato" },
+  alternates: { canonical: `${brand.url}/contato` },
   openGraph: {
     title: "Contato | Cyber Informática",
     description:
       "Fale com a curadoria técnica da Cyber Informática. PC, notebook, celular e parceria com lojistas.",
-    url: "https://cyberinformatica.tech/contato",
+    url: `${brand.url}/contato`,
     images: [
       {
-        url: "https://cyberinformatica.tech/og-image.png",
+        url: `${brand.url}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Contato - Cyber Informática",

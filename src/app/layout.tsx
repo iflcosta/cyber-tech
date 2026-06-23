@@ -38,15 +38,15 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  alternates: { canonical: "https://cyberinformatica.tech" },
+  alternates: { canonical: brand.url },
   openGraph: {
     title: "Cyber Informática | " + brand.slogan,
     description: brand.description,
-    url: "https://cyberinformatica.tech",
+    url: brand.url,
     siteName: "Cyber Informática",
     images: [
       {
-        url: "https://cyberinformatica.tech/og-image.png",
+        url: `${brand.url}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Cyber Informática — Loja técnica em Bragança Paulista. PC, notebook, celular com curadoria e montagem.",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Cyber Informática | " + brand.slogan,
     description: brand.description,
-    images: ["https://cyberinformatica.tech/og-image.png"],
+    images: [`${brand.url}/og-image.png`],
   },
 };
 
@@ -126,13 +126,13 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": ["LocalBusiness", "ComputerStore", "Store"],
-                "@id": "https://cyberinformatica.tech/#business",
+                "@id": `${brand.url}/#business`,
                 "name": "Cyber Informática",
                 "alternateName": "Cyber Info Bragança",
                 "description": brand.description,
-                "url": "https://cyberinformatica.tech",
-                "logo": "https://cyberinformatica.tech/logo.png",
-                "image": "https://cyberinformatica.tech/og-image.png",
+                "url": brand.url,
+                "logo": `${brand.url}/logo.png`,
+                "image": `${brand.url}/og-image.png`,
                 "telephone": "+55-11-95436-9269",
                 "email": "contato@cyberinformatica.tech",
                 "priceRange": "$$",
