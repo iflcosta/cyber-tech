@@ -82,7 +82,11 @@ export default function ContatoPage() {
                   <p className="text-xs uppercase tracking-wider text-[var(--color-text-on-dark-muted)] font-semibold mb-1">
                     E-mail
                   </p>
-                  <p className="text-[var(--color-text-on-dark)]">{brand.social.instagram.includes("cyberinfo") ? brand.social.instagram.replace("instagram.com/", "") : "contato@cyberinformatica.tech"}</p>
+                  <p className="text-[var(--color-text-on-dark)]">
+                    <a href={`mailto:${brand.email}`} className="hover:text-[var(--color-cyber-blue)] transition-colors">
+                      {brand.email}
+                    </a>
+                  </p>
                 </div>
               </div>
             </div>

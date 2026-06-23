@@ -3,6 +3,7 @@ export const brand = {
   slogan: "Loja técnica de PC, notebook e celular em Bragança Paulista",
   whatsapp: "5511954369269",
   phone: "5511954369269",
+  email: "contato@cyberinformatica.tech",
   url: "https://cyberinformatica.tech",
   openingHours: "Seg-Sex: 09h às 18h, Sáb: 09h às 13h",
   address: {
