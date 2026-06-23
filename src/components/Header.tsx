@@ -15,8 +15,8 @@ export default function Header() {
 
   const nav = [
     { href: "#catalogo", label: "Catálogo" },
-    { href: "#monte-seu-pc", label: "Monte seu PC" },
     { href: "#curadoria", label: "Curadoria" },
+    { href: "#monte-seu-pc", label: "Monte seu PC" },
     { href: "#parceiros", label: "Parceiros" },
     { href: "/contato", label: "Contato" },
   ];
