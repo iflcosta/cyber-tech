@@ -119,16 +119,23 @@ export default function Hero({ serviceParam, personaParam }: {
           </a>
         </div>
 
-        {/* Stats - PLACEHOLDERS neutros. Felipe precisa confirmar os reais. */}
+        {/* Stats - Felipe confirmou: 200 pecas em estoque, 50 workstations.
+            Google Reviews e Garantia ainda em aberto (placeholders '?') */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-10 border-t border-[var(--color-border-on-dark)]">
           {[
-            { value: '?', label: 'Peças em estoque' },
-            { value: '?', label: 'Workstations entregues' },
+            { value: '200+', label: 'Peças em estoque' },
+            { value: '50+', label: 'Workstations entregues' },
             { value: '?', label: 'Google Reviews' },
             { value: '?', label: 'Garantia' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="display text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark-muted)]/40 tracking-tight">
+              <div
+                className={`display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight ${
+                  stat.value === '?'
+                    ? 'text-[var(--color-text-on-dark-muted)]/40'
+                    : 'text-[var(--color-text-on-dark)]'
+                }`}
+              >
                 {stat.value}
               </div>
               <div className="mt-2 text-xs uppercase tracking-[0.12em] text-[var(--color-text-on-dark-muted)] font-semibold">
@@ -138,7 +145,7 @@ export default function Hero({ serviceParam, personaParam }: {
           ))}
         </div>
         <p className="text-center text-xs text-[var(--color-text-on-dark-muted)]/60 mt-4 italic">
-          Stats em branco - Felipe precisa confirmar os números reais antes de subir.
+          Google Reviews e Garantia ainda em aberto - Felipe precisa confirmar.
         </p>
       </div>
     </section>
