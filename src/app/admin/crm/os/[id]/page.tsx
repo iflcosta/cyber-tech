@@ -7,6 +7,7 @@ import { OSDetailActions } from './OSDetailActions';
 import { StatusQuickActions } from './StatusQuickActions';
 import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
+import { RepairNotesEditor } from './RepairNotesEditor';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -57,6 +58,24 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .select('*')
     .eq('service_order_id', id)
     .order('created_at', { ascending: false });
+
+  // Pecas usadas (referenciadas via os_number em stock_movements)
+  const { data: partsUsed } = await supabase
+    .from('stock_movements')
+    .select(`
+      id, quantity, unit_price, total_amount, created_at,
+      stock_item:stock_items(name, ean13)
+    `)
+    .eq('reference', so.os_number)
+    .in('movement_type', ['out', 'sale'])
+    .order('created_at', { ascending: true });
+
+  const partsTotal = (partsUsed ?? []).reduce(
+    (acc, p) => acc + Number(p.total_amount ?? 0),
+    0,
+  );
+  const laborCost = Number(so.labor_cost ?? 0);
+  const grandTotal = laborCost + partsTotal;
 
   const { data: technicians } = await supabase
     .from('profiles')
@@ -124,6 +143,13 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           >
             🖨️ Imprimir
           </Link>
+          <Link
+            href={`/admin/crm/os/${normalizedSo.id}/recibo`}
+            target="_blank"
+            className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+          >
+            🧾 Recibo
+          </Link>
         </div>
       </div>
 
@@ -137,6 +163,63 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 <strong>Travado em:</strong> {normalizedSo.blocking_reason}
               </div>
             )}
+          </section>
+
+          <section className="rounded-lg border border-blue-200 bg-blue-50/30 p-4 sm:p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Diagnóstico e reparo
+              </h2>
+              <Link
+                href={`/admin/crm/estoque`}
+                className="text-xs text-blue-600 hover:text-blue-700"
+              >
+                + Adicionar peça (use referência {normalizedSo.os_number})
+              </Link>
+            </div>
+            <div className="mt-3">
+              <RepairNotesEditor
+                osId={normalizedSo.id}
+                initialNotes={normalizedSo.repair_notes ?? ''}
+                initialLaborCost={Number(normalizedSo.labor_cost ?? 0)}
+                canEdit={canEdit}
+              />
+            </div>
+
+            {(partsUsed && partsUsed.length > 0) ? (
+              <div className="mt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Peças usadas ({partsUsed.length})
+                </h3>
+                <ul className="mt-2 divide-y divide-slate-200 text-sm">
+                  {partsUsed.map((p) => (
+                    <li key={p.id} className="flex items-center justify-between py-1.5">
+                      <span className="text-slate-900">
+                        {(p as any).stock_item?.name ?? '(item removido)'}
+                        <span className="ml-2 font-mono text-slate-500">×{p.quantity}</span>
+                      </span>
+                      <span className="font-mono text-slate-900">
+                        R$ {Number(p.total_amount ?? 0).toFixed(2)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-3 space-y-1 border-t border-slate-300 pt-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Peças</span>
+                    <span className="font-mono text-slate-900">R$ {partsTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Mão de obra</span>
+                    <span className="font-mono text-slate-900">R$ {laborCost.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-400 pt-1.5 text-base font-bold">
+                    <span className="text-slate-900">Total</span>
+                    <span className="font-mono text-slate-900">R$ {grandTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
