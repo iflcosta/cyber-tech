@@ -36,7 +36,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
         <PrintButton />
       </div>
 
-      <article className="print:bg-white mx-auto max-w-2xl bg-white p-6 shadow print:max-w-none print:shadow-none print:p-8 sm:p-8">
+      <article className="print:bg-white print:text-slate-900 mx-auto max-w-2xl bg-white p-6 shadow print:max-w-none print:shadow-none print:p-8 sm:p-8">
         <header className="border-b border-slate-300 pb-4">
           <div className="flex items-baseline justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -78,7 +78,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
             {ENTRY_CHECKLIST_FIELDS.map((f) => {
               const v = checklist[f.key];
               return (
-                <li key={f.key} className="flex items-center gap-2">
+                <li key={f.key} className="flex items-center gap-2 text-slate-900">
                   <span className="font-mono">{v ? '[X]' : '[ ]'}</span>
                   <span>{f.label}</span>
                 </li>
@@ -94,7 +94,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
 
         <section className="mt-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Previsão</h2>
-          <p className="mt-1 text-sm">
+          <p className="mt-1 text-sm text-slate-900">
             {so.estimated_ready_at
               ? `Pronto em: ${new Date(so.estimated_ready_at).toLocaleDateString('pt-BR')}`
               : 'A definir'}
@@ -120,7 +120,11 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
 
       <style>{`
         @media print {
-          body { background: white; }
+          html, body { background: white !important; color: #0f172a !important; }
+          article { background: white !important; color: #0f172a !important; }
+          article * { color: #0f172a !important; }
+          /* Preserva azul da logo "Informática" e do badge de info */
+          article .text-blue-600, article .text-blue-800 { color: #2563eb !important; }
           header.sticky, nav, .print-hidden { display: none !important; }
         }
       `}</style>
