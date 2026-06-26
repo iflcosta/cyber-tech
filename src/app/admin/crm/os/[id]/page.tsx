@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { StatusBadge } from '@/app/admin/crm/components/StatusBadge';
 import { StaleBadge } from '@/app/admin/crm/components/StaleBadge';
+import { WhatsAppButton } from '@/app/admin/crm/components/WhatsAppButton';
 import { OSDetailActions } from './OSDetailActions';
 import { StatusQuickActions } from './StatusQuickActions';
 import { OSDeleteButton } from './OSDeleteButton';
@@ -272,6 +273,13 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 </a>
               </p>
             )}
+            <div className="mt-3 border-t border-slate-100 pt-3">
+              <WhatsAppButton
+                phone={normalizedSo.customer_phone}
+                customerName={normalizedSo.customer_name}
+                context="os"
+              />
+            </div>
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
