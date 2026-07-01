@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { ReciboPrintButton } from '@/app/admin/crm/vendas/[id]/recibo/ReciboPrintButton';
 import { AutoPrint } from '@/app/admin/crm/vendas/[id]/recibo/AutoPrint';
+import { PixQRButton } from '@/app/admin/crm/components/PixQRButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -161,6 +162,22 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
         <pre className="mt-2 whitespace-pre-wrap rounded-md border border-slate-300 bg-white p-3 font-mono text-xs leading-tight text-black print:border-none print:p-0">
 {reciboText}
         </pre>
+        {grandTotal > 0 && (
+          <div className="print:hidden mt-4 rounded-md border border-teal-200 bg-teal-50/50 p-3">
+            <p className="text-xs font-semibold text-slate-700">
+              💰 PIX pra cobrar R$ {grandTotal.toFixed(2)}
+            </p>
+            <div className="mt-2">
+              <PixQRButton
+                defaultAmount={grandTotal}
+                txid={so.os_number ?? undefined}
+                description={`OS ${so.os_number ?? ''}`.substring(0, 50)}
+                buttonLabel="Gerar QR do PIX"
+                buttonClassName="w-full justify-center rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`

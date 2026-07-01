@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { ConfirmDeliveryButton } from './ConfirmDeliveryButton';
+import { PixQRButton } from '@/app/admin/crm/components/PixQRButton';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -209,6 +210,27 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
             quedas, contato com líquido ou abertura por terceiros.
           </p>
         </section>
+
+        {/* PIX (se houver total a cobrar) */}
+        {grandTotal > 0 && (
+          <section className="print:hidden mt-6 rounded-md border border-teal-200 bg-teal-50/50 p-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Pagamento via PIX
+            </h2>
+            <p className="mt-1 text-xs text-slate-600">
+              Total a cobrar: <strong className="text-slate-900">R$ {grandTotal.toFixed(2)}</strong>.
+              Gere o QR pra o cliente pagar.
+            </p>
+            <div className="mt-2">
+              <PixQRButton
+                defaultAmount={grandTotal}
+                txid={so.os_number ?? undefined}
+                description={`OS ${so.os_number ?? ''} - ${customerName}`.substring(0, 50)}
+                buttonLabel="Gerar QR do PIX"
+              />
+            </div>
+          </section>
+        )}
 
         {/* Quem retirou (se ja entregue) */}
         {so.delivered_to_name && (
