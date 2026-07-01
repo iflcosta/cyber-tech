@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { PAYMENT_METHODS } from '@/app/admin/crm/types/database';
+import { PixQRButton } from '@/app/admin/crm/components/PixQRButton';
+import { PIX_CONFIG } from '@/app/admin/crm/lib/pix';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +95,31 @@ export default async function DashboardPage() {
           Resumo rapido do movimento da loja.
         </p>
       </div>
+
+      {/* PIX da loja (acesso rapido) */}
+      <section className="rounded-lg border-2 border-teal-200 bg-teal-50/60 p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex-1 min-w-[260px]">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-700">
+              💰 PIX da loja
+            </h2>
+            <p className="mt-1 text-xs text-slate-600">
+              Gere QR Code avulso pra cobrar cliente no balcão, sem precisar abrir OS ou venda.
+            </p>
+            <p className="mt-2 font-mono text-xs text-slate-700">
+              Chave: <strong>{PIX_CONFIG.key}</strong> ·{' '}
+              <strong>{PIX_CONFIG.merchantName}</strong> ·{' '}
+              {PIX_CONFIG.merchantCity}
+            </p>
+            <div className="mt-3">
+              <PixQRButton
+                buttonLabel="Gerar QR do PIX"
+                description="Pagamento avulso Cyber Informatica"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Cards de totais */}
       <div className="grid gap-3 sm:grid-cols-3">
