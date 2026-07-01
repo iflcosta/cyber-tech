@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { StockFilter } from './StockFilter';
+import { WipeStockButtons } from './WipeStockButtons';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,12 @@ export default async function StockListPage({
   }
 
   const { data: items, error } = await itemsQuery;
+
+  // Perfil do user (pra saber se e owner — so owner ve botoes destrutivos)
+  const { data: profile } = user
+    ? await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    : { data: null };
+  const isOwner = profile?.role === 'owner';
 
   // Alerta de estoque baixo (view)
   const { data: lowItems } = await supabase
@@ -62,12 +69,15 @@ export default async function StockListPage({
             {params.low === '1' && ' · só estoque baixo'}
           </p>
         </div>
-        <Link
-          href="/admin/crm/estoque/new"
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
-        >
-          + Novo item
-        </Link>
+        <div className="flex flex-shrink-0 gap-2">
+          {isOwner && <WipeStockButtons />}
+          <Link
+            href="/admin/crm/estoque/new"
+            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+          >
+            + Novo item
+          </Link>
+        </div>
       </div>
 
       {(lowItems ?? []).length > 0 && params.low !== '1' && (
