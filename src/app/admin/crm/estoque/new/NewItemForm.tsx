@@ -22,6 +22,7 @@ export function NewItemForm() {
   const [error, setError] = useState<string | null>(null);
 
   const [ean13, setEan13] = useState('');
+  const [internalSku, setInternalSku] = useState('');
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [brand, setBrand] = useState('');
@@ -57,6 +58,7 @@ export function NewItemForm() {
         .from('stock_items')
         .insert({
           ean13: eanClean,
+          internal_sku: internalSku.trim() || null,  // null = trigger auto-gera
           name: name.trim(),
           category: category.trim() || null,
           brand: brand.trim() || null,
@@ -100,21 +102,30 @@ export function NewItemForm() {
               maxLength={13}
             />
           </Field>
-          <Field label="Categoria">
+          <Field label="SKU interno (auto se vazio)">
             <input
-              list="stock-category-suggestions"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="form-input"
-              placeholder="Ex: Cabos"
+              value={internalSku}
+              onChange={(e) => setInternalSku(e.target.value)}
+              className="form-input font-mono"
+              placeholder="CY-RAM-DDR4-8G-00001"
             />
-            <datalist id="stock-category-suggestions">
-              {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
           </Field>
         </div>
+
+        <Field label="Categoria">
+          <input
+            list="stock-category-suggestions"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="form-input"
+            placeholder="Ex: Memórias (gera CY-RAM-...) ou Cabos (CY-CAB-...)"
+          />
+          <datalist id="stock-category-suggestions">
+            {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+        </Field>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Marca">

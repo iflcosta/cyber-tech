@@ -137,6 +137,11 @@ export default async function StockListPage({
                       >
                         {item.name}
                       </Link>
+                      {item.internal_sku && (
+                        <span className="block font-mono text-xs font-semibold text-blue-700">
+                          {item.internal_sku}
+                        </span>
+                      )}
                       {item.brand && (
                         <span className="block text-xs text-slate-500">
                           {[item.brand, item.model].filter(Boolean).join(' ')}
@@ -144,7 +149,7 @@ export default async function StockListPage({
                       )}
                       {item.ean13 && (
                         <span className="block font-mono text-xs text-slate-400">
-                          {item.ean13}
+                          EAN: {item.ean13}
                         </span>
                       )}
                     </td>

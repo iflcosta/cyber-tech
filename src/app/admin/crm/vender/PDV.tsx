@@ -8,6 +8,7 @@ import { PAYMENT_METHODS, type PaymentMethodValue } from '@/app/admin/crm/types/
 type Item = {
   id: string;
   ean13: string | null;
+  internal_sku?: string | null;
   name: string;
   brand: string | null;
   model: string | null;
@@ -125,8 +126,10 @@ export function PDV({
     const c = code.trim();
     if (!c) return;
 
-    // 1. Tenta por EAN-13 (prioridade — leitor sempre manda EAN)
-    let found = items.find((i) => i.ean13 === c);
+    // 1. Tenta por EAN-13 (fornecedor) ou SKU interno (Cyber)
+    const cUpper = c.toUpperCase();
+    let found = items.find((i) => i.ean13 === c)
+              ?? items.find((i) => i.internal_sku === cUpper);
     // 2. Tenta por nome exato
     if (!found) found = items.find((i) => i.name.toLowerCase() === c.toLowerCase());
     // 3. Tenta match parcial no nome (se for digitado)
@@ -222,7 +225,8 @@ export function PDV({
         (i) =>
           i.name.toLowerCase().includes(s) ||
           (i.brand?.toLowerCase().includes(s) ?? false) ||
-          (i.ean13?.includes(s) ?? false),
+          (i.ean13?.includes(s) ?? false) ||
+                      (i.internal_sku?.toUpperCase().includes(s.toUpperCase()) ?? false),
       )
       .slice(0, 8);
   }, [search, items]);
