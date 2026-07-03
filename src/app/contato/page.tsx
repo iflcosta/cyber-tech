@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { ContactForm } from "./ContactForm";
 import { brand } from "@/lib/brand";
+import TrackedWhatsAppLink from "@/components/TrackedWhatsAppLink";
 
 export const metadata: Metadata = {
   title: "Contato | Cyber Informática",
@@ -26,9 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
-const whatsappUrl = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
-  "Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica."
-)}`;
+const whatsappMessage = "Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica.";
 
 export default function ContatoPage() {
   return (
@@ -91,14 +90,15 @@ export default function ContatoPage() {
               </div>
             </div>
 
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <TrackedWhatsAppLink
+              phone={brand.whatsapp}
+              message={whatsappMessage}
+              source="contato"
               className="btn-ghost inline-flex"
+              ariaLabel="Abrir WhatsApp da Cyber Informática"
             >
               Prefere WhatsApp? Clica aqui →
-            </a>
+            </TrackedWhatsAppLink>
           </div>
 
           {/* Coluna direita — form */}

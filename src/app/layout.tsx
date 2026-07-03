@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/brand";
+import UTMTracker from "@/components/UTMTracker";
 
 const inter = Inter({
   variable: "--font-body",
@@ -69,26 +70,36 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Google Ads ID fixo (já estava em produção). GA4 ID via env var.
+  const GOOGLE_ADS_ID = "AW-18041073028";
+  const GA4_ID = process.env.NEXT_PUBLIC_GA4_ID; // ex: "G-XXXXXXXXXX"
+
   return (
     <html lang="pt-BR">
       <head>
+        {/* UTM tracker — popula sessionStorage a partir dos params da URL */}
+        <UTMTracker />
+
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0a1929" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        {/* Google Ads Tag */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18041073028" />
+
+        {/* Google Ads Tag (gtag.js) */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'AW-18041073028');
+              gtag('config', '${GOOGLE_ADS_ID}');
+              ${GA4_ID ? `gtag('config', '${GA4_ID}');` : ""}
             `,
           }}
         />
-        {/* Meta Pixel Code - so carrega se PIXEL_ID estiver configurado */}
+
+        {/* Meta Pixel Code - só carrega se PIXEL_ID estiver configurado */}
         {process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID && (
           <>
             <script
@@ -98,8 +109,8 @@ export default function RootLayout({
                   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
                   n.callMethod.apply(n,arguments):n.queue.push(arguments)};
                   if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                  n.queue=[];t=f.createElement(e);t.async=!0;
-                  t.src=v;s=f.getElementsByTagName(e)[0];
+                  n.queue=[];t=b.createElement(e);t.async=!0;
+                  t.src=v;s=b.getElementsByTagName(e)[0];
                   s.parentNode.insertBefore(t,s)}(window, document,'script',
                   'https://connect.facebook.net/en_US/fbevents.js');
                   fbq('init', '${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID}');
