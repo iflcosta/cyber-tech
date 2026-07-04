@@ -113,16 +113,15 @@ export default function Header() {
 
           {/* Desktop right side */}
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-            <span className="badge badge-b2b">Atende lojistas</span>
             <TrackedWhatsAppLink
               phone={brand.whatsapp}
               message={headerMessage}
               source="header"
               className="btn-primary inline-flex items-center gap-2"
-              ariaLabel="Abrir WhatsApp da Cyber Informática"
+              ariaLabel="Chamar no WhatsApp da Cyber Informática"
             >
               <MessageCircle size={18} />
-              <span>WhatsApp</span>
+              <span>Chamar no WhatsApp</span>
             </TrackedWhatsAppLink>
           </div>
 

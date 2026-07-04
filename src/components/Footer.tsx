@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Instagram, Facebook, MessageCircle, MapPin, Clock } from "lucide-react";
+import { Instagram, Facebook, MessageCircle, MapPin, Clock, Phone } from "lucide-react";
 
 import { brand } from "@/lib/brand";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
@@ -62,6 +62,16 @@ export default function Footer() {
                 >
                   WhatsApp
                 </TrackedWhatsAppLink>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone size={16} className="flex-shrink-0 text-[var(--color-cyber-blue)]" />
+                <a
+                  href={`tel:+${brand.phone}`}
+                  className="hover:text-[var(--color-text-on-dark)] transition-colors"
+                  aria-label="Ligar para a Cyber Informática"
+                >
+                  (11) 95436-9269
+                </a>
               </li>
             </ul>
           </div>
