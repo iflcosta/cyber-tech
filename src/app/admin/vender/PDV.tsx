@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
-import { PAYMENT_METHODS, type PaymentMethodValue } from '@/app/admin/types/database';
+import { PAYMENT_METHODS, STOCK_CATEGORY_SUGGESTIONS, type PaymentMethodValue } from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
 
 type Item = {
@@ -64,6 +64,20 @@ export function PDV({
   const [discount, setDiscount] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Modal "cadastrar peça e vender" — pra montagem de computador: peça
+  // (processador, placa-mãe, GPU...) que ainda não tá no catálogo de
+  // estoque. Cadastra o item, registra a entrada (compra da peça pra
+  // essa montagem) e já bota no carrinho — a saída acontece normal,
+  // junto com o resto da venda, quando finalizar.
+  const newPartTitleId = useId();
+  const [addingPart, setAddingPart] = useState(false);
+  const [newPartName, setNewPartName] = useState('');
+  const [newPartCategory, setNewPartCategory] = useState('');
+  const [newPartPrice, setNewPartPrice] = useState('');
+  const [newPartQty, setNewPartQty] = useState('1');
+  const [newPartSubmitting, setNewPartSubmitting] = useState(false);
+  const [newPartError, setNewPartError] = useState<string | null>(null);
+
   // Mantem foco no input sempre (leitor USB-HID bipa rapido)
   useEffect(() => {
     inputRef.current?.focus();
@@ -121,6 +135,77 @@ export function PDV({
     },
     [],
   );
+
+  function openAddPart() {
+    setNewPartName(search.trim());
+    setNewPartCategory('');
+    setNewPartPrice('');
+    setNewPartQty('1');
+    setNewPartError(null);
+    setAddingPart(true);
+  }
+
+  // Cadastra a peça no catálogo (current_stock começa em 0, igual ao
+  // fluxo normal de "Novo item" em Estoque), registra a ENTRADA da
+  // quantidade comprada pra essa montagem (current_stock sobe via
+  // trigger) e já adiciona ao carrinho. A SAÍDA acontece no fluxo
+  // normal do PDV quando a venda for finalizada — fica o rastro
+  // completo: peça entrou pra montar, peça saiu na venda.
+  async function submitNewPart() {
+    const name = newPartName.trim();
+    if (!name) {
+      setNewPartError('Nome é obrigatório.');
+      return;
+    }
+    const price = parseBRL(newPartPrice);
+    if (price === null || price <= 0) {
+      setNewPartError('Preço de venda é obrigatório e deve ser maior que zero.');
+      return;
+    }
+    const qty = parseInt(newPartQty, 10);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      setNewPartError('Quantidade deve ser maior que zero.');
+      return;
+    }
+
+    setNewPartSubmitting(true);
+    setNewPartError(null);
+    try {
+      const supabase = createCRMBrowserClient();
+
+      const { data: newItem, error: insErr } = await supabase
+        .from('stock_items')
+        .insert({
+          name,
+          category: newPartCategory.trim() || null,
+          unit_price: price,
+        })
+        .select('id, ean13, internal_sku, name, brand, model, unit_price, current_stock, min_stock')
+        .single();
+      if (insErr) throw insErr;
+
+      const { error: movErr } = await supabase.from('stock_movements').insert({
+        stock_item_id: newItem.id,
+        movement_type: 'in',
+        quantity: qty,
+        unit_price: price,
+        total_amount: price * qty,
+        reference: null,
+        notes: 'Peça comprada pra montagem de computador (venda PDV)',
+        author_id: currentUserId,
+      });
+      if (movErr) throw movErr;
+
+      addItem({ ...newItem, current_stock: qty }, qty);
+      setAddingPart(false);
+      setSearch('');
+      setNewPartSubmitting(false);
+      inputRef.current?.focus();
+    } catch (e) {
+      setNewPartError((e as Error).message);
+      setNewPartSubmitting(false);
+    }
+  }
 
   // Processa codigo digitado/bipado (Enter submete)
   function submitCode(e: React.FormEvent) {
@@ -282,8 +367,17 @@ export function PDV({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Ou busque manualmente por nome/marca…"
+          aria-label="Buscar item por nome ou marca"
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
+        <button
+          type="button"
+          onClick={openAddPart}
+          className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+        >
+          ➕ Não achou? Cadastrar peça nova e vender
+          {search.trim() && <span className="text-slate-500"> — "{search.trim()}"</span>}
+        </button>
         {searchSuggestions.length > 0 && (
           <ul className="mt-2 divide-y divide-slate-200">
             {searchSuggestions.map((i) => (
@@ -494,6 +588,93 @@ export function PDV({
                 {submitting ? 'Salvando…' : 'Confirmar venda'}
               </button>
             </div>
+      </Modal>
+
+      {/* Modal "cadastrar peça e vender" — montagem de computador */}
+      <Modal open={addingPart} onClose={() => setAddingPart(false)} titleId={newPartTitleId}>
+        <h2 id={newPartTitleId} className="text-lg font-bold text-slate-900">
+          Cadastrar peça e vender
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Pra montagem de computador: cadastra a peça no catálogo, registra a entrada
+          (compra pra essa montagem) e já bota no carrinho. A saída acontece normal, junto
+          com o resto da venda.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <label className="block">
+            <span className="block text-sm font-medium text-slate-700">Nome *</span>
+            <input
+              autoFocus
+              value={newPartName}
+              onChange={(e) => setNewPartName(e.target.value)}
+              placeholder="Ex: Processador Ryzen 5 5600"
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </label>
+
+          <label className="block">
+            <span className="block text-sm font-medium text-slate-700">Categoria (opcional)</span>
+            <input
+              list="pdv-new-part-category-suggestions"
+              value={newPartCategory}
+              onChange={(e) => setNewPartCategory(e.target.value)}
+              placeholder="Ex: Processadores"
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <datalist id="pdv-new-part-category-suggestions">
+              {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="block text-sm font-medium text-slate-700">Preço de venda *</span>
+              <input
+                value={newPartPrice}
+                onChange={(e) => setNewPartPrice(e.target.value)}
+                placeholder="0,00"
+                inputMode="decimal"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-sm font-medium text-slate-700">Quantidade</span>
+              <input
+                type="number"
+                min="1"
+                value={newPartQty}
+                onChange={(e) => setNewPartQty(e.target.value)}
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </label>
+          </div>
+        </div>
+
+        {newPartError && (
+          <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{newPartError}</p>
+        )}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setAddingPart(false)}
+            disabled={newPartSubmitting}
+            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={submitNewPart}
+            disabled={newPartSubmitting}
+            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          >
+            {newPartSubmitting ? 'Cadastrando…' : 'Cadastrar e adicionar'}
+          </button>
+        </div>
       </Modal>
     </div>
   );

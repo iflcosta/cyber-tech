@@ -505,6 +505,11 @@ export const STOCK_CATEGORY_SUGGESTIONS = [
   'Mouses',
   'Adaptadores',
   'Carregadores',
+  'Processadores',
+  'Placas-mãe',
+  'Placas de vídeo',
+  'Gabinetes',
+  'Coolers',
 ] as const;
 
 export const PAYMENT_METHODS = [
