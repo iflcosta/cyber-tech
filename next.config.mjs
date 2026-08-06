@@ -27,6 +27,18 @@ const nextConfig = {
         destination: 'https://www.cyberinformatica.tech/:path*',
         permanent: true,
       },
+      // CRM mudou de /admin/crm/* pra /admin/* (2026-08-06). Redirect
+      // de compatibilidade pra bookmark/link salvo com o caminho antigo.
+      {
+        source: '/admin/crm/:path*',
+        destination: '/admin/:path*',
+        permanent: false,
+      },
+      {
+        source: '/admin/crm',
+        destination: '/admin',
+        permanent: false,
+      },
     ];
   },
 

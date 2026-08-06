@@ -11,7 +11,7 @@ const TELAS_URL = "https://telas.cyberinformatica.tech";
  * Copy B2B-friendly do reboot/01-plano-estruturante.md (seção 6.7)
  *
  * Mudanças aplicadas:
- *   - Removido link "/admin/crm" do público (vazava CRM interno)
+ *   - Removido link "/admin" do público (vazava CRM interno)
  *   - WhatsApp agora passa por TrackedWhatsAppLink (UTM tracking + gtag event)
  *   - Adicionado cross-link para o site telas.cyberinformatica.tech
  */
