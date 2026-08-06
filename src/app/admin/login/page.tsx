@@ -17,7 +17,7 @@ export default async function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Cyber <span className="text-blue-600">CRM</span>
+            Cyber <span className="text-blue-600">ERP</span>
           </h1>
           <p className="mt-2 text-sm text-slate-500">Acesso interno da assistência técnica</p>
         </div>

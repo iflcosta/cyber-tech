@@ -1,9 +1,12 @@
-# AGENTS.md — CRM da Cyber Informática
+# AGENTS.md — ERP da Cyber Informática
 
-> Modulo `/admin` do site institucional `cyberinformatica.tech`. CRM interno de
-> assistencia tecnica para uso de Felipe (dono), Iago (tecnico senior) e Jefferson
-> (tecnico de celulares). NAO e o sistema publico de leads / voucher
-> (`maintenance_orders`) que esta em producao na raiz do site.
+> Modulo `/admin` do site institucional `cyberinformatica.tech`. ERP interno de
+> assistencia tecnica (OS, estoque, vendas, pedido de peça a fornecedor) para uso
+> de Felipe (dono), Iago (tecnico senior) e Jefferson (tecnico de celulares).
+> Chamado de "CRM" no começo do projeto, mas o escopo é de gestão operacional da
+> loja (ERP), não de relacionamento/funil de cliente — nome corrigido em
+> 2026-08-06. NAO e o sistema publico de leads / voucher (`maintenance_orders`)
+> que esta em producao na raiz do site.
 
 ---
 

@@ -30,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return (
       <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4">
         <div className="w-full max-w-xl rounded-lg border border-amber-300 bg-amber-50 p-6">
-          <h1 className="text-xl font-bold text-amber-900">CRM ainda nao configurado</h1>
+          <h1 className="text-xl font-bold text-amber-900">ERP ainda nao configurado</h1>
           <p className="mt-2 text-sm text-amber-800">
             Faltam variaveis de ambiente do Supabase do CRM neste ambiente.
           </p>
@@ -65,7 +65,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/admin/os" className="text-lg font-bold tracking-tight text-slate-900">
-              Cyber <span className="text-blue-600">CRM</span>
+              Cyber <span className="text-blue-600">ERP</span>
             </Link>
             <span className="hidden rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 sm:inline">
               v0.1 · interno
