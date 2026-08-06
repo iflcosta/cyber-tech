@@ -23,7 +23,21 @@ export default async function DashboardPage() {
   const monthStart = startOfMonthBR();
 
   // Busca vendas nao canceladas dos periodos + numeros de OS (em paralelo)
-  const [salesToday, salesWeek, salesMonth, lastSales, topItems, osOpen, osStale, osReady, osDeliveredMonth] = await Promise.all([
+  const [
+    salesToday,
+    salesWeek,
+    salesMonth,
+    lastSales,
+    topItems,
+    osOpen,
+    osStale,
+    osReady,
+    osDeliveredMonth,
+    partsOrderedMonth,
+    partsAppliedMonth,
+    partsReturnedMonth,
+    partsOpenNow,
+  ] = await Promise.all([
     supabase
       .from('sales')
       .select('total')
@@ -70,6 +84,27 @@ export default async function DashboardPage() {
       .select('labor_cost')
       .eq('status', 'delivered')
       .gte('delivered_at', monthStart.toISOString()),
+    // Peças de fornecedores — fluxo TOTALMENTE separado de Vendas (PDV).
+    // O que disso vira venda pro cliente é calculado à parte pelo dono.
+    supabase
+      .from('part_orders')
+      .select('part_value, supplier:suppliers(name)')
+      .neq('status', 'cancelled')
+      .gte('created_at', monthStart.toISOString()),
+    supabase
+      .from('part_orders')
+      .select('part_value')
+      .eq('status', 'applied')
+      .gte('updated_at', monthStart.toISOString()),
+    supabase
+      .from('part_orders')
+      .select('part_value')
+      .eq('status', 'returned')
+      .gte('updated_at', monthStart.toISOString()),
+    supabase
+      .from('part_orders')
+      .select('part_value, status')
+      .in('status', ['ordered', 'received', 'return_pending', 'awaiting_exchange']),
   ]);
 
   // Numeros de OS
@@ -111,6 +146,37 @@ export default async function DashboardPage() {
   const topItemsSorted = Array.from(itemAgg.values())
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 5);
+
+  // Peças de fornecedores — totais do mês + em aberto agora.
+  const sumPartValue = (rows: { part_value: number }[] | null) =>
+    (rows ?? []).reduce((acc, r) => acc + Number(r.part_value), 0);
+
+  const partsOrderedTotal = sumPartValue(partsOrderedMonth.data);
+  const partsOrderedCount = partsOrderedMonth.data?.length ?? 0;
+  const partsAppliedTotal = sumPartValue(partsAppliedMonth.data);
+  const partsAppliedCount = partsAppliedMonth.data?.length ?? 0;
+  const partsReturnedTotal = sumPartValue(partsReturnedMonth.data);
+  const partsReturnedCount = partsReturnedMonth.data?.length ?? 0;
+  const partsOpenTotal = sumPartValue(partsOpenNow.data);
+  const partsOpenCount = partsOpenNow.data?.length ?? 0;
+
+  // Pedido no mês, por fornecedor (pra reconciliação — quanto foi
+  // encomendado de cada um, sem misturar com venda nenhuma).
+  const supplierAgg = new Map<string, { name: string; total: number; count: number }>();
+  for (const row of (partsOrderedMonth.data ?? []) as unknown as {
+    part_value: number;
+    supplier: { name: string } | null;
+  }[]) {
+    const name = row.supplier?.name ?? '(fornecedor removido)';
+    const existing = supplierAgg.get(name);
+    if (existing) {
+      existing.total += Number(row.part_value);
+      existing.count += 1;
+    } else {
+      supplierAgg.set(name, { name, total: Number(row.part_value), count: 1 });
+    }
+  }
+  const supplierTotalsSorted = Array.from(supplierAgg.values()).sort((a, b) => b.total - a.total);
 
   return (
     <div className="space-y-6">
@@ -218,6 +284,93 @@ export default async function DashboardPage() {
           href={`/admin/vendas?from=${monthStart.toISOString().slice(0, 10)}`}
         />
         </div>
+      </section>
+
+      {/* Peças de fornecedores — SEPARADO de Vendas (PDV) de propósito.
+          Isso não é receita nem é venda: é o que a loja encomendou de
+          fornecedor pra consertar OS de cliente. O que disso vira venda
+          o dono calcula à parte, por fora daqui. */}
+      <section>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Peças de fornecedores
+          </h2>
+          <Link
+            href="/admin/pecas"
+            className="text-xs text-blue-600 hover:text-blue-700"
+          >
+            Ver todos →
+          </Link>
+        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Fluxo de encomendas a fornecedores — não é venda. O que vira venda pro cliente, o dono calcula à parte.
+        </p>
+        <div className="mt-2 grid gap-3 sm:grid-cols-4">
+          <div className="rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Pedido (mês)
+            </p>
+            <p className="mt-1 text-2xl font-bold text-amber-800">{fmtBRL(partsOrderedTotal)}</p>
+            <p className="mt-1 text-xs text-slate-600">
+              {partsOrderedCount} pedido{partsOrderedCount === 1 ? '' : 's'}
+            </p>
+          </div>
+          <div className="rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Aplicado (mês)
+            </p>
+            <p className="mt-1 text-2xl font-bold text-emerald-700">{fmtBRL(partsAppliedTotal)}</p>
+            <p className="mt-1 text-xs text-slate-600">
+              {partsAppliedCount} peça{partsAppliedCount === 1 ? '' : 's'} usada{partsAppliedCount === 1 ? '' : 's'}
+            </p>
+          </div>
+          <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Devolvido (mês)
+            </p>
+            <p className="mt-1 text-2xl font-bold text-slate-700">{fmtBRL(partsReturnedTotal)}</p>
+            <p className="mt-1 text-xs text-slate-600">
+              {partsReturnedCount} devolução{partsReturnedCount === 1 ? '' : 's'}
+            </p>
+          </div>
+          <Link
+            href="/admin/pecas"
+            className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${
+              partsOpenCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white'
+            }`}
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Em aberto agora
+            </p>
+            <p className={`mt-1 text-2xl font-bold ${partsOpenCount > 0 ? 'text-orange-700' : 'text-slate-900'}`}>
+              {fmtBRL(partsOpenTotal)}
+            </p>
+            <p className="mt-1 text-xs text-slate-600">
+              {partsOpenCount} pedido{partsOpenCount === 1 ? '' : 's'} não resolvido{partsOpenCount === 1 ? '' : 's'}
+            </p>
+          </Link>
+        </div>
+
+        {supplierTotalsSorted.length > 0 && (
+          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Pedido no mês, por fornecedor
+            </h3>
+            <ul className="mt-2 divide-y divide-slate-200">
+              {supplierTotalsSorted.map((s) => (
+                <li key={s.name} className="flex items-center justify-between gap-3 py-1.5 text-sm">
+                  <span className="text-slate-900">{s.name}</span>
+                  <span className="flex items-center gap-3 text-xs">
+                    <span className="text-slate-500">
+                      {s.count} pedido{s.count === 1 ? '' : 's'}
+                    </span>
+                    <span className="font-mono font-medium text-slate-900">{fmtBRL(s.total)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       {/* Top itens vendidos no mes */}
