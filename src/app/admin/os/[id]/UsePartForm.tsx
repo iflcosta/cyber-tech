@@ -220,6 +220,7 @@ export function UsePartForm({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar cabo, SSD, RAM…"
+            aria-label="Buscar peça no estoque"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           {suggestions.length > 0 && (
@@ -279,7 +280,7 @@ export function UsePartForm({
             type="button"
             onClick={() => setSelected(null)}
             disabled={submitting}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100"
+            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100"
             aria-label="Cancelar"
           >
             ✕

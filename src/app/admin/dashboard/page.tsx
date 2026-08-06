@@ -225,7 +225,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
             Top 5 itens vendidos (este mês)
           </h2>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500">
             {topItemsSorted.length} {topItemsSorted.length === 1 ? 'item' : 'itens'}
           </span>
         </div>

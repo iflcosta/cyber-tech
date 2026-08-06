@@ -100,7 +100,7 @@ export function PartOrderActions({
           <button
             onClick={() => transition({ newStatus: 'applied', eventType: 'applied' })}
             disabled={busy}
-            className="w-full rounded-md bg-emerald-600 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
+            className="w-full rounded-md bg-emerald-700 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-emerald-800 active:scale-95 disabled:opacity-50"
           >
             {busy ? 'Salvando…' : '✅ Aplicado — resolveu o problema'}
           </button>

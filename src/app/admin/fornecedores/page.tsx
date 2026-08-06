@@ -56,10 +56,10 @@ export default async function SuppliersPage() {
                     {s.phone && <span className="block text-xs text-slate-500 sm:hidden">{s.phone}</span>}
                   </td>
                   <td className="hidden px-3 py-2 text-slate-600 sm:table-cell">
-                    {s.phone ?? <span className="text-slate-400">—</span>}
+                    {s.phone ?? <span className="text-slate-500">—</span>}
                   </td>
                   <td className="hidden px-3 py-2 text-slate-600 sm:table-cell">
-                    {s.notes ?? <span className="text-slate-400">—</span>}
+                    {s.notes ?? <span className="text-slate-500">—</span>}
                   </td>
                   <td className="px-3 py-2">
                     <ToggleSupplierActive supplierId={s.id} active={s.active} />

@@ -186,7 +186,7 @@ export function OSDetailActions({
         </div>
       )}
       {isOwner && (
-        <p className="mt-3 text-xs text-slate-400">Você é o dono — pode editar qualquer OS.</p>
+        <p className="mt-3 text-xs text-slate-500">Você é o dono — pode editar qualquer OS.</p>
       )}
       <style jsx global>{`
         .form-input {

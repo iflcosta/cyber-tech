@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
+import { Modal } from '@/app/admin/components/Modal';
 
 type Action = 'wipe_stock' | 'reset_quantities';
 
@@ -47,6 +48,7 @@ const COPY: Record<Action, {
 
 export function WipeStockButtons() {
   const router = useRouter();
+  const titleId = useId();
   const [active, setActive] = useState<Action | null>(null);
   const [confirmText, setConfirmText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -117,10 +119,10 @@ export function WipeStockButtons() {
         </div>
       )}
 
-      {active && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-bold text-red-700">{COPY[active].title}</h2>
+      <Modal open={!!active} onClose={close} titleId={titleId}>
+        {active && (
+          <>
+            <h2 id={titleId} className="text-lg font-bold text-red-700">{COPY[active].title}</h2>
             <div className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
               {COPY[active].warning}
             </div>
@@ -163,9 +165,9 @@ export function WipeStockButtons() {
                 {submitting ? 'Apagando…' : COPY[active].confirmText}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </>
   );
 }

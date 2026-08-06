@@ -39,7 +39,7 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
             <span className="font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg">
               {so.short_id}
             </span>
-            <span className="font-mono text-[10px] font-medium text-slate-400">
+            <span className="font-mono text-[10px] font-medium text-slate-500">
               {so.os_number}
             </span>
             <StatusBadge status={so.status} />

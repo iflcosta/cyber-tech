@@ -91,7 +91,7 @@ export default async function VendasListPage({
         </div>
         <Link
           href="/admin/vender"
-          className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+          className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"
         >
           + Nova venda
         </Link>
@@ -105,6 +105,7 @@ export default async function VendasListPage({
             name="q"
             defaultValue={params.q ?? ''}
             placeholder="Buscar por número, cliente, operador…"
+            aria-label="Buscar por número, cliente, operador"
             className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <button
@@ -240,7 +241,7 @@ export default async function VendasListPage({
                       {new Date(s.created_at).toLocaleString('pt-BR')}
                     </td>
                     <td className="px-3 py-2 text-slate-700">
-                      {s.customer_name ?? <span className="text-slate-400">Balcão</span>}
+                      {s.customer_name ?? <span className="text-slate-500">Balcão</span>}
                     </td>
                     <td className="px-3 py-2 text-slate-700">{payMeta?.label}</td>
                     <td className="px-3 py-2 text-right font-mono font-medium text-slate-900">

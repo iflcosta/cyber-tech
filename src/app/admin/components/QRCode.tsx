@@ -40,7 +40,7 @@ export function QRCodeImage({
   if (!dataUrl) {
     return (
       <div
-        className={`flex items-center justify-center bg-slate-100 text-xs text-slate-400 ${className ?? ''}`}
+        className={`flex items-center justify-center bg-slate-100 text-xs text-slate-500 ${className ?? ''}`}
         style={{ width: size, height: size }}
       >
         Gerando…

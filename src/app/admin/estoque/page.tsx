@@ -144,13 +144,13 @@ export default async function StockListPage({
                         </span>
                       )}
                       {item.ean13 && (
-                        <span className="block font-mono text-xs text-slate-400">
+                        <span className="block font-mono text-xs text-slate-500">
                           EAN: {item.ean13}
                         </span>
                       )}
                     </td>
                     <td className="hidden px-3 py-2 text-slate-600 sm:table-cell">
-                      {item.category ?? <span className="text-slate-400">—</span>}
+                      {item.category ?? <span className="text-slate-500">—</span>}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <span
@@ -164,7 +164,7 @@ export default async function StockListPage({
                       >
                         {item.current_stock}
                       </span>
-                      <span className="text-xs text-slate-400"> / {item.min_stock}</span>
+                      <span className="text-xs text-slate-500"> / {item.min_stock}</span>
                     </td>
                     <td className="hidden px-3 py-2 text-right font-medium text-slate-900 sm:table-cell">
                       {item.unit_price.toLocaleString('pt-BR', {
