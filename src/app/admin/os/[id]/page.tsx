@@ -9,9 +9,10 @@ import { StatusQuickActions } from './StatusQuickActions';
 import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/components/OSTimeline';
 import { RepairNotesEditor } from './RepairNotesEditor';
+import { ChecklistEditor } from './ChecklistEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
-import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -280,19 +281,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Checklist de entrada</h2>
-            <ul className="mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-              {ENTRY_CHECKLIST_FIELDS.map((f) => {
-                const val = normalizedSo.entry_checklist?.[f.key];
-                return (
-                  <li key={f.key} className="flex items-center gap-2">
-                    <span className={val ? 'text-emerald-600' : 'text-red-500'}>
-                      {val ? '✓' : '✗'}
-                    </span>
-                    <span className="text-slate-700">{f.label}</span>
-                  </li>
-                );
-              })}
-            </ul>
+            <ChecklistEditor
+              osId={normalizedSo.id}
+              initialChecklist={normalizedSo.entry_checklist}
+              canEdit={canEdit}
+            />
             {normalizedSo.accessories_in && (
               <p className="mt-3 text-sm text-slate-600">
                 <strong>Acessórios:</strong> {normalizedSo.accessories_in}
