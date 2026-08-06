@@ -22,8 +22,8 @@ export default async function DashboardPage() {
   weekStart.setDate(weekStart.getDate() - 7);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Busca vendas nao canceladas dos periodos (em paralelo)
-  const [salesToday, salesWeek, salesMonth, lastSales, topItems] = await Promise.all([
+  // Busca vendas nao canceladas dos periodos + numeros de OS (em paralelo)
+  const [salesToday, salesWeek, salesMonth, lastSales, topItems, osOpen, osStale, osReady, osDeliveredMonth] = await Promise.all([
     supabase
       .from('sales')
       .select('total')
@@ -54,7 +54,32 @@ export default async function DashboardPage() {
       .gte('sale.created_at', monthStart.toISOString())
       .is('sale.voided_at', null)
       .limit(500),
+    supabase
+      .from('service_orders_with_stale')
+      .select('id', { count: 'exact', head: true }),
+    supabase
+      .from('service_orders_with_stale')
+      .select('id', { count: 'exact', head: true })
+      .gte('days_since_update', 3),
+    supabase
+      .from('service_orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'ready'),
+    supabase
+      .from('service_orders')
+      .select('labor_cost')
+      .eq('status', 'delivered')
+      .gte('delivered_at', monthStart.toISOString()),
   ]);
+
+  // Numeros de OS
+  const osOpenCount = osOpen.count ?? 0;
+  const osStaleCount = osStale.count ?? 0;
+  const osReadyCount = osReady.count ?? 0;
+  const laborRevenueMonth = (osDeliveredMonth.data ?? []).reduce(
+    (acc, o) => acc + Number((o as { labor_cost: number }).labor_cost ?? 0),
+    0,
+  );
 
   // Calcula totais
   const sumTotal = (rows: { total: number }[] | null) =>
@@ -121,8 +146,56 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      {/* Numeros da bancada (OS) */}
+      <section>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          Bancada
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Link
+            href="/admin/crm/os"
+            className="block rounded-lg border-2 border-slate-200 bg-white p-4 transition hover:shadow-md"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Abertas</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{osOpenCount}</p>
+          </Link>
+          <Link
+            href="/admin/crm/os?status=all"
+            className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${
+              osStaleCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white'
+            }`}
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Paradas (≥ 3 dias)
+            </p>
+            <p className={`mt-1 text-2xl font-bold ${osStaleCount > 0 ? 'text-orange-700' : 'text-slate-900'}`}>
+              {osStaleCount}
+            </p>
+          </Link>
+          <Link
+            href="/admin/crm/os?status=ready"
+            className="block rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4 transition hover:shadow-md"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Prontas p/ retirada
+            </p>
+            <p className="mt-1 text-2xl font-bold text-emerald-700">{osReadyCount}</p>
+          </Link>
+          <div className="block rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Mão de obra (mês)
+            </p>
+            <p className="mt-1 text-2xl font-bold text-indigo-700">{fmtBRL(laborRevenueMonth)}</p>
+          </div>
+        </div>
+      </section>
+
       {/* Cards de totais */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <section>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          Vendas (PDV)
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-3">
         <Card
           title="Hoje"
           total={totalToday}
@@ -144,7 +217,8 @@ export default async function DashboardPage() {
           color="indigo"
           href={`/admin/crm/vendas?from=${monthStart.toISOString().slice(0, 10)}`}
         />
-      </div>
+        </div>
+      </section>
 
       {/* Top itens vendidos no mes */}
       <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">

@@ -25,17 +25,32 @@ const STATUS_QUICK_LABEL: Partial<Record<OSStatusValue, string>> = {
   delivered: '🤝 Entregar',
 };
 
+// Normaliza telefone BR para wa.me (mesma lógica do WhatsAppButton)
+function toWhatsAppLink(phone: string | null | undefined, message: string): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) return null;
+  const withCountry = digits.startsWith('55') && digits.length >= 12 ? digits : '55' + digits;
+  return `https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`;
+}
+
 export function StatusQuickActions({
   osId,
   currentStatus,
   currentUserId,
   currentUserName,
+  customerPhone,
+  customerName,
+  osLabel,
   canEdit,
 }: {
   osId: string;
   currentStatus: string;
   currentUserId: string;
   currentUserName: string;
+  customerPhone?: string | null;
+  customerName?: string;
+  osLabel?: string;
   canEdit: boolean;
 }) {
   const router = useRouter();
@@ -77,6 +92,18 @@ export function StatusQuickActions({
         to_value: newStatus,
         author_id: currentUserId,
       });
+
+      // Notifica o cliente automaticamente quando fica pronto pra retirada —
+      // abre o WhatsApp já com a mensagem pronta, sem precisar navegar até
+      // o botão manual. Só dispara se tiver telefone cadastrado.
+      if (newStatus === 'ready' && customerPhone) {
+        const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu aparelho${
+          osLabel ? ` (OS ${osLabel})` : ''
+        } já está pronto para retirada. 🙂`;
+        const link = toWhatsAppLink(customerPhone, msg);
+        if (link) window.open(link, '_blank');
+      }
+
       startTransition(() => router.refresh());
     } catch (e) {
       setError((e as Error).message);

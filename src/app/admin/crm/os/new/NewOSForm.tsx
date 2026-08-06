@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/crm/lib/supabase/client';
 import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 type Profile = { id: string; full_name: string };
+
+type CustomerMatch = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  osCount: number;
+};
 
 export function NewOSForm({
   currentUserId,
@@ -26,6 +34,59 @@ export function NewOSForm({
     phone: '',
     email: '',
   });
+  const [customerMatches, setCustomerMatches] = useState<CustomerMatch[]>([]);
+  const [searchingCustomer, setSearchingCustomer] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(null);
+
+  // Busca cliente já cadastrado enquanto digita telefone ou nome —
+  // evita criar um customer novo pra quem já veio na loja antes.
+  useEffect(() => {
+    if (selectedCustomer) return; // já escolheu, não busca mais
+    const digits = customer.phone.replace(/\D/g, '');
+    const nameQuery = customer.name.trim();
+    if (digits.length < 4 && nameQuery.length < 3) {
+      setCustomerMatches([]);
+      return;
+    }
+    const t = setTimeout(async () => {
+      setSearchingCustomer(true);
+      try {
+        const supabase = createCRMBrowserClient();
+        let query = supabase
+          .from('customers')
+          .select('id, name, phone, email')
+          .limit(5);
+        query = digits.length >= 4
+          ? query.ilike('phone_search', `%${digits}%`)
+          : query.ilike('name', `%${nameQuery}%`);
+        const { data } = await query;
+        const withCounts = await Promise.all(
+          (data ?? []).map(async (c) => {
+            const { count } = await supabase
+              .from('service_orders')
+              .select('id', { count: 'exact', head: true })
+              .eq('customer_id', c.id);
+            return { ...c, osCount: count ?? 0 };
+          }),
+        );
+        setCustomerMatches(withCounts);
+      } finally {
+        setSearchingCustomer(false);
+      }
+    }, 350);
+    return () => clearTimeout(t);
+  }, [customer.phone, customer.name, selectedCustomer]);
+
+  function pickCustomer(match: CustomerMatch) {
+    setSelectedCustomer(match);
+    setCustomer({ name: match.name, phone: match.phone ?? '', email: match.email ?? '' });
+    setCustomerMatches([]);
+  }
+
+  function clearCustomerSelection() {
+    setSelectedCustomer(null);
+    setCustomer({ name: '', phone: '', email: '' });
+  }
   const [equipment, setEquipment] = useState({
     type: 'notebook' as EquipmentTypeValue,
     brand: '',
@@ -38,6 +99,9 @@ export function NewOSForm({
     Object.fromEntries(ENTRY_CHECKLIST_FIELDS.map((f) => [f.key, false])),
   );
   const [accessories, setAccessories] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [defect, setDefect] = useState('');
   const [assignedTo, setAssignedTo] = useState<string>('');
   const [blocking, setBlocking] = useState('');
@@ -56,6 +120,35 @@ export function NewOSForm({
     setStep((s) => Math.min(3, s + 1));
   }
 
+  async function uploadPhotos(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploadingPhotos(true);
+    setPhotoError(null);
+    try {
+      const supabase = createCRMBrowserClient();
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from('equipment-photos')
+          .upload(path, file, { contentType: file.type || 'image/jpeg' });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from('equipment-photos').getPublicUrl(path);
+        uploaded.push(pub.publicUrl);
+      }
+      setPhotos((prev) => [...prev, ...uploaded]);
+    } catch (e) {
+      setPhotoError((e as Error).message);
+    } finally {
+      setUploadingPhotos(false);
+    }
+  }
+
+  function removePhoto(url: string) {
+    setPhotos((prev) => prev.filter((p) => p !== url));
+  }
+
   async function submit() {
     if (!defect.trim()) {
       setError('Defeito relatado é obrigatório.');
@@ -65,23 +158,27 @@ export function NewOSForm({
     setError(null);
     try {
       const supabase = createCRMBrowserClient();
-      // 1. cliente
-      const { data: newCustomer, error: custErr } = await supabase
-        .from('customers')
-        .insert({
-          name: customer.name.trim(),
-          phone: customer.phone.trim() || null,
-          email: customer.email.trim() || null,
-        })
-        .select('id')
-        .single();
-      if (custErr) throw custErr;
+      // 1. cliente — reaproveita se já foi selecionado na busca, senão cria novo
+      let customerId = selectedCustomer?.id;
+      if (!customerId) {
+        const { data: newCustomer, error: custErr } = await supabase
+          .from('customers')
+          .insert({
+            name: customer.name.trim(),
+            phone: customer.phone.trim() || null,
+            email: customer.email.trim() || null,
+          })
+          .select('id')
+          .single();
+        if (custErr) throw custErr;
+        customerId = newCustomer.id;
+      }
 
       // 2. OS
       const { data: newOS, error: osErr } = await supabase
         .from('service_orders')
         .insert({
-          customer_id: newCustomer.id,
+          customer_id: customerId,
           equipment_type: equipment.type,
           equipment_brand: equipment.brand.trim() || null,
           equipment_model: equipment.model.trim() || null,
@@ -91,6 +188,7 @@ export function NewOSForm({
           reported_defect: defect.trim(),
           entry_checklist: checklist,
           accessories_in: accessories.trim() || null,
+          equipment_photos: photos,
           assigned_to: assignedTo || null,
           blocking_reason: blocking.trim() || null,
           estimated_ready_at: estimatedReady || null,
@@ -138,32 +236,91 @@ export function NewOSForm({
 
       {step === 1 && (
         <div className="space-y-3">
-          <Field label="Nome do cliente *">
-            <input
-              autoFocus
-              value={customer.name}
-              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-              className="form-input"
-              placeholder="Ex: Maria Silva"
-            />
-          </Field>
-          <Field label="Telefone">
-            <input
-              type="tel"
-              value={customer.phone}
-              onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-              className="form-input"
-              placeholder="(11) 99999-9999"
-            />
-          </Field>
-          <Field label="E-mail (opcional)">
-            <input
-              type="email"
-              value={customer.email}
-              onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-              className="form-input"
-            />
-          </Field>
+          {selectedCustomer ? (
+            <div className="rounded-md border-2 border-emerald-300 bg-emerald-50 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                Cliente já cadastrado
+              </p>
+              <p className="mt-1 font-medium text-slate-900">{selectedCustomer.name}</p>
+              <p className="text-sm text-slate-600">
+                {selectedCustomer.phone}
+                {selectedCustomer.osCount > 0 && (
+                  <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">
+                    {selectedCustomer.osCount} OS anterior{selectedCustomer.osCount === 1 ? '' : 'es'}
+                  </span>
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={clearCustomerSelection}
+                className="mt-2 text-xs font-medium text-slate-600 underline hover:text-slate-800"
+              >
+                Não é esse cliente — trocar
+              </button>
+            </div>
+          ) : (
+            <>
+              <Field label="Nome do cliente *">
+                <input
+                  autoFocus
+                  value={customer.name}
+                  onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                  className="form-input"
+                  placeholder="Ex: Maria Silva"
+                />
+              </Field>
+              <Field label="Telefone">
+                <input
+                  type="tel"
+                  value={customer.phone}
+                  onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                  className="form-input"
+                  placeholder="(11) 99999-9999"
+                />
+              </Field>
+
+              {searchingCustomer && (
+                <p className="text-xs text-slate-500">Buscando cliente cadastrado…</p>
+              )}
+              {customerMatches.length > 0 && (
+                <div className="rounded-md border border-blue-200 bg-blue-50/60 p-2">
+                  <p className="mb-1.5 text-xs font-medium text-blue-800">
+                    Encontramos {customerMatches.length === 1 ? 'este cadastro' : 'estes cadastros'}:
+                  </p>
+                  <ul className="space-y-1.5">
+                    {customerMatches.map((m) => (
+                      <li key={m.id}>
+                        <button
+                          type="button"
+                          onClick={() => pickCustomer(m)}
+                          className="flex w-full items-center justify-between gap-2 rounded-md border border-blue-200 bg-white px-3 py-2 text-left text-sm hover:border-blue-400 hover:bg-blue-50"
+                        >
+                          <span>
+                            <span className="font-medium text-slate-900">{m.name}</span>
+                            <span className="ml-2 text-slate-500">{m.phone}</span>
+                          </span>
+                          {m.osCount > 0 && (
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                              {m.osCount} OS
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <Field label="E-mail (opcional)">
+                <input
+                  type="email"
+                  value={customer.email}
+                  onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                  className="form-input"
+                />
+              </Field>
+            </>
+          )}
         </div>
       )}
 
@@ -227,6 +384,42 @@ export function NewOSForm({
           </Field>
           <Field label="Acessórios que entraram">
             <input value={accessories} onChange={(e) => setAccessories(e.target.value)} className="form-input" placeholder="Ex: carregador + capa" />
+          </Field>
+          <Field label="Foto do aparelho (opcional, mas recomendado)">
+            <label className="flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-sm font-medium text-slate-600 hover:bg-slate-100">
+              {uploadingPhotos ? 'Enviando…' : '📷 Tirar foto / escolher da galeria'}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                multiple
+                onChange={(e) => uploadPhotos(e.target.files)}
+                disabled={uploadingPhotos}
+                className="hidden"
+              />
+            </label>
+            <p className="mt-1 text-xs text-slate-500">
+              Prova do estado em que o aparelho chegou (tela trincada, riscos, etc).
+            </p>
+            {photoError && <p className="mt-1 text-xs text-red-600">{photoError}</p>}
+            {photos.length > 0 && (
+              <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {photos.map((url) => (
+                  <div key={url} className="group relative aspect-square overflow-hidden rounded-md border border-slate-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="Foto do aparelho" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(url)}
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
+                      aria-label="Remover foto"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </Field>
         </div>
       )}

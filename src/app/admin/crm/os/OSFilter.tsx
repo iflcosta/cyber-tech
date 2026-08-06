@@ -60,6 +60,12 @@ export function OSFilter() {
             onClick={() => update('status', s.value)}
           />
         ))}
+        <FilterChip
+          label="🛡️ Em garantia"
+          value="warranty"
+          active={params.get('status') === 'warranty'}
+          onClick={() => update('status', 'warranty')}
+        />
       </div>
     </div>
   );

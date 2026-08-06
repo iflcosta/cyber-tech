@@ -69,6 +69,7 @@ export type Database = {
           reported_defect: string;
           entry_checklist: Record<string, boolean | string>;
           accessories_in: string | null;
+          equipment_photos: string[];
           status:
             | 'awaiting_approval'
             | 'approved'
@@ -105,6 +106,7 @@ export type Database = {
           reported_defect: string;
           entry_checklist?: Record<string, boolean | string>;
           accessories_in?: string | null;
+          equipment_photos?: string[];
           status?:
             | 'awaiting_approval'
             | 'approved'
@@ -205,6 +207,7 @@ export type Database = {
           unit_price: number | null;
           total_amount: number | null;
           reference: string | null;
+          service_order_id: string | null;
           notes: string | null;
           author_id: string;
           created_at: string;
@@ -217,6 +220,7 @@ export type Database = {
           unit_price?: number | null;
           total_amount?: number | null;
           reference?: string | null;
+          service_order_id?: string | null;
           notes?: string | null;
           author_id: string;
           created_at?: string;
@@ -456,6 +460,9 @@ export const OS_STATUSES = [
 ] as const;
 
 export type OSStatusValue = (typeof OS_STATUSES)[number]['value'];
+
+// Garantia padrão sobre o reparo executado (dias, a partir da entrega).
+export const WARRANTY_DAYS = 90;
 
 export const EQUIPMENT_TYPES = [
   { value: 'computador', label: 'Computador' },
