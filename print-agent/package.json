@@ -1,0 +1,14 @@
+{
+  "name": "cyber-erp-print-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agente local que recebe payload ESC/POS do Cyber ERP e repassa pra porta serial/Bluetooth da impressora térmica (MPT-II).",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "serialport": "^12.0.0"
+  }
+}

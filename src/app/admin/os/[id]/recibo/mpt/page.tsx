@@ -4,6 +4,7 @@ import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
 import { ReciboPrintButton } from '@/app/admin/vendas/[id]/recibo/ReciboPrintButton';
 import { AutoPrint } from '@/app/admin/vendas/[id]/recibo/AutoPrint';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
+import { EscPosReciboButton } from './EscPosReciboButton';
 import { WARRANTY_DAYS } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -133,6 +134,20 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
 
   const reciboText = lines.join('\n');
 
+  // Dados pro botão ESC/POS (agente de impressão local) — mesmas
+  // informações do texto acima, em campos separados pro construtor
+  // de comandos montar com negrito/alinhamento reais.
+  const escposEquipmentLine =
+    so.equipment_brand || so.equipment_model
+      ? `${so.equipment_type} ${so.equipment_brand ?? ''} ${so.equipment_model ?? ''}`.trim()
+      : undefined;
+  const escposServiceText = so.repair_notes || so.reported_defect || '';
+  const escposParts = (parts ?? []).map((p) => ({
+    name: (p as any).stock_item?.name ?? 'item',
+    qty: p.quantity,
+    subtotal: Number(p.total_amount).toFixed(2).replace('.', ','),
+  }));
+
   return (
     <>
       <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
@@ -156,7 +171,26 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
       </div>
 
       <div className="mx-auto max-w-sm">
-        <ReciboPrintButton />
+        <div className="print:hidden flex flex-col gap-2">
+          <ReciboPrintButton />
+          <EscPosReciboButton
+            osNumber={so.os_number ?? ''}
+            dateStr={new Date(warrantyStart).toLocaleDateString('pt-BR')}
+            customerName={customerName}
+            equipmentLine={escposEquipmentLine}
+            serviceText={escposServiceText}
+            parts={escposParts}
+            partsTotal={fmtBRL(partsTotal)}
+            laborCost={fmtBRL(laborCost)}
+            grandTotal={fmtBRL(grandTotal)}
+            warrantyEndStr={warrantyEndStr}
+            deliveredToName={so.delivered_to_name}
+          />
+          <p className="text-xs text-blue-700">
+            O botão verde manda comandos reais (negrito, corte) via agente de impressão local —
+            precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
+          </p>
+        </div>
         <AutoPrint />
         <pre className="mt-2 whitespace-pre-wrap rounded-md border border-slate-300 bg-white p-3 font-mono text-xs leading-tight text-black print:border-none print:p-0">
 {reciboText}
