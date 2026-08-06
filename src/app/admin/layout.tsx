@@ -50,6 +50,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
+  // Sem usuário logado: a única rota alcançável aqui é /admin/login
+  // (o middleware redireciona qualquer outra pra lá). A tela de login
+  // já centraliza sozinha na altura da tela inteira — não desenha a
+  // barra de topo por cima, senão dobra o espaço vertical e empurra
+  // o formulário pra baixo (bug visto no celular).
+  if (!user) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
@@ -63,89 +72,69 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </span>
           </div>
           <nav className="hidden items-center gap-1 md:flex md:gap-2">
-            {user ? (
-              <>
-                <Link
-                  href="/admin/dashboard"
-                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/admin/os"
-                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                >
-                  OS
-                </Link>
-                <Link
-                  href="/admin/estoque"
-                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                >
-                  Estoque
-                </Link>
-                <Link
-                  href="/admin/vendas"
-                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                >
-                  Vendas
-                </Link>
-                <Link
-                  href="/admin/pecas"
-                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                >
-                  Peças
-                </Link>
-                <Link
-                  href="/admin/fornecedores"
-                  className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 lg:inline-block"
-                >
-                  Fornecedores
-                </Link>
-                <Link
-                  href="/admin/os/new"
-                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-                >
-                  + Nova OS
-                </Link>
-                <Link
-                  href="/admin/vender"
-                  className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
-                >
-                  + Vender
-                </Link>
-                <div className="ml-2 flex items-center gap-2 border-l border-slate-200 pl-3">
-                  <div className="hidden text-right sm:block">
-                    <p className="text-sm font-medium text-slate-900">{profile?.full_name ?? '—'}</p>
-                    <p className="text-xs text-slate-500">
-                      {profile?.role === 'owner' ? 'Dono' : 'Técnico'}
-                    </p>
-                  </div>
-                  <LogoutButton />
-                </div>
-              </>
-            ) : (
-              <Link
-                href="/admin/login"
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-              >
-                Entrar
-              </Link>
-            )}
+            <Link
+              href="/admin/dashboard"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/os"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              OS
+            </Link>
+            <Link
+              href="/admin/estoque"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Estoque
+            </Link>
+            <Link
+              href="/admin/vendas"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Vendas
+            </Link>
+            <Link
+              href="/admin/pecas"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Peças
+            </Link>
+            <Link
+              href="/admin/fornecedores"
+              className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 lg:inline-block"
+            >
+              Fornecedores
+            </Link>
+            <Link
+              href="/admin/os/new"
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              + Nova OS
+            </Link>
+            <Link
+              href="/admin/vender"
+              className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              + Vender
+            </Link>
+            <div className="ml-2 flex items-center gap-2 border-l border-slate-200 pl-3">
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-medium text-slate-900">{profile?.full_name ?? '—'}</p>
+                <p className="text-xs text-slate-500">
+                  {profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+                </p>
+              </div>
+              <LogoutButton />
+            </div>
           </nav>
 
-          {user ? (
-            <MobileNav
-              userName={profile?.full_name ?? '—'}
-              roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
-            />
-          ) : (
-            <Link
-              href="/admin/login"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 md:hidden"
-            >
-              Entrar
-            </Link>
-          )}
+          <MobileNav
+            userName={profile?.full_name ?? '—'}
+            roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+          />
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">{children}</main>
