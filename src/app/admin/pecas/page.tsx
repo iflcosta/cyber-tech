@@ -2,11 +2,9 @@ import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { PartOrderFilter } from './PartOrderFilter';
-import { PART_ORDER_STALE_DAYS, type PartOrder } from '@/app/admin/types/database';
+import { PART_ORDER_STALE_DAYS, PART_ORDER_STATUSES, type PartOrder } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
-
-const ACTIVE_STATUSES = ['ordered', 'received', 'return_pending', 'awaiting_exchange'];
 
 type PartOrderRow = PartOrder & {
   supplier: { name: string } | null;
@@ -37,10 +35,12 @@ export default async function PartOrdersListPage({
     .order('updated_at', { ascending: false })
     .limit(100);
 
+  // "Todos" precisa mostrar TUDO, inclusive Devolvido/Cancelado — antes
+  // filtrava escondido por um subconjunto de status "ativos", então um
+  // pedido já devolvido sumia da visão "Todos" e só aparecia filtrando
+  // "Devolvido" na mão, dando a impressão de que o registro tinha sumido.
   if (params.status && params.status !== 'all') {
     query = query.eq('status', params.status);
-  } else {
-    query = query.in('status', ACTIVE_STATUSES);
   }
 
   const { data: orders, error } = await query;
@@ -76,7 +76,9 @@ export default async function PartOrdersListPage({
           <h1 className="text-2xl font-bold text-slate-900">Pedidos de Peça</h1>
           <p className="text-sm text-slate-500">
             {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
-            {params.status && params.status !== 'all' && ` (filtrado por ${params.status})`}
+            {params.status && params.status !== 'all' && (
+              ` (filtrado por ${PART_ORDER_STATUSES.find((s) => s.value === params.status)?.label ?? params.status})`
+            )}
           </p>
         </div>
         <div className="flex flex-shrink-0 gap-2">
