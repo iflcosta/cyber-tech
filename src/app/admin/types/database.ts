@@ -544,9 +544,12 @@ export type ReturnReasonValue = (typeof RETURN_REASONS)[number]['value'];
 // devolução definitiva, sem reposição.
 export const EXCHANGE_ELIGIBLE_REASONS: ReturnReasonValue[] = ['defective', 'wrong_item'];
 
-export const PART_VARIANT_SUGGESTIONS = [
-  'Com aro',
-  'Sem aro',
+// Variação de peça = dois eixos independentes que se combinam (ex:
+// "Com aro" + "OLED"), não uma lista única — uma tela pode ser
+// com/sem aro E ao mesmo tempo original/OLED/incell.
+export const PART_FRAME_OPTIONS = ['Com aro', 'Sem aro'] as const;
+
+export const PART_FINISH_OPTIONS = [
   'Original',
   'OLED',
   'Incell',
