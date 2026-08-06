@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { PAYMENT_METHODS, type PaymentMethodValue } from '@/app/admin/types/database';
+import { Modal } from '@/app/admin/components/Modal';
 
 type Item = {
   id: string;
@@ -55,6 +56,7 @@ export function PDV({
   const [flash, setFlash] = useState<string | null>(null);
 
   // Modal de finalizar venda
+  const finalizeTitleId = useId();
   const [finalizing, setFinalizing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodValue>('pix');
   const [customerName, setCustomerName] = useState('');
@@ -301,7 +303,7 @@ export function PDV({
                   {i.brand && (
                     <span className="ml-1 text-xs text-slate-500">· {i.brand}</span>
                   )}
-                  <span className="ml-2 font-mono text-xs text-slate-400">
+                  <span className="ml-2 font-mono text-xs text-slate-500">
                     {i.ean13}
                   </span>
                 </button>
@@ -350,7 +352,7 @@ export function PDV({
                   <button
                     type="button"
                     onClick={() => removeItem(c.stock_item_id)}
-                    className="rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                    className="rounded-md p-1 text-slate-500 hover:bg-red-50 hover:text-red-600"
                     aria-label="Remover"
                   >
                     ✕
@@ -370,7 +372,7 @@ export function PDV({
                   type="button"
                   onClick={() => setFinalizing(true)}
                   disabled={cart.length === 0}
-                  className="rounded-md bg-emerald-600 px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-30"
+                  className="rounded-md bg-emerald-700 px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:opacity-30"
                 >
                   Finalizar venda →
                 </button>
@@ -381,10 +383,8 @@ export function PDV({
       </section>
 
       {/* Modal de finalizacao */}
-      {finalizing && (
-        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-bold text-slate-900">Finalizar venda</h2>
+      <Modal open={finalizing} onClose={() => setFinalizing(false)} titleId={finalizeTitleId}>
+            <h2 id={finalizeTitleId} className="text-lg font-bold text-slate-900">Finalizar venda</h2>
             <p className="mt-1 text-sm text-slate-500">
               {cart.length} {cart.length === 1 ? 'item' : 'itens'} ·{' '}
               {fmtBRL(subtotal)}
@@ -489,14 +489,12 @@ export function PDV({
                 type="button"
                 onClick={finalizarVenda}
                 disabled={submitting || total <= 0}
-                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
               >
                 {submitting ? 'Salvando…' : 'Confirmar venda'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }

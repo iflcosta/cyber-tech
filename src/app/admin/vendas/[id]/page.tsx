@@ -70,7 +70,7 @@ export default async function VendaDetailPage({
         <Link
           href={`/admin/vendas/${sale.id}/recibo`}
           target="_blank"
-          className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+          className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"
         >
           🖨️ {sale.voided_at ? 'Reimprimir recibo' : 'Imprimir recibo'}
         </Link>

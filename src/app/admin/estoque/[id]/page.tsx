@@ -176,7 +176,7 @@ export default async function StockItemDetailPage({
                           )}
                         </div>
                         {m.notes && <p className="mt-1 text-slate-600">{m.notes}</p>}
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-slate-500">
                           {new Date(m.created_at).toLocaleString('pt-BR')} ·{' '}
                           {m.author?.full_name ?? '—'}
                         </p>

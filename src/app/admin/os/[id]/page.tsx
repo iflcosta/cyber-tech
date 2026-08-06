@@ -142,7 +142,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               {normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
             </span>
             {normalizedSo.os_number && (
-              <span className="font-mono text-sm font-medium text-slate-400">
+              <span className="font-mono text-sm font-medium text-slate-500">
                 {normalizedSo.os_number}
               </span>
             )}

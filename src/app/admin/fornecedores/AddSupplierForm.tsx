@@ -86,7 +86,7 @@ export function AddSupplierForm() {
         <button
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
         >
           {submitting ? 'Salvando…' : 'Salvar'}
         </button>

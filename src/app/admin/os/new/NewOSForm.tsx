@@ -264,7 +264,7 @@ export function NewOSForm({
             >
               {n}
             </div>
-            <div className={`text-sm font-medium ${n === step ? 'text-slate-900' : 'text-slate-400'}`}>
+            <div className={`text-sm font-medium ${n === step ? 'text-slate-900' : 'text-slate-500'}`}>
               {n === 1 ? 'Cliente' : n === 2 ? 'Aparelho' : 'Serviço'}
             </div>
             {n < 3 && <div className="h-px flex-1 bg-slate-200" />}
@@ -540,7 +540,7 @@ export function NewOSForm({
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
           >
             {submitting ? 'Salvando…' : 'Criar OS'}
           </button>

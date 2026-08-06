@@ -94,7 +94,7 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
                 {' · '}{so.customer?.name}
               </p>
             ) : (
-              <p className="mt-1 text-slate-700">{order.context_note ?? <span className="text-slate-400">Sem contexto</span>}</p>
+              <p className="mt-1 text-slate-700">{order.context_note ?? <span className="text-slate-500">Sem contexto</span>}</p>
             )}
           </section>
 

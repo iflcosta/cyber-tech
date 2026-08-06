@@ -60,7 +60,7 @@ export function DesktopNav({
         </Link>
         <Link
           href="/admin/vender"
-          className="whitespace-nowrap rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="whitespace-nowrap rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800"
         >
           + Vender
         </Link>

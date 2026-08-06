@@ -139,7 +139,7 @@ export default async function PartOrdersListPage({
                   ) : o.context_note ? (
                     o.context_note
                   ) : (
-                    <span className="text-slate-400">Sem OS vinculada</span>
+                    <span className="text-slate-500">Sem OS vinculada</span>
                   )}
                 </span>
                 <span className="font-mono font-medium text-slate-900">

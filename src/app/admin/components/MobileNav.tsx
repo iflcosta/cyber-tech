@@ -73,7 +73,7 @@ export function MobileNav({
             </Link>
             <Link
               href="/admin/vender"
-              className="mb-3 rounded-md bg-emerald-600 px-4 py-3 text-center text-base font-semibold text-white hover:bg-emerald-700"
+              className="mb-3 rounded-md bg-emerald-700 px-4 py-3 text-center text-base font-semibold text-white hover:bg-emerald-800"
             >
               + Vender
             </Link>
