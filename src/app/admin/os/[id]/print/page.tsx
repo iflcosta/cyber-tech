@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PrintButton } from './PrintButton';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { formatDateOnlyBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
             <p className="font-mono text-lg font-semibold text-slate-700">{so.os_number}</p>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Comprovante de entrada · {new Date(so.created_at).toLocaleString('pt-BR')}
+            Comprovante de entrada · {formatDateTimeBR(so.created_at)}
           </p>
         </header>
 
@@ -95,7 +96,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Previsão</h2>
           <p className="mt-1 text-sm text-slate-900">
             {so.estimated_ready_at
-              ? `Pronto em: ${new Date(so.estimated_ready_at).toLocaleDateString('pt-BR')}`
+              ? `Pronto em: ${formatDateOnlyBR(so.estimated_ready_at)}`
               : 'A definir'}
             {so.assigned_to_name && ` · Técnico: ${so.assigned_to_name}`}
           </p>

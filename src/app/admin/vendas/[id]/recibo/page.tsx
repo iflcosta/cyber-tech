@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
+import { formatDateBR, formatTimeBR } from '@/app/admin/lib/datetime';
 import { ReciboPrintButton } from './ReciboPrintButton';
 import { AutoPrint } from './AutoPrint';
 
@@ -29,9 +30,8 @@ function buildRecibo(sale: any, items: any[], operatorName: string): string {
   const cols = 30;
   const eq = '='.repeat(cols);
   const dash = '-'.repeat(cols);
-  const now = new Date(sale.created_at);
-  const dateStr = now.toLocaleDateString('pt-BR');
-  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = formatDateBR(sale.created_at);
+  const timeStr = formatTimeBR(sale.created_at);
 
   const payLabel: Record<string, string> = {
     cash: 'Dinheiro',

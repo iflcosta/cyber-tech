@@ -13,6 +13,7 @@ import { ChecklistEditor } from './ChecklistEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { formatDateOnlyBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -375,7 +376,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               )}
             </p>
             {normalizedSo.estimated_ready_at && (
-              <p className="mt-1 text-sm">Previsão: <strong>{new Date(normalizedSo.estimated_ready_at).toLocaleDateString('pt-BR')}</strong></p>
+              <p className="mt-1 text-sm">Previsão: <strong>{formatDateOnlyBR(normalizedSo.estimated_ready_at)}</strong></p>
             )}
           </section>
 

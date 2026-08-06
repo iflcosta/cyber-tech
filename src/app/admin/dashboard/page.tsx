@@ -3,6 +3,7 @@ import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import { PIX_CONFIG } from '@/app/admin/lib/pix';
+import { formatDateTimeBR, startOfDayBR, startOfMonthBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,12 +15,12 @@ export default async function DashboardPage() {
   const { supabase, user } = await getAuthedUser();
   if (!user) return null;
 
-  // Janelas de tempo
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Janelas de tempo — sempre no fuso de Brasília, não no fuso do
+  // servidor (Vercel roda em UTC, o que fazia "hoje" começar 3h adiantado).
+  const todayStart = startOfDayBR();
   const weekStart = new Date(todayStart);
-  weekStart.setDate(weekStart.getDate() - 7);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  weekStart.setUTCDate(weekStart.getUTCDate() - 7);
+  const monthStart = startOfMonthBR();
 
   // Busca vendas nao canceladas dos periodos + numeros de OS (em paralelo)
   const [salesToday, salesWeek, salesMonth, lastSales, topItems, osOpen, osStale, osReady, osDeliveredMonth] = await Promise.all([
@@ -287,7 +288,7 @@ export default async function DashboardPage() {
                       {s.sale_number}
                     </Link>
                     <p className="text-xs text-slate-500">
-                      {new Date(s.created_at).toLocaleString('pt-BR')} ·{' '}
+                      {formatDateTimeBR(s.created_at)} ·{' '}
                       {s.author?.full_name ?? '—'} · {payMeta?.label ?? s.payment_method}
                       {s.customer_name && ` · ${s.customer_name}`}
                     </p>

@@ -4,6 +4,7 @@ import { getAuthedUser } from '@/app/admin/lib/auth';
 import { STOCK_MOVEMENT_TYPES } from '@/app/admin/types/database';
 import { DeleteStockItemButton } from './DeleteStockItemButton';
 import { ToggleActiveButton } from './ToggleActiveButton';
+import { formatDateBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -177,7 +178,7 @@ export default async function StockItemDetailPage({
                         </div>
                         {m.notes && <p className="mt-1 text-slate-600">{m.notes}</p>}
                         <p className="mt-1 text-xs text-slate-500">
-                          {new Date(m.created_at).toLocaleString('pt-BR')} ·{' '}
+                          {formatDateTimeBR(m.created_at)} ·{' '}
                           {m.author?.full_name ?? '—'}
                         </p>
                       </div>
@@ -238,11 +239,11 @@ export default async function StockItemDetailPage({
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5 text-xs text-slate-500">
             <p>
               <strong>Criado em:</strong>{' '}
-              {new Date(item.created_at).toLocaleDateString('pt-BR')}
+              {formatDateBR(item.created_at)}
             </p>
             <p className="mt-1">
               <strong>Atualizado em:</strong>{' '}
-              {new Date(item.updated_at).toLocaleDateString('pt-BR')}
+              {formatDateBR(item.updated_at)}
             </p>
           </section>
         </aside>

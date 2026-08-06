@@ -1,4 +1,5 @@
 import type { ServiceOrderEvent } from '../types/database';
+import { formatDateTimeShortBR } from '../lib/datetime';
 
 const EVENT_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   created: { label: 'OS criada', color: 'bg-slate-100 text-slate-700', icon: '✨' },
@@ -10,10 +11,7 @@ const EVENT_LABELS: Record<string, { label: string; color: string; icon: string 
   delivered: { label: 'Entregue', color: 'bg-emerald-100 text-emerald-800', icon: '📦' },
 };
 
-function formatTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
+const formatTime = formatDateTimeShortBR;
 
 export function OSTimeline({ events, authorNames }: {
   events: ServiceOrderEvent[];

@@ -6,6 +6,7 @@ import { AutoPrint } from '@/app/admin/vendas/[id]/recibo/AutoPrint';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import { EscPosReciboButton } from './EscPosReciboButton';
 import { WARRANTY_DAYS } from '@/app/admin/types/database';
+import { formatDateBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,7 +67,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
   lines.push(pad('RECIBO DE ENTREGA', cols));
   lines.push(eq);
   lines.push(pad(so.os_number ?? '', cols));
-  lines.push(pad(new Date(warrantyStart).toLocaleDateString('pt-BR'), cols));
+  lines.push(pad(formatDateBR(warrantyStart), cols));
   lines.push(dash);
   lines.push(pad('CLIENTE:', cols));
   lines.push(pad(norm(customerName).substring(0, 28), cols));
@@ -105,7 +106,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
   lines.push(pad('TOTAL:', 20) + pad(fmtBRL(grandTotal), 10, 'right'));
   lines.push(eq);
   // Garantia
-  const warrantyEndStr = warrantyEnd.toLocaleDateString('pt-BR');
+  const warrantyEndStr = formatDateBR(warrantyEnd);
   lines.push(pad('GARANTIA: 90 DIAS', cols));
   lines.push(pad('ATE ' + warrantyEndStr, cols));
   lines.push(pad('Defeitos do reparo executado.', cols));
@@ -174,7 +175,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
           <ReciboPrintButton />
           <EscPosReciboButton
             osNumber={so.os_number ?? ''}
-            dateStr={new Date(warrantyStart).toLocaleDateString('pt-BR')}
+            dateStr={formatDateBR(warrantyStart)}
             customerName={customerName}
             equipmentLine={escposEquipmentLine}
             serviceText={escposServiceText}

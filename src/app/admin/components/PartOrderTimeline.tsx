@@ -1,4 +1,5 @@
 import type { PartOrderEvent } from '../types/database';
+import { formatDateTimeShortBR } from '../lib/datetime';
 
 const EVENT_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   created: { label: 'Pedido registrado', color: 'bg-blue-100 text-blue-800', icon: '📱' },
@@ -13,10 +14,7 @@ const EVENT_LABELS: Record<string, { label: string; color: string; icon: string 
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800', icon: '✖️' },
 };
 
-function formatTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
+const formatTime = formatDateTimeShortBR;
 
 export function PartOrderTimeline({
   events,
