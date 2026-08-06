@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { LoginForm } from './LoginForm';
 
 export const dynamic = 'force-dynamic';
@@ -8,8 +8,7 @@ export default async function LoginPage() {
   // Se ja tem sessao valida, nao mostra o formulario de novo — manda
   // direto pra dentro. Sem isso, acessar /login logado sempre mostrava
   // a tela de login (nunca redirecionava sozinho).
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (user) redirect('/admin/os');
 
   return (

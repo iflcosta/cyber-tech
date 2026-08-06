@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { PartOrderFilter } from './PartOrderFilter';
 import { PART_ORDER_STALE_DAYS, PART_ORDER_STATUSES, type PartOrder } from '@/app/admin/types/database';
@@ -21,8 +21,7 @@ export default async function PartOrdersListPage({
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (!user) return null;
 
   let query = supabase

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { ReciboPrintButton } from '@/app/admin/vendas/[id]/recibo/ReciboPrintButton';
 import { AutoPrint } from '@/app/admin/vendas/[id]/recibo/AutoPrint';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
@@ -25,8 +25,7 @@ function fmtBRL(n: number): string {
 
 export default async function ReciboMPTPag({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
   const { data: so } = await supabase

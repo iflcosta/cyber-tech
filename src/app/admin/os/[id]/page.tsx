@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { StatusBadge } from '@/app/admin/components/StatusBadge';
 import { StaleBadge } from '@/app/admin/components/StaleBadge';
 import { WhatsAppButton } from '@/app/admin/components/WhatsAppButton';
@@ -18,8 +18,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function OSDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
   const { data: profile } = await supabase

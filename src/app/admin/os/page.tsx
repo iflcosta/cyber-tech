@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { OSCard } from '@/app/admin/components/OSCard';
 import { OSFilter } from './OSFilter';
 import { WARRANTY_DAYS } from '@/app/admin/types/database';
@@ -16,15 +16,8 @@ export default async function OSListPage({
   searchParams: Promise<{ q?: string; status?: string; mine?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) return null;
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
 
   const showOnlyMine = params.mine === '1' && profile?.role !== 'owner';
 

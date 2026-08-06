@@ -1,12 +1,11 @@
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { AddSupplierForm } from './AddSupplierForm';
 import { ToggleSupplierActive } from './ToggleSupplierActive';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SuppliersPage() {
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (!user) return null;
 
   const { data: suppliers, error } = await supabase

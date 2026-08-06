@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { DesktopNav } from '@/app/admin/components/DesktopNav';
 import { MobileNav } from '@/app/admin/components/MobileNav';
 
@@ -9,18 +9,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   let configError: string | null = null;
 
   try {
-    const supabase = await createCRMServerClient();
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
-
-    if (user) {
-      const { data: p } = await supabase
-        .from('profiles')
-        .select('full_name, role')
-        .eq('id', user.id)
-        .maybeSingle();
-      profile = p;
-    }
+    // getAuthedProfile() é memoizado por request (React cache()) — se
+    // a página abaixo também chamar isso (ou getAuthedUser()), reusa
+    // o mesmo resultado em vez de bater no Supabase Auth de novo.
+    const result = await getAuthedProfile();
+    user = result.user;
+    profile = result.profile;
   } catch (e) {
     configError = e instanceof Error ? e.message : 'Erro ao inicializar cliente Supabase.';
   }

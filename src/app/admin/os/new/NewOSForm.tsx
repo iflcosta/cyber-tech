@@ -5,6 +5,43 @@ import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '@/app/admin/types/database';
 
+/**
+ * Foto de defeito é tirada direto do celular do técnico — câmeras
+ * modernas geram 3-12MB por arquivo (vários megapixels), muito além
+ * do necessário pra uma foto de referência exibida como thumbnail na
+ * OS. Sem compressão, isso ia direto pro Storage e voltava do
+ * tamanho original toda vez que alguém abria a OS depois — parte do
+ * porquê o sistema tava "lento" (auditoria de performance).
+ *
+ * Reduz no navegador antes do upload: redimensiona pro maior lado
+ * não passar de 1600px e reencoda em JPEG a 80% — dá pra zoom
+ * confortável na tela sem carregar o arquivo original inteiro.
+ * Se der qualquer problema (arquivo não é imagem, Canvas falha),
+ * cai pro arquivo original em vez de travar o upload.
+ */
+async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Promise<File> {
+  if (!file.type.startsWith('image/')) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const blob: Blob | null = await new Promise((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality),
+    );
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+}
+
 type Profile = { id: string; full_name: string };
 
 type CustomerMatch = {
@@ -127,7 +164,8 @@ export function NewOSForm({
     try {
       const supabase = createCRMBrowserClient();
       const uploaded: string[] = [];
-      for (const file of Array.from(files)) {
+      for (const rawFile of Array.from(files)) {
+        const file = await compressImage(rawFile);
         const ext = file.name.split('.').pop() || 'jpg';
         const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const { error: upErr } = await supabase.storage
