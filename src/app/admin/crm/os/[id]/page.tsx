@@ -9,6 +9,7 @@ import { StatusQuickActions } from './StatusQuickActions';
 import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
 import { RepairNotesEditor } from './RepairNotesEditor';
+import { PartOrderStatusBadge } from '@/app/admin/crm/components/PartOrderStatusBadge';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -77,6 +78,22 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   );
   const laborCost = Number(so.labor_cost ?? 0);
   const grandTotal = laborCost + partsTotal;
+
+  // Pedidos de peça vinculados a esta OS (fornecedor, não estoque)
+  type LinkedPartOrder = {
+    id: string;
+    part_description: string;
+    part_variant: string | null;
+    status: string;
+    part_value: number;
+    supplier: { name: string } | null;
+  };
+  const { data: partOrdersRaw } = await supabase
+    .from('part_orders')
+    .select('id, part_description, part_variant, status, part_value, supplier:suppliers(name)')
+    .eq('service_order_id', id)
+    .order('created_at', { ascending: false });
+  const partOrders = partOrdersRaw as unknown as LinkedPartOrder[] | null;
 
   const { data: technicians } = await supabase
     .from('profiles')
@@ -222,6 +239,33 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               </div>
             ) : null}
           </section>
+
+          {(partOrders && partOrders.length > 0) && (
+            <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Pedidos de peça (fornecedor)
+                </h2>
+                <Link href="/admin/crm/pecas/new" className="text-xs text-blue-600 hover:text-blue-700">
+                  + Novo pedido
+                </Link>
+              </div>
+              <ul className="mt-2 divide-y divide-slate-200 text-sm">
+                {partOrders.map((po) => (
+                  <li key={po.id} className="py-1.5">
+                    <Link href={`/admin/crm/pecas/${po.id}`} className="flex items-center justify-between gap-2 hover:text-blue-700">
+                      <span className="text-slate-900">
+                        {po.part_description}
+                        {po.part_variant ? ` · ${po.part_variant}` : ''}
+                        <span className="ml-2 text-xs text-slate-500">{po.supplier?.name}</span>
+                      </span>
+                      <PartOrderStatusBadge status={po.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Checklist de entrada</h2>

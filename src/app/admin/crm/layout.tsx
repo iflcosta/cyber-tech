@@ -89,6 +89,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   Vendas
                 </Link>
                 <Link
+                  href="/admin/crm/pecas"
+                  className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  Peças
+                </Link>
+                <Link
+                  href="/admin/crm/fornecedores"
+                  className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 lg:inline-block"
+                >
+                  Fornecedores
+                </Link>
+                <Link
                   href="/admin/crm/os/new"
                   className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
                 >
