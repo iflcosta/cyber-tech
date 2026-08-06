@@ -2,9 +2,9 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { OS_STATUSES } from '@/app/admin/crm/types/database';
+import { PART_ORDER_STATUSES } from '@/app/admin/crm/types/database';
 
-export function OSFilter() {
+export function PartOrderFilter() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -33,7 +33,7 @@ export function OSFilter() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por nome, OS, telefone, IMEI, modelo…"
+          placeholder="Buscar por peça, fornecedor, OS…"
           className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-base text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <button
@@ -46,32 +46,29 @@ export function OSFilter() {
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         <FilterChip
-          label="Ativas"
-          value=""
+          label="Todos"
           active={!params.get('status') || params.get('status') === 'all'}
           onClick={() => update('status', null)}
         />
-        {OS_STATUSES.map((s) => (
+        <FilterChip
+          label="Aguardando entrega"
+          active={params.get('status') === 'ordered'}
+          onClick={() => update('status', 'ordered')}
+        />
+        {PART_ORDER_STATUSES.filter((s) => s.value !== 'ordered').map((s) => (
           <FilterChip
             key={s.value}
             label={s.label}
-            value={s.value}
             active={params.get('status') === s.value}
             onClick={() => update('status', s.value)}
           />
         ))}
-        <FilterChip
-          label="🛡️ Em garantia"
-          value="warranty"
-          active={params.get('status') === 'warranty'}
-          onClick={() => update('status', 'warranty')}
-        />
       </div>
     </div>
   );
 }
 
-function FilterChip({ label, active, onClick }: { label: string; value: string; active: boolean; onClick: () => void }) {
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"

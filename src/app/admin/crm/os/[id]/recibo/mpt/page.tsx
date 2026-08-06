@@ -4,10 +4,9 @@ import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { ReciboPrintButton } from '@/app/admin/crm/vendas/[id]/recibo/ReciboPrintButton';
 import { AutoPrint } from '@/app/admin/crm/vendas/[id]/recibo/AutoPrint';
 import { PixQRButton } from '@/app/admin/crm/components/PixQRButton';
+import { WARRANTY_DAYS } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
-
-const WARRANTY_DAYS = 90;
 
 function norm(s: string): string {
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');

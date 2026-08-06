@@ -3,11 +3,9 @@ import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { ConfirmDeliveryButton } from './ConfirmDeliveryButton';
 import { PixQRButton } from '@/app/admin/crm/components/PixQRButton';
-import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
+import { EQUIPMENT_TYPES, WARRANTY_DAYS, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
-
-const WARRANTY_DAYS = 90;
 
 export default async function ReciboPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

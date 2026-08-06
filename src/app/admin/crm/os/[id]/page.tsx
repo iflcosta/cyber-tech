@@ -9,6 +9,8 @@ import { StatusQuickActions } from './StatusQuickActions';
 import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/crm/components/OSTimeline';
 import { RepairNotesEditor } from './RepairNotesEditor';
+import { PartOrderStatusBadge } from '@/app/admin/crm/components/PartOrderStatusBadge';
+import { UsePartForm } from './UsePartForm';
 import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -60,14 +62,14 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('service_order_id', id)
     .order('created_at', { ascending: false });
 
-  // Pecas usadas (referenciadas via os_number em stock_movements)
+  // Pecas usadas (vinculo real via service_order_id, nao mais texto)
   const { data: partsUsed } = await supabase
     .from('stock_movements')
     .select(`
       id, quantity, unit_price, total_amount, created_at,
       stock_item:stock_items(name, ean13)
     `)
-    .eq('reference', so.os_number)
+    .eq('service_order_id', id)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
 
@@ -77,6 +79,30 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   );
   const laborCost = Number(so.labor_cost ?? 0);
   const grandTotal = laborCost + partsTotal;
+
+  // Itens de estoque ativos pro mini-formulario "usar peca do estoque"
+  const { data: stockItemsForUse } = await supabase
+    .from('stock_items')
+    .select('id, name, ean13, internal_sku, unit_price, current_stock')
+    .eq('active', true)
+    .gt('current_stock', 0)
+    .order('name');
+
+  // Pedidos de peça vinculados a esta OS (fornecedor, não estoque)
+  type LinkedPartOrder = {
+    id: string;
+    part_description: string;
+    part_variant: string | null;
+    status: string;
+    part_value: number;
+    supplier: { name: string } | null;
+  };
+  const { data: partOrdersRaw } = await supabase
+    .from('part_orders')
+    .select('id, part_description, part_variant, status, part_value, supplier:suppliers(name)')
+    .eq('service_order_id', id)
+    .order('created_at', { ascending: false });
+  const partOrders = partOrdersRaw as unknown as LinkedPartOrder[] | null;
 
   const { data: technicians } = await supabase
     .from('profiles')
@@ -167,17 +193,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </section>
 
           <section className="rounded-lg border border-blue-200 bg-blue-50/30 p-4 sm:p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Diagnóstico e reparo
-              </h2>
-              <Link
-                href={`/admin/crm/estoque`}
-                className="text-xs text-blue-600 hover:text-blue-700"
-              >
-                + Adicionar peça (use referência {normalizedSo.os_number})
-              </Link>
-            </div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              Diagnóstico e reparo
+            </h2>
             <div className="mt-3">
               <RepairNotesEditor
                 osId={normalizedSo.id}
@@ -221,7 +239,44 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 </div>
               </div>
             ) : null}
+
+            {canEdit && !isFinal && (
+              <div className="mt-4 border-t border-blue-200 pt-3">
+                <UsePartForm
+                  serviceOrderId={normalizedSo.id}
+                  currentUserId={profile?.id ?? ''}
+                  items={stockItemsForUse ?? []}
+                />
+              </div>
+            )}
           </section>
+
+          {(partOrders && partOrders.length > 0) && (
+            <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Pedidos de peça (fornecedor)
+                </h2>
+                <Link href="/admin/crm/pecas/new" className="text-xs text-blue-600 hover:text-blue-700">
+                  + Novo pedido
+                </Link>
+              </div>
+              <ul className="mt-2 divide-y divide-slate-200 text-sm">
+                {partOrders.map((po) => (
+                  <li key={po.id} className="py-1.5">
+                    <Link href={`/admin/crm/pecas/${po.id}`} className="flex items-center justify-between gap-2 hover:text-blue-700">
+                      <span className="text-slate-900">
+                        {po.part_description}
+                        {po.part_variant ? ` · ${po.part_variant}` : ''}
+                        <span className="ml-2 text-xs text-slate-500">{po.supplier?.name}</span>
+                      </span>
+                      <PartOrderStatusBadge status={po.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Checklist de entrada</h2>
@@ -243,6 +298,25 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 <strong>Acessórios:</strong> {normalizedSo.accessories_in}
               </p>
             )}
+            {normalizedSo.equipment_photos && normalizedSo.equipment_photos.length > 0 && (
+              <div className="mt-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Foto na entrada ({normalizedSo.equipment_photos.length})
+                </p>
+                <div className="mt-1.5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {normalizedSo.equipment_photos.map((url: string) => (
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt="Foto do aparelho na entrada"
+                        className="aspect-square w-full rounded-md border border-slate-200 object-cover hover:opacity-90"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
@@ -260,6 +334,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               currentStatus={normalizedSo.status}
               currentUserId={profile.id}
               currentUserName={profile.full_name}
+              customerPhone={normalizedSo.customer_phone}
+              customerName={normalizedSo.customer_name}
+              osLabel={normalizedSo.short_id ?? normalizedSo.os_number ?? undefined}
               canEdit={canEdit}
             />
           )}

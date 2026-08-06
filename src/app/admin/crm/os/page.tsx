@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/crm/lib/supabase/server';
 import { OSCard } from '@/app/admin/crm/components/OSCard';
 import { OSFilter } from './OSFilter';
+import { WARRANTY_DAYS } from '@/app/admin/crm/types/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,11 @@ export default async function OSListPage({
     .order('updated_at', { ascending: false })
     .limit(100);
 
-  if (params.status && params.status !== 'all') {
+  if (params.status === 'warranty') {
+    // Entregues dentro dos WARRANTY_DAYS — útil quando cliente volta reclamando
+    const warrantyLimit = new Date(Date.now() - WARRANTY_DAYS * 86400000).toISOString();
+    query = query.eq('status', 'delivered').gte('delivered_at', warrantyLimit);
+  } else if (params.status && params.status !== 'all') {
     query = query.eq('status', params.status);
   } else {
     // Sem filtro: ativas (exclui delivered/cancelled)

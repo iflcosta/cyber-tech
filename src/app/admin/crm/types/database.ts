@@ -69,6 +69,7 @@ export type Database = {
           reported_defect: string;
           entry_checklist: Record<string, boolean | string>;
           accessories_in: string | null;
+          equipment_photos: string[];
           status:
             | 'awaiting_approval'
             | 'approved'
@@ -105,6 +106,7 @@ export type Database = {
           reported_defect: string;
           entry_checklist?: Record<string, boolean | string>;
           accessories_in?: string | null;
+          equipment_photos?: string[];
           status?:
             | 'awaiting_approval'
             | 'approved'
@@ -205,6 +207,7 @@ export type Database = {
           unit_price: number | null;
           total_amount: number | null;
           reference: string | null;
+          service_order_id: string | null;
           notes: string | null;
           author_id: string;
           created_at: string;
@@ -217,6 +220,7 @@ export type Database = {
           unit_price?: number | null;
           total_amount?: number | null;
           reference?: string | null;
+          service_order_id?: string | null;
           notes?: string | null;
           author_id: string;
           created_at?: string;
@@ -281,6 +285,123 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['sale_items']['Insert']>;
       };
+      suppliers: {
+        Row: {
+          id: string;
+          name: string;
+          phone: string | null;
+          notes: string | null;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          phone?: string | null;
+          notes?: string | null;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['suppliers']['Insert']>;
+      };
+      part_orders: {
+        Row: {
+          id: string;
+          part_description: string;
+          part_variant: string | null;
+          supplier_id: string;
+          part_value: number;
+          service_order_id: string | null;
+          context_note: string | null;
+          status:
+            | 'ordered'
+            | 'received'
+            | 'applied'
+            | 'return_pending'
+            | 'returned'
+            | 'awaiting_exchange'
+            | 'cancelled';
+          return_reason:
+            | 'not_the_issue'
+            | 'defective'
+            | 'wrong_item'
+            | 'customer_cancelled'
+            | null;
+          requested_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          part_description: string;
+          part_variant?: string | null;
+          supplier_id: string;
+          part_value: number;
+          service_order_id?: string | null;
+          context_note?: string | null;
+          status?:
+            | 'ordered'
+            | 'received'
+            | 'applied'
+            | 'return_pending'
+            | 'returned'
+            | 'awaiting_exchange'
+            | 'cancelled';
+          return_reason?:
+            | 'not_the_issue'
+            | 'defective'
+            | 'wrong_item'
+            | 'customer_cancelled'
+            | null;
+          requested_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['part_orders']['Insert']>;
+      };
+      part_order_events: {
+        Row: {
+          id: string;
+          part_order_id: string;
+          event_type:
+            | 'created'
+            | 'received'
+            | 'applied'
+            | 'return_signaled'
+            | 'returned'
+            | 'exchange_awaited'
+            | 'exchange_received'
+            | 'value_adjusted'
+            | 'note_added'
+            | 'cancelled';
+          from_value: string | null;
+          to_value: string | null;
+          note: string | null;
+          author_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          part_order_id: string;
+          event_type:
+            | 'created'
+            | 'received'
+            | 'applied'
+            | 'return_signaled'
+            | 'returned'
+            | 'exchange_awaited'
+            | 'exchange_received'
+            | 'value_adjusted'
+            | 'note_added'
+            | 'cancelled';
+          from_value?: string | null;
+          to_value?: string | null;
+          note?: string | null;
+          author_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['part_order_events']['Insert']>;
+      };
     };
     Views: {
       service_orders_with_stale: {
@@ -294,6 +415,12 @@ export type Database = {
       stock_low_alert: {
         Row: Database['public']['Tables']['stock_items']['Row'] & {
           units_to_reorder: number;
+        };
+      };
+      part_orders_pending_return: {
+        Row: Database['public']['Tables']['part_orders']['Row'] & {
+          supplier_name: string;
+          days_since_signaled: number;
         };
       };
     };
@@ -315,6 +442,10 @@ export type StockMovement = Database['public']['Tables']['stock_movements']['Row
 export type StockLowAlert = Database['public']['Views']['stock_low_alert']['Row'];
 export type Sale = Database['public']['Tables']['sales']['Row'];
 export type SaleItem = Database['public']['Tables']['sale_items']['Row'];
+export type Supplier = Database['public']['Tables']['suppliers']['Row'];
+export type PartOrder = Database['public']['Tables']['part_orders']['Row'];
+export type PartOrderEvent = Database['public']['Tables']['part_order_events']['Row'];
+export type PartOrderPendingReturn = Database['public']['Views']['part_orders_pending_return']['Row'];
 
 /* ---------- Constantes de UI ---------- */
 
@@ -329,6 +460,9 @@ export const OS_STATUSES = [
 ] as const;
 
 export type OSStatusValue = (typeof OS_STATUSES)[number]['value'];
+
+// Garantia padrão sobre o reparo executado (dias, a partir da entrega).
+export const WARRANTY_DAYS = 90;
 
 export const EQUIPMENT_TYPES = [
   { value: 'computador', label: 'Computador' },
@@ -382,3 +516,44 @@ export const PAYMENT_METHODS = [
 ] as const;
 
 export type PaymentMethodValue = (typeof PAYMENT_METHODS)[number]['value'];
+
+/* ---------- Pedido de Peça (fornecedores) ---------- */
+
+export const PART_ORDER_STATUSES = [
+  { value: 'ordered', label: 'Pedido', color: 'blue' },
+  { value: 'received', label: 'Recebido', color: 'indigo' },
+  { value: 'applied', label: 'Aplicado na OS', color: 'emerald' },
+  { value: 'return_pending', label: 'Devolução sinalizada', color: 'orange' },
+  { value: 'awaiting_exchange', label: 'Aguardando troca', color: 'amber' },
+  { value: 'returned', label: 'Devolvido', color: 'slate' },
+  { value: 'cancelled', label: 'Cancelado', color: 'red' },
+] as const;
+
+export type PartOrderStatusValue = (typeof PART_ORDER_STATUSES)[number]['value'];
+
+export const RETURN_REASONS = [
+  { value: 'not_the_issue', label: 'Não era o problema' },
+  { value: 'defective', label: 'Veio com defeito' },
+  { value: 'wrong_item', label: 'Peça errada' },
+  { value: 'customer_cancelled', label: 'Cliente desistiu' },
+] as const;
+
+export type ReturnReasonValue = (typeof RETURN_REASONS)[number]['value'];
+
+// Motivos que dão direito a troca (fornecedor repõe) — os outros são
+// devolução definitiva, sem reposição.
+export const EXCHANGE_ELIGIBLE_REASONS: ReturnReasonValue[] = ['defective', 'wrong_item'];
+
+export const PART_VARIANT_SUGGESTIONS = [
+  'Com aro',
+  'Sem aro',
+  'Original',
+  'OLED',
+  'Incell',
+  'Compatível',
+  'Original recondicionada',
+] as const;
+
+// Dias sem confirmar devolução até o item virar alerta na lista
+// (risco de ficar esquecido na bancada).
+export const PART_ORDER_STALE_DAYS = 5;
