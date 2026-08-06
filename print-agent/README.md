@@ -15,11 +15,20 @@ de gambiarra de texto com pontos simulando espaço.
 
 1. Instalar o [Node.js](https://nodejs.org/) (versão LTS) se ainda não tiver.
 2. Baixar/copiar esta pasta `print-agent/` pro PC da bancada.
-3. Abrir um terminal (cmd/PowerShell) dentro da pasta e rodar:
-   ```
-   npm install
-   ```
-4. Copiar `.env.example` pra `.env` e ajustar a porta COM (ver abaixo).
+3. **Descobrir a porta COM da impressora** (ver seção abaixo) — só
+   pra ter em mãos, o instalador vai abrir o `.env` pra você conferir.
+4. Dar **duplo-clique em `instalar.bat`**.
+
+Isso sozinho já faz tudo: confere se o Node está instalado, cria o
+`.env` (abrindo o Bloco de Notas pra você conferir a porta COM),
+instala as dependências, deixa o agente **iniciando sozinho e sem
+janela visível** toda vez que o Windows ligar (e se reiniciando
+sozinho se cair por qualquer motivo), e já sobe ele agora mesmo pela
+primeira vez. Só isso — não precisa repetir depois, nem lembrar de
+abrir nada toda manhã.
+
+Quer desfazer a inicialização automática? Dá duplo-clique em
+`desinstalar.bat`.
 
 ## Descobrir a porta COM da impressora
 
@@ -34,7 +43,7 @@ Pra descobrir qual:
 
 Coloca esse número em `PRINTER_COM_PORT` no `.env` (ex: `COM9`).
 
-## Rodar
+## Rodar manualmente (se preferir não instalar a inicialização automática)
 
 ```
 npm start
@@ -44,14 +53,18 @@ Deixa a janela aberta enquanto usa o sistema. Pra confirmar que está
 no ar, abre `http://localhost:9100/status` no navegador — deve
 responder `{"ok":true,...}`.
 
-## Deixar iniciando sozinho com o Windows
+## Como funciona a inicialização automática (`instalar.bat`)
 
-Pra não precisar abrir na mão toda vez:
+Pra quem quiser entender ou mexer manualmente depois:
 
-1. Cria um atalho pro `npm start` (ou um `.bat` com `npm start` dentro
-   da pasta `print-agent`).
-2. Coloca o atalho na pasta de Inicialização do Windows
-   (`shell:startup` na barra de endereço do Explorer).
+- `run.bat` — roda `node index.js` num loop; se o processo cair (erro,
+  impressora desligada, etc), espera 3s e sobe de novo sozinho, sem
+  precisar abrir nada na mão.
+- `iniciar-oculto.vbs` — chama o `run.bat` numa janela **escondida**
+  (`WshShell.Run ..., 0, False`), pra não ficar um terminal preto
+  aberto no desktop o dia inteiro.
+- O instalador copia esse `.vbs` pra pasta de Inicialização do Windows
+  (`shell:startup`), que o Windows roda sozinho sempre que alguém loga.
 
 ## Se der erro
 
