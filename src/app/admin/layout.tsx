@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
-import { LogoutButton } from '@/app/admin/components/LogoutButton';
+import { DesktopNav } from '@/app/admin/components/DesktopNav';
 import { MobileNav } from '@/app/admin/components/MobileNav';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -63,73 +63,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-dvh bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link href="/admin/os" className="text-lg font-bold tracking-tight text-slate-900">
-              Cyber <span className="text-blue-600">ERP</span>
-            </Link>
-            <span className="hidden rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 sm:inline">
-              v0.1 · interno
-            </span>
-          </div>
-          <nav className="hidden items-center gap-1 md:flex md:gap-2">
-            <Link
-              href="/admin/dashboard"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/admin/os"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              OS
-            </Link>
-            <Link
-              href="/admin/estoque"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Estoque
-            </Link>
-            <Link
-              href="/admin/vendas"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Vendas
-            </Link>
-            <Link
-              href="/admin/pecas"
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Peças
-            </Link>
-            <Link
-              href="/admin/fornecedores"
-              className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 lg:inline-block"
-            >
-              Fornecedores
-            </Link>
-            <Link
-              href="/admin/os/new"
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-            >
-              + Nova OS
-            </Link>
-            <Link
-              href="/admin/vender"
-              className="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
-            >
-              + Vender
-            </Link>
-            <div className="ml-2 flex items-center gap-2 border-l border-slate-200 pl-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-medium text-slate-900">{profile?.full_name ?? '—'}</p>
-                <p className="text-xs text-slate-500">
-                  {profile?.role === 'owner' ? 'Dono' : 'Técnico'}
-                </p>
-              </div>
-              <LogoutButton />
-            </div>
-          </nav>
+          <Link href="/admin/os" className="text-lg font-bold tracking-tight text-slate-900">
+            Cyber <span className="text-blue-600">ERP</span>
+          </Link>
+
+          <DesktopNav
+            userName={profile?.full_name ?? '—'}
+            roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+          />
 
           <MobileNav
             userName={profile?.full_name ?? '—'}
