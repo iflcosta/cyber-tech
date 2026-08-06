@@ -179,7 +179,8 @@ export function UsePartForm({
               value={newPrice}
               onChange={(e) => setNewPrice(e.target.value)}
               inputMode="decimal"
-              placeholder="Preço R$"
+              placeholder="Preço de venda R$"
+              title="Preço de venda — o que é cobrado do cliente. Preço de custo fica opcional, editável depois em Estoque."
               className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <input
