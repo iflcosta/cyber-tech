@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
+import { formatDateTimeBR } from '@/app/admin/lib/datetime';
 import { CancelSaleButton } from './CancelSaleButton';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,7 @@ export default async function VendaDetailPage({
       {sale.voided_at && (
         <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
           <strong>Venda cancelada</strong> em{' '}
-          {new Date(sale.voided_at).toLocaleString('pt-BR')} por{' '}
+          {formatDateTimeBR(sale.voided_at)} por{' '}
           {sale.voided_by_user?.full_name ?? '—'}.
           {sale.voided_reason && (
             <p className="mt-1">Motivo: {sale.voided_reason}</p>
@@ -61,7 +62,7 @@ export default async function VendaDetailPage({
           )}
         </h1>
         <p className="text-sm text-slate-500">
-          {new Date(sale.created_at).toLocaleString('pt-BR')} ·{' '}
+          {formatDateTimeBR(sale.created_at)} ·{' '}
           Operador: <strong>{sale.author?.full_name ?? '—'}</strong>
         </p>
       </div>

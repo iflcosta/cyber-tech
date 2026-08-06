@@ -3,6 +3,7 @@ import { getAuthedUser } from '@/app/admin/lib/auth';
 import { LabelPrintButton } from './LabelPrintButton';
 import { EscPosLabelButton } from './EscPosLabelButton';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { formatDateBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,7 +94,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   const typeLabel = norm(typeMeta?.label ?? '');
   const shortId = norm((so as any).short_id ?? '');
   const osNumber = norm((so as any).os_number ?? '');
-  const created = new Date(so.created_at).toLocaleDateString('pt-BR');
+  const created = formatDateBR(so.created_at);
   const defectNorm = norm(so.reported_defect ?? '');
 
   // Monta o texto da etiqueta como TEXTO PURO com \n

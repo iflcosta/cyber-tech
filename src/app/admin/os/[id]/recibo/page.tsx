@@ -4,6 +4,7 @@ import { getAuthedUser } from '@/app/admin/lib/auth';
 import { ConfirmDeliveryButton } from './ConfirmDeliveryButton';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import { EQUIPMENT_TYPES, WARRANTY_DAYS, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { formatDateBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,7 +106,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Recibo de entrega · {new Date(so.delivered_at ?? so.created_at).toLocaleString('pt-BR')}
+            Recibo de entrega · {formatDateTimeBR(so.delivered_at ?? so.created_at)}
           </p>
         </header>
 
@@ -199,8 +200,8 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Garantia</h2>
           <p className="mt-1 text-slate-900">
             <strong>{WARRANTY_DAYS} dias</strong> a partir de{' '}
-            {new Date(warrantyStart).toLocaleDateString('pt-BR')}{' '}
-            — válida até <strong>{warrantyEnd.toLocaleDateString('pt-BR')}</strong>.
+            {formatDateBR(warrantyStart)}{' '}
+            — válida até <strong>{formatDateBR(warrantyEnd)}</strong>.
           </p>
           <p className="mt-1 text-xs text-slate-600">
             Cobre defeitos relacionados ao reparo executado. Não cobre danos por mau uso,
@@ -234,7 +235,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
           <section className="mt-4 text-sm">
             <p className="text-slate-700">
               Retirado por: <strong className="text-slate-900">{so.delivered_to_name}</strong>
-              {so.delivered_at && ` em ${new Date(so.delivered_at).toLocaleString('pt-BR')}`}
+              {so.delivered_at && ` em ${formatDateTimeBR(so.delivered_at)}`}
             </p>
           </section>
         )}

@@ -5,6 +5,7 @@ import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadg
 import { PartOrderTimeline } from '@/app/admin/components/PartOrderTimeline';
 import { PartOrderActions } from './PartOrderActions';
 import type { PartOrder, PartOrderStatusValue, ReturnReasonValue } from '@/app/admin/types/database';
+import { formatDateTimeShortBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -127,7 +128,7 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Pedido por</h2>
             <p className="mt-1 text-sm text-slate-900">{requester?.full_name ?? '—'}</p>
             <p className="text-xs text-slate-500">
-              {new Date(order.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+              {formatDateTimeShortBR(order.created_at)}
             </p>
           </section>
         </aside>

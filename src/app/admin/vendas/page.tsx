@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
+import { formatDateTimeBR, todayBR, startOfMonthBRStr } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,14 +33,16 @@ export default async function VendasListPage({
     query = query.is('voided_at', null);
   }
 
-  // Filtro de data inicial (YYYY-MM-DD)
+  // Filtro de data inicial (YYYY-MM-DD) — offset -03:00 explicito, senao o
+  // Postgres interpreta a meia-noite no fuso da sessao (UTC), 3h adiantada
+  // da meia-noite real de Brasília.
   if (params.from) {
-    query = query.gte('created_at', `${params.from}T00:00:00`);
+    query = query.gte('created_at', `${params.from}T00:00:00-03:00`);
   }
 
   // Filtro de data final (YYYY-MM-DD)
   if (params.to) {
-    query = query.lte('created_at', `${params.to}T23:59:59`);
+    query = query.lte('created_at', `${params.to}T23:59:59-03:00`);
   }
 
   const { data: sales, error } = await query;
@@ -67,12 +70,12 @@ export default async function VendasListPage({
     { count: 0, total: 0 },
   );
 
-  // Atalhos de data
-  const today = new Date().toISOString().slice(0, 10);
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  const monthStartStr = monthStart.toISOString().slice(0, 10);
+  // Atalhos de data — calculados no calendário de Brasília, não no fuso
+  // do servidor (perto da meia-noite, UTC já é "amanhã" ou "ontem" em
+  // relação a Brasília).
+  const today = todayBR();
+  const weekAgo = todayBR(new Date(Date.now() - 7 * 86400000));
+  const monthStartStr = startOfMonthBRStr();
 
   return (
     <div className="space-y-4">
@@ -238,7 +241,7 @@ export default async function VendasListPage({
                       )}
                     </td>
                     <td className="hidden px-3 py-2 text-slate-600 sm:table-cell">
-                      {new Date(s.created_at).toLocaleString('pt-BR')}
+                      {formatDateTimeBR(s.created_at)}
                     </td>
                     <td className="px-3 py-2 text-slate-700">
                       {s.customer_name ?? <span className="text-slate-500">Balcão</span>}
