@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
 import { LabelPrintButton } from './LabelPrintButton';
+import { EscPosLabelButton } from './EscPosLabelButton';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -177,7 +178,21 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           Conteudo em ASCII com quebras de linha explicitas. Margem de rasgo no topo.
           Cola no notebook com fita adesiva.
         </p>
-        <LabelPrintButton />
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <LabelPrintButton />
+          <EscPosLabelButton
+            createdStr={created}
+            shortId={shortId}
+            customerName={customerName}
+            customerPhone={customerPhone || undefined}
+            equipmentLine={typeLabel || equipNorm ? `${typeLabel}${equipNorm ? ' - ' + equipNorm : ''}` : undefined}
+            defect={defectNorm || undefined}
+          />
+        </div>
+        <p className="mt-2 text-xs text-blue-700">
+          O botão verde manda comandos reais (negrito, corte) via agente de impressão local —
+          precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
+        </p>
       </div>
 
       {/* ============ ETIQUETA ============ */}
