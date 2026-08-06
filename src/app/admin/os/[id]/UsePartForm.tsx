@@ -17,6 +17,12 @@ function fmtBRL(n: number): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function parseBRLInput(v: string): number | null {
+  if (!v.trim()) return null;
+  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
 export function UsePartForm({
   serviceOrderId,
   currentUserId,
@@ -32,6 +38,18 @@ export function UsePartForm({
   const [quantity, setQuantity] = useState('1');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Peça que não está cadastrada no estoque: cadastra e já usa na
+  // mesma operação (RPC atômica), em vez de obrigar sair da OS pra
+  // cadastrar em /admin/estoque/new e voltar.
+  const [newItemMode, setNewItemMode] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+  const [newQty, setNewQty] = useState('1');
+  const [newSubmitting, setNewSubmitting] = useState(false);
+  const [newError, setNewError] = useState<string | null>(null);
+  const [newSaved, setNewSaved] = useState(false);
 
   const suggestions = useMemo(() => {
     if (!search.trim() || selected) return [];
@@ -87,12 +105,115 @@ export function UsePartForm({
     }
   }
 
+  async function submitNewItem() {
+    const price = parseBRLInput(newPrice);
+    const qty = parseInt(newQty, 10);
+    if (!newName.trim()) {
+      setNewError('Nome da peça é obrigatório.');
+      return;
+    }
+    if (price === null || price <= 0) {
+      setNewError('Preço deve ser maior que zero.');
+      return;
+    }
+    if (!Number.isFinite(qty) || qty <= 0) {
+      setNewError('Quantidade inválida.');
+      return;
+    }
+    setNewSubmitting(true);
+    setNewError(null);
+    try {
+      const supabase = createCRMBrowserClient();
+      const { error: rpcErr } = await supabase.rpc(
+        'create_stock_item_and_use',
+        {
+          p_name: newName.trim(),
+          p_unit_price: price,
+          p_quantity: qty,
+          p_service_order_id: serviceOrderId,
+          p_category: newCategory.trim() || null,
+        } as never,
+      );
+      if (rpcErr) throw rpcErr;
+
+      setNewName('');
+      setNewCategory('');
+      setNewPrice('');
+      setNewQty('1');
+      setNewItemMode(false);
+      setNewSaved(true);
+      router.refresh();
+      setTimeout(() => setNewSaved(false), 2500);
+    } catch (e) {
+      setNewError((e as Error).message);
+    } finally {
+      setNewSubmitting(false);
+    }
+  }
+
   return (
     <div>
       <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Usar peça do estoque
       </h3>
-      {!selected ? (
+      {newItemMode ? (
+        <div className="mt-1.5 space-y-2 rounded-md border border-blue-200 bg-blue-50/40 p-2.5">
+          <p className="text-xs text-slate-600">
+            Cadastra a peça no estoque e já registra o uso nesta OS numa operação só.
+          </p>
+          <input
+            autoFocus
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Nome da peça (ex: Conector USB-C avulso)"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <div className="grid grid-cols-3 gap-2">
+            <input
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              placeholder="Categoria (opcional)"
+              className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <input
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              inputMode="decimal"
+              placeholder="Preço R$"
+              className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <input
+              type="number"
+              min="1"
+              value={newQty}
+              onChange={(e) => setNewQty(e.target.value)}
+              className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-center font-mono text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={submitNewItem}
+              disabled={newSubmitting}
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {newSubmitting ? 'Cadastrando…' : 'Cadastrar e usar'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setNewItemMode(false);
+                setNewError(null);
+              }}
+              disabled={newSubmitting}
+              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+          </div>
+          {newError && <p className="rounded-md bg-red-50 p-1.5 text-xs text-red-700">{newError}</p>}
+        </div>
+      ) : !selected ? (
         <div className="mt-1.5">
           <input
             value={search}
@@ -121,6 +242,13 @@ export function UsePartForm({
               ))}
             </ul>
           )}
+          <button
+            type="button"
+            onClick={() => setNewItemMode(true)}
+            className="mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-700"
+          >
+            Não achou? Cadastrar peça nova →
+          </button>
         </div>
       ) : (
         <div className="mt-1.5 flex items-center gap-2 rounded-md border border-slate-300 bg-white p-2">
@@ -158,6 +286,11 @@ export function UsePartForm({
         </div>
       )}
       {error && <p className="mt-1.5 rounded-md bg-red-50 p-1.5 text-xs text-red-700">{error}</p>}
+      {newSaved && (
+        <p className="mt-1.5 text-xs font-medium text-emerald-600">
+          ✓ Peça cadastrada e usada nesta OS
+        </p>
+      )}
     </div>
   );
 }
