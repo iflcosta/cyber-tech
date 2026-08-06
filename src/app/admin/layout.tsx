@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
 import { LogoutButton } from '@/app/admin/components/LogoutButton';
+import { MobileNav } from '@/app/admin/components/MobileNav';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   let user: { id: string } | null = null;
@@ -61,7 +62,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               v0.1 · interno
             </span>
           </div>
-          <nav className="flex items-center gap-1 sm:gap-2">
+          <nav className="hidden items-center gap-1 md:flex md:gap-2">
             {user ? (
               <>
                 <Link
@@ -131,6 +132,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </Link>
             )}
           </nav>
+
+          {user ? (
+            <MobileNav
+              userName={profile?.full_name ?? '—'}
+              roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            />
+          ) : (
+            <Link
+              href="/admin/login"
+              className="rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 md:hidden"
+            >
+              Entrar
+            </Link>
+          )}
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">{children}</main>

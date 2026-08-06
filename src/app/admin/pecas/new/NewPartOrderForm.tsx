@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
-import { PART_VARIANT_SUGGESTIONS } from '@/app/admin/types/database';
+import { PART_FRAME_OPTIONS, PART_FINISH_OPTIONS } from '@/app/admin/types/database';
 
 type Supplier = { id: string; name: string; phone: string | null };
 type ServiceOrderOption = { id: string; label: string; customerName: string };
@@ -28,7 +28,10 @@ export function NewPartOrderForm({
   const [error, setError] = useState<string | null>(null);
 
   const [partDescription, setPartDescription] = useState('');
-  const [partVariant, setPartVariant] = useState('');
+  const [frame, setFrame] = useState<string | null>(null);
+  const [finish, setFinish] = useState<string | null>(null);
+  const [customVariant, setCustomVariant] = useState('');
+  const partVariant = [frame, finish, customVariant.trim() || null].filter(Boolean).join(' · ');
   const [supplierId, setSupplierId] = useState('');
   const [addingSupplier, setAddingSupplier] = useState(suppliers.length === 0);
   const [newSupplierName, setNewSupplierName] = useState('');
@@ -127,20 +130,58 @@ export function NewPartOrderForm({
           />
         </Field>
 
-        <Field label="Variação (opcional)">
-          <input
-            list="part-variant-suggestions"
-            value={partVariant}
-            onChange={(e) => setPartVariant(e.target.value)}
-            className="form-input"
-            placeholder="Ex: OLED sem aro"
-          />
-          <datalist id="part-variant-suggestions">
-            {PART_VARIANT_SUGGESTIONS.map((v) => (
-              <option key={v} value={v} />
+        <Field label="Aro (se aplicável)">
+          <div className="flex flex-wrap gap-2">
+            {PART_FRAME_OPTIONS.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setFrame(frame === opt ? null : opt)}
+                className={`rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition ${
+                  frame === opt
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {opt}
+              </button>
             ))}
-          </datalist>
+          </div>
         </Field>
+
+        <Field label="Acabamento / tecnologia (se aplicável)">
+          <div className="flex flex-wrap gap-2">
+            {PART_FINISH_OPTIONS.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setFinish(finish === opt ? null : opt)}
+                className={`rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition ${
+                  finish === opt
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        <Field label="Outro detalhe (opcional)">
+          <input
+            value={customVariant}
+            onChange={(e) => setCustomVariant(e.target.value)}
+            className="form-input"
+            placeholder="Ex: cor, capacidade, fornecedor específico…"
+          />
+        </Field>
+
+        {partVariant && (
+          <p className="text-xs text-slate-500">
+            Variação final: <strong className="text-slate-700">{partVariant}</strong>
+          </p>
+        )}
 
         <Field label="Fornecedor *">
           {!addingSupplier ? (

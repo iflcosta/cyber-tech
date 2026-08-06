@@ -44,7 +44,7 @@ export function OSFilter() {
         </button>
       </form>
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+      <div className="flex flex-wrap gap-1.5">
         <FilterChip
           label="Ativas"
           value=""
