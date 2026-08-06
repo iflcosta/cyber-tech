@@ -1,7 +1,9 @@
-# CRM Cyber Informática — `/admin` do cyberinformatica.tech
+# ERP Cyber Informática — `/admin` do cyberinformatica.tech
 
-CRM interno de bancada pra assistencia tecnica. Modulo `/admin` adicionado ao
-site institucional existente.
+ERP interno de bancada pra assistencia tecnica (OS, estoque, vendas, pedido de
+peça a fornecedor). Chamado de "CRM" originalmente, renomeado pra refletir o
+escopo real (gestão operacional da loja, não relacionamento/funil de cliente).
+Modulo `/admin` adicionado ao site institucional existente.
 
 ## O que ja esta pronto
 
