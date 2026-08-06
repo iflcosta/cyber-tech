@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { StockFilter } from './StockFilter';
 import { WipeStockButtons } from './WipeStockButtons';
 
@@ -11,8 +11,7 @@ export default async function StockListPage({
   searchParams: Promise<{ q?: string; low?: string; inactive?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) return null;
 
   // Query de itens
@@ -30,9 +29,6 @@ export default async function StockListPage({
   const { data: items, error } = await itemsQuery;
 
   // Perfil do user (pra saber se e owner — so owner ve botoes destrutivos)
-  const { data: profile } = user
-    ? await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-    : { data: null };
   const isOwner = profile?.role === 'owner';
 
   // Alerta de estoque baixo (view)

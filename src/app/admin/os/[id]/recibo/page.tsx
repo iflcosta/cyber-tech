@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { ConfirmDeliveryButton } from './ConfirmDeliveryButton';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import { EQUIPMENT_TYPES, WARRANTY_DAYS, type EquipmentTypeValue } from '@/app/admin/types/database';
@@ -9,8 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function ReciboPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
   const { data: profile } = await supabase

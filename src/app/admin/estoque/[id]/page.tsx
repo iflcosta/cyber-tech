@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { createCRMServerClient } from '@/app/admin/lib/supabase/server';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { STOCK_MOVEMENT_TYPES } from '@/app/admin/types/database';
 import { DeleteStockItemButton } from './DeleteStockItemButton';
 import { ToggleActiveButton } from './ToggleActiveButton';
@@ -13,8 +13,7 @@ export default async function StockItemDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createCRMServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
   const { data: profile } = await supabase
