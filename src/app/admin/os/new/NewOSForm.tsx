@@ -149,7 +149,9 @@ export function NewOSForm({
       setError('Nome do cliente é obrigatório.');
       return;
     }
-    if (step === 2 && !equipment.model.trim() && equipment.type !== 'outro') {
+    // Computador (principalmente montado) não tem "modelo" de fábrica —
+    // só notebook/celular/tablet costumam ter um modelo real e conhecido.
+    if (step === 2 && !equipment.model.trim() && !['outro', 'computador'].includes(equipment.type)) {
       setError('Modelo do aparelho é obrigatório.');
       return;
     }
@@ -384,18 +386,52 @@ export function NewOSForm({
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Marca">
-              <input value={equipment.brand} onChange={(e) => setEquipment({ ...equipment, brand: e.target.value })} className="form-input" placeholder="Ex: Samsung" />
+              <input
+                value={equipment.brand}
+                onChange={(e) => setEquipment({ ...equipment, brand: e.target.value })}
+                className="form-input"
+                placeholder={
+                  equipment.type === 'computador'
+                    ? 'Ex: Dell/HP (se de marca) — vazio se for montado'
+                    : 'Ex: Samsung'
+                }
+              />
             </Field>
-            <Field label="Modelo *">
-              <input value={equipment.model} onChange={(e) => setEquipment({ ...equipment, model: e.target.value })} className="form-input" placeholder="Ex: Galaxy S21" />
+            <Field label={equipment.type === 'computador' ? 'Modelo (se souber)' : 'Modelo *'}>
+              <input
+                value={equipment.model}
+                onChange={(e) => setEquipment({ ...equipment, model: e.target.value })}
+                className="form-input"
+                placeholder={
+                  equipment.type === 'computador' ? 'Ex: OptiPlex 3020 (se tiver etiqueta)' : 'Ex: Galaxy S21'
+                }
+              />
             </Field>
-            <Field label="Cor">
-              <input value={equipment.color} onChange={(e) => setEquipment({ ...equipment, color: e.target.value })} className="form-input" placeholder="Preto" />
+            <Field label={equipment.type === 'computador' ? 'Cor / sinais distintivos' : 'Cor'}>
+              <input
+                value={equipment.color}
+                onChange={(e) => setEquipment({ ...equipment, color: e.target.value })}
+                className="form-input"
+                placeholder={
+                  equipment.type === 'computador'
+                    ? 'Ex: Preto, adesivo lateral, LED azul'
+                    : 'Preto'
+                }
+              />
             </Field>
-            <Field label="IMEI / Serial">
+            <Field label={equipment.type === 'computador' ? 'Nº de série (se tiver etiqueta)' : 'IMEI / Serial'}>
               <input value={equipment.serial} onChange={(e) => setEquipment({ ...equipment, serial: e.target.value })} className="form-input" />
             </Field>
           </div>
+          {equipment.type === 'computador' && (
+            <p className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
+              💡 Processador, placa de vídeo, RAM etc não precisam ser perguntados aqui — o
+              cliente raramente sabe de cabeça, e não ajuda a identificar a máquina. Isso o
+              técnico levanta na bancada e registra em "Anotações de reparo" quando começar.
+              Pra identificar qual máquina é qual, a <strong>foto</strong> abaixo vale mais que
+              qualquer campo de texto — capriche.
+            </p>
+          )}
           <Field label="Senha / padrão (se souber)">
             <input
               type="text"
