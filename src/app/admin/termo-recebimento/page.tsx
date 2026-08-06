@@ -163,7 +163,7 @@ export default function TermoRecebimentoPage() {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               Cyber <span className="text-blue-600">Informática</span>
             </h1>
-            <p className="text-sm text-slate-500">{formatDateOnlyBR(`${today}T00:00:00`)}</p>
+            <p className="text-sm text-slate-500">{formatDateOnlyBR(today)}</p>
           </div>
           <p className="mt-1 text-xs text-slate-500">Termo de recebimento de produto</p>
         </header>
@@ -203,7 +203,7 @@ export default function TermoRecebimentoPage() {
               Prazo pra pagamento
             </h2>
             <p className="mt-1 font-semibold text-slate-900">
-              {deadline ? formatDateOnlyBR(`${deadline}T00:00:00`) : '—'}
+              {deadline ? formatDateOnlyBR(deadline) : '—'}
             </p>
           </div>
         </section>
