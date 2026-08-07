@@ -70,6 +70,11 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
             Falta: {so.blocking_reason}
           </span>
         )}
+        {so.status === 'delivered' && so.payment_status === 'pending' && (
+          <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200">
+            💰 Não pago
+          </span>
+        )}
       </div>
     </Link>
   );

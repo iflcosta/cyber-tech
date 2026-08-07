@@ -82,6 +82,9 @@ export type Database = {
           blocking_reason: string | null;
           estimated_value: number | null;
           estimated_ready_at: string | null;
+          payment_status: 'pending' | 'paid';
+          payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
+          paid_at: string | null;
           created_by: string;
           created_at: string;
           updated_at: string;
@@ -119,6 +122,9 @@ export type Database = {
           blocking_reason?: string | null;
           estimated_value?: number | null;
           estimated_ready_at?: string | null;
+          payment_status?: 'pending' | 'paid';
+          payment_method?: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
+          paid_at?: string | null;
           created_by: string;
           created_at?: string;
           updated_at?: string;

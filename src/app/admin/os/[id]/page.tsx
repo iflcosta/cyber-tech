@@ -11,6 +11,7 @@ import { OSTimeline } from '@/app/admin/components/OSTimeline';
 import { RepairNotesEditor } from './RepairNotesEditor';
 import { ChecklistEditor } from './ChecklistEditor';
 import { EstimatedValueEditor } from './EstimatedValueEditor';
+import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
@@ -344,6 +345,18 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 initialValue={normalizedSo.estimated_value}
                 canEdit={canEdit}
               />
+            </div>
+            <div className="mt-3 border-t border-slate-100 pt-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pagamento</h3>
+              <div className="mt-1">
+                <PaymentStatusEditor
+                  osId={normalizedSo.id}
+                  paymentStatus={normalizedSo.payment_status ?? 'pending'}
+                  paymentMethod={normalizedSo.payment_method ?? null}
+                  paidAt={normalizedSo.paid_at ?? null}
+                  canEdit={canEdit}
+                />
+              </div>
             </div>
           </section>
 
