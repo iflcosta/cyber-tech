@@ -37,6 +37,10 @@ export default async function DashboardPage() {
     partsAppliedMonth,
     partsReturnedMonth,
     partsOpenNow,
+    staleList,
+    readyList,
+    unpaidList,
+    partsWaitingList,
   ] = await Promise.all([
     supabase
       .from('sales')
@@ -105,6 +109,32 @@ export default async function DashboardPage() {
       .from('part_orders')
       .select('part_value, status')
       .in('status', ['ordered', 'received', 'return_pending', 'awaiting_exchange']),
+    // Painel "hoje" — o que precisa de atenção, não só contador.
+    supabase
+      .from('service_orders_with_stale')
+      .select('id, short_id, os_number, customer_name, days_since_update')
+      .gte('days_since_update', 3)
+      .order('days_since_update', { ascending: false })
+      .limit(5),
+    supabase
+      .from('service_orders')
+      .select('id, short_id, os_number, customer:customers(name), updated_at')
+      .eq('status', 'ready')
+      .order('updated_at', { ascending: true })
+      .limit(5),
+    supabase
+      .from('service_orders')
+      .select('id, short_id, os_number, customer:customers(name), delivered_at, labor_cost, estimated_value')
+      .eq('status', 'delivered')
+      .eq('payment_status', 'pending')
+      .order('delivered_at', { ascending: true })
+      .limit(5),
+    supabase
+      .from('part_orders')
+      .select('id, part_description, created_at, supplier:suppliers(name)')
+      .eq('status', 'ordered')
+      .order('created_at', { ascending: true })
+      .limit(5),
   ]);
 
   // Numeros de OS
@@ -178,6 +208,31 @@ export default async function DashboardPage() {
   }
   const supplierTotalsSorted = Array.from(supplierAgg.values()).sort((a, b) => b.total - a.total);
 
+  // Painel "hoje" — normaliza cada lista (join vira campo direto) e
+  // calcula "há quantos dias" onde faz sentido.
+  const daysAgo = (dateStr: string) =>
+    Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000));
+
+  const readyItems = (readyList.data ?? []).map((o: any) => ({
+    ...o,
+    customer_name: o.customer?.name ?? '(cliente removido)',
+    daysReady: daysAgo(o.updated_at),
+  }));
+  const unpaidItems = (unpaidList.data ?? []).map((o: any) => ({
+    ...o,
+    customer_name: o.customer?.name ?? '(cliente removido)',
+    daysUnpaid: o.delivered_at ? daysAgo(o.delivered_at) : 0,
+  }));
+  const partsWaitingItems = (partsWaitingList.data ?? []).map((p: any) => ({
+    ...p,
+    supplier_name: p.supplier?.name ?? '(fornecedor removido)',
+    daysWaiting: daysAgo(p.created_at),
+  }));
+  const staleItems = staleList.data ?? [];
+
+  const attentionCount =
+    staleItems.length + readyItems.length + unpaidItems.length + partsWaitingItems.length;
+
   return (
     <div className="space-y-6">
       <div>
@@ -186,6 +241,98 @@ export default async function DashboardPage() {
           Resumo rapido do movimento da loja.
         </p>
       </div>
+
+      {/* Painel "hoje" — o que precisa de atenção, não só contador. Os
+          cards de números abaixo já existiam; isso junta o que dá pra
+          fazer alguma coisa a respeito agora, num lugar só. */}
+      {attentionCount > 0 && (
+        <section className="rounded-lg border-2 border-orange-200 bg-orange-50/60 p-4 sm:p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-orange-800">
+            ⚠️ Precisa de atenção hoje
+          </h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {staleItems.length > 0 && (
+              <div className="rounded-lg border border-orange-200 bg-white p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  OS parada
+                </p>
+                <ul className="mt-1.5 space-y-1">
+                  {staleItems.map((o: any) => (
+                    <li key={o.id}>
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                        <span className="truncate">
+                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
+                          {' '}{o.customer_name}
+                        </span>
+                        <span className="shrink-0 text-xs text-orange-700">{o.days_since_update}d</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {readyItems.length > 0 && (
+              <div className="rounded-lg border border-orange-200 bg-white p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  Pronta, sem retirada
+                </p>
+                <ul className="mt-1.5 space-y-1">
+                  {readyItems.map((o) => (
+                    <li key={o.id}>
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                        <span className="truncate">
+                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
+                          {' '}{o.customer_name}
+                        </span>
+                        <span className="shrink-0 text-xs text-orange-700">{o.daysReady}d</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {unpaidItems.length > 0 && (
+              <div className="rounded-lg border border-orange-200 bg-white p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  Entregue, não pago
+                </p>
+                <ul className="mt-1.5 space-y-1">
+                  {unpaidItems.map((o) => (
+                    <li key={o.id}>
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                        <span className="truncate">
+                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
+                          {' '}{o.customer_name}
+                        </span>
+                        <span className="shrink-0 text-xs text-orange-700">{o.daysUnpaid}d</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {partsWaitingItems.length > 0 && (
+              <div className="rounded-lg border border-orange-200 bg-white p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  Peça pedida, sem chegar
+                </p>
+                <ul className="mt-1.5 space-y-1">
+                  {partsWaitingItems.map((p) => (
+                    <li key={p.id}>
+                      <Link href={`/admin/pecas/${p.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                        <span className="truncate">
+                          {p.part_description} <span className="text-slate-500">· {p.supplier_name}</span>
+                        </span>
+                        <span className="shrink-0 text-xs text-orange-700">{p.daysWaiting}d</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* PIX da loja (acesso rapido) */}
       <section className="rounded-lg border-2 border-teal-200 bg-teal-50/60 p-4 sm:p-5">
