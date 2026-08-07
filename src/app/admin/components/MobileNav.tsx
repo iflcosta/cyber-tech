@@ -74,9 +74,15 @@ export function MobileNav({
             </Link>
             <Link
               href="/admin/vender"
-              className="mb-3 rounded-md bg-emerald-700 px-4 py-3 text-center text-base font-semibold text-white hover:bg-emerald-800"
+              className="mb-1 rounded-md bg-emerald-700 px-4 py-3 text-center text-base font-semibold text-white hover:bg-emerald-800"
             >
               + Vender
+            </Link>
+            <Link
+              href="/admin/pecas/new"
+              className="mb-3 rounded-md border border-slate-300 bg-white px-4 py-3 text-center text-base font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              + Novo pedido
             </Link>
 
             {LINKS.map((link) => (

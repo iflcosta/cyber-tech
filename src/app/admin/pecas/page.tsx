@@ -102,7 +102,7 @@ export default async function PartOrdersListPage({
           </Link>
           <Link
             href="/admin/pecas/new"
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 lg:hidden"
           >
             + Novo pedido
           </Link>
