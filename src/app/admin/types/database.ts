@@ -466,6 +466,18 @@ export type OSStatusValue = (typeof OS_STATUSES)[number]['value'];
 // Garantia padrão sobre o reparo executado (dias, a partir da entrega).
 export const WARRANTY_DAYS = 90;
 
+// Como o cliente aprovou o orçamento — registrado no evento de
+// aprovação (status awaiting_approval -> approved) pra não depender
+// de ninguém lembrar depois "combinei por WhatsApp" sem prova nenhuma.
+export const APPROVAL_METHODS = [
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'phone', label: 'Telefone' },
+  { value: 'in_person', label: 'Presencial' },
+  { value: 'other', label: 'Outro' },
+] as const;
+
+export type ApprovalMethodValue = (typeof APPROVAL_METHODS)[number]['value'];
+
 export const EQUIPMENT_TYPES = [
   { value: 'computador', label: 'Computador' },
   { value: 'notebook', label: 'Notebook' },
