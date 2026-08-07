@@ -3,6 +3,7 @@ import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { OSCard } from '@/app/admin/components/OSCard';
 import { OSFilter } from './OSFilter';
 import { WARRANTY_DAYS } from '@/app/admin/types/database';
+import { sanitizeSearchTerm, findMatchingCustomerIds } from '@/app/admin/lib/search';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,11 +50,29 @@ export default async function OSListPage({
     query = query.eq('assigned_to', user.id);
   }
 
+  // Busca no banco — nome/telefone do cliente vêm de customers (join),
+  // então busca primeiro os IDs de cliente que batem, e combina com as
+  // colunas próprias da OS num .or() só.
+  if (params.q) {
+    const q = sanitizeSearchTerm(params.q);
+    const customerIds = await findMatchingCustomerIds(supabase, q);
+    const orParts = [
+      `os_number.ilike.%${q}%`,
+      `short_id.ilike.%${q}%`,
+      `equipment_serial.ilike.%${q}%`,
+      `equipment_model.ilike.%${q}%`,
+      `equipment_brand.ilike.%${q}%`,
+      `reported_defect.ilike.%${q}%`,
+    ];
+    if (customerIds.length > 0) orParts.push(`customer_id.in.(${customerIds.join(',')})`);
+    query = query.or(orParts.join(','));
+  }
+
   const { data: orders, error } = await query;
 
   // Normalizar shape (a view retornava customer_name no root e
   // days_since_update calculado). Reproduzimos os dois aqui.
-  const normalized = (orders ?? []).map((o: any) => ({
+  const filtered = (orders ?? []).map((o: any) => ({
     ...o,
     customer_name: o.customer?.name ?? '(cliente removido)',
     customer_phone: o.customer?.phone ?? null,
@@ -63,23 +82,6 @@ export default async function OSListPage({
       Math.floor((Date.now() - new Date(o.updated_at).getTime()) / 86400000),
     ),
   }));
-
-  let filtered = normalized;
-  if (params.q) {
-    const q = params.q.toLowerCase().trim();
-    const qBare = q.replace(/^os-/, '');
-    filtered = filtered.filter((o) =>
-      o.customer_name?.toLowerCase().includes(q) ||
-      o.os_number?.toLowerCase().includes(q) ||
-      (o.short_id?.toLowerCase().includes(q) ?? false) ||
-      (o.short_id?.toLowerCase().replace(/^os-/, '').includes(qBare) ?? false) ||
-      o.customer_phone?.toLowerCase().includes(q) ||
-      o.equipment_serial?.toLowerCase().includes(q) ||
-      o.equipment_model?.toLowerCase().includes(q) ||
-      o.equipment_brand?.toLowerCase().includes(q) ||
-      o.reported_defect?.toLowerCase().includes(q)
-    );
-  }
 
   return (
     <div className="space-y-4">

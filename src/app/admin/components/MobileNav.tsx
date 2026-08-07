@@ -8,6 +8,7 @@ import { createCRMBrowserClient } from '../lib/supabase/client';
 const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/os', label: 'OS' },
+  { href: '/admin/clientes', label: 'Clientes' },
   { href: '/admin/estoque', label: 'Estoque' },
   { href: '/admin/vendas', label: 'Vendas' },
   { href: '/admin/pecas', label: 'Peças' },

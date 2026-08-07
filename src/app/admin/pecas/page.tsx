@@ -3,6 +3,12 @@ import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { PartOrderFilter } from './PartOrderFilter';
 import { PART_ORDER_STALE_DAYS, PART_ORDER_STATUSES, type PartOrder } from '@/app/admin/types/database';
+import {
+  sanitizeSearchTerm,
+  findMatchingCustomerIds,
+  findMatchingServiceOrderIds,
+  findMatchingSupplierIds,
+} from '@/app/admin/lib/search';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,9 +48,29 @@ export default async function PartOrdersListPage({
     query = query.eq('status', params.status);
   }
 
+  // Busca no banco — part_description/part_variant/context_note são
+  // colunas próprias; fornecedor e OS/cliente vêm de join, então
+  // resolvidos antes via IDs (mesmo padrão da lista de OS).
+  if (params.q) {
+    const q = sanitizeSearchTerm(params.q);
+    const [supplierIds, customerIds] = await Promise.all([
+      findMatchingSupplierIds(supabase, q),
+      findMatchingCustomerIds(supabase, q),
+    ]);
+    const serviceOrderIds = await findMatchingServiceOrderIds(supabase, q, customerIds);
+    const orParts = [
+      `part_description.ilike.%${q}%`,
+      `part_variant.ilike.%${q}%`,
+      `context_note.ilike.%${q}%`,
+    ];
+    if (supplierIds.length > 0) orParts.push(`supplier_id.in.(${supplierIds.join(',')})`);
+    if (serviceOrderIds.length > 0) orParts.push(`service_order_id.in.(${serviceOrderIds.join(',')})`);
+    query = query.or(orParts.join(','));
+  }
+
   const { data: orders, error } = await query;
 
-  const normalized = ((orders ?? []) as unknown as PartOrderRow[]).map((o) => ({
+  const filtered = ((orders ?? []) as unknown as PartOrderRow[]).map((o) => ({
     ...o,
     supplier_name: o.supplier?.name ?? '(fornecedor removido)',
     os_label: o.service_order?.short_id ?? o.service_order?.os_number ?? null,
@@ -54,19 +80,6 @@ export default async function PartOrdersListPage({
       Math.floor((Date.now() - new Date(o.updated_at).getTime()) / 86400000),
     ),
   }));
-
-  let filtered = normalized;
-  if (params.q) {
-    const q = params.q.toLowerCase().trim();
-    filtered = filtered.filter((o) =>
-      o.part_description?.toLowerCase().includes(q) ||
-      o.part_variant?.toLowerCase().includes(q) ||
-      o.supplier_name?.toLowerCase().includes(q) ||
-      o.context_note?.toLowerCase().includes(q) ||
-      o.os_label?.toLowerCase().includes(q) ||
-      o.customer_name?.toLowerCase().includes(q),
-    );
-  }
 
   return (
     <div className="space-y-4">

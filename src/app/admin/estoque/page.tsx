@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { StockFilter } from './StockFilter';
 import { WipeStockButtons } from './WipeStockButtons';
+import { sanitizeSearchTerm } from '@/app/admin/lib/search';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,15 @@ export default async function StockListPage({
     itemsQuery = itemsQuery.eq('active', true);
   }
 
+  // Busca no banco (não só no lote carregado) — todas as colunas são
+  // próprias da tabela, sem join, então dá pra fazer direto.
+  if (params.q) {
+    const q = sanitizeSearchTerm(params.q);
+    itemsQuery = itemsQuery.or(
+      `name.ilike.%${q}%,brand.ilike.%${q}%,model.ilike.%${q}%,category.ilike.%${q}%,ean13.ilike.%${q}%`,
+    );
+  }
+
   const { data: items, error } = await itemsQuery;
 
   // Perfil do user (pra saber se e owner — so owner ve botoes destrutivos)
@@ -37,19 +47,7 @@ export default async function StockListPage({
     .select('id, name, current_stock, min_stock')
     .limit(10);
 
-  // Filtragem client-side (busca textual generica)
   let filtered = items ?? [];
-  if (params.q) {
-    const q = params.q.toLowerCase().trim();
-    filtered = filtered.filter(
-      (i) =>
-        i.name.toLowerCase().includes(q) ||
-        (i.brand?.toLowerCase().includes(q) ?? false) ||
-        (i.model?.toLowerCase().includes(q) ?? false) ||
-        (i.category?.toLowerCase().includes(q) ?? false) ||
-        (i.ean13?.toLowerCase().includes(q) ?? false),
-    );
-  }
   if (params.low === '1') {
     filtered = filtered.filter((i) => i.current_stock <= i.min_stock);
   }

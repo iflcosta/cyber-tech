@@ -56,10 +56,13 @@ export function NewOSForm({
   currentUserId,
   technicians,
   owners,
+  initialCustomer,
 }: {
   currentUserId: string;
   technicians: Profile[];
   owners: Profile[];
+  /** Pré-seleciona o cliente (ex: veio do botão "+ Nova OS" na ficha do cliente). */
+  initialCustomer?: CustomerMatch;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -73,7 +76,7 @@ export function NewOSForm({
   });
   const [customerMatches, setCustomerMatches] = useState<CustomerMatch[]>([]);
   const [searchingCustomer, setSearchingCustomer] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(initialCustomer ?? null);
 
   // Busca cliente já cadastrado enquanto digita telefone ou nome —
   // evita criar um customer novo pra quem já veio na loja antes.

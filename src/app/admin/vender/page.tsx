@@ -4,7 +4,12 @@ import { PDV } from './PDV';
 
 export const dynamic = 'force-dynamic';
 
-export default async function VenderPage() {
+export default async function VenderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ customer?: string }>;
+}) {
+  const params = await searchParams;
   const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
@@ -22,11 +27,24 @@ export default async function VenderPage() {
     .eq('id', user.id)
     .single();
 
+  // Veio da ficha do cliente ("+ Nova venda") — pré-vincula a venda a
+  // esse cliente, sem precisar buscar de novo na hora de finalizar.
+  let initialCustomer;
+  if (params.customer) {
+    const { data: c } = await supabase
+      .from('customers')
+      .select('id, name, phone')
+      .eq('id', params.customer)
+      .single();
+    if (c) initialCustomer = c;
+  }
+
   return (
     <PDV
       items={items ?? []}
       currentUserId={user.id}
       currentUserName={profile?.full_name ?? '—'}
+      initialCustomer={initialCustomer}
     />
   );
 }
