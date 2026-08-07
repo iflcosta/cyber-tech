@@ -82,7 +82,7 @@ export type Database = {
           blocking_reason: string | null;
           estimated_value: number | null;
           estimated_ready_at: string | null;
-          payment_status: 'pending' | 'paid';
+          payment_status: 'pending' | 'partial' | 'paid';
           payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
           paid_at: string | null;
           created_by: string;
@@ -122,7 +122,7 @@ export type Database = {
           blocking_reason?: string | null;
           estimated_value?: number | null;
           estimated_ready_at?: string | null;
-          payment_status?: 'pending' | 'paid';
+          payment_status?: 'pending' | 'partial' | 'paid';
           payment_method?: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
           paid_at?: string | null;
           created_by: string;
@@ -168,6 +168,27 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['service_order_events']['Insert']>;
+      };
+      service_order_payments: {
+        Row: {
+          id: string;
+          service_order_id: string;
+          amount: number;
+          payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other';
+          notes: string | null;
+          author_id: string;
+          paid_at: string;
+        };
+        Insert: {
+          id?: string;
+          service_order_id: string;
+          amount: number;
+          payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other';
+          notes?: string | null;
+          author_id: string;
+          paid_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['service_order_payments']['Insert']>;
       };
       stock_items: {
         Row: {
@@ -444,6 +465,7 @@ export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Customer = Database['public']['Tables']['customers']['Row'];
 export type ServiceOrder = Database['public']['Tables']['service_orders']['Row'];
 export type ServiceOrderEvent = Database['public']['Tables']['service_order_events']['Row'];
+export type ServiceOrderPayment = Database['public']['Tables']['service_order_payments']['Row'];
 export type ServiceOrderWithStale = Database['public']['Views']['service_orders_with_stale']['Row'];
 export type StockItem = Database['public']['Tables']['stock_items']['Row'];
 export type StockMovement = Database['public']['Tables']['stock_movements']['Row'];

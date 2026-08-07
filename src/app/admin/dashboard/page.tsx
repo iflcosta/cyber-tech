@@ -126,7 +126,7 @@ export default async function DashboardPage() {
       .from('service_orders')
       .select('id, short_id, os_number, customer:customers(name), delivered_at, labor_cost, estimated_value')
       .eq('status', 'delivered')
-      .eq('payment_status', 'pending')
+      .in('payment_status', ['pending', 'partial'])
       .order('delivered_at', { ascending: true })
       .limit(5),
     supabase
