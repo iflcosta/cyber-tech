@@ -237,6 +237,7 @@ export type Database = {
           payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other';
           customer_name: string | null;
           customer_phone: string | null;
+          customer_id: string | null;
           notes: string | null;
           author_id: string;
           created_at: string;
@@ -253,6 +254,7 @@ export type Database = {
           payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other';
           customer_name?: string | null;
           customer_phone?: string | null;
+          customer_id?: string | null;
           notes?: string | null;
           author_id: string;
           created_at?: string;

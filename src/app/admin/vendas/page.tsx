@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
 import { formatDateTimeBR, todayBR, startOfMonthBRStr } from '@/app/admin/lib/datetime';
+import { sanitizeSearchTerm, findMatchingProfileIds } from '@/app/admin/lib/search';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,20 +46,24 @@ export default async function VendasListPage({
     query = query.lte('created_at', `${params.to}T23:59:59-03:00`);
   }
 
-  const { data: sales, error } = await query;
-
-  // Filtragem textual client-side (rapido pq ja vem filtrado do banco)
-  let filtered = sales ?? [];
+  // Busca no banco — sale_number/customer_name/customer_phone são
+  // colunas próprias (dá pra filtrar direto); nome do operador precisa
+  // de uma consulta separada em profiles primeiro (join não entra no
+  // .or() de uma vez só via PostgREST).
   if (params.q) {
-    const q = params.q.toLowerCase().trim();
-    filtered = filtered.filter(
-      (s: any) =>
-        s.sale_number.toLowerCase().includes(q) ||
-        (s.customer_name?.toLowerCase().includes(q) ?? false) ||
-        (s.customer_phone?.toLowerCase().includes(q) ?? false) ||
-        (s.author?.full_name?.toLowerCase().includes(q) ?? false),
-    );
+    const q = sanitizeSearchTerm(params.q);
+    const authorIds = await findMatchingProfileIds(supabase, q);
+    const orParts = [
+      `sale_number.ilike.%${q}%`,
+      `customer_name.ilike.%${q}%`,
+      `customer_phone.ilike.%${q}%`,
+    ];
+    if (authorIds.length > 0) orParts.push(`author_id.in.(${authorIds.join(',')})`);
+    query = query.or(orParts.join(','));
   }
+
+  const { data: sales, error } = await query;
+  const filtered = sales ?? [];
 
   // Totais do periodo filtrado
   const totals = filtered.reduce(

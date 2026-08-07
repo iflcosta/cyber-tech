@@ -40,10 +40,13 @@ export function PDV({
   items,
   currentUserId,
   currentUserName,
+  initialCustomer,
 }: {
   items: Item[];
   currentUserId: string;
   currentUserName: string;
+  /** Pré-vincula a venda a esse cliente (ex: veio da ficha do cliente). */
+  initialCustomer?: { id: string; name: string; phone: string | null };
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,10 +62,22 @@ export function PDV({
   const finalizeTitleId = useId();
   const [finalizing, setFinalizing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodValue>('pix');
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerName, setCustomerName] = useState(initialCustomer?.name ?? '');
+  const [customerPhone, setCustomerPhone] = useState(initialCustomer?.phone ?? '');
   const [discount, setDiscount] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Busca cliente já cadastrado enquanto digita — mesmo padrão da tela
+  // de Nova OS. Vincular a venda a um cliente existente (customer_id)
+  // é o que permite ver o histórico de compras dele na ficha depois;
+  // sem selecionar ninguém, continua indo como venda de balcão avulsa
+  // (só o texto digitado, sem link).
+  type CustomerMatch = { id: string; name: string; phone: string | null };
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(
+    initialCustomer ?? null,
+  );
+  const [customerMatches, setCustomerMatches] = useState<CustomerMatch[]>([]);
+  const [searchingCustomer, setSearchingCustomer] = useState(false);
 
   // Modal "cadastrar peça e vender" — pra montagem de computador: peça
   // (processador, placa-mãe, GPU...) que ainda não tá no catálogo de
@@ -82,6 +97,47 @@ export function PDV({
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Busca cliente já cadastrado enquanto digita nome/telefone no
+  // fechamento da venda — evita duplicar cadastro e é o que liga a
+  // venda ao histórico do cliente.
+  useEffect(() => {
+    if (!finalizing || selectedCustomer) return;
+    const digits = customerPhone.replace(/\D/g, '');
+    const nameQuery = customerName.trim();
+    if (digits.length < 4 && nameQuery.length < 3) {
+      setCustomerMatches([]);
+      return;
+    }
+    const t = setTimeout(async () => {
+      setSearchingCustomer(true);
+      try {
+        const supabase = createCRMBrowserClient();
+        let query = supabase.from('customers').select('id, name, phone').limit(5);
+        query = digits.length >= 4
+          ? query.ilike('phone_search', `%${digits}%`)
+          : query.ilike('name', `%${nameQuery}%`);
+        const { data } = await query;
+        setCustomerMatches((data ?? []) as CustomerMatch[]);
+      } finally {
+        setSearchingCustomer(false);
+      }
+    }, 350);
+    return () => clearTimeout(t);
+  }, [customerPhone, customerName, selectedCustomer, finalizing]);
+
+  function pickCustomer(match: CustomerMatch) {
+    setSelectedCustomer(match);
+    setCustomerName(match.name);
+    setCustomerPhone(match.phone ?? '');
+    setCustomerMatches([]);
+  }
+
+  function clearCustomerSelection() {
+    setSelectedCustomer(null);
+    setCustomerName('');
+    setCustomerPhone('');
+  }
 
   // Flash mensagem some em 1.5s
   useEffect(() => {
@@ -273,6 +329,7 @@ export function PDV({
         p_payment_method: paymentMethod,
         p_customer_name: customerName.trim() || null,
         p_customer_phone: customerPhone.trim() || null,
+        p_customer_id: selectedCustomer?.id ?? null,
         p_discount: discountNum,
         p_notes: notes.trim() || null,
       };
@@ -293,6 +350,8 @@ export function PDV({
       setNotes('');
       setCustomerName('');
       setCustomerPhone('');
+      setSelectedCustomer(null);
+      setCustomerMatches([]);
       setSubmitting(false);
       // Volta foco pro input de bipagem
       inputRef.current?.focus();
@@ -524,18 +583,60 @@ export function PDV({
                 <label className="block text-sm font-medium text-slate-700">
                   Cliente (opcional)
                 </label>
-                <input
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Nome"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <input
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="Telefone"
-                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
+                {selectedCustomer ? (
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{selectedCustomer.name}</p>
+                      {selectedCustomer.phone && (
+                        <p className="text-xs text-slate-600">{selectedCustomer.phone}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearCustomerSelection}
+                      className="text-xs font-medium text-slate-600 underline hover:text-slate-800"
+                    >
+                      Trocar
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="Nome"
+                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <input
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="Telefone"
+                      className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    {searchingCustomer && (
+                      <p className="mt-1 text-xs text-slate-500">Buscando cliente cadastrado…</p>
+                    )}
+                    {customerMatches.length > 0 && (
+                      <ul className="mt-1 space-y-1 rounded-md border border-blue-200 bg-blue-50/60 p-1.5">
+                        {customerMatches.map((m) => (
+                          <li key={m.id}>
+                            <button
+                              type="button"
+                              onClick={() => pickCustomer(m)}
+                              className="flex w-full items-center justify-between gap-2 rounded-md border border-blue-200 bg-white px-2.5 py-1.5 text-left text-xs hover:border-blue-400 hover:bg-blue-50"
+                            >
+                              <span className="font-medium text-slate-900">{m.name}</span>
+                              <span className="text-slate-500">{m.phone}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <p className="mt-1 text-xs text-slate-500">
+                      Sem cliente cadastrado? Só digite o nome — a venda fica de balcão.
+                    </p>
+                  </>
+                )}
               </div>
 
               <div>
