@@ -83,6 +83,12 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   const laborCost = Number(so.labor_cost ?? 0);
   const grandTotal = laborCost + partsTotal;
 
+  const { data: payments } = await supabase
+    .from('service_order_payments')
+    .select('id, amount, payment_method, paid_at')
+    .eq('service_order_id', id)
+    .order('paid_at', { ascending: false });
+
   // Itens de estoque ativos pro mini-formulario "usar peca do estoque"
   const { data: stockItemsForUse } = await supabase
     .from('stock_items')
@@ -351,10 +357,10 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               <div className="mt-1">
                 <PaymentStatusEditor
                   osId={normalizedSo.id}
-                  paymentStatus={normalizedSo.payment_status ?? 'pending'}
-                  paymentMethod={normalizedSo.payment_method ?? null}
-                  paidAt={normalizedSo.paid_at ?? null}
+                  grandTotal={grandTotal}
+                  payments={(payments ?? []) as never}
                   canEdit={canEdit}
+                  isOwner={profile?.role === 'owner'}
                 />
               </div>
             </div>
