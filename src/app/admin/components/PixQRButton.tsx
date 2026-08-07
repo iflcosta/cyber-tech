@@ -54,7 +54,13 @@ export function PixQRButton({
         💰 {buttonLabel}
       </button>
 
-      {open && (
+      {open && !PIX_CONFIG.key && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          Chave PIX não configurada (env var <code className="font-mono text-xs">NEXT_PUBLIC_PIX_KEY</code> vazia). Configure no Vercel pra esse QR code funcionar.
+        </div>
+      )}
+
+      {open && PIX_CONFIG.key && (
         <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="flex flex-col items-center gap-1">
@@ -126,6 +132,7 @@ export function PixQRInline({ amount, txid, description }: { amount?: number; tx
     () => buildPixBRCode({ amount, txid, description }),
     [amount, txid, description],
   );
+  if (!PIX_CONFIG.key) return null; // sem chave configurada, nao gera QR quebrado
   return (
     <div className="flex flex-col items-center gap-1 rounded-md border border-slate-200 bg-white p-2">
       <QRCodeImage value={brCode} size={140} alt="QR PIX" className="rounded" />

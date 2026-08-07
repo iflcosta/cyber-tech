@@ -3,11 +3,18 @@
 // Spec: https://www.bcb.gov.br/estabilidadefinanceira/pix
 // ============================================================
 
-// Configuracao da loja (hardcoded por enquanto - fase 2 mover pra settings)
+// Configuracao da loja — vem de env var (não hardcoded) porque a
+// chave é um CPF real. Mostrar num QR code pro cliente pagar é o uso
+// normal e esperado (chave PIX não é segredo nesse sentido — igual a
+// mostrar uma conta bancária), mas deixar o CPF cru, permanentemente
+// buscável no código-fonte do repositório, é diferente disso. Usa
+// NEXT_PUBLIC_ porque PixQRButton roda no navegador (o valor ainda
+// vai aparecer no bundle final — isso é inerente a mostrar a chave
+// pro cliente pagar, não dá pra evitar).
 export const PIX_CONFIG = {
-  key: '28046929816',           // chave PIX (CPF/CNPJ/email/telefone/aleatoria)
-  merchantName: 'CYBER INFORMATICA',  // max 25 chars sem acento
-  merchantCity: 'BRAGANCA PTA',       // max 15 chars sem acento
+  key: process.env.NEXT_PUBLIC_PIX_KEY ?? '',
+  merchantName: process.env.NEXT_PUBLIC_PIX_MERCHANT_NAME ?? 'CYBER INFORMATICA', // max 25 chars sem acento
+  merchantCity: process.env.NEXT_PUBLIC_PIX_MERCHANT_CITY ?? 'BRAGANCA PTA',       // max 15 chars sem acento
 } as const;
 
 // TLV (Tag-Length-Value) builder
