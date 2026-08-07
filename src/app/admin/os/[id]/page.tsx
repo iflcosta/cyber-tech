@@ -10,6 +10,7 @@ import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/components/OSTimeline';
 import { RepairNotesEditor } from './RepairNotesEditor';
 import { ChecklistEditor } from './ChecklistEditor';
+import { EstimatedValueEditor } from './EstimatedValueEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
@@ -331,8 +332,21 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               customerName={normalizedSo.customer_name}
               osLabel={normalizedSo.short_id ?? normalizedSo.os_number ?? undefined}
               canEdit={canEdit}
+              currentEstimatedValue={normalizedSo.estimated_value}
             />
           )}
+
+          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Orçamento</h2>
+            <div className="mt-1">
+              <EstimatedValueEditor
+                osId={normalizedSo.id}
+                initialValue={normalizedSo.estimated_value}
+                canEdit={canEdit}
+              />
+            </div>
+          </section>
+
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Cliente</h2>
             <p className="mt-1 font-medium text-slate-900">{normalizedSo.customer_name}</p>
