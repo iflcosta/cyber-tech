@@ -26,7 +26,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, full_name, role')
+    .select('id, full_name, role, can_delete')
     .eq('id', user.id)
     .single();
 
@@ -360,7 +360,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                   grandTotal={grandTotal}
                   payments={(payments ?? []) as never}
                   canEdit={canEdit}
-                  isOwner={profile?.role === 'owner'}
+                  canDelete={profile?.can_delete === true}
                 />
               </div>
             </div>
@@ -431,7 +431,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             <OSDeleteButton
               osId={normalizedSo.id}
               osShortId={normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
-              isOwner={profile.role === 'owner'}
+              canDelete={profile.can_delete === true}
             />
           )}
         </aside>

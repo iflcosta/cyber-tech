@@ -20,6 +20,7 @@ export type Database = {
           email: string;
           role: 'owner' | 'technician';
           active: boolean;
+          can_delete: boolean;
           created_at: string;
         };
         Insert: {
@@ -28,6 +29,7 @@ export type Database = {
           email: string;
           role: 'owner' | 'technician';
           active?: boolean;
+          can_delete?: boolean;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;

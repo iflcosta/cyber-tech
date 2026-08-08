@@ -30,17 +30,22 @@ export const getAuthedUser = cache(async () => {
 });
 
 /**
- * Mesma ideia, incluindo o profile (full_name, role) — layout.tsx e
- * mais de uma página buscavam profile.role separadamente. Chamar
- * getAuthedProfile() nesses lugares dedupe tanto o getUser() quanto
- * essa segunda query, cada um só rodando uma vez por request.
+ * Mesma ideia, incluindo o profile (full_name, role, can_delete) —
+ * layout.tsx e mais de uma página buscavam profile.role separadamente.
+ * Chamar getAuthedProfile() nesses lugares dedupe tanto o getUser()
+ * quanto essa segunda query, cada um só rodando uma vez por request.
+ *
+ * can_delete é uma permissão independente de role: todos os 3 usuários
+ * são role='owner' (edição total liberada pros 3), mas só quem tem
+ * can_delete=true pode apagar registros do sistema (ver migration
+ * 0029_can_delete_permission.sql).
  */
 export const getAuthedProfile = cache(async () => {
   const { supabase, user } = await getAuthedUser();
   if (!user) return { supabase, user, profile: null };
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role')
+    .select('full_name, role, can_delete')
     .eq('id', user.id)
     .maybeSingle();
   return { supabase, user, profile };

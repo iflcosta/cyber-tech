@@ -7,11 +7,11 @@ import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 export function OSDeleteButton({
   osId,
   osShortId,
-  isOwner,
+  canDelete,
 }: {
   osId: string;
   osShortId: string;
-  isOwner: boolean;
+  canDelete: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -19,12 +19,12 @@ export function OSDeleteButton({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOwner) return null;
+  if (!canDelete) return null;
 
-  const canDelete = confirm.trim().toUpperCase() === 'APAGAR';
+  const confirmMatches = confirm.trim().toUpperCase() === 'APAGAR';
 
   async function handleDelete() {
-    if (!canDelete) return;
+    if (!confirmMatches) return;
     setDeleting(true);
     setError(null);
     try {
@@ -106,7 +106,7 @@ export function OSDeleteButton({
         <button
           type="button"
           onClick={handleDelete}
-          disabled={!canDelete || deleting}
+          disabled={!confirmMatches || deleting}
           className="flex-1 rounded-md bg-red-600 px-2 py-1.5 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {deleting ? 'Apagando…' : 'Apagar para sempre'}
