@@ -19,10 +19,14 @@ export default async function StockItemDetailPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('can_delete')
     .eq('id', user.id)
     .single();
-  const isOwner = profile?.role === 'owner';
+  // Ativar/inativar e apagar item ficam juntos no mesmo bloco de
+  // "ações perigosas" — só quem tem can_delete=true (independente de
+  // role) vê essas ações, já que quem controla o estoque é quem
+  // assume a responsabilidade por elas.
+  const canDelete = profile?.can_delete === true;
 
   const { data: item } = await supabase
     .from('stock_items')
@@ -66,8 +70,8 @@ export default async function StockItemDetailPage({
         </p>
       </div>
 
-      {/* Acoes perigosas (so owner) */}
-      {isOwner && (
+      {/* Acoes perigosas (so quem tem can_delete) */}
+      {canDelete && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Acoes:

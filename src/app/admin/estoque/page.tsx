@@ -38,8 +38,9 @@ export default async function StockListPage({
 
   const { data: items, error } = await itemsQuery;
 
-  // Perfil do user (pra saber se e owner — so owner ve botoes destrutivos)
-  const isOwner = profile?.role === 'owner';
+  // Perfil do user (pra saber quem pode apagar/zerar — só quem tem
+  // can_delete=true vê os botões destrutivos, independente de role)
+  const canDelete = profile?.can_delete === true;
 
   // Alerta de estoque baixo (view)
   const { data: lowItems } = await supabase
@@ -64,7 +65,7 @@ export default async function StockListPage({
           </p>
         </div>
         <div className="flex flex-shrink-0 gap-2">
-          {isOwner && <WipeStockButtons />}
+          {canDelete && <WipeStockButtons />}
           <Link
             href="/admin/estoque/new"
             className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"

@@ -34,13 +34,13 @@ export function PaymentStatusEditor({
   grandTotal,
   payments,
   canEdit,
-  isOwner,
+  canDelete,
 }: {
   osId: string;
   grandTotal: number;
   payments: Payment[];
   canEdit: boolean;
-  isOwner: boolean;
+  canDelete: boolean;
 }) {
   const router = useRouter();
   const [registering, setRegistering] = useState(false);
@@ -158,7 +158,7 @@ export function PaymentStatusEditor({
                 <span>
                   {fmtBRL(Number(p.amount))} · {methodLabel} · {formatDateTimeBR(p.paid_at)}
                 </span>
-                {isOwner && (
+                {canDelete && (
                   <button
                     type="button"
                     onClick={() => deletePayment(p.id, Number(p.amount))}
