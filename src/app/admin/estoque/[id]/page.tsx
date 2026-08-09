@@ -142,7 +142,7 @@ export default async function StockItemDetailPage({
               </p>
             ) : (
               <ul className="mt-3 divide-y divide-slate-200">
-                {(movements ?? []).map((m: any) => {
+                {(movements ?? []).map((m) => {
                   const meta = STOCK_MOVEMENT_TYPES.find((t) => t.value === m.movement_type);
                   const sign = m.movement_type === 'in' || m.movement_type === 'adjust' ? '+' : '-';
                   const signColor =

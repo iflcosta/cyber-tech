@@ -8,7 +8,7 @@ export interface Product {
     category: string;
     price: number;
     stock_quantity: number;
-    specs: any;
+    specs: Record<string, string | number | boolean>;
     image_urls?: string[];
     views?: number;
     sku?: string;

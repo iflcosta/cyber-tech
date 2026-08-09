@@ -27,11 +27,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Carregar do localStorage ao iniciar
+    // Carregar do localStorage ao iniciar. Fica num efeito de propósito
+    // (não dá pra virar lazy initializer do useState): localStorage não
+    // existe durante o SSR, e essa é justamente a técnica padrão pra
+    // hidratar estado de armazenamento do navegador sem quebrar o
+    // server-render — não é um caso que dá pra "derivar sem efeito".
     useEffect(() => {
         const savedCart = localStorage.getItem('@cybertech:cart');
         if (savedCart) {
             try {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setItems(JSON.parse(savedCart));
             } catch (error) {
                 console.error("Falha ao carregar o carrinho", error);

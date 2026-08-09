@@ -67,7 +67,7 @@ export default async function VendasListPage({
 
   // Totais do periodo filtrado
   const totals = filtered.reduce(
-    (acc: { count: number; total: number }, s: any) => {
+    (acc, s) => {
       acc.count += 1;
       acc.total += Number(s.total) || 0;
       return acc;
@@ -77,8 +77,11 @@ export default async function VendasListPage({
 
   // Atalhos de data — calculados no calendário de Brasília, não no fuso
   // do servidor (perto da meia-noite, UTC já é "amanhã" ou "ontem" em
-  // relação a Brasília).
+  // relação a Brasília). Server Component, lido uma vez por request —
+  // Date.now() aqui é seguro, o linter de pureza só não distingue
+  // Server de Client Component.
   const today = todayBR();
+  // eslint-disable-next-line react-hooks/purity
   const weekAgo = todayBR(new Date(Date.now() - 7 * 86400000));
   const monthStartStr = startOfMonthBRStr();
 
@@ -228,7 +231,7 @@ export default async function VendasListPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {filtered.map((s: any) => {
+              {filtered.map((s) => {
                 const payMeta = PAYMENT_METHODS.find((m) => m.value === s.payment_method);
                 return (
                   <tr key={s.id} className="hover:bg-slate-50">

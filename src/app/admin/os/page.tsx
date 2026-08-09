@@ -33,7 +33,9 @@ export default async function OSListPage({
     .limit(100);
 
   if (params.status === 'warranty') {
-    // Entregues dentro dos WARRANTY_DAYS — útil quando cliente volta reclamando
+    // Entregues dentro dos WARRANTY_DAYS — útil quando cliente volta reclamando.
+    // Server Component, lido uma vez por request — Date.now() aqui é seguro.
+    // eslint-disable-next-line react-hooks/purity
     const warrantyLimit = new Date(Date.now() - WARRANTY_DAYS * 86400000).toISOString();
     query = query.eq('status', 'delivered').gte('delivered_at', warrantyLimit);
   } else if (params.status && params.status !== 'all') {
@@ -65,13 +67,18 @@ export default async function OSListPage({
 
   // Normalizar shape (a view retornava customer_name no root e
   // days_since_update calculado). Reproduzimos os dois aqui.
-  const filtered = (orders ?? []).map((o: any) => ({
+  // Server Component: "agora" é lido uma vez por request (sem re-render
+  // no cliente pra ficar desatualizado) — Date.now() aqui é seguro,
+  // só o linter de pureza não distingue Server de Client Component.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const filtered = (orders ?? []).map((o) => ({
     ...o,
     customer_name: o.customer?.name ?? '(cliente removido)',
     customer_phone: o.customer?.phone ?? null,
     days_since_update: Math.max(
       0,
-      Math.floor((Date.now() - new Date(o.updated_at).getTime()) / 86400000),
+      Math.floor((now - new Date(o.updated_at).getTime()) / 86400000),
     ),
   }));
 

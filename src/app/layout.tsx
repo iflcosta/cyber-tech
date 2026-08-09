@@ -119,9 +119,14 @@ export default function RootLayout({
               }}
             />
             <noscript>
+              {/* Pixel de rastreamento (Facebook), não é imagem de conteúdo —
+                  next/image não se aplica aqui (precisa de JS pra otimizar,
+                  isso é justamente o fallback pra quando JS está desligado). */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 height="1"
                 width="1"
+                alt=""
                 style={{ display: 'none' }}
                 src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID}&ev=PageView&noscript=1`}
               />

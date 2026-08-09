@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { formatDateBR, formatTimeBR } from '@/app/admin/lib/datetime';
+import type { Sale, SaleItem } from '@/app/admin/types/database';
 import { ReciboPrintButton } from './ReciboPrintButton';
 import { AutoPrint } from './AutoPrint';
 
@@ -22,7 +23,7 @@ function fmtBRL(n: number): string {
   return 'R$ ' + n.toFixed(2).replace('.', ',');
 }
 
-function buildRecibo(sale: any, items: any[], operatorName: string): string {
+function buildRecibo(sale: Sale, items: SaleItem[]): string {
   // MPT-II com Generic/Text Only:
   //   - wrap em ~30-31 chars VISUAIS (nao logicos)
   //   - colapsa multiplos espacos em 1 (padding visual nao acumula)
@@ -99,10 +100,7 @@ export default async function ReciboPage({
 
   const { data: sale } = await supabase
     .from('sales')
-    .select(`
-      *,
-      author:profiles!sales_author_id_fkey(full_name)
-    `)
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -114,8 +112,7 @@ export default async function ReciboPage({
     .eq('sale_id', id)
     .order('created_at');
 
-  const operatorName = sale.author?.full_name ?? '—';
-  const reciboText = buildRecibo(sale, items ?? [], operatorName);
+  const reciboText = buildRecibo(sale, items ?? []);
 
   return (
     <div className="space-y-4">

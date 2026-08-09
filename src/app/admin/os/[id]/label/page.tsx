@@ -39,22 +39,10 @@ export const dynamic = 'force-dynamic';
 
 const WIDTH = 32; // chars por linha (58mm @ 12cpi)
 
-// Centraliza texto dentro de WIDTH chars
-function center(text: string): string {
-  const t = text.slice(0, WIDTH);
-  const pad = Math.max(0, Math.floor((WIDTH - t.length) / 2));
-  return ' '.repeat(pad) + t;
-}
-
-// Esquerda e direita (data/hora na direita)
+// Esquerda (usado só por padBoth abaixo pra fazer o preenchimento de sobra)
 function ljust(text: string, width: number = WIDTH): string {
   const t = text.slice(0, width);
   return t + ' '.repeat(Math.max(0, width - t.length));
-}
-
-function rjust(text: string, width: number = WIDTH): string {
-  const t = text.slice(0, width);
-  return ' '.repeat(Math.max(0, width - t.length)) + t;
 }
 
 function padBoth(left: string, right: string): string {
@@ -84,15 +72,15 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     .single();
   if (!so) notFound();
 
-  const customerName = norm((so as any).customer?.name ?? '(cliente removido)');
-  const customerPhone = norm((so as any).customer?.phone ?? '');
+  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const customerName = norm(soWithCustomer.customer?.name ?? '(cliente removido)');
+  const customerPhone = norm(soWithCustomer.customer?.phone ?? '');
   const equipRaw = [so.equipment_brand, so.equipment_model, so.equipment_color]
     .filter(Boolean).join(' ');
   const equipNorm = norm(equipRaw);
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
   const typeLabel = norm(typeMeta?.label ?? '');
-  const shortId = norm((so as any).short_id ?? '');
-  const osNumber = norm((so as any).os_number ?? '');
+  const shortId = norm(so.short_id ?? '');
   const created = formatDateBR(so.created_at);
   const defectNorm = norm(so.reported_defect ?? '');
 

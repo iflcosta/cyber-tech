@@ -21,8 +21,12 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
     .single();
   if (!so) notFound();
 
-  // Normalizar campos que vinham da view
-  ;(so as any).customer_name = (so as any).customer?.name ?? '(cliente removido)';
+  // Normalizar campos que vinham da view. Select com join via string faz
+  // o supabase-js inferir array em vez de objeto único — cast pro
+  // formato real (mesmo padrão usado em outras páginas de OS).
+  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
+  const customerPhone = soWithCustomer.customer?.phone ?? null;
 
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
   const checklist = so.entry_checklist ?? {};
@@ -50,8 +54,8 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
         <section className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cliente</h2>
-            <p className="mt-1 font-semibold text-slate-900">{so.customer_name}</p>
-            {so.customer_phone && <p className="text-slate-700">{so.customer_phone}</p>}
+            <p className="mt-1 font-semibold text-slate-900">{customerName}</p>
+            {customerPhone && <p className="text-slate-700">{customerPhone}</p>}
           </div>
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Aparelho</h2>

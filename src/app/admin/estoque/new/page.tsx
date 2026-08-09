@@ -5,7 +5,7 @@ import { NewItemForm } from './NewItemForm';
 export const dynamic = 'force-dynamic';
 
 export default async function NewStockItemPage() {
-  const { supabase, user } = await getAuthedUser();
+  const { user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
   return (

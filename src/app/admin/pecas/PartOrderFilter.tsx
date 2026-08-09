@@ -1,18 +1,13 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
 import { PART_ORDER_STATUSES } from '@/app/admin/types/database';
 
 export function PartOrderFilter() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const [q, setQ] = useState(params.get('q') ?? '');
-
-  useEffect(() => {
-    setQ(params.get('q') ?? '');
-  }, [params]);
+  const urlQ = params.get('q') ?? '';
 
   function update(key: string, value: string | null) {
     const next = new URLSearchParams(params);
@@ -21,18 +16,23 @@ export function PartOrderFilter() {
     router.push(`${pathname}?${next.toString()}`);
   }
 
-  function onSubmit(e: React.FormEvent) {
+  // Input não controlado (sem useState) — evita sincronizar estado do
+  // React com a URL via useEffect. `key={urlQ}` remonta o input com o
+  // valor novo quando a URL muda por fora (voltar do navegador etc).
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    update('q', q.trim() || null);
+    const value = new FormData(e.currentTarget).get('q');
+    update('q', typeof value === 'string' && value.trim() ? value.trim() : null);
   }
 
   return (
     <div className="space-y-2">
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
+          key={urlQ}
+          name="q"
           type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          defaultValue={urlQ}
           placeholder="Buscar por peça, fornecedor, OS…"
           aria-label="Buscar por peça, fornecedor, OS"
           className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-base text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"

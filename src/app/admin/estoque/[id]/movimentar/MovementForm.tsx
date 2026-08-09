@@ -13,13 +13,11 @@ function parseBRL(v: string): number | null {
 
 export function MovementForm({
   stockItemId,
-  itemName,
   currentStock,
   defaultUnitPrice,
   currentUserId,
 }: {
   stockItemId: string;
-  itemName: string;
   currentStock: number;
   defaultUnitPrice: number;
   currentUserId: string;

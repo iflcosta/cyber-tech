@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
-import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { PAYMENT_METHODS, STOCK_CATEGORY_SUGGESTIONS, type PaymentMethodValue } from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
@@ -48,7 +47,6 @@ export function PDV({
   /** Pré-vincula a venda a esse cliente (ex: veio da ficha do cliente). */
   initialCustomer?: { id: string; name: string; phone: string | null };
 }) {
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [code, setCode] = useState('');
@@ -435,7 +433,7 @@ export function PDV({
           className="mt-2 text-sm text-blue-600 hover:text-blue-700"
         >
           ➕ Não achou? Cadastrar peça nova e vender
-          {search.trim() && <span className="text-slate-500"> — "{search.trim()}"</span>}
+          {search.trim() && <span className="text-slate-500"> — &quot;{search.trim()}&quot;</span>}
         </button>
         {searchSuggestions.length > 0 && (
           <ul className="mt-2 divide-y divide-slate-200">

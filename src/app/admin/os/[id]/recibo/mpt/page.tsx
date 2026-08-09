@@ -39,7 +39,14 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
     .single();
   if (!so) notFound();
 
-  const { data: parts } = await supabase
+  type PartRow = {
+    id: string;
+    quantity: number;
+    unit_price: number;
+    total_amount: number | null;
+    stock_item: { name: string } | null;
+  };
+  const { data: partsRaw } = await supabase
     .from('stock_movements')
     .select(`
       id, quantity, unit_price, total_amount,
@@ -48,8 +55,12 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
     .eq('reference', so.os_number)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
+  // Select com join via string: supabase-js não infere a cardinalidade
+  // 1:1 sozinho — cast pro formato real (mesmo padrão usado alhures).
+  const parts = partsRaw as unknown as PartRow[] | null;
 
-  const customerName = (so as any).customer?.name ?? '(cliente removido)';
+  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
   const laborCost = Number(so.labor_cost ?? 0);
   const partsTotal = (parts ?? []).reduce((acc, p) => acc + Number(p.total_amount ?? 0), 0);
   const grandTotal = laborCost + partsTotal;
@@ -91,7 +102,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
   if (parts && parts.length > 0) {
     lines.push(pad('PECAS:', cols));
     for (const p of parts) {
-      const nome = norm((p as any).stock_item?.name ?? 'item').substring(0, 16).padEnd(16);
+      const nome = norm(p.stock_item?.name ?? 'item').substring(0, 16).padEnd(16);
       const qtd = `${p.quantity}x`.padStart(4);
       const sub = Number(p.total_amount).toFixed(2).replace('.', ',').padStart(10);
       lines.push(nome + qtd + sub);
@@ -142,7 +153,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
       : undefined;
   const escposServiceText = so.repair_notes || so.reported_defect || '';
   const escposParts = (parts ?? []).map((p) => ({
-    name: (p as any).stock_item?.name ?? 'item',
+    name: p.stock_item?.name ?? 'item',
     qty: p.quantity,
     subtotal: Number(p.total_amount).toFixed(2).replace('.', ','),
   }));

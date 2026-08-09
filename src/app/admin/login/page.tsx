@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { LoginForm } from './LoginForm';
@@ -8,7 +9,7 @@ export default async function LoginPage() {
   // Se ja tem sessao valida, nao mostra o formulario de novo — manda
   // direto pra dentro. Sem isso, acessar /login logado sempre mostrava
   // a tela de login (nunca redirecionava sozinho).
-  const { supabase, user } = await getAuthedUser();
+  const { user } = await getAuthedUser();
   if (user) redirect('/admin/os');
 
   return (
@@ -22,7 +23,7 @@ export default async function LoginPage() {
         </div>
         <LoginForm />
         <p className="mt-6 text-center text-xs text-slate-500">
-          Voltar para <a href="/" className="underline">cyberinformatica.tech</a>
+          Voltar para <Link href="/" className="underline">cyberinformatica.tech</Link>
         </p>
       </div>
     </div>
