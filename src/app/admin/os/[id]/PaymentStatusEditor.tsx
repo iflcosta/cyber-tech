@@ -50,6 +50,10 @@ export function PaymentStatusEditor({
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Só pra feedback visual imediato (badge) — o valor que fica salvo em
+  // service_orders.payment_status é recalculado no banco (trigger, ver
+  // migration 0030), não escrito por este componente. Mesma fórmula dos
+  // dois lados só pra badge e persistência baterem sempre.
   const totalPaid = payments.reduce((acc, p) => acc + Number(p.amount), 0);
   const remaining = Math.max(0, grandTotal - totalPaid);
   const status: 'pending' | 'partial' | 'paid' =
@@ -59,15 +63,6 @@ export function PaymentStatusEditor({
     setAmount(remaining > 0 ? remaining.toFixed(2).replace('.', ',') : '');
     setError(null);
     setRegistering(true);
-  }
-
-  async function syncStatus(newTotalPaid: number) {
-    const newStatus: 'pending' | 'partial' | 'paid' =
-      newTotalPaid <= 0 ? 'pending' : newTotalPaid >= grandTotal && grandTotal > 0 ? 'paid' : 'partial';
-    await createCRMBrowserClient()
-      .from('service_orders')
-      .update({ payment_status: newStatus })
-      .eq('id', osId);
   }
 
   async function registerPayment() {
@@ -88,7 +83,9 @@ export function PaymentStatusEditor({
         author_id: userData.user?.id,
       } as never);
       if (err) throw err;
-      await syncStatus(totalPaid + num);
+      // service_orders.payment_status é recalculado automaticamente
+      // por trigger no banco (ver migration 0030) — não precisa
+      // (e não deve) ser escrito daqui.
       setRegistering(false);
       setSaving(false);
       router.refresh();
@@ -98,14 +95,13 @@ export function PaymentStatusEditor({
     }
   }
 
-  async function deletePayment(id: string, paidAmount: number) {
+  async function deletePayment(id: string) {
     if (!confirm('Apagar esse pagamento? Só faz isso se foi um engano.')) return;
     setDeletingId(id);
     try {
       const supabase = createCRMBrowserClient();
       const { error: err } = await supabase.from('service_order_payments').delete().eq('id', id);
       if (err) throw err;
-      await syncStatus(totalPaid - paidAmount);
       router.refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -161,7 +157,7 @@ export function PaymentStatusEditor({
                 {canDelete && (
                   <button
                     type="button"
-                    onClick={() => deletePayment(p.id, Number(p.amount))}
+                    onClick={() => deletePayment(p.id)}
                     disabled={deletingId === p.id}
                     className="text-slate-400 hover:text-red-600 disabled:opacity-30"
                     aria-label="Apagar pagamento"

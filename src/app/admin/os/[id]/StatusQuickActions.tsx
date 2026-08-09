@@ -6,10 +6,8 @@ import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { OS_STATUSES, APPROVAL_METHODS, type OSStatusValue, type ApprovalMethodValue } from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
 
-function parseBRL(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(/\./g, '').replace(',', '.'));
-  return Number.isFinite(n) ? n : null;
+function fmtBRL(n: number): string {
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 type Profile = { id: string; full_name: string };
@@ -69,15 +67,14 @@ export function StatusQuickActions({
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
 
   // Modal de aprovação — só aparece na transição awaiting_approval -> approved.
-  // Registra valor orçado + como o cliente aprovou, pra não depender de
-  // ninguém lembrar depois "combinei por WhatsApp" sem prova nenhuma.
+  // Registra COMO o cliente aprovou, pra não depender de ninguém lembrar
+  // depois "combinei por WhatsApp" sem prova nenhuma. O valor orçado em
+  // si NÃO é editável aqui — é só exibido (já foi definido na seção
+  // "Orçamento"); ter os dois campos editáveis na mesma página, um deles
+  // dentro de um modal, é redundância pura e só cria chance de divergir.
   const approvalTitleId = useId();
   const [approving, setApproving] = useState(false);
-  const [approvalValue, setApprovalValue] = useState(
-    currentEstimatedValue != null ? currentEstimatedValue.toFixed(2).replace('.', ',') : '',
-  );
   const [approvalMethod, setApprovalMethod] = useState<ApprovalMethodValue>('whatsapp');
-  const [approvalError, setApprovalError] = useState<string | null>(null);
 
   if (!canEdit) return null;
 
@@ -99,14 +96,14 @@ export function StatusQuickActions({
     (s) => s !== next && s !== currentStatus,
   );
 
-  async function changeTo(newStatus: OSStatusValue, note?: string, extraUpdate?: { estimated_value: number }) {
+  async function changeTo(newStatus: OSStatusValue, note?: string) {
     setError(null);
     setActiveStatus(newStatus);
     try {
       const supabase = createCRMBrowserClient();
       const { error: upErr } = await supabase
         .from('service_orders')
-        .update({ status: newStatus, ...extraUpdate })
+        .update({ status: newStatus })
         .eq('id', osId);
       if (upErr) throw upErr;
       await supabase.from('service_order_events').insert({
@@ -141,7 +138,6 @@ export function StatusQuickActions({
 
   function handleNextClick() {
     if (isApprovalStep) {
-      setApprovalError(null);
       setApproving(true);
       return;
     }
@@ -149,18 +145,13 @@ export function StatusQuickActions({
   }
 
   async function confirmApproval() {
-    const num = approvalValue.trim() ? parseBRL(approvalValue) : null;
-    if (approvalValue.trim() && num === null) {
-      setApprovalError('Valor inválido.');
-      return;
-    }
     const methodLabel = APPROVAL_METHODS.find((m) => m.value === approvalMethod)?.label ?? approvalMethod;
-    const valuePart = num !== null
-      ? ` — orçamento de ${num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+    const valuePart = currentEstimatedValue != null
+      ? ` — orçamento de ${fmtBRL(currentEstimatedValue)}`
       : '';
     const note = `Aprovado por ${methodLabel}${valuePart}`;
     setApproving(false);
-    await changeTo('approved', note, num !== null ? { estimated_value: num } : undefined);
+    await changeTo('approved', note);
   }
 
   return (
@@ -204,17 +195,25 @@ export function StatusQuickActions({
         </p>
 
         <div className="mt-4 space-y-3">
-          <label className="block">
-            <span className="block text-sm font-medium text-slate-700">Valor orçado (opcional)</span>
-            <input
-              autoFocus
-              value={approvalValue}
-              onChange={(e) => setApprovalValue(e.target.value)}
-              placeholder="0,00"
-              inputMode="decimal"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </label>
+          <div>
+            <span className="block text-sm font-medium text-slate-700">Valor orçado</span>
+            {currentEstimatedValue != null ? (
+              <p className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900">
+                {fmtBRL(currentEstimatedValue)}
+              </p>
+            ) : (
+              <p className="mt-1 rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+                Ainda não orçado
+              </p>
+            )}
+            <a
+              href="#orcamento-section"
+              onClick={() => setApproving(false)}
+              className="mt-1 inline-block text-xs font-medium text-blue-600 hover:text-blue-700"
+            >
+              Editar na seção Orçamento →
+            </a>
+          </div>
 
           <div>
             <span className="block text-sm font-medium text-slate-700">Como o cliente aprovou?</span>
@@ -236,10 +235,6 @@ export function StatusQuickActions({
             </div>
           </div>
         </div>
-
-        {approvalError && (
-          <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{approvalError}</p>
-        )}
 
         <div className="mt-5 flex justify-end gap-2">
           <button
