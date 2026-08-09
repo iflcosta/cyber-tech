@@ -33,8 +33,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
     .from('service_orders')
     .select(`
       *,
-      customer:customers(name, phone),
-      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+      customer:customers(name, phone)
     `)
     .eq('id', id)
     .single();

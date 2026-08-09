@@ -42,8 +42,6 @@ async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Pr
   }
 }
 
-type Profile = { id: string; full_name: string };
-
 type CustomerMatch = {
   id: string;
   name: string;
@@ -54,13 +52,9 @@ type CustomerMatch = {
 
 export function NewOSForm({
   currentUserId,
-  technicians,
-  owners,
   initialCustomer,
 }: {
   currentUserId: string;
-  technicians: Profile[];
-  owners: Profile[];
   /** Pré-seleciona o cliente (ex: veio do botão "+ Nova OS" na ficha do cliente). */
   initialCustomer?: CustomerMatch;
 }) {
@@ -143,7 +137,6 @@ export function NewOSForm({
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [defect, setDefect] = useState('');
-  const [assignedTo, setAssignedTo] = useState<string>('');
   const [blocking, setBlocking] = useState('');
   const [estimatedReady, setEstimatedReady] = useState('');
 
@@ -232,7 +225,6 @@ export function NewOSForm({
           entry_checklist: checklist,
           accessories_in: accessories.trim() || null,
           equipment_photos: photos,
-          assigned_to: assignedTo || null,
           blocking_reason: blocking.trim() || null,
           estimated_ready_at: estimatedReady || null,
           created_by: currentUserId,
@@ -247,7 +239,6 @@ export function NewOSForm({
         event_type: 'created',
         to_value: 'awaiting_approval',
         author_id: currentUserId,
-        note: assignedTo ? `Atribuída a ${technicians.concat(owners).find((p) => p.id === assignedTo)?.full_name ?? '—'}` : null,
       });
 
       router.push(`/admin/os/${newOS.id}`);
@@ -513,35 +504,14 @@ export function NewOSForm({
               placeholder="Ex: tela trincada após queda, não carrega"
             />
           </Field>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Atribuir a (opcional)">
-              <select
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                className="form-input"
-              >
-                <option value="">— Deixar pra alguém pegar —</option>
-                {technicians.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.full_name} (técnico)
-                  </option>
-                ))}
-                {owners.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.full_name} (dono)
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Previsão (opcional)">
-              <input
-                type="date"
-                value={estimatedReady}
-                onChange={(e) => setEstimatedReady(e.target.value)}
-                className="form-input"
-              />
-            </Field>
-          </div>
+          <Field label="Previsão (opcional)">
+            <input
+              type="date"
+              value={estimatedReady}
+              onChange={(e) => setEstimatedReady(e.target.value)}
+              className="form-input"
+            />
+          </Field>
           <Field label="Já trava em algo? (opcional)">
             <input
               value={blocking}

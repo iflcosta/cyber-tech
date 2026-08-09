@@ -36,8 +36,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .from('service_orders')
     .select(`
       *,
-      customer:customers(name, phone),
-      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+      customer:customers(name, phone)
     `)
     .eq('id', id)
     .single();
@@ -46,7 +45,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   // Normalizar campos que a view fornecia
   const customerName = (so as any).customer?.name ?? '(cliente removido)';
   const customerPhone = (so as any).customer?.phone ?? null;
-  const assignedToName = (so as any).assigned?.full_name ?? null;
   const daysSinceUpdate = Math.max(
     0,
     Math.floor((Date.now() - new Date(so.updated_at).getTime()) / 86400000),
@@ -55,7 +53,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     ...so,
     customer_name: customerName,
     customer_phone: customerPhone,
-    assigned_to_name: assignedToName,
     days_since_update: daysSinceUpdate,
   };
 
@@ -112,11 +109,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('service_order_id', id)
     .order('created_at', { ascending: false });
   const partOrders = partOrdersRaw as unknown as LinkedPartOrder[] | null;
-
-  const { data: technicians } = await supabase
-    .from('profiles')
-    .select('id, full_name, role, active')
-    .eq('active', true);
 
   const authorIds = Array.from(new Set((events ?? []).map((e) => e.author_id)));
   const { data: authorProfiles } = await supabase
@@ -399,30 +391,19 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             </dl>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Atribuição</h2>
-            <p className="mt-1 text-sm">
-              {normalizedSo.assigned_to_name ? (
-                <>Técnico: <strong>{normalizedSo.assigned_to_name}</strong></>
-              ) : (
-                <span className="text-slate-500">Sem técnico atribuído</span>
-              )}
-            </p>
-            {normalizedSo.estimated_ready_at && (
-              <p className="mt-1 text-sm">Previsão: <strong>{formatDateOnlyBR(normalizedSo.estimated_ready_at)}</strong></p>
-            )}
-          </section>
+          {normalizedSo.estimated_ready_at && (
+            <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Previsão</h2>
+              <p className="mt-1 text-sm"><strong>{formatDateOnlyBR(normalizedSo.estimated_ready_at)}</strong></p>
+            </section>
+          )}
 
           {profile && !isFinal && (
             <OSDetailActions
               osId={normalizedSo.id}
-              currentAssignedTo={normalizedSo.assigned_to}
               currentBlocking={normalizedSo.blocking_reason}
               canEdit={canEdit}
               currentUserId={profile.id}
-              currentUserName={profile.full_name}
-              technicians={(technicians ?? []).filter((t) => t.role === 'technician')}
-              owners={(technicians ?? []).filter((t) => t.role === 'owner')}
               isOwner={profile.role === 'owner'}
             />
           )}

@@ -13,12 +13,6 @@ export default async function NewOSPage({
   const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, full_name, role, active')
-    .eq('active', true)
-    .order('full_name');
-
   // Veio da ficha do cliente (botão "+ Nova OS") — pré-seleciona pra
   // não precisar buscar de novo o mesmo cliente que já está aberto.
   let initialCustomer;
@@ -45,8 +39,6 @@ export default async function NewOSPage({
       </div>
       <NewOSForm
         currentUserId={user.id}
-        technicians={(profiles ?? []).filter((p) => p.role === 'technician')}
-        owners={(profiles ?? []).filter((p) => p.role === 'owner')}
         initialCustomer={initialCustomer}
       />
     </div>

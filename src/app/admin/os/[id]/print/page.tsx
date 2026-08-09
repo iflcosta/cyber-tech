@@ -15,8 +15,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
     .from('service_orders')
     .select(`
       *,
-      customer:customers(name, phone),
-      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+      customer:customers(name, phone)
     `)
     .eq('id', id)
     .single();
@@ -24,7 +23,6 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
 
   // Normalizar campos que vinham da view
   ;(so as any).customer_name = (so as any).customer?.name ?? '(cliente removido)';
-  ;(so as any).assigned_to_name = (so as any).assigned?.full_name ?? null;
 
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
   const checklist = so.entry_checklist ?? {};
@@ -98,7 +96,6 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
             {so.estimated_ready_at
               ? `Pronto em: ${formatDateOnlyBR(so.estimated_ready_at)}`
               : 'A definir'}
-            {so.assigned_to_name && ` · Técnico: ${so.assigned_to_name}`}
           </p>
         </section>
 

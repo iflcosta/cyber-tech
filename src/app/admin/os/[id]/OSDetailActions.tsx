@@ -4,35 +4,26 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 
-type Profile = { id: string; full_name: string };
-
 // Mudança de STATUS mora exclusivamente em StatusQuickActions — esse
-// painel já tinha um <select> de status livre até essa revisão, que
-// deixava pular de "Aguardando aprovação" direto pra "Aprovado" sem
-// passar pelo modal que registra valor orçado + como o cliente
-// aprovou. Dois caminhos pra mudar status, um deles furando a
-// rastreabilidade que o outro existe pra garantir — então esse aqui
-// ficou só com o que não tem duplicata em lugar nenhum: reatribuir
-// técnico, motivo de bloqueio e anotação livre na timeline.
+// painel já teve um <select> de status livre e um campo de técnico
+// atribuído, removidos numa revisão de redundâncias: o status livre
+// deixava pular "Aguardando aprovação" -> "Aprovado" sem passar pelo
+// modal que registra valor orçado + como o cliente aprovou; a
+// atribuição de técnico nunca foi usada na prática (a loja já sabe
+// informalmente quem está com qual aparelho). Sobrou só o que não
+// tem duplicata em lugar nenhum: motivo de bloqueio e anotação livre
+// na timeline.
 export function OSDetailActions({
   osId,
-  currentAssignedTo,
   currentBlocking,
   canEdit,
   currentUserId,
-  currentUserName,
-  technicians,
-  owners,
   isOwner,
 }: {
   osId: string;
-  currentAssignedTo: string | null;
   currentBlocking: string | null;
   canEdit: boolean;
   currentUserId: string;
-  currentUserName: string;
-  technicians: Profile[];
-  owners: Profile[];
   isOwner: boolean;
 }) {
   const router = useRouter();
@@ -40,63 +31,24 @@ export function OSDetailActions({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [assignedTo, setAssignedTo] = useState<string>(currentAssignedTo ?? '');
   const [blocking, setBlocking] = useState<string>(currentBlocking ?? '');
   const [note, setNote] = useState<string>('');
 
-  if (!canEdit && !currentAssignedTo) {
-    return (
-      <section className="rounded-lg border-2 border-dashed border-slate-200 bg-white p-4 text-center">
-        <p className="text-sm text-slate-600">OS sem técnico atribuído.</p>
-        <button
-          onClick={() => setOpen(true)}
-          className="mt-2 w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-        >
-          Pegar pra mim
-        </button>
-      </section>
-    );
-  }
-
-  if (!canEdit) {
-    return (
-      <section className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
-        <p className="text-sm text-slate-600">Você não pode editar esta OS.</p>
-        <p className="mt-1 text-xs text-slate-500">Ela está atribuída a outro técnico.</p>
-      </section>
-    );
-  }
+  if (!canEdit) return null;
 
   async function save() {
     setSubmitting(true);
     setError(null);
     try {
       const supabase = createCRMBrowserClient();
-      const updates: Record<string, unknown> = {};
-      if (assignedTo !== (currentAssignedTo ?? '')) updates.assigned_to = assignedTo || null;
-      if (blocking !== (currentBlocking ?? '')) updates.blocking_reason = blocking || null;
 
-      if (Object.keys(updates).length > 0) {
+      if (blocking !== (currentBlocking ?? '')) {
         const { error: upErr } = await supabase
           .from('service_orders')
-          .update(updates)
+          .update({ blocking_reason: blocking || null })
           .eq('id', osId);
         if (upErr) throw upErr;
-      }
 
-      // Eventos (1 para cada mudança)
-      if (assignedTo !== (currentAssignedTo ?? '')) {
-        const all = [...technicians, ...owners];
-        const newName = all.find((p) => p.id === assignedTo)?.full_name;
-        await supabase.from('service_order_events').insert({
-          service_order_id: osId,
-          event_type: 'assigned',
-          from_value: currentAssignedTo,
-          to_value: newName ?? null,
-          author_id: currentUserId,
-        });
-      }
-      if (blocking !== (currentBlocking ?? '')) {
         await supabase.from('service_order_events').insert({
           service_order_id: osId,
           event_type: blocking ? 'note_added' : 'part_resolved',
@@ -104,7 +56,7 @@ export function OSDetailActions({
           author_id: currentUserId,
         });
       }
-      if (note.trim() && assignedTo === (currentAssignedTo ?? '')) {
+      if (note.trim()) {
         await supabase.from('service_order_events').insert({
           service_order_id: osId,
           event_type: 'note_added',
@@ -125,27 +77,16 @@ export function OSDetailActions({
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Técnico e bloqueio</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Bloqueio e anotação</h2>
       {!open ? (
         <button
           onClick={() => setOpen(true)}
           className="mt-2 w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
         >
-          Reatribuir / anotar
+          Anotar / bloquear
         </button>
       ) : (
         <div className="mt-2 space-y-3">
-          <Field label="Técnico">
-            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="form-input">
-              <option value="">— Ninguém —</option>
-              {technicians.map((t) => (
-                <option key={t.id} value={t.id}>{t.full_name} (técnico)</option>
-              ))}
-              {owners.map((o) => (
-                <option key={o.id} value={o.id}>{o.full_name} (dono)</option>
-              ))}
-            </select>
-          </Field>
           <Field label="O que trava (opcional)">
             <input value={blocking} onChange={(e) => setBlocking(e.target.value)} className="form-input" placeholder="Ex: cabo iPhone 4" />
           </Field>

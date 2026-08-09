@@ -24,8 +24,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
     .from('service_orders')
     .select(`
       *,
-      customer:customers(name, phone),
-      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+      customer:customers(name, phone)
     `)
     .eq('id', id)
     .single();
@@ -44,7 +43,6 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
   const customerName = (so as any).customer?.name ?? '(cliente removido)';
   const customerPhone = (so as any).customer?.phone ?? null;
-  const assignedToName = (so as any).assigned?.full_name ?? null;
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
 
   const laborCost = Number(so.labor_cost ?? 0);
@@ -246,7 +244,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
             <p>Assinatura do cliente (retirada)</p>
           </div>
           <div className="border-t border-slate-400 pt-1">
-            <p>Responsável Cyber Informática{assignedToName && ` — ${assignedToName}`}</p>
+            <p>Responsável Cyber Informática</p>
           </div>
         </section>
 
