@@ -80,7 +80,6 @@ export type Database = {
             | 'ready'
             | 'delivered'
             | 'cancelled';
-          assigned_to: string | null;
           blocking_reason: string | null;
           estimated_value: number | null;
           estimated_ready_at: string | null;
@@ -120,7 +119,6 @@ export type Database = {
             | 'ready'
             | 'delivered'
             | 'cancelled';
-          assigned_to?: string | null;
           blocking_reason?: string | null;
           estimated_value?: number | null;
           estimated_ready_at?: string | null;
@@ -439,7 +437,6 @@ export type Database = {
         Row: Database['public']['Tables']['service_orders']['Row'] & {
           customer_name: string;
           customer_phone: string | null;
-          assigned_to_name: string | null;
           days_since_update: number;
         };
       };

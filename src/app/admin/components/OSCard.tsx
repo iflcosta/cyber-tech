@@ -56,11 +56,6 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
         </div>
         <div className="flex flex-col items-end gap-1 text-right">
           <span className="text-xs text-slate-500">{timeAgo(so.updated_at)}</span>
-          {so.assigned_to_name && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700">
-              {so.assigned_to_name.split(' ')[0]}
-            </span>
-          )}
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">

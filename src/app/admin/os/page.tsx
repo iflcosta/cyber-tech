@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getAuthedProfile } from '@/app/admin/lib/auth';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 import { OSCard } from '@/app/admin/components/OSCard';
 import { OSFilter } from './OSFilter';
 import { WARRANTY_DAYS } from '@/app/admin/types/database';
@@ -14,13 +14,11 @@ const ACTIVE_STATUSES = [
 export default async function OSListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; mine?: string }>;
+  searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase, user, profile } = await getAuthedProfile();
+  const { supabase, user } = await getAuthedUser();
   if (!user) return null;
-
-  const showOnlyMine = params.mine === '1' && profile?.role !== 'owner';
 
   // Query direto na tabela (nao na view) pra permitir ver OSs
   // entregues/canceladas via filtro de status especifico.
@@ -29,8 +27,7 @@ export default async function OSListPage({
     .from('service_orders')
     .select(`
       *,
-      customer:customers(name, phone),
-      assigned:profiles!service_orders_assigned_to_fkey(full_name)
+      customer:customers(name, phone)
     `)
     .order('updated_at', { ascending: false })
     .limit(100);
@@ -44,10 +41,6 @@ export default async function OSListPage({
   } else {
     // Sem filtro: ativas (exclui delivered/cancelled)
     query = query.in('status', ACTIVE_STATUSES);
-  }
-
-  if (showOnlyMine) {
-    query = query.eq('assigned_to', user.id);
   }
 
   // Busca no banco — nome/telefone do cliente vêm de customers (join),
@@ -76,7 +69,6 @@ export default async function OSListPage({
     ...o,
     customer_name: o.customer?.name ?? '(cliente removido)',
     customer_phone: o.customer?.phone ?? null,
-    assigned_to_name: o.assigned?.full_name ?? null,
     days_since_update: Math.max(
       0,
       Math.floor((Date.now() - new Date(o.updated_at).getTime()) / 86400000),
@@ -90,7 +82,6 @@ export default async function OSListPage({
           <h1 className="text-2xl font-bold text-slate-900">Ordens de Serviço</h1>
           <p className="text-sm text-slate-500">
             {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
-            {showOnlyMine && ' (atribuídas a mim)'}
             {params.status && params.status !== 'all' && ` (filtrado por ${params.status})`}
           </p>
         </div>
