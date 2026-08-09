@@ -86,7 +86,7 @@ export default async function VendaDetailPage({
             Itens ({items?.length ?? 0})
           </h2>
           <ul className="mt-3 divide-y divide-slate-200">
-            {(items ?? []).map((item: any) => (
+            {(items ?? []).map((item) => (
               <li key={item.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                 <div className="flex-1">
                   <p className="font-medium text-slate-900">{item.item_name}</p>

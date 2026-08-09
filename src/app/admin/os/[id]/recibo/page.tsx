@@ -31,7 +31,17 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   if (!so) notFound();
 
   // Pecas usadas (stock_movements onde reference = os_number)
-  const { data: parts } = await supabase
+  type PartRow = {
+    id: string;
+    quantity: number;
+    unit_price: number;
+    total_amount: number | null;
+    movement_type: string;
+    notes: string | null;
+    created_at: string;
+    stock_item: { name: string; ean13: string | null; brand: string | null; model: string | null } | null;
+  };
+  const { data: partsRaw } = await supabase
     .from('stock_movements')
     .select(`
       id, quantity, unit_price, total_amount, movement_type, notes, created_at,
@@ -40,9 +50,13 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
     .eq('reference', so.os_number)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
+  // Select com join via string: supabase-js não infere a cardinalidade
+  // 1:1 sozinho — cast pro formato real (mesmo padrão usado alhures).
+  const parts = partsRaw as unknown as PartRow[] | null;
 
-  const customerName = (so as any).customer?.name ?? '(cliente removido)';
-  const customerPhone = (so as any).customer?.phone ?? null;
+  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
+  const customerPhone = soWithCustomer.customer?.phone ?? null;
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
 
   const laborCost = Number(so.labor_cost ?? 0);
@@ -158,7 +172,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
                 {parts.map((p) => (
                   <tr key={p.id} className="border-b border-slate-100 text-slate-900">
                     <td className="py-1.5">
-                      {(p as any).stock_item?.name ?? '(item removido)'}
+                      {p.stock_item?.name ?? '(item removido)'}
                       {p.notes && <div className="text-xs text-slate-500">{p.notes}</div>}
                     </td>
                     <td className="py-1.5 text-center font-mono">{p.quantity}</td>

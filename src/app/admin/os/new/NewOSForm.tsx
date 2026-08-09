@@ -421,7 +421,7 @@ export function NewOSForm({
             <p className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
               💡 Processador, placa de vídeo, RAM etc não precisam ser perguntados aqui — o
               cliente raramente sabe de cabeça, e não ajuda a identificar a máquina. Isso o
-              técnico levanta na bancada e registra em "Anotações de reparo" quando começar.
+              técnico levanta na bancada e registra em &quot;Anotações de reparo&quot; quando começar.
               Pra identificar qual máquina é qual, a <strong>foto</strong> abaixo vale mais que
               qualquer campo de texto — capriche.
             </p>

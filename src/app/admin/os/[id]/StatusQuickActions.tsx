@@ -10,8 +10,6 @@ function fmtBRL(n: number): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-type Profile = { id: string; full_name: string };
-
 const STATUS_FLOW: Record<OSStatusValue, OSStatusValue | null> = {
   awaiting_approval: 'approved',
   approved: 'in_progress',

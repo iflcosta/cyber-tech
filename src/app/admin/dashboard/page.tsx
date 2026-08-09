@@ -257,21 +257,33 @@ export default async function DashboardPage() {
   const supplierTotalsSorted = Array.from(supplierAgg.values()).sort((a, b) => b.total - a.total);
 
   // Painel "hoje" — normaliza cada lista (join vira campo direto) e
-  // calcula "há quantos dias" onde faz sentido.
+  // calcula "há quantos dias" onde faz sentido. "agora" lido uma vez só
+  // (Server Component, sem re-render no cliente) — Date.now() aqui é
+  // seguro, o linter de pureza só não distingue Server de Client.
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
   const daysAgo = (dateStr: string) =>
-    Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000));
+    Math.max(0, Math.floor((nowMs - new Date(dateStr).getTime()) / 86400000));
 
-  const readyItems = (readyList.data ?? []).map((o: any) => ({
+  // Selects com join via string (não a sintaxe de query builder tipado)
+  // fazem o supabase-js inferir a cardinalidade errada (array em vez de
+  // 1:1) — cast pro formato real, mesmo padrão já usado alhures no ERP
+  // pra esse mesmo tipo de select.
+  type ReadyRow = { id: string; short_id: string | null; os_number: string | null; customer: { name: string } | null; updated_at: string };
+  type UnpaidRow = { id: string; short_id: string | null; os_number: string | null; customer: { name: string } | null; delivered_at: string | null; labor_cost: number; estimated_value: number | null };
+  type PartWaitingRow = { id: string; part_description: string; created_at: string; supplier: { name: string } | null };
+
+  const readyItems = ((readyList.data ?? []) as unknown as ReadyRow[]).map((o) => ({
     ...o,
     customer_name: o.customer?.name ?? '(cliente removido)',
     daysReady: daysAgo(o.updated_at),
   }));
-  const unpaidItems = (unpaidList.data ?? []).map((o: any) => ({
+  const unpaidItems = ((unpaidList.data ?? []) as unknown as UnpaidRow[]).map((o) => ({
     ...o,
     customer_name: o.customer?.name ?? '(cliente removido)',
     daysUnpaid: o.delivered_at ? daysAgo(o.delivered_at) : 0,
   }));
-  const partsWaitingItems = (partsWaitingList.data ?? []).map((p: any) => ({
+  const partsWaitingItems = ((partsWaitingList.data ?? []) as unknown as PartWaitingRow[]).map((p) => ({
     ...p,
     supplier_name: p.supplier?.name ?? '(fornecedor removido)',
     daysWaiting: daysAgo(p.created_at),
@@ -312,7 +324,7 @@ export default async function DashboardPage() {
                   OS parada
                 </p>
                 <ul className="mt-1.5 space-y-1">
-                  {staleItems.map((o: any) => (
+                  {staleItems.map((o) => (
                     <li key={o.id}>
                       <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
                         <span className="truncate">
@@ -615,7 +627,7 @@ export default async function DashboardPage() {
           <p className="mt-3 text-sm text-slate-500">Nenhuma venda ainda.</p>
         ) : (
           <ul className="mt-3 divide-y divide-slate-200">
-            {(lastSales.data ?? []).map((s: any) => {
+            {(lastSales.data ?? []).map((s) => {
               const payMeta = PAYMENT_METHODS.find((m) => m.value === s.payment_method);
               return (
                 <li key={s.id} className="flex items-center justify-between gap-2 py-2 text-sm">

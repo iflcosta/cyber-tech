@@ -70,6 +70,10 @@ export default async function PartOrdersListPage({
 
   const { data: orders, error } = await query;
 
+  // Server Component: "agora" é lido uma vez por request — Date.now()
+  // aqui é seguro, o linter de pureza só não distingue Server de Client.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
   const filtered = ((orders ?? []) as unknown as PartOrderRow[]).map((o) => ({
     ...o,
     supplier_name: o.supplier?.name ?? '(fornecedor removido)',
@@ -77,7 +81,7 @@ export default async function PartOrdersListPage({
     customer_name: o.service_order?.customer?.name ?? null,
     days_since_update: Math.max(
       0,
-      Math.floor((Date.now() - new Date(o.updated_at).getTime()) / 86400000),
+      Math.floor((now - new Date(o.updated_at).getTime()) / 86400000),
     ),
   }));
 

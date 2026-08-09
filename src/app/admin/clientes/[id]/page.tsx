@@ -38,6 +38,9 @@ export default async function ClienteDetailPage({
       .order('created_at', { ascending: false }),
   ]);
 
+  // Server Component, lido uma vez por request — Date.now() aqui é
+  // seguro, o linter de pureza só não distingue Server de Client.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const ordersWithWarranty = (orders ?? []).map((o) => {
     const warrantyEnd = o.delivered_at

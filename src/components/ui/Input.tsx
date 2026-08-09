@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "./Button";
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
@@ -9,7 +9,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         className={cn(
-          "flex h-12 w-full rounded-[2px] border border-[#D4D2CF] bg-white px-4 py-2 text-sm text-[#1A1A1A] placeholder:text-[#AAAAAA] focus:outline-none focus:border-[#1A1A1A] disabled:cursor-nãot-allowed disabled:opacity-50 transition-all",
+          "flex h-12 w-full rounded-[2px] border border-[#D4D2CF] bg-white px-4 py-2 text-sm text-[#1A1A1A] placeholder:text-[#AAAAAA] focus:outline-none focus:border-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-50 transition-all",
           className
         )}
         ref={ref}

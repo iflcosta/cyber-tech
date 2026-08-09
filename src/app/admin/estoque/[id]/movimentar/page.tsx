@@ -31,7 +31,6 @@ export default async function NewMovementPage({
       </div>
       <MovementForm
         stockItemId={item.id}
-        itemName={item.name}
         currentStock={item.current_stock}
         defaultUnitPrice={item.unit_price}
         currentUserId={user.id}

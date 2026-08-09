@@ -15,16 +15,24 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, asChild, children, disabled, ...props }, ref) => {
-    if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<any>, {
+    if (asChild && React.isValidElement<{ className?: string }>(children)) {
+      // Padrão "asChild" (Radix/shadcn): clona o filho passando ref +
+      // classe em vez de renderizar um <button> — permite usar Button
+      // com a aparência de outro elemento (ex: <Link>). O linter mais
+      // novo (react-hooks/refs) marca esse cloneElement+ref como
+      // possível leitura de ref durante o render, mas aqui é só
+      // atribuição (não lê .current) — padrão seguro e usado em todo o
+      // site; reescrever pra @radix-ui/react-slot é risco maior do que
+      // vale por ora.
+      return React.cloneElement(children, {
         className: cn(
           "inline-flex items-center justify-center rounded-lg font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
           className,
-          (children as React.ReactElement<any>).props.className
+          children.props.className
         ),
         ...props,
         ref,
-      });
+      } as React.HTMLAttributes<HTMLElement>);
     }
 
     const variants = {

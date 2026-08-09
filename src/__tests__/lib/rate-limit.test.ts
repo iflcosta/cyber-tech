@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 // The in-memory store is module-level, so we need to reset env vars before each test

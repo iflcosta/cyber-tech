@@ -9,6 +9,18 @@ import CyberLogo from "./CyberLogo";
 
 const TELAS_URL = "https://telas.cyberinformatica.tech";
 
+// Fora do componente porque é estático (não depende de props/state) — se
+// ficasse dentro, seria um array NOVO a cada render, e o scrollspy abaixo
+// teria que recriar o IntersectionObserver toda vez que activeSection
+// mudasse (que é toda vez que ele dispara), virando um loop.
+const NAV_ITEMS = [
+  { href: "#catalogo", label: "Catálogo", sectionId: "catalogo" },
+  { href: "#curadoria", label: "Curadoria", sectionId: "curadoria" },
+  { href: "#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
+  { href: "#parceiros", label: "Parceiros", sectionId: "parceiros" },
+  { href: "/contato", label: "Contato", sectionId: "contato" },
+];
+
 /**
  * Header — Cyber Informática
  *
@@ -25,14 +37,7 @@ const TELAS_URL = "https://telas.cyberinformatica.tech";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
-
-  const nav = [
-    { href: "#catalogo", label: "Catálogo", sectionId: "catalogo" },
-    { href: "#curadoria", label: "Curadoria", sectionId: "curadoria" },
-    { href: "#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
-    { href: "#parceiros", label: "Parceiros", sectionId: "parceiros" },
-    { href: "/contato", label: "Contato", sectionId: "contato" },
-  ];
+  const nav = NAV_ITEMS;
 
   const headerMessage = "Olá! Vim pelo site da Cyber.";
 
@@ -62,7 +67,7 @@ export default function Header() {
 
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
-  }, []);
+  }, [nav]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--navy-mid)]/95 backdrop-blur-md border-b border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.4)]">

@@ -43,11 +43,16 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   if (!so) notFound();
 
   // Normalizar campos que a view fornecia
-  const customerName = (so as any).customer?.name ?? '(cliente removido)';
-  const customerPhone = (so as any).customer?.phone ?? null;
+  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
+  const customerPhone = soWithCustomer.customer?.phone ?? null;
+  // Server Component, lido uma vez por request — Date.now() aqui é
+  // seguro, o linter de pureza só não distingue Server de Client.
+  // eslint-disable-next-line react-hooks/purity
+  const nowForStale = Date.now();
   const daysSinceUpdate = Math.max(
     0,
-    Math.floor((Date.now() - new Date(so.updated_at).getTime()) / 86400000),
+    Math.floor((nowForStale - new Date(so.updated_at).getTime()) / 86400000),
   );
   const normalizedSo = {
     ...so,
@@ -63,7 +68,15 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .order('created_at', { ascending: false });
 
   // Pecas usadas (vinculo real via service_order_id, nao mais texto)
-  const { data: partsUsed } = await supabase
+  type PartUsed = {
+    id: string;
+    quantity: number;
+    unit_price: number;
+    total_amount: number | null;
+    created_at: string;
+    stock_item: { name: string; ean13: string | null } | null;
+  };
+  const { data: partsUsedRaw } = await supabase
     .from('stock_movements')
     .select(`
       id, quantity, unit_price, total_amount, created_at,
@@ -72,6 +85,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('service_order_id', id)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
+  // Select com join via string-template: o supabase-js não consegue
+  // inferir a cardinalidade (1:1) de stock_item a partir da string só —
+  // sem isso ele tipa como array. Mesmo padrão de cast já usado mais
+  // abaixo pra partOrders.
+  const partsUsed = partsUsedRaw as unknown as PartUsed[] | null;
 
   const partsTotal = (partsUsed ?? []).reduce(
     (acc, p) => acc + Number(p.total_amount ?? 0),
@@ -215,7 +233,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                   {partsUsed.map((p) => (
                     <li key={p.id} className="flex items-center justify-between py-1.5">
                       <span className="text-slate-900">
-                        {(p as any).stock_item?.name ?? '(item removido)'}
+                        {p.stock_item?.name ?? '(item removido)'}
                         <span className="ml-2 font-mono text-slate-500">×{p.quantity}</span>
                       </span>
                       <span className="font-mono text-slate-900">

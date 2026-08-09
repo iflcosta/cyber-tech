@@ -56,7 +56,15 @@ export function getLocalBusinessSchema() {
 /**
  * Generates JSON-LD for an individual Product
  */
-export function getProductSchema(product: any) {
+export function getProductSchema(product: {
+  id: string;
+  name: string;
+  category: string;
+  brand?: string;
+  price_estimate?: number;
+  stock_quantity: number;
+  image_urls?: string[];
+}) {
   return {
     "@context": "https://schema.org/",
     "@type": "Product",

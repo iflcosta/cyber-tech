@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { createCRMBrowserClient } from '../lib/supabase/client';
@@ -26,10 +26,16 @@ export function MobileNav({
   const pathname = usePathname();
   const router = useRouter();
 
-  // Fecha o menu sempre que a rota muda (clique num link)
-  useEffect(() => {
+  // Fecha o menu sempre que a rota muda (clique num link). Ajuste de
+  // estado durante o render em vez de useEffect — padrão recomendado
+  // pelo próprio React pra "resetar estado quando algo muda": evita o
+  // render extra (efeito rodando só depois de já ter pintado a tela
+  // com o menu aberto na rota nova).
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   async function logout() {
     const supabase = createCRMBrowserClient();

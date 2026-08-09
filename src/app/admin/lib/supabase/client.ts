@@ -10,7 +10,6 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr';
-import type { Database } from '@/app/admin/types/database';
 
 export function createCRMBrowserClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL;
@@ -22,5 +21,10 @@ export function createCRMBrowserClient() {
     );
   }
 
+  // O tipo Database gerado à mão não bate exatamente com o shape que
+  // essa versão do @supabase/ssr/postgrest-js espera como genérico —
+  // usar <Database> aqui colapsa toda tabela pra "never" (tentado e
+  // revertido numa auditoria: quebrava o typecheck do app inteiro).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return createBrowserClient<any>(url, anon);
 }
