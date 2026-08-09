@@ -2,8 +2,11 @@ import Link from 'next/link';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
-import { PIX_CONFIG } from '@/app/admin/lib/pix';
+import { SalesChart } from './SalesChart';
 import { formatDateTimeBR, startOfDayBR, startOfMonthBR } from '@/app/admin/lib/datetime';
+
+const CHART_DAYS = 14;
+const TZ = 'America/Sao_Paulo';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,14 +21,12 @@ export default async function DashboardPage() {
   // Janelas de tempo — sempre no fuso de Brasília, não no fuso do
   // servidor (Vercel roda em UTC, o que fazia "hoje" começar 3h adiantado).
   const todayStart = startOfDayBR();
-  const weekStart = new Date(todayStart);
-  weekStart.setUTCDate(weekStart.getUTCDate() - 7);
+  const chartStart = new Date(todayStart.getTime() - (CHART_DAYS - 1) * 86400000);
   const monthStart = startOfMonthBR();
 
   // Busca vendas nao canceladas dos periodos + numeros de OS (em paralelo)
   const [
-    salesToday,
-    salesWeek,
+    salesLast14Days,
     salesMonth,
     lastSales,
     topItems,
@@ -42,16 +43,16 @@ export default async function DashboardPage() {
     unpaidList,
     partsWaitingList,
   ] = await Promise.all([
+    // Uma query só cobre o gráfico E os cards "Hoje"/"Últimos 7 dias" —
+    // ambos derivados por agregação em memória dos mesmos buckets diários
+    // (ver abaixo), pra garantir que o número do card bate exatamente com
+    // as barras do gráfico (antes eram duas queries com janelas de tempo
+    // levemente diferentes).
     supabase
       .from('sales')
-      .select('total')
+      .select('total, created_at')
       .is('voided_at', null)
-      .gte('created_at', todayStart.toISOString()),
-    supabase
-      .from('sales')
-      .select('total')
-      .is('voided_at', null)
-      .gte('created_at', weekStart.toISOString()),
+      .gte('created_at', chartStart.toISOString()),
     supabase
       .from('sales')
       .select('total')
@@ -150,12 +151,59 @@ export default async function DashboardPage() {
   const sumTotal = (rows: { total: number }[] | null) =>
     (rows ?? []).reduce((acc, r) => acc + Number(r.total), 0);
 
-  const totalToday = sumTotal(salesToday.data);
-  const countToday = salesToday.data?.length ?? 0;
-  const totalWeek = sumTotal(salesWeek.data);
-  const countWeek = salesWeek.data?.length ?? 0;
   const totalMonth = sumTotal(salesMonth.data);
   const countMonth = salesMonth.data?.length ?? 0;
+
+  // Buckets diários (fuso de Brasília) — index 0 = há CHART_DAYS-1 dias,
+  // index CHART_DAYS-1 = hoje. Alimenta o gráfico E os cards de "Hoje"/
+  // "Últimos 7 dias" (ver comentário na query acima).
+  const dayBuckets = Array.from({ length: CHART_DAYS }, (_, i) => {
+    const start = new Date(chartStart.getTime() + i * 86400000);
+    return {
+      start,
+      weekday: new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, weekday: 'short' })
+        .format(start)
+        .replace('.', ''),
+      dateLabel: new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, day: '2-digit', month: '2-digit' }).format(start),
+      total: 0,
+      count: 0,
+    };
+  });
+  for (const row of salesLast14Days.data ?? []) {
+    const idx = Math.round((new Date(row.created_at).getTime() - chartStart.getTime()) / 86400000);
+    if (idx >= 0 && idx < CHART_DAYS) {
+      dayBuckets[idx].total += Number(row.total);
+      dayBuckets[idx].count += 1;
+    }
+  }
+  const todayBucket = dayBuckets[CHART_DAYS - 1];
+  const yesterdayBucket = dayBuckets[CHART_DAYS - 2];
+  const last7 = dayBuckets.slice(CHART_DAYS - 7);
+  const prev7 = dayBuckets.slice(CHART_DAYS - 14, CHART_DAYS - 7);
+
+  const totalToday = todayBucket.total;
+  const countToday = todayBucket.count;
+  const totalWeek = last7.reduce((acc, d) => acc + d.total, 0);
+  const countWeek = last7.reduce((acc, d) => acc + d.count, 0);
+  const totalPrevWeek = prev7.reduce((acc, d) => acc + d.total, 0);
+
+  // Variação % vs período anterior — só mostra se o período anterior teve
+  // alguma venda (senão a % "explode" pra um número sem sentido tipo
+  // +∞% quando ontem foi 0 e hoje não).
+  const trend = (curr: number, prev: number): { pct: number; up: boolean } | null => {
+    if (prev <= 0) return null;
+    const pct = Math.round(((curr - prev) / prev) * 100);
+    return { pct, up: pct >= 0 };
+  };
+  const todayTrend = trend(totalToday, yesterdayBucket.total);
+  const weekTrend = trend(totalWeek, totalPrevWeek);
+
+  const chartData = dayBuckets.map((d, i) => ({
+    weekday: d.weekday,
+    dateLabel: d.dateLabel,
+    total: d.total,
+    isToday: i === CHART_DAYS - 1,
+  }));
 
   // Top 5 itens vendidos no mes
   const itemAgg = new Map<string, { name: string; qty: number; total: number }>();
@@ -235,11 +283,18 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500">
-          Resumo rapido do movimento da loja.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-sm text-slate-500">
+            Resumo rapido do movimento da loja.
+          </p>
+        </div>
+        <PixQRButton
+          buttonLabel="PIX avulso"
+          description="Pagamento avulso Cyber Informatica"
+          buttonClassName="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        />
       </div>
 
       {/* Painel "hoje" — o que precisa de atenção, não só contador. Os
@@ -334,31 +389,6 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* PIX da loja (acesso rapido) */}
-      <section className="rounded-lg border-2 border-teal-200 bg-teal-50/60 p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex-1 min-w-[260px]">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-teal-700">
-              💰 PIX da loja
-            </h2>
-            <p className="mt-1 text-xs text-slate-600">
-              Gere QR Code avulso pra cobrar cliente no balcão, sem precisar abrir OS ou venda.
-            </p>
-            <p className="mt-2 font-mono text-xs text-slate-700">
-              Chave: <strong>{PIX_CONFIG.key}</strong> ·{' '}
-              <strong>{PIX_CONFIG.merchantName}</strong> ·{' '}
-              {PIX_CONFIG.merchantCity}
-            </p>
-            <div className="mt-3">
-              <PixQRButton
-                buttonLabel="Gerar QR do PIX"
-                description="Pagamento avulso Cyber Informatica"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Numeros da bancada (OS) */}
       <section>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -394,42 +424,51 @@ export default async function DashboardPage() {
             </p>
             <p className="mt-1 text-2xl font-bold text-emerald-700">{osReadyCount}</p>
           </Link>
-          <div className="block rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">
+          <div className="block rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Mão de obra (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-indigo-700">{fmtBRL(laborRevenueMonth)}</p>
+            <p className="mt-1 text-2xl font-bold text-blue-700">{fmtBRL(laborRevenueMonth)}</p>
           </div>
         </div>
       </section>
 
-      {/* Cards de totais */}
+      {/* Vendas: gráfico primeiro (visão geral da tendência), cards de
+          totais depois (números exatos + comparação vs período anterior).
+          Todos os 3 cards usam a mesma cor — são a mesma métrica em 3
+          janelas de tempo diferentes, não categorias diferentes; variar a
+          cor aqui só criava a impressão de que eram coisas distintas. */}
       <section>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
           Vendas (PDV)
         </h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-        <Card
-          title="Hoje"
-          total={totalToday}
-          count={countToday}
-          color="emerald"
-          href={`/admin/vendas?from=${todayStart.toISOString().slice(0, 10)}&to=${todayStart.toISOString().slice(0, 10)}`}
-        />
-        <Card
-          title="Últimos 7 dias"
-          total={totalWeek}
-          count={countWeek}
-          color="blue"
-          href={`/admin/vendas?from=${weekStart.toISOString().slice(0, 10)}`}
-        />
-        <Card
-          title="Este mês"
-          total={totalMonth}
-          count={countMonth}
-          color="indigo"
-          href={`/admin/vendas?from=${monthStart.toISOString().slice(0, 10)}`}
-        />
+        <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+          <p className="mb-2 text-xs font-medium text-slate-500">Últimos {CHART_DAYS} dias</p>
+          <SalesChart data={chartData} />
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <Card
+            title="Hoje"
+            total={totalToday}
+            count={countToday}
+            trend={todayTrend}
+            trendLabel="vs. ontem"
+            href={`/admin/vendas?from=${todayStart.toISOString().slice(0, 10)}&to=${todayStart.toISOString().slice(0, 10)}`}
+          />
+          <Card
+            title="Últimos 7 dias"
+            total={totalWeek}
+            count={countWeek}
+            trend={weekTrend}
+            trendLabel="vs. 7 dias anteriores"
+            href={`/admin/vendas?from=${dayBuckets[CHART_DAYS - 7].start.toISOString().slice(0, 10)}`}
+          />
+          <Card
+            title="Este mês"
+            total={totalMonth}
+            count={countMonth}
+            href={`/admin/vendas?from=${monthStart.toISOString().slice(0, 10)}`}
+          />
         </div>
       </section>
 
@@ -453,11 +492,11 @@ export default async function DashboardPage() {
           Fluxo de encomendas a fornecedores — não é venda. O que vira venda pro cliente, o dono calcula à parte.
         </p>
         <div className="mt-2 grid gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-lg border-2 border-slate-200 bg-slate-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Pedido (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-amber-800">{fmtBRL(partsOrderedTotal)}</p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">{fmtBRL(partsOrderedTotal)}</p>
             <p className="mt-1 text-xs text-slate-600">
               {partsOrderedCount} pedido{partsOrderedCount === 1 ? '' : 's'}
             </p>
@@ -610,25 +649,22 @@ function Card({
   title,
   total,
   count,
-  color,
+  trend,
+  trendLabel,
   href,
 }: {
   title: string;
   total: number;
   count: number;
-  color: 'emerald' | 'blue' | 'indigo';
+  /** null = sem período anterior pra comparar (não mostra nada) */
+  trend?: { pct: number; up: boolean } | null;
+  trendLabel?: string;
   href: string;
 }) {
-  const colorClass =
-    color === 'emerald'
-      ? 'border-emerald-200 bg-emerald-50'
-      : color === 'blue'
-        ? 'border-blue-200 bg-blue-50'
-        : 'border-indigo-200 bg-indigo-50';
   return (
     <Link
       href={href}
-      className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${colorClass}`}
+      className="block rounded-lg border-2 border-blue-200 bg-blue-50 p-4 transition hover:shadow-md"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
         {title}
@@ -636,6 +672,11 @@ function Card({
       <p className="mt-1 text-2xl font-bold text-slate-900">{fmtBRL(total)}</p>
       <p className="mt-1 text-xs text-slate-600">
         {count} venda{count === 1 ? '' : 's'}
+        {trend && (
+          <span className={`ml-2 font-medium ${trend.up ? 'text-emerald-700' : 'text-red-600'}`}>
+            {trend.up ? '▲' : '▼'} {Math.abs(trend.pct)}% {trendLabel}
+          </span>
+        )}
       </p>
     </Link>
   );
