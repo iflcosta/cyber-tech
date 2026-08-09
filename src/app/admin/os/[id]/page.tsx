@@ -343,7 +343,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             />
           )}
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+          <section id="orcamento-section" className="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Orçamento</h2>
             <div className="mt-1">
               <EstimatedValueEditor
@@ -416,7 +416,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           {profile && !isFinal && (
             <OSDetailActions
               osId={normalizedSo.id}
-              currentStatus={normalizedSo.status}
               currentAssignedTo={normalizedSo.assigned_to}
               currentBlocking={normalizedSo.blocking_reason}
               canEdit={canEdit}

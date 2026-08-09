@@ -3,13 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
-import { OS_STATUSES, type OSStatusValue } from '@/app/admin/types/database';
 
 type Profile = { id: string; full_name: string };
 
+// Mudança de STATUS mora exclusivamente em StatusQuickActions — esse
+// painel já tinha um <select> de status livre até essa revisão, que
+// deixava pular de "Aguardando aprovação" direto pra "Aprovado" sem
+// passar pelo modal que registra valor orçado + como o cliente
+// aprovou. Dois caminhos pra mudar status, um deles furando a
+// rastreabilidade que o outro existe pra garantir — então esse aqui
+// ficou só com o que não tem duplicata em lugar nenhum: reatribuir
+// técnico, motivo de bloqueio e anotação livre na timeline.
 export function OSDetailActions({
   osId,
-  currentStatus,
   currentAssignedTo,
   currentBlocking,
   canEdit,
@@ -20,7 +26,6 @@ export function OSDetailActions({
   isOwner,
 }: {
   osId: string;
-  currentStatus: string;
   currentAssignedTo: string | null;
   currentBlocking: string | null;
   canEdit: boolean;
@@ -35,7 +40,6 @@ export function OSDetailActions({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [newStatus, setNewStatus] = useState<OSStatusValue>((currentStatus as OSStatusValue) ?? 'awaiting_approval');
   const [assignedTo, setAssignedTo] = useState<string>(currentAssignedTo ?? '');
   const [blocking, setBlocking] = useState<string>(currentBlocking ?? '');
   const [note, setNote] = useState<string>('');
@@ -69,7 +73,6 @@ export function OSDetailActions({
     try {
       const supabase = createCRMBrowserClient();
       const updates: Record<string, unknown> = {};
-      if (newStatus !== currentStatus) updates.status = newStatus;
       if (assignedTo !== (currentAssignedTo ?? '')) updates.assigned_to = assignedTo || null;
       if (blocking !== (currentBlocking ?? '')) updates.blocking_reason = blocking || null;
 
@@ -82,16 +85,6 @@ export function OSDetailActions({
       }
 
       // Eventos (1 para cada mudança)
-      if (newStatus !== currentStatus) {
-        await supabase.from('service_order_events').insert({
-          service_order_id: osId,
-          event_type: 'status_changed',
-          from_value: currentStatus,
-          to_value: newStatus,
-          note: note.trim() || null,
-          author_id: currentUserId,
-        });
-      }
       if (assignedTo !== (currentAssignedTo ?? '')) {
         const all = [...technicians, ...owners];
         const newName = all.find((p) => p.id === assignedTo)?.full_name;
@@ -111,7 +104,7 @@ export function OSDetailActions({
           author_id: currentUserId,
         });
       }
-      if (note.trim() && newStatus === currentStatus && assignedTo === (currentAssignedTo ?? '')) {
+      if (note.trim() && assignedTo === (currentAssignedTo ?? '')) {
         await supabase.from('service_order_events').insert({
           service_order_id: osId,
           event_type: 'note_added',
@@ -132,23 +125,16 @@ export function OSDetailActions({
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Ações</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Técnico e bloqueio</h2>
       {!open ? (
         <button
           onClick={() => setOpen(true)}
           className="mt-2 w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
         >
-          Atualizar OS
+          Reatribuir / anotar
         </button>
       ) : (
         <div className="mt-2 space-y-3">
-          <Field label="Status">
-            <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as OSStatusValue)} className="form-input">
-              {OS_STATUSES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
-          </Field>
           <Field label="Técnico">
             <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="form-input">
               <option value="">— Ninguém —</option>
