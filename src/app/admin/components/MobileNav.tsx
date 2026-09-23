@@ -74,19 +74,19 @@ export function MobileNav({
 
             <Link
               href="/admin/os/new"
-              className="mb-1 rounded-md bg-blue-600 px-4 py-3 text-center text-base font-semibold text-white hover:bg-blue-700"
+              className="mb-1 rounded-md bg-black px-4 py-3 text-center text-base font-semibold text-white hover:bg-zinc-800"
             >
               + Nova OS
             </Link>
             <Link
               href="/admin/vender"
-              className="mb-1 rounded-md bg-emerald-700 px-4 py-3 text-center text-base font-semibold text-white hover:bg-emerald-800"
+              className="mb-1 rounded-md bg-zinc-900 px-4 py-3 text-center text-base font-semibold text-white hover:bg-black"
             >
               + Vender
             </Link>
             <Link
               href="/admin/pecas/new"
-              className="mb-3 rounded-md border border-slate-300 bg-white px-4 py-3 text-center text-base font-semibold text-slate-700 hover:bg-slate-50"
+              className="mb-3 rounded-md border border-zinc-300 bg-white px-4 py-3 text-center text-base font-semibold text-zinc-800 hover:bg-zinc-100"
             >
               + Novo pedido
             </Link>

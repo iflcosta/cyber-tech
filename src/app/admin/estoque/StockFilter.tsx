@@ -39,11 +39,11 @@ export function StockFilter() {
         onChange={(e) => setQ(e.target.value)}
         placeholder="Buscar por nome, marca, modelo, EAN…"
         aria-label="Buscar por nome, marca, modelo, EAN"
-        className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
       />
       <button
         type="submit"
-        className="rounded-md bg-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300"
+        className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
       >
         Buscar
       </button>

@@ -62,7 +62,7 @@ export default async function ClientesListPage({
           defaultValue={params.q ?? ''}
           placeholder="Buscar por nome, telefone ou e-mail…"
           aria-label="Buscar cliente por nome, telefone ou e-mail"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </form>
 
@@ -96,12 +96,12 @@ export default async function ClientesListPage({
                 </div>
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   {(osCounts.get(c.id) ?? 0) > 0 && (
-                    <span className="rounded bg-blue-100 px-1.5 py-0.5 font-medium text-blue-800">
+                    <span className="rounded bg-zinc-200 px-1.5 py-0.5 font-medium text-zinc-900">
                       {osCounts.get(c.id)} OS
                     </span>
                   )}
                   {(saleCounts.get(c.id) ?? 0) > 0 && (
-                    <span className="rounded bg-emerald-100 px-1.5 py-0.5 font-medium text-emerald-800">
+                    <span className="rounded bg-zinc-100 border border-zinc-300 px-1.5 py-0.5 font-medium text-zinc-800">
                       {saleCounts.get(c.id)} compra{saleCounts.get(c.id) === 1 ? '' : 's'}
                     </span>
                   )}

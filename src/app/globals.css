@@ -92,6 +92,14 @@ body {
   line-height: 1.6;
 }
 
+/* Garante texto escuro de alto contraste em inputs, selects e textareas (evita herdar texto branco do body) */
+input, select, textarea {
+  color: #09090b !important;
+}
+input::placeholder, textarea::placeholder {
+  color: #71717a !important;
+}
+
 /* Tipografia — Space Grotesk para displays, Inter para corpo */
 h1, h2, .display {
   font-family: var(--font-display);

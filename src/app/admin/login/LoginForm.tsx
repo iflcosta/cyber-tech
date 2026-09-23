@@ -49,7 +49,7 @@ export function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             placeholder="seu@cyberinformatica.tech"
           />
         </div>
@@ -64,7 +64,7 @@ export function LoginForm() {
             autoComplete={keepLogged ? 'current-password' : 'off'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -72,7 +72,7 @@ export function LoginForm() {
             type="checkbox"
             checked={keepLogged}
             onChange={(e) => setKeepLogged(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
           />
           Manter logado
         </label>
@@ -82,7 +82,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-md bg-black px-4 py-2.5 text-base font-semibold text-white shadow-sm transition hover:bg-zinc-800 disabled:opacity-50"
         >
           {loading ? 'Entrando…' : 'Entrar'}
         </button>

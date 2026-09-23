@@ -17,7 +17,7 @@ export default function AdminNotFound() {
         <div className="mt-4">
           <Link
             href="/admin/os"
-            className="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            className="inline-block rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
           >
             Voltar pro início
           </Link>

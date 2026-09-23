@@ -2,8 +2,8 @@ import { PART_ORDER_STATUSES, type PartOrderStatusValue } from '../types/databas
 
 const COLOR_CLASSES: Record<string, string> = {
   amber: 'bg-amber-100 text-amber-800 ring-amber-200',
-  blue: 'bg-blue-100 text-blue-800 ring-blue-200',
-  indigo: 'bg-indigo-100 text-indigo-800 ring-indigo-200',
+  blue: 'bg-zinc-200 text-zinc-900 ring-zinc-300',
+  indigo: 'bg-zinc-200 text-zinc-900 ring-zinc-300',
   orange: 'bg-orange-100 text-orange-800 ring-orange-200',
   emerald: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
   slate: 'bg-slate-100 text-slate-700 ring-slate-200',

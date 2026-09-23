@@ -59,7 +59,7 @@ export default async function ClienteDetailPage({
   return (
     <div className="space-y-4">
       <div>
-        <Link href="/admin/clientes" className="text-sm text-blue-600 hover:text-blue-700">
+        <Link href="/admin/clientes" className="text-sm font-medium text-slate-600 hover:text-black hover:underline">
           ← Todos os clientes
         </Link>
         <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
@@ -67,13 +67,13 @@ export default async function ClienteDetailPage({
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/admin/os/new?customer=${customer.id}`}
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800"
             >
               + Nova OS
             </Link>
             <Link
               href={`/admin/vender?customer=${customer.id}`}
-              className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800"
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-100"
             >
               + Nova venda
             </Link>
@@ -97,19 +97,19 @@ export default async function ClienteDetailPage({
           </p>
         </div>
 
-        <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
+        <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Ordens de serviço</p>
-          <p className="mt-1 text-2xl font-bold text-blue-800">{ordersWithWarranty.length}</p>
+          <p className="mt-1 text-2xl font-bold text-zinc-950">{ordersWithWarranty.length}</p>
           {ordersWithWarranty.some((o) => o.warrantyActive) && (
-            <p className="mt-1 text-xs font-medium text-emerald-700">
+            <p className="mt-1 text-xs font-semibold text-zinc-700">
               {ordersWithWarranty.filter((o) => o.warrantyActive).length} em garantia
             </p>
           )}
         </div>
 
-        <div className="rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4">
+        <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Total em compras</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-800">{fmtBRL(totalSpent)}</p>
+          <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(totalSpent)}</p>
           <p className="mt-1 text-xs text-slate-600">
             {activeSales.length} venda{activeSales.length === 1 ? '' : 's'}
           </p>
@@ -128,7 +128,7 @@ export default async function ClienteDetailPage({
               <li key={o.id} className="py-2">
                 <Link
                   href={`/admin/os/${o.id}`}
-                  className="flex flex-wrap items-center justify-between gap-2 hover:text-blue-700"
+                  className="flex flex-wrap items-center justify-between gap-2 hover:text-black"
                 >
                   <div>
                     <span className="font-mono text-sm font-medium text-slate-900">
@@ -141,7 +141,7 @@ export default async function ClienteDetailPage({
                   </div>
                   <div className="flex items-center gap-2">
                     {o.warrantyActive && (
-                      <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">
+                      <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-900">
                         Em garantia até {formatDateBR(o.warrantyEnd!.toISOString())}
                       </span>
                     )}
@@ -169,7 +169,7 @@ export default async function ClienteDetailPage({
                 <li key={s.id} className="py-2">
                   <Link
                     href={`/admin/vendas/${s.id}`}
-                    className="flex flex-wrap items-center justify-between gap-2 hover:text-blue-700"
+                    className="flex flex-wrap items-center justify-between gap-2 hover:text-black"
                   >
                     <div>
                       <span className="font-mono text-sm font-medium text-slate-900">

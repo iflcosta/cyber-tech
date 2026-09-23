@@ -156,12 +156,12 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-lg border border-blue-200 bg-blue-50 p-4">
-        <p className="text-sm text-blue-800">
+      <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-lg border border-zinc-300 bg-zinc-50 p-4">
+        <p className="text-sm text-zinc-900">
           <strong>Etiqueta texto puro 58mm</strong> — otimizada pra impressora termica via
           driver Generic / Text Only (MPT-II Bluetooth, Elgin i9, etc).
         </p>
-        <p className="mt-1 text-xs text-blue-700">
+        <p className="mt-1 text-xs text-zinc-600">
           Conteudo em ASCII com quebras de linha explicitas. Margem de rasgo no topo.
           Cola no notebook com fita adesiva.
         </p>
@@ -176,7 +176,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
             defect={defectNorm || undefined}
           />
         </div>
-        <p className="mt-2 text-xs text-blue-700">
+        <p className="mt-2 text-xs text-zinc-600">
           O botão verde manda comandos reais (negrito, corte) via agente de impressão local —
           precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
         </p>

@@ -112,11 +112,11 @@ export function PaymentStatusEditor({
 
   const badge =
     status === 'paid' ? (
-      <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">✓ Pago</span>
+      <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-900">✓ Pago</span>
     ) : status === 'partial' ? (
-      <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">Parcial</span>
+      <span className="rounded bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-900">Parcial</span>
     ) : (
-      <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Pendente</span>
+      <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">Pendente</span>
     );
 
   return (
@@ -127,7 +127,7 @@ export function PaymentStatusEditor({
           <button
             type="button"
             onClick={openRegister}
-            className="text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="text-xs font-semibold text-zinc-900 underline hover:text-black"
           >
             Registrar pagamento
           </button>
@@ -139,7 +139,7 @@ export function PaymentStatusEditor({
           Pago: <strong>{fmtBRL(totalPaid)}</strong> de {fmtBRL(grandTotal)}
           {remaining > 0 && (
             <>
-              {' '}· falta <strong className="text-amber-700">{fmtBRL(remaining)}</strong>
+              {' '}· falta <strong className="text-zinc-900">{fmtBRL(remaining)}</strong>
             </>
           )}
         </p>
@@ -179,7 +179,7 @@ export function PaymentStatusEditor({
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0,00"
             inputMode="decimal"
-            className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
           <div className="grid grid-cols-3 gap-1.5">
             {PAYMENT_METHODS.map((m) => (
@@ -189,7 +189,7 @@ export function PaymentStatusEditor({
                 onClick={() => setMethod(m.value)}
                 className={`rounded-md border-2 px-2 py-1.5 text-xs font-medium ${
                   method === m.value
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-black bg-zinc-100 text-black font-semibold'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -211,7 +211,7 @@ export function PaymentStatusEditor({
               type="button"
               onClick={registerPayment}
               disabled={saving}
-              className="rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+              className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               {saving ? 'Salvando…' : 'Confirmar'}
             </button>

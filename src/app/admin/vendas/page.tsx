@@ -102,7 +102,7 @@ export default async function VendasListPage({
         </div>
         <Link
           href="/admin/vender"
-          className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"
+          className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
         >
           + Nova venda
         </Link>
@@ -117,11 +117,11 @@ export default async function VendasListPage({
             defaultValue={params.q ?? ''}
             placeholder="Buscar por número, cliente, operador…"
             aria-label="Buscar por número, cliente, operador"
-            className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
           <button
             type="submit"
-            className="rounded-md bg-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300"
+            className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
           >
             Buscar
           </button>
@@ -134,7 +134,7 @@ export default async function VendasListPage({
               type="date"
               name="from"
               defaultValue={params.from ?? ''}
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
           </label>
           <label className="flex items-center gap-1 text-sm">
@@ -143,7 +143,7 @@ export default async function VendasListPage({
               type="date"
               name="to"
               defaultValue={params.to ?? ''}
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
           </label>
 
@@ -238,7 +238,7 @@ export default async function VendasListPage({
                     <td className="px-3 py-2">
                       <Link
                         href={`/admin/vendas/${s.id}`}
-                        className="font-mono font-medium text-slate-900 hover:text-blue-700"
+                        className="font-mono font-medium text-slate-900 hover:text-black hover:underline"
                       >
                         {s.sale_number}
                       </Link>

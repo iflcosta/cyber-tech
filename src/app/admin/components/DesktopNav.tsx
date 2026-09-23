@@ -42,8 +42,8 @@ export function DesktopNav({
               aria-current={active ? 'page' : undefined}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
                 active
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-zinc-200 text-black font-semibold'
+                  : 'text-zinc-600 hover:bg-zinc-100 hover:text-black'
               }`}
             >
               {link.label}
@@ -55,19 +55,19 @@ export function DesktopNav({
       <div className="flex items-center gap-2">
         <Link
           href="/admin/os/new"
-          className="whitespace-nowrap rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+          className="whitespace-nowrap rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800 shadow-sm"
         >
           + Nova OS
         </Link>
         <Link
           href="/admin/vender"
-          className="whitespace-nowrap rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800"
+          className="whitespace-nowrap rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-black shadow-sm"
         >
           + Vender
         </Link>
         <Link
           href="/admin/pecas/new"
-          className="whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          className="whitespace-nowrap rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-100 hover:text-black"
         >
           + Novo pedido
         </Link>

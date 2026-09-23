@@ -63,7 +63,7 @@ export function EditCustomerForm({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+          className="mt-2 text-xs font-semibold text-zinc-800 hover:text-black hover:underline"
         >
           Editar
         </button>
@@ -78,7 +78,7 @@ export function EditCustomerForm({
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </label>
       <label className="block">
@@ -86,7 +86,7 @@ export function EditCustomerForm({
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </label>
       <label className="block">
@@ -95,7 +95,7 @@ export function EditCustomerForm({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </label>
       <label className="block">
@@ -104,7 +104,7 @@ export function EditCustomerForm({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </label>
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -128,7 +128,7 @@ export function EditCustomerForm({
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {saving ? 'Salvando…' : 'Salvar'}
         </button>

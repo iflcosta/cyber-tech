@@ -2,13 +2,13 @@ import type { PartOrderEvent } from '../types/database';
 import { formatDateTimeShortBR } from '../lib/datetime';
 
 const EVENT_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-  created: { label: 'Pedido registrado', color: 'bg-blue-100 text-blue-800', icon: '📱' },
-  received: { label: 'Recebido', color: 'bg-indigo-100 text-indigo-800', icon: '📦' },
+  created: { label: 'Pedido registrado', color: 'bg-zinc-200 text-zinc-900', icon: '📱' },
+  received: { label: 'Recebido', color: 'bg-zinc-200 text-zinc-900', icon: '📦' },
   applied: { label: 'Aplicado na OS', color: 'bg-emerald-100 text-emerald-800', icon: '✅' },
   return_signaled: { label: 'Devolução sinalizada', color: 'bg-orange-100 text-orange-800', icon: '↩️' },
   returned: { label: 'Devolvido', color: 'bg-slate-100 text-slate-700', icon: '🚚' },
   exchange_awaited: { label: 'Aguardando troca', color: 'bg-amber-100 text-amber-800', icon: '⏳' },
-  exchange_received: { label: 'Reposição recebida', color: 'bg-indigo-100 text-indigo-800', icon: '📦' },
+  exchange_received: { label: 'Reposição recebida', color: 'bg-zinc-200 text-zinc-900', icon: '📦' },
   value_adjusted: { label: 'Valor ajustado', color: 'bg-slate-100 text-slate-700', icon: '💲' },
   note_added: { label: 'Anotação', color: 'bg-slate-100 text-slate-700', icon: '📝' },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800', icon: '✖️' },

@@ -63,7 +63,7 @@ export function RepairNotesEditor({
           disabled={!canEdit}
           rows={4}
           placeholder="Ex: Troca de pasta termica + limpeza + repaste da CPU. Necessario trocar cabo flat do teclado (R$35)."
-          className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+          className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-slate-50 disabled:text-slate-500"
         />
       </div>
       <div>
@@ -79,7 +79,7 @@ export function RepairNotesEditor({
             disabled={!canEdit}
             step="0.01"
             min="0"
-            className="block w-full rounded-md border border-slate-300 pl-10 pr-3 py-2 text-sm font-mono text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+            className="block w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 py-2 text-sm font-mono text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-slate-50 disabled:text-slate-500"
           />
         </div>
       </div>
@@ -89,7 +89,7 @@ export function RepairNotesEditor({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
           >
             {saving ? 'Salvando...' : 'Salvar'}
           </button>

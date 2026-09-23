@@ -33,8 +33,8 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <div className="print:hidden mb-4 flex items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
-        <span className="text-blue-800">Esta página é otimizada pra impressão A4.</span>
+      <div className="print:hidden mb-4 flex items-center justify-between gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm">
+        <span className="text-zinc-900">Esta página é otimizada pra impressão A4.</span>
         <PrintButton />
       </div>
 
@@ -42,7 +42,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
         <header className="border-b border-slate-300 pb-4">
           <div className="flex items-baseline justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Cyber <span className="text-blue-600">Informática</span>
+              Cyber <span className="font-extrabold text-black">Informática</span>
             </h1>
             <p className="font-mono text-lg font-semibold text-slate-700">{so.os_number}</p>
           </div>
@@ -124,8 +124,6 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
           html, body { background: white !important; color: #0f172a !important; }
           article { background: white !important; color: #0f172a !important; }
           article * { color: #0f172a !important; }
-          /* Preserva azul da logo "Informática" e do badge de info */
-          article .text-blue-600, article .text-blue-800 { color: #2563eb !important; }
           header.sticky, nav, .print-hidden { display: none !important; }
         }
       `}</style>

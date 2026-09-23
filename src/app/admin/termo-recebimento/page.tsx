@@ -145,8 +145,8 @@ export default function TermoRecebimentoPage() {
           }
           .form-input:focus {
             outline: none;
-            border-color: rgb(59 130 246);
-            box-shadow: 0 0 0 1px rgb(59 130 246);
+            border-color: rgb(0 0 0);
+            box-shadow: 0 0 0 1px rgb(0 0 0);
           }
           .form-input::placeholder {
             color: rgb(148 163 184);
@@ -161,7 +161,7 @@ export default function TermoRecebimentoPage() {
         <header className="border-b border-slate-300 pb-4">
           <div className="flex items-baseline justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Cyber <span className="text-blue-600">Informática</span>
+              Cyber <span className="font-extrabold text-black">Informática</span>
             </h1>
             <p className="text-sm text-slate-500">{formatDateOnlyBR(today)}</p>
           </div>
@@ -227,7 +227,6 @@ export default function TermoRecebimentoPage() {
           html, body { background: white !important; color: #0f172a !important; }
           article { background: white !important; color: #0f172a !important; }
           article * { color: #0f172a !important; }
-          article .text-blue-600 { color: #2563eb !important; }
           header.sticky, nav { display: none !important; }
         }
       `}</style>

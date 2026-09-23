@@ -91,7 +91,7 @@ export function MovementForm({
                 onClick={() => setMovementType(t.value)}
                 className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
                   movementType === t.value
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-black bg-zinc-100 text-black font-semibold'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -189,7 +189,7 @@ export function MovementForm({
           type="button"
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {submitting ? 'Salvando…' : 'Confirmar movimentação'}
         </button>
@@ -208,8 +208,8 @@ export function MovementForm({
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(59 130 246);
-          box-shadow: 0 0 0 1px rgb(59 130 246);
+          border-color: rgb(0 0 0);
+          box-shadow: 0 0 0 1px rgb(0 0 0);
         }
         .form-input::placeholder {
           color: rgb(148 163 184);

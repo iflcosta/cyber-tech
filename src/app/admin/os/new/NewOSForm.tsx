@@ -255,7 +255,7 @@ export function NewOSForm({
           <div key={n} className="flex flex-1 items-center gap-2">
             <div
               className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
-                n <= step ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
+                n <= step ? 'bg-black text-white' : 'bg-slate-200 text-slate-500'
               }`}
             >
               {n}
@@ -317,8 +317,8 @@ export function NewOSForm({
                 <p className="text-xs text-slate-500">Buscando cliente cadastrado…</p>
               )}
               {customerMatches.length > 0 && (
-                <div className="rounded-md border border-blue-200 bg-blue-50/60 p-2">
-                  <p className="mb-1.5 text-xs font-medium text-blue-800">
+                <div className="rounded-md border border-zinc-300 bg-zinc-50 p-2">
+                  <p className="mb-1.5 text-xs font-semibold text-zinc-900">
                     Encontramos {customerMatches.length === 1 ? 'este cadastro' : 'estes cadastros'}:
                   </p>
                   <ul className="space-y-1.5">
@@ -327,14 +327,14 @@ export function NewOSForm({
                         <button
                           type="button"
                           onClick={() => pickCustomer(m)}
-                          className="flex w-full items-center justify-between gap-2 rounded-md border border-blue-200 bg-white px-3 py-2 text-left text-sm hover:border-blue-400 hover:bg-blue-50"
+                          className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-left text-sm text-zinc-950 hover:border-black hover:bg-zinc-100"
                         >
                           <span>
-                            <span className="font-medium text-slate-900">{m.name}</span>
-                            <span className="ml-2 text-slate-500">{m.phone}</span>
+                            <span className="font-semibold text-zinc-950">{m.name}</span>
+                            <span className="ml-2 text-zinc-500">{m.phone}</span>
                           </span>
                           {m.osCount > 0 && (
-                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                            <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-800">
                               {m.osCount} OS
                             </span>
                           )}
@@ -369,7 +369,7 @@ export function NewOSForm({
                   onClick={() => setEquipment({ ...equipment, type: t.value })}
                   className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
                     equipment.type === t.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      ? 'border-black bg-zinc-100 text-black font-semibold'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -418,7 +418,7 @@ export function NewOSForm({
             </Field>
           </div>
           {equipment.type === 'computador' && (
-            <p className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
+            <p className="rounded-md border border-zinc-200 bg-zinc-50 p-2 text-xs text-zinc-800">
               💡 Processador, placa de vídeo, RAM etc não precisam ser perguntados aqui — o
               cliente raramente sabe de cabeça, e não ajuda a identificar a máquina. Isso o
               técnico levanta na bancada e registra em &quot;Anotações de reparo&quot; quando começar.
@@ -443,7 +443,7 @@ export function NewOSForm({
                     type="checkbox"
                     checked={checklist[f.key] ?? false}
                     onChange={(e) => setChecklist({ ...checklist, [f.key]: e.target.checked })}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                    className="h-4 w-4 rounded border-slate-300 accent-black text-black"
                   />
                   <span className="text-slate-900">{f.label}</span>
                 </label>
@@ -540,7 +540,7 @@ export function NewOSForm({
           <button
             type="button"
             onClick={next}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
           >
             Próximo →
           </button>
@@ -549,7 +549,7 @@ export function NewOSForm({
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+            className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
           >
             {submitting ? 'Salvando…' : 'Criar OS'}
           </button>
@@ -564,13 +564,13 @@ export function NewOSForm({
           padding: 0.5rem 0.75rem;
           font-size: 1rem;
           line-height: 1.5;
-          color: rgb(15 23 42);
+          color: rgb(9 9 11);
           background: white;
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(59 130 246);
-          box-shadow: 0 0 0 1px rgb(59 130 246);
+          border-color: rgb(0 0 0);
+          box-shadow: 0 0 0 1px rgb(0 0 0);
         }
         .form-input::placeholder {
           color: rgb(148 163 184);

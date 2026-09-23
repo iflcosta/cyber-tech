@@ -153,7 +153,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link href="/admin/os" className="text-sm text-blue-600 hover:text-blue-700">
+          <Link href="/admin/os" className="text-sm text-slate-600 hover:text-black">
             ← Todas as OS
           </Link>
           <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
@@ -211,7 +211,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             )}
           </section>
 
-          <section className="rounded-lg border border-blue-200 bg-blue-50/30 p-4 sm:p-5">
+          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
               Diagnóstico e reparo
             </h2>
@@ -260,7 +260,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             ) : null}
 
             {canEdit && !isFinal && (
-              <div className="mt-4 border-t border-blue-200 pt-3">
+              <div className="mt-4 border-t border-zinc-200 pt-3">
                 <UsePartForm
                   serviceOrderId={normalizedSo.id}
                   currentUserId={profile?.id ?? ''}
@@ -276,14 +276,14 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Pedidos de peça (fornecedor)
                 </h2>
-                <Link href="/admin/pecas/new" className="text-xs text-blue-600 hover:text-blue-700">
+                <Link href="/admin/pecas/new" className="text-xs font-semibold text-zinc-900 underline hover:text-black">
                   + Novo pedido
                 </Link>
               </div>
               <ul className="mt-2 divide-y divide-slate-200 text-sm">
                 {partOrders.map((po) => (
                   <li key={po.id} className="py-1.5">
-                    <Link href={`/admin/pecas/${po.id}`} className="flex items-center justify-between gap-2 hover:text-blue-700">
+                    <Link href={`/admin/pecas/${po.id}`} className="flex items-center justify-between gap-2 hover:text-black">
                       <span className="text-slate-900">
                         {po.part_description}
                         {po.part_variant ? ` · ${po.part_variant}` : ''}
@@ -381,7 +381,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             <p className="mt-1 font-medium text-slate-900">{normalizedSo.customer_name}</p>
             {normalizedSo.customer_phone && (
               <p className="text-sm text-slate-600">
-                <a href={`tel:${normalizedSo.customer_phone}`} className="text-blue-600 hover:underline">
+                <a href={`tel:${normalizedSo.customer_phone}`} className="font-semibold text-zinc-900 underline hover:text-black">
                   📞 {normalizedSo.customer_phone}
                 </a>
               </p>

@@ -157,7 +157,7 @@ export function UsePartForm({
         Usar peça do estoque
       </h3>
       {newItemMode ? (
-        <div className="mt-1.5 space-y-2 rounded-md border border-blue-200 bg-blue-50/40 p-2.5">
+        <div className="mt-1.5 space-y-2 rounded-md border border-zinc-300 bg-zinc-50 p-2.5">
           <p className="text-xs text-slate-600">
             Cadastra a peça no estoque e já registra o uso nesta OS numa operação só.
           </p>
@@ -166,14 +166,14 @@ export function UsePartForm({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Nome da peça (ex: Conector USB-C avulso)"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
           <div className="grid grid-cols-3 gap-2">
             <input
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Categoria (opcional)"
-              className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="col-span-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
             <input
               value={newPrice}
@@ -181,14 +181,14 @@ export function UsePartForm({
               inputMode="decimal"
               placeholder="Preço de venda R$"
               title="Preço de venda — o que é cobrado do cliente. Preço de custo fica opcional, editável depois em Estoque."
-              className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="col-span-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
             <input
               type="number"
               min="1"
               value={newQty}
               onChange={(e) => setNewQty(e.target.value)}
-              className="col-span-1 rounded-md border border-slate-300 px-2 py-1.5 text-center font-mono text-sm"
+              className="col-span-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-center font-mono text-sm text-zinc-950"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ export function UsePartForm({
               type="button"
               onClick={submitNewItem}
               disabled={newSubmitting}
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               {newSubmitting ? 'Cadastrando…' : 'Cadastrar e usar'}
             </button>
@@ -221,7 +221,7 @@ export function UsePartForm({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar cabo, SSD, RAM…"
             aria-label="Buscar peça no estoque"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
           {suggestions.length > 0 && (
             <ul className="mt-1.5 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
@@ -235,7 +235,7 @@ export function UsePartForm({
                     }}
                     className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-slate-50"
                   >
-                    <span className="text-slate-900">{i.name}</span>
+                    <span className="font-medium text-slate-900">{i.name}</span>
                     <span className="text-xs text-slate-500">
                       {i.current_stock} em estoque · {fmtBRL(i.unit_price)}
                     </span>
@@ -247,7 +247,7 @@ export function UsePartForm({
           <button
             type="button"
             onClick={() => setNewItemMode(true)}
-            className="mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="mt-1.5 text-xs font-semibold text-zinc-900 underline hover:text-black"
           >
             Não achou? Cadastrar peça nova →
           </button>
@@ -266,13 +266,13 @@ export function UsePartForm({
             max={selected.current_stock}
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            className="w-16 rounded-md border border-slate-300 px-2 py-1 text-center font-mono text-sm"
+            className="w-16 rounded-md border border-slate-300 bg-white px-2 py-1 text-center font-mono text-sm text-zinc-950"
           />
           <button
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
           >
             {submitting ? '…' : 'Usar'}
           </button>

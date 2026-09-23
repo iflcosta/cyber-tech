@@ -139,7 +139,7 @@ export function NewPartOrderForm({
                 onClick={() => setFrame(frame === opt ? null : opt)}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition ${
                   frame === opt
-                    ? 'bg-blue-600 text-white ring-blue-600'
+                    ? 'bg-black text-white ring-black'
                     : 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50'
                 }`}
               >
@@ -158,7 +158,7 @@ export function NewPartOrderForm({
                 onClick={() => setFinish(finish === opt ? null : opt)}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition ${
                   finish === opt
-                    ? 'bg-blue-600 text-white ring-blue-600'
+                    ? 'bg-black text-white ring-black'
                     : 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50'
                 }`}
               >
@@ -195,13 +195,13 @@ export function NewPartOrderForm({
               <button
                 type="button"
                 onClick={() => setAddingSupplier(true)}
-                className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                className="text-xs font-semibold text-zinc-800 hover:text-black hover:underline"
               >
                 + Cadastrar novo fornecedor
               </button>
             </div>
           ) : (
-            <div className="space-y-2 rounded-md border border-blue-200 bg-blue-50/40 p-2.5">
+            <div className="space-y-2 rounded-md border border-zinc-300 bg-zinc-50 p-2.5">
               <input
                 value={newSupplierName}
                 onChange={(e) => setNewSupplierName(e.target.value)}
@@ -243,7 +243,7 @@ export function NewPartOrderForm({
               type="button"
               onClick={() => setHasOS(true)}
               className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
-                hasOS ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                hasOS ? 'border-black bg-zinc-100 text-black font-semibold' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
               }`}
             >
               Tem OS
@@ -252,7 +252,7 @@ export function NewPartOrderForm({
               type="button"
               onClick={() => setHasOS(false)}
               className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
-                !hasOS ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                !hasOS ? 'border-black bg-zinc-100 text-black font-semibold' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
               }`}
             >
               Sem OS (lojista parceiro, etc)
@@ -299,7 +299,7 @@ export function NewPartOrderForm({
           type="button"
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {submitting ? 'Salvando…' : 'Registrar pedido'}
         </button>
@@ -318,8 +318,8 @@ export function NewPartOrderForm({
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(59 130 246);
-          box-shadow: 0 0 0 1px rgb(59 130 246);
+          border-color: rgb(0 0 0);
+          box-shadow: 0 0 0 1px rgb(0 0 0);
         }
         .form-input::placeholder {
           color: rgb(148 163 184);

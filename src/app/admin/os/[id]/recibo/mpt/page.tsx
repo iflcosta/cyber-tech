@@ -160,8 +160,8 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
-        <span className="text-blue-800">
+      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm">
+        <span className="text-zinc-900">
           Versão MPT-II 58mm. <strong>Imprima na MPT-II</strong> (Generic / Text Only).
         </span>
         <div className="flex gap-2">
@@ -196,7 +196,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
             warrantyEndStr={warrantyEndStr}
             deliveredToName={so.delivered_to_name}
           />
-          <p className="text-xs text-blue-700">
+          <p className="text-xs text-zinc-600">
             O botão verde manda comandos reais (negrito, corte) via agente de impressão local —
             precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
           </p>

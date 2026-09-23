@@ -50,7 +50,7 @@ export default async function VendaDetailPage({
       )}
 
       <div>
-        <Link href="/admin/vendas" className="text-sm text-blue-600 hover:text-blue-700">
+        <Link href="/admin/vendas" className="text-sm font-medium text-slate-600 hover:text-black hover:underline">
           ← Todas as vendas
         </Link>
         <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
@@ -71,7 +71,7 @@ export default async function VendaDetailPage({
         <Link
           href={`/admin/vendas/${sale.id}/recibo`}
           target="_blank"
-          className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"
+          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
         >
           🖨️ {sale.voided_at ? 'Reimprimir recibo' : 'Imprimir recibo'}
         </Link>

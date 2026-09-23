@@ -389,10 +389,10 @@ export function PDV({
       {/* Input de bipagem — SEMPRE com autofocus (leitor envia rapido) */}
       <form
         onSubmit={submitCode}
-        className="rounded-lg border-2 border-blue-300 bg-blue-50 p-4 shadow-sm"
+        className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4 shadow-sm"
       >
         <label className="block">
-          <span className="block text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <span className="block text-sm font-semibold uppercase tracking-wide text-zinc-900">
             Bipar / buscar
           </span>
           <input
@@ -400,43 +400,43 @@ export function PDV({
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Bipe o codigo ou digite o nome do item…"
+            placeholder="Bipe o código ou digite o nome do item…"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="mt-1 w-full rounded-md border border-blue-300 bg-white px-4 py-3 text-lg font-mono focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-4 py-3 text-lg font-mono text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black"
           />
         </label>
         {flash && (
-          <p className="mt-2 text-sm font-medium text-emerald-700">{flash}</p>
+          <p className="mt-2 text-sm font-medium text-zinc-900">{flash}</p>
         )}
       </form>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-zinc-100 border border-zinc-300 p-3 text-sm text-zinc-900 font-medium">{error}</div>
       )}
 
       {/* Busca manual (caso leitor nao funcione) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="rounded-lg border border-zinc-300 bg-white p-3">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Ou busque manualmente por nome/marca…"
           aria-label="Buscar item por nome ou marca"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
         <button
           type="button"
           onClick={openAddPart}
-          className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+          className="mt-2 text-sm font-semibold text-zinc-900 underline hover:text-black"
         >
           ➕ Não achou? Cadastrar peça nova e vender
-          {search.trim() && <span className="text-slate-500"> — &quot;{search.trim()}&quot;</span>}
+          {search.trim() && <span className="text-zinc-500"> — &quot;{search.trim()}&quot;</span>}
         </button>
         {searchSuggestions.length > 0 && (
-          <ul className="mt-2 divide-y divide-slate-200">
+          <ul className="mt-2 divide-y divide-zinc-200">
             {searchSuggestions.map((i) => (
               <li
                 key={i.id}
@@ -448,17 +448,17 @@ export function PDV({
                     addItem(i);
                     setSearch('');
                   }}
-                  className="flex-1 text-left hover:text-blue-700"
+                  className="flex-1 text-left hover:text-black hover:bg-zinc-100 rounded px-1.5 py-1"
                 >
-                  <span className="font-medium text-slate-900">{i.name}</span>
+                  <span className="font-semibold text-zinc-950">{i.name}</span>
                   {i.brand && (
-                    <span className="ml-1 text-xs text-slate-500">· {i.brand}</span>
+                    <span className="ml-1 text-xs text-zinc-600">· {i.brand}</span>
                   )}
-                  <span className="ml-2 font-mono text-xs text-slate-500">
+                  <span className="ml-2 font-mono text-xs text-zinc-500">
                     {i.ean13}
                   </span>
                 </button>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs font-medium text-zinc-700">
                   {i.current_stock} em estoque · {fmtBRL(i.unit_price)}
                 </span>
               </li>
@@ -495,7 +495,7 @@ export function PDV({
                     max={c.stock_available}
                     value={c.quantity}
                     onChange={(e) => updateQty(c.stock_item_id, Number(e.target.value))}
-                    className="w-16 rounded-md border border-slate-300 px-2 py-1 text-center font-mono text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-16 rounded-md border border-zinc-300 bg-white text-zinc-950 px-2 py-1 text-center font-mono text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                   />
                   <span className="w-24 text-right font-mono font-medium text-slate-900">
                     {fmtBRL(c.unit_price * c.quantity)}
@@ -523,7 +523,7 @@ export function PDV({
                   type="button"
                   onClick={() => setFinalizing(true)}
                   disabled={cart.length === 0}
-                  className="rounded-md bg-emerald-700 px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:opacity-30"
+                  className="rounded-md bg-black px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-zinc-800 disabled:opacity-30"
                 >
                   Finalizar venda →
                 </button>
@@ -552,10 +552,10 @@ export function PDV({
                       key={m.value}
                       type="button"
                       onClick={() => setPaymentMethod(m.value)}
-                      className={`rounded-md border-2 px-3 py-2 text-sm font-medium ${
+                      className={`rounded-md border-2 px-3 py-2 text-sm font-semibold transition ${
                         paymentMethod === m.value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          ? 'border-black bg-black text-white'
+                          : 'border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100'
                       }`}
                     >
                       {m.label}
@@ -573,7 +573,7 @@ export function PDV({
                   onChange={(e) => setDiscount(e.target.value)}
                   placeholder="0,00"
                   inputMode="decimal"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                 />
               </div>
 
@@ -582,17 +582,17 @@ export function PDV({
                   Cliente (opcional)
                 </label>
                 {selectedCustomer ? (
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2">
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md border-2 border-zinc-400 bg-zinc-100 px-3 py-2">
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{selectedCustomer.name}</p>
+                      <p className="text-sm font-bold text-zinc-950">{selectedCustomer.name}</p>
                       {selectedCustomer.phone && (
-                        <p className="text-xs text-slate-600">{selectedCustomer.phone}</p>
+                        <p className="text-xs text-zinc-600">{selectedCustomer.phone}</p>
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={clearCustomerSelection}
-                      className="text-xs font-medium text-slate-600 underline hover:text-slate-800"
+                      className="text-xs font-semibold text-zinc-700 underline hover:text-black"
                     >
                       Trocar
                     </button>
@@ -602,35 +602,35 @@ export function PDV({
                     <input
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="Nome"
-                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Nome do cliente"
+                      className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                     />
                     <input
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="Telefone"
-                      className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Telefone do cliente"
+                      className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                     />
                     {searchingCustomer && (
-                      <p className="mt-1 text-xs text-slate-500">Buscando cliente cadastrado…</p>
+                      <p className="mt-1 text-xs text-zinc-500">Buscando cliente cadastrado…</p>
                     )}
                     {customerMatches.length > 0 && (
-                      <ul className="mt-1 space-y-1 rounded-md border border-blue-200 bg-blue-50/60 p-1.5">
+                      <ul className="mt-1 space-y-1 rounded-md border border-zinc-300 bg-zinc-50 p-1.5">
                         {customerMatches.map((m) => (
                           <li key={m.id}>
                             <button
                               type="button"
                               onClick={() => pickCustomer(m)}
-                              className="flex w-full items-center justify-between gap-2 rounded-md border border-blue-200 bg-white px-2.5 py-1.5 text-left text-xs hover:border-blue-400 hover:bg-blue-50"
+                              className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-left text-xs text-zinc-950 hover:border-black hover:bg-zinc-100"
                             >
-                              <span className="font-medium text-slate-900">{m.name}</span>
-                              <span className="text-slate-500">{m.phone}</span>
+                              <span className="font-semibold text-zinc-950">{m.name}</span>
+                              <span className="text-zinc-600">{m.phone}</span>
                             </button>
                           </li>
                         ))}
                       </ul>
                     )}
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-zinc-500">
                       Sem cliente cadastrado? Só digite o nome — a venda fica de balcão.
                     </p>
                   </>
@@ -645,26 +645,26 @@ export function PDV({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                 />
               </div>
 
-              <div className="rounded-md bg-slate-50 p-3">
+              <div className="rounded-md bg-zinc-100 p-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Subtotal</span>
-                  <span className="font-medium">{fmtBRL(subtotal)}</span>
+                  <span className="text-zinc-600">Subtotal</span>
+                  <span className="font-semibold text-zinc-950">{fmtBRL(subtotal)}</span>
                 </div>
                 {discountNum > 0 && (
                   <div className="mt-1 flex justify-between text-sm">
-                    <span className="text-slate-600">Desconto</span>
-                    <span className="font-medium text-red-600">
+                    <span className="text-zinc-600">Desconto</span>
+                    <span className="font-semibold text-zinc-950">
                       − {fmtBRL(discountNum)}
                     </span>
                   </div>
                 )}
-                <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-base">
-                  <span className="font-bold text-slate-900">Total</span>
-                  <span className="font-bold text-slate-900">{fmtBRL(total)}</span>
+                <div className="mt-2 flex justify-between border-t border-zinc-300 pt-2 text-base">
+                  <span className="font-bold text-zinc-950">Total</span>
+                  <span className="font-bold text-zinc-950">{fmtBRL(total)}</span>
                 </div>
               </div>
             </div>
@@ -674,7 +674,7 @@ export function PDV({
                 type="button"
                 onClick={() => setFinalizing(false)}
                 disabled={submitting}
-                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+                className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-30"
               >
                 Cancelar
               </button>
@@ -682,7 +682,7 @@ export function PDV({
                 type="button"
                 onClick={finalizarVenda}
                 disabled={submitting || total <= 0}
-                className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+                className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
               >
                 {submitting ? 'Salvando…' : 'Confirmar venda'}
               </button>
@@ -708,7 +708,7 @@ export function PDV({
               value={newPartName}
               onChange={(e) => setNewPartName(e.target.value)}
               placeholder="Ex: Processador Ryzen 5 5600"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
           </label>
 
@@ -719,7 +719,7 @@ export function PDV({
               value={newPartCategory}
               onChange={(e) => setNewPartCategory(e.target.value)}
               placeholder="Ex: Processadores"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
             <datalist id="pdv-new-part-category-suggestions">
               {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
@@ -736,7 +736,7 @@ export function PDV({
                 onChange={(e) => setNewPartPrice(e.target.value)}
                 placeholder="0,00"
                 inputMode="decimal"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
             <label className="block">
@@ -746,14 +746,14 @@ export function PDV({
                 min="1"
                 value={newPartQty}
                 onChange={(e) => setNewPartQty(e.target.value)}
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
           </div>
         </div>
 
         {newPartError && (
-          <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{newPartError}</p>
+          <p className="mt-3 rounded-md bg-zinc-100 border border-zinc-300 p-2 text-sm text-zinc-900 font-medium">{newPartError}</p>
         )}
 
         <div className="mt-5 flex justify-end gap-2">
@@ -761,7 +761,7 @@ export function PDV({
             type="button"
             onClick={() => setAddingPart(false)}
             disabled={newPartSubmitting}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-30"
           >
             Cancelar
           </button>
@@ -769,7 +769,7 @@ export function PDV({
             type="button"
             onClick={submitNewPart}
             disabled={newPartSubmitting}
-            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+            className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
           >
             {newPartSubmitting ? 'Cadastrando…' : 'Cadastrar e adicionar'}
           </button>

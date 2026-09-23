@@ -77,7 +77,7 @@ export function EstimatedValueEditor({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-xs font-medium text-blue-600 hover:text-blue-700"
+            className="text-xs font-semibold text-zinc-900 underline hover:text-black"
           >
             {initialValue !== null ? 'Editar' : 'Orçar'}
           </button>
@@ -94,7 +94,7 @@ export function EstimatedValueEditor({
         onChange={(e) => setValue(e.target.value)}
         placeholder="0,00"
         inputMode="decimal"
-        className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
       />
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex gap-2">
@@ -114,7 +114,7 @@ export function EstimatedValueEditor({
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {saving ? 'Salvando…' : 'Salvar'}
         </button>

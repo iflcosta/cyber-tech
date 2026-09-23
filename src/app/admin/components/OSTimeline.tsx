@@ -3,8 +3,8 @@ import { formatDateTimeShortBR } from '../lib/datetime';
 
 const EVENT_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   created: { label: 'OS criada', color: 'bg-slate-100 text-slate-700', icon: '✨' },
-  status_changed: { label: 'Mudou status', color: 'bg-blue-100 text-blue-800', icon: '🔄' },
-  assigned: { label: 'Técnico atribuído', color: 'bg-indigo-100 text-indigo-800', icon: '👤' },
+  status_changed: { label: 'Mudou status', color: 'bg-zinc-200 text-zinc-900', icon: '🔄' },
+  assigned: { label: 'Técnico atribuído', color: 'bg-zinc-200 text-zinc-900', icon: '👤' },
   note_added: { label: 'Anotação', color: 'bg-slate-100 text-slate-700', icon: '📝' },
   checklist_updated: { label: 'Checklist atualizado', color: 'bg-slate-100 text-slate-700', icon: '✅' },
   part_resolved: { label: 'Peça resolvida', color: 'bg-emerald-100 text-emerald-800', icon: '🧩' },

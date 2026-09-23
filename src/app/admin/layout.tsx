@@ -58,7 +58,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link href="/admin/os" className="text-lg font-bold tracking-tight text-slate-900">
-            Cyber <span className="text-blue-600">ERP</span>
+            Cyber <span className="font-extrabold text-black">ERP</span>
           </Link>
 
           <DesktopNav

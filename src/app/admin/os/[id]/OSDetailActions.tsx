@@ -81,7 +81,7 @@ export function OSDetailActions({
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="mt-2 w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          className="mt-2 w-full rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
         >
           Anotar / bloquear
         </button>
@@ -105,7 +105,7 @@ export function OSDetailActions({
             <button
               onClick={save}
               disabled={submitting}
-              className="flex-1 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               {submitting ? 'Salvando…' : 'Salvar'}
             </button>
@@ -122,13 +122,13 @@ export function OSDetailActions({
           border: 1px solid rgb(203 213 225);
           padding: 0.5rem 0.75rem;
           font-size: 0.95rem;
-          color: rgb(15 23 42);
+          color: rgb(9 9 11);
           background: white;
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(59 130 246);
-          box-shadow: 0 0 0 1px rgb(59 130 246);
+          border-color: rgb(0 0 0);
+          box-shadow: 0 0 0 1px rgb(0 0 0);
         }
       `}</style>
     </section>

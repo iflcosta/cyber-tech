@@ -106,7 +106,7 @@ export default async function PartOrdersListPage({
           </Link>
           <Link
             href="/admin/pecas/new"
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 lg:hidden"
+            className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 lg:hidden"
           >
             + Novo pedido
           </Link>
@@ -126,7 +126,7 @@ export default async function PartOrdersListPage({
           <p className="text-slate-500">Nenhum pedido de peça encontrado com esses filtros.</p>
           <Link
             href="/admin/pecas/new"
-            className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+            className="mt-3 inline-block text-sm font-medium text-slate-800 hover:text-black hover:underline"
           >
             Registrar o primeiro →
           </Link>
@@ -137,7 +137,7 @@ export default async function PartOrdersListPage({
             <Link
               key={o.id}
               href={`/admin/pecas/${o.id}`}
-              className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+              className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-black hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

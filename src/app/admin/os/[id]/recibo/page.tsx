@@ -72,8 +72,8 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
   return (
     <>
-      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
-        <span className="text-blue-800">
+      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm">
+        <span className="text-zinc-900">
           Recibo de entrega. <strong>Use Ctrl+P</strong> pra salvar como PDF ou imprimir.
         </span>
         <div className="flex gap-2">
@@ -94,9 +94,9 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
       </div>
 
       {!isFinal && canConfirmDelivery && (
-        <div className="print:hidden mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm">
+        <div className="print:hidden mb-4 rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-emerald-800">
+            <span className="text-zinc-900">
               <strong>OS ainda não entregue.</strong> Preencha quem retirou e confirme pra marcar como entregue.
             </span>
           </div>
@@ -108,7 +108,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
         <header className="border-b border-slate-300 pb-4">
           <div className="flex items-baseline justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Cyber <span className="text-blue-600">Informática</span>
+              Cyber <span className="font-extrabold text-black">Informática</span>
             </h1>
             <div className="text-right">
               <p className="font-mono text-lg font-semibold text-slate-900">{so.os_number}</p>
@@ -278,8 +278,6 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
           html, body { background: white !important; color: #0f172a !important; }
           article { background: white !important; color: #0f172a !important; }
           article * { color: #0f172a !important; }
-          article .text-blue-600 { color: #2563eb !important; }
-          article .text-emerald-600 { color: #059669 !important; }
           header.sticky, nav, .print-hidden { display: none !important; }
         }
       `}</style>

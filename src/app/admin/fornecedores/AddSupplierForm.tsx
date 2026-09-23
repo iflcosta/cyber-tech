@@ -44,7 +44,7 @@ export function AddSupplierForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+        className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
       >
         + Novo fornecedor
       </button>
@@ -52,25 +52,25 @@ export function AddSupplierForm() {
   }
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4">
+    <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
       <div className="grid gap-2 sm:grid-cols-3">
         <input
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           placeholder="Nome do fornecedor *"
         />
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           placeholder="Telefone (opcional)"
         />
         <input
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           placeholder="Observações (opcional)"
         />
       </div>
@@ -86,7 +86,7 @@ export function AddSupplierForm() {
         <button
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {submitting ? 'Salvando…' : 'Salvar'}
         </button>

@@ -153,16 +153,16 @@ export function StatusQuickActions({
   }
 
   return (
-    <section className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-900">Mudar status</h2>
-      <p className="mt-1 text-xs text-blue-700">
+    <section className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-900">Mudar status</h2>
+      <p className="mt-1 text-xs text-zinc-700">
         Status atual: <strong>{OS_STATUSES.find((s) => s.value === currentStatus)?.label ?? currentStatus}</strong>
       </p>
 
       <button
         onClick={handleNextClick}
         disabled={pending || activeStatus !== null}
-        className="mt-3 w-full rounded-md bg-blue-600 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-50"
+        className="mt-3 w-full rounded-md bg-black px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
       >
         {activeStatus === next ? 'Salvando…' : `→ ${STATUS_QUICK_LABEL[next] ?? OS_STATUSES.find((s) => s.value === next)?.label}`}
       </button>
@@ -207,7 +207,7 @@ export function StatusQuickActions({
             <a
               href="#orcamento-section"
               onClick={() => setApproving(false)}
-              className="mt-1 inline-block text-xs font-medium text-blue-600 hover:text-blue-700"
+              className="mt-1 inline-block text-xs font-semibold text-zinc-900 underline hover:text-black"
             >
               Editar na seção Orçamento →
             </a>
@@ -223,7 +223,7 @@ export function StatusQuickActions({
                   onClick={() => setApprovalMethod(m.value)}
                   className={`rounded-md border-2 px-3 py-2 text-sm font-medium ${
                     approvalMethod === m.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      ? 'border-black bg-zinc-100 text-black font-semibold'
                       : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -247,7 +247,7 @@ export function StatusQuickActions({
             type="button"
             onClick={confirmApproval}
             disabled={activeStatus !== null}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
           >
             {activeStatus === 'approved' ? 'Salvando…' : 'Confirmar aprovação'}
           </button>

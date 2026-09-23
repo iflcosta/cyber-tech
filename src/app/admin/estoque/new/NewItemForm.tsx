@@ -208,7 +208,7 @@ export function NewItemForm() {
           type="button"
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {submitting ? 'Salvando…' : 'Cadastrar item'}
         </button>
@@ -222,13 +222,13 @@ export function NewItemForm() {
           padding: 0.5rem 0.75rem;
           font-size: 1rem;
           line-height: 1.5;
-          color: rgb(15 23 42);
+          color: rgb(9 9 11);
           background: white;
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(59 130 246);
-          box-shadow: 0 0 0 1px rgb(59 130 246);
+          border-color: rgb(0 0 0);
+          box-shadow: 0 0 0 1px rgb(0 0 0);
         }
         .form-input::placeholder {
           color: rgb(148 163 184);

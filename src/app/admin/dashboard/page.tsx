@@ -326,7 +326,7 @@ export default async function DashboardPage() {
                 <ul className="mt-1.5 space-y-1">
                   {staleItems.map((o) => (
                     <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
                         <span className="truncate">
                           <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
                           {' '}{o.customer_name}
@@ -346,7 +346,7 @@ export default async function DashboardPage() {
                 <ul className="mt-1.5 space-y-1">
                   {readyItems.map((o) => (
                     <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
                         <span className="truncate">
                           <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
                           {' '}{o.customer_name}
@@ -366,7 +366,7 @@ export default async function DashboardPage() {
                 <ul className="mt-1.5 space-y-1">
                   {unpaidItems.map((o) => (
                     <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
                         <span className="truncate">
                           <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
                           {' '}{o.customer_name}
@@ -386,7 +386,7 @@ export default async function DashboardPage() {
                 <ul className="mt-1.5 space-y-1">
                   {partsWaitingItems.map((p) => (
                     <li key={p.id}>
-                      <Link href={`/admin/pecas/${p.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
+                      <Link href={`/admin/pecas/${p.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
                         <span className="truncate">
                           {p.part_description} <span className="text-slate-500">· {p.supplier_name}</span>
                         </span>
@@ -436,11 +436,11 @@ export default async function DashboardPage() {
             </p>
             <p className="mt-1 text-2xl font-bold text-emerald-700">{osReadyCount}</p>
           </Link>
-          <div className="block rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
+          <div className="block rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Mão de obra (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-blue-700">{fmtBRL(laborRevenueMonth)}</p>
+            <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(laborRevenueMonth)}</p>
           </div>
         </div>
       </section>
@@ -495,7 +495,7 @@ export default async function DashboardPage() {
           </h2>
           <Link
             href="/admin/pecas"
-            className="text-xs text-blue-600 hover:text-blue-700"
+            className="text-xs font-medium text-slate-700 hover:text-black hover:underline"
           >
             Ver todos →
           </Link>
@@ -618,7 +618,7 @@ export default async function DashboardPage() {
           </h2>
           <Link
             href="/admin/vendas"
-            className="text-xs text-blue-600 hover:text-blue-700"
+            className="text-xs font-medium text-slate-700 hover:text-black hover:underline"
           >
             Ver todas →
           </Link>
@@ -634,7 +634,7 @@ export default async function DashboardPage() {
                   <div className="flex-1">
                     <Link
                       href={`/admin/vendas/${s.id}`}
-                      className="font-mono font-medium text-slate-900 hover:text-blue-700"
+                      className="font-mono font-medium text-slate-900 hover:text-black hover:underline"
                     >
                       {s.sale_number}
                     </Link>
@@ -676,7 +676,7 @@ function Card({
   return (
     <Link
       href={href}
-      className="block rounded-lg border-2 border-blue-200 bg-blue-50 p-4 transition hover:shadow-md"
+      className="block rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4 transition hover:border-black hover:shadow-md"
     >
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
         {title}

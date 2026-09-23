@@ -68,7 +68,7 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/admin/pecas" className="text-sm text-blue-600 hover:text-blue-700">
+        <Link href="/admin/pecas" className="text-sm font-medium text-slate-600 hover:text-black hover:underline">
           ← Todos os pedidos
         </Link>
         <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
@@ -89,7 +89,7 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
             {so ? (
               <p className="mt-1 text-slate-900">
                 OS{' '}
-                <Link href={`/admin/os/${so.id}`} className="font-mono font-semibold text-blue-600 hover:text-blue-700">
+                <Link href={`/admin/os/${so.id}`} className="font-mono font-semibold text-slate-900 underline hover:text-black">
                   {so.short_id ?? so.os_number}
                 </Link>
                 {' · '}{so.customer?.name}

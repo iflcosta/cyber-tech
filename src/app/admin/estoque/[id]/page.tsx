@@ -56,7 +56,7 @@ export default async function StockItemDetailPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/admin/estoque" className="text-sm text-blue-600 hover:text-blue-700">
+        <Link href="/admin/estoque" className="text-sm text-slate-600 hover:text-black">
           ← Todo o estoque
         </Link>
         <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
@@ -99,7 +99,7 @@ export default async function StockItemDetailPage({
               </h2>
               <Link
                 href={`/admin/estoque/${item.id}/movimentar`}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+                className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800"
               >
                 + Movimentar
               </Link>
@@ -149,7 +149,7 @@ export default async function StockItemDetailPage({
                     m.movement_type === 'in'
                       ? 'text-emerald-600'
                       : m.movement_type === 'sale'
-                        ? 'text-blue-600'
+                        ? 'text-zinc-900 font-bold'
                         : m.movement_type === 'out'
                           ? 'text-orange-600'
                           : 'text-slate-600';
@@ -168,7 +168,7 @@ export default async function StockItemDetailPage({
                                 : meta?.color === 'orange'
                                   ? 'bg-orange-100 text-orange-700'
                                   : meta?.color === 'blue'
-                                    ? 'bg-blue-100 text-blue-700'
+                                    ? 'bg-zinc-200 text-zinc-900'
                                     : 'bg-slate-100 text-slate-700'
                             }`}
                           >

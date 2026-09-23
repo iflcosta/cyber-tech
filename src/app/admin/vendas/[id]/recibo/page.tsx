@@ -123,7 +123,7 @@ export default async function ReciboPage({
         <div>
           <Link
             href={`/admin/vendas/${sale.id}`}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            className="text-sm font-medium text-slate-600 hover:text-black hover:underline"
           >
             ← Detalhes da venda
           </Link>

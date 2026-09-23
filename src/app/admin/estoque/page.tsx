@@ -68,7 +68,7 @@ export default async function StockListPage({
           {canDelete && <WipeStockButtons />}
           <Link
             href="/admin/estoque/new"
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+            className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
           >
             + Novo item
           </Link>
@@ -102,7 +102,7 @@ export default async function StockListPage({
           </p>
           <Link
             href="/admin/estoque/new"
-            className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+            className="mt-3 inline-block text-sm font-semibold text-zinc-900 underline hover:text-black"
           >
             Cadastrar primeiro item →
           </Link>
@@ -128,12 +128,12 @@ export default async function StockListPage({
                     <td className="px-3 py-2">
                       <Link
                         href={`/admin/estoque/${item.id}`}
-                        className="font-medium text-slate-900 hover:text-blue-700"
+                        className="font-medium text-slate-900 hover:text-black"
                       >
                         {item.name}
                       </Link>
                       {item.internal_sku && (
-                        <span className="block font-mono text-xs font-semibold text-blue-700">
+                        <span className="block font-mono text-xs font-semibold text-zinc-700">
                           {item.internal_sku}
                         </span>
                       )}

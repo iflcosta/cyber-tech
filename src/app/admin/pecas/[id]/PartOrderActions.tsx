@@ -82,14 +82,14 @@ export function PartOrderActions({
   }
 
   return (
-    <section className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-900">Ações</h2>
+    <section className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-900">Ações</h2>
 
       {status === 'ordered' && (
         <button
           onClick={() => transition({ newStatus: 'received', eventType: 'received' })}
           disabled={busy}
-          className="mt-3 w-full rounded-md bg-blue-600 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-50"
+          className="mt-3 w-full rounded-md bg-black px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
         >
           {busy ? 'Salvando…' : '📦 Confirmar recebimento'}
         </button>
@@ -100,14 +100,14 @@ export function PartOrderActions({
           <button
             onClick={() => transition({ newStatus: 'applied', eventType: 'applied' })}
             disabled={busy}
-            className="w-full rounded-md bg-emerald-700 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-emerald-800 active:scale-95 disabled:opacity-50"
+            className="w-full rounded-md bg-black px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
           >
             {busy ? 'Salvando…' : '✅ Aplicado — resolveu o problema'}
           </button>
           <button
             onClick={() => setShowReturnForm(true)}
             disabled={busy}
-            className="w-full rounded-md border border-orange-300 bg-white px-4 py-2.5 text-sm font-semibold text-orange-700 hover:bg-orange-50"
+            className="w-full rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-100"
           >
             ↩️ Sinalizar devolução
           </button>
@@ -121,7 +121,7 @@ export function PartOrderActions({
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value as ReturnReasonValue)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             >
               {RETURN_REASONS.map((r) => (
                 <option key={r.value} value={r.value}>{r.label}</option>
@@ -134,7 +134,7 @@ export function PartOrderActions({
               value={returnNote}
               onChange={(e) => setReturnNote(e.target.value)}
               rows={2}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               placeholder="Aparece na timeline"
             />
           </label>
@@ -176,7 +176,7 @@ export function PartOrderActions({
                 type="checkbox"
                 checked={wantsExchange}
                 onChange={(e) => setWantsExchange(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
               />
               Fornecedor vai repor (aguardar troca)
             </label>
@@ -189,7 +189,7 @@ export function PartOrderActions({
                 : transition({ newStatus: 'returned', eventType: 'returned' })
             }
             disabled={busy}
-            className="w-full rounded-md bg-slate-800 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+            className="w-full rounded-md bg-black px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
           >
             {busy
               ? 'Salvando…'
@@ -204,7 +204,7 @@ export function PartOrderActions({
         <button
           onClick={() => transition({ newStatus: 'received', eventType: 'exchange_received', extraUpdate: { return_reason: null } })}
           disabled={busy}
-          className="mt-3 w-full rounded-md bg-indigo-600 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 disabled:opacity-50"
+          className="mt-3 w-full rounded-md bg-black px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
         >
           {busy ? 'Salvando…' : '📦 Reposição chegou'}
         </button>
@@ -226,7 +226,7 @@ export function PartOrderActions({
             value={cancelNote}
             onChange={(e) => setCancelNote(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             placeholder="Motivo do cancelamento"
           />
           <div className="flex gap-2">
