@@ -61,7 +61,9 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
   const laborCost = Number(so.labor_cost ?? 0);
   const partsTotal = (parts ?? []).reduce((acc, p) => acc + Number(p.total_amount ?? 0), 0);
-  const grandTotal = laborCost + partsTotal;
+  const calculatedTotal = laborCost + partsTotal;
+  const estimatedVal = Number(so.estimated_value ?? 0);
+  const grandTotal = calculatedTotal > 0 ? calculatedTotal : estimatedVal;
 
   // Garantia: 90 dias a partir da entrega (delivered_at) ou criacao
   const warrantyStart = so.delivered_at ?? so.created_at;
@@ -193,14 +195,24 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
         {/* Totais */}
         <section className="mt-4 space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-slate-700">Peças</span>
-            <span className="font-mono text-slate-900">R$ {partsTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-700">Mão de obra</span>
-            <span className="font-mono text-slate-900">R$ {laborCost.toFixed(2)}</span>
-          </div>
+          {partsTotal > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-700">Peças</span>
+              <span className="font-mono text-slate-900">R$ {partsTotal.toFixed(2)}</span>
+            </div>
+          )}
+          {laborCost > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-700">Mão de obra</span>
+              <span className="font-mono text-slate-900">R$ {laborCost.toFixed(2)}</span>
+            </div>
+          )}
+          {calculatedTotal === 0 && estimatedVal > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-700">Serviço / Orçamento</span>
+              <span className="font-mono text-slate-900">R$ {estimatedVal.toFixed(2)}</span>
+            </div>
+          )}
           <div className="mt-2 flex justify-between border-t-2 border-slate-900 pt-2 text-base font-bold">
             <span className="text-slate-900">TOTAL</span>
             <span className="font-mono text-slate-900">R$ {grandTotal.toFixed(2)}</span>

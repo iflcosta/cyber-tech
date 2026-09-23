@@ -63,7 +63,9 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
   const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
   const laborCost = Number(so.labor_cost ?? 0);
   const partsTotal = (parts ?? []).reduce((acc, p) => acc + Number(p.total_amount ?? 0), 0);
-  const grandTotal = laborCost + partsTotal;
+  const calculatedTotal = laborCost + partsTotal;
+  const estimatedVal = Number(so.estimated_value ?? 0);
+  const grandTotal = calculatedTotal > 0 ? calculatedTotal : estimatedVal;
   const warrantyStart = so.delivered_at ?? so.created_at;
   const warrantyEnd = new Date(new Date(warrantyStart).getTime() + WARRANTY_DAYS * 86400000);
 
@@ -110,8 +112,15 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
     lines.push(dash);
   }
   // Totais
-  lines.push(pad('PECAS:', 20) + pad(fmtBRL(partsTotal), 10, 'right'));
-  lines.push(pad('MAO DE OBRA:', 20) + pad(fmtBRL(laborCost), 10, 'right'));
+  if (partsTotal > 0) {
+    lines.push(pad('PECAS:', 20) + pad(fmtBRL(partsTotal), 10, 'right'));
+  }
+  if (laborCost > 0) {
+    lines.push(pad('MAO DE OBRA:', 20) + pad(fmtBRL(laborCost), 10, 'right'));
+  }
+  if (calculatedTotal === 0 && estimatedVal > 0) {
+    lines.push(pad('SERVICO:', 20) + pad(fmtBRL(estimatedVal), 10, 'right'));
+  }
   lines.push(eq);
   lines.push(pad('TOTAL:', 20) + pad(fmtBRL(grandTotal), 10, 'right'));
   lines.push(eq);

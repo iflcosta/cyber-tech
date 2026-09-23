@@ -3,11 +3,24 @@
 import { useId, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
-import { OS_STATUSES, APPROVAL_METHODS, type OSStatusValue, type ApprovalMethodValue } from '@/app/admin/types/database';
+import {
+  OS_STATUSES,
+  APPROVAL_METHODS,
+  PAYMENT_METHODS,
+  type OSStatusValue,
+  type ApprovalMethodValue,
+  type PaymentMethodValue,
+} from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
 
 function fmtBRL(n: number): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function parseBRL(v: string): number | null {
+  if (!v.trim()) return null;
+  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
 }
 
 const STATUS_FLOW: Record<OSStatusValue, OSStatusValue | null> = {
@@ -47,6 +60,9 @@ export function StatusQuickActions({
   osLabel,
   canEdit,
   currentEstimatedValue,
+  grandTotal,
+  payments,
+  paymentStatus,
 }: {
   osId: string;
   currentStatus: string;
@@ -58,6 +74,9 @@ export function StatusQuickActions({
   canEdit: boolean;
   /** Pré-preenche o valor no modal de aprovação, se já foi orçado antes. */
   currentEstimatedValue?: number | null;
+  grandTotal?: number;
+  payments?: { amount: number; payment_method: PaymentMethodValue }[];
+  paymentStatus?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -65,14 +84,28 @@ export function StatusQuickActions({
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
 
   // Modal de aprovação — só aparece na transição awaiting_approval -> approved.
-  // Registra COMO o cliente aprovou, pra não depender de ninguém lembrar
-  // depois "combinei por WhatsApp" sem prova nenhuma. O valor orçado em
-  // si NÃO é editável aqui — é só exibido (já foi definido na seção
-  // "Orçamento"); ter os dois campos editáveis na mesma página, um deles
-  // dentro de um modal, é redundância pura e só cria chance de divergir.
   const approvalTitleId = useId();
   const [approving, setApproving] = useState(false);
   const [approvalMethod, setApprovalMethod] = useState<ApprovalMethodValue>('whatsapp');
+
+  // Modal de entrega — permite registrar quem retirou e o pagamento no ato
+  const totalPaid = (payments ?? []).reduce((acc, p) => acc + Number(p.amount), 0);
+  const effectiveGrandTotal = (grandTotal ?? 0) > 0 ? (grandTotal ?? 0) : Number(currentEstimatedValue ?? 0);
+  const remainingToPay = Math.max(0, effectiveGrandTotal - totalPaid);
+  const isAlreadyPaid = paymentStatus === 'paid' || (totalPaid >= effectiveGrandTotal && effectiveGrandTotal > 0);
+
+  const deliveryTitleId = useId();
+  const [delivering, setDelivering] = useState(false);
+  const [recipientName, setRecipientName] = useState(customerName ?? '');
+  const [registerPaymentOnDelivery, setRegisterPaymentOnDelivery] = useState(!isAlreadyPaid && effectiveGrandTotal > 0);
+  const [paymentAmount, setPaymentAmount] = useState(
+    remainingToPay > 0
+      ? remainingToPay.toFixed(2).replace('.', ',')
+      : effectiveGrandTotal > 0
+        ? effectiveGrandTotal.toFixed(2).replace('.', ',')
+        : '',
+  );
+  const [deliveryPayMethod, setDeliveryPayMethod] = useState<PaymentMethodValue>('pix');
 
   if (!canEdit) return null;
 
@@ -139,7 +172,19 @@ export function StatusQuickActions({
       setApproving(true);
       return;
     }
+    if (next === 'delivered') {
+      setDelivering(true);
+      return;
+    }
     changeTo(next);
+  }
+
+  function handleSecondaryClick(s: OSStatusValue) {
+    if (s === 'delivered') {
+      setDelivering(true);
+      return;
+    }
+    changeTo(s);
   }
 
   async function confirmApproval() {
@@ -150,6 +195,64 @@ export function StatusQuickActions({
     const note = `Aprovado por ${methodLabel}${valuePart}`;
     setApproving(false);
     await changeTo('approved', note);
+  }
+
+  async function confirmDelivery() {
+    setError(null);
+    setActiveStatus('delivered');
+    const who = recipientName.trim() || customerName || 'Cliente';
+
+    try {
+      const supabase = createCRMBrowserClient();
+      let paymentNote = '';
+
+      if (registerPaymentOnDelivery && !isAlreadyPaid) {
+        const num = parseBRL(paymentAmount);
+        if (num === null || num <= 0) {
+          setError('Informe um valor de pagamento válido.');
+          setActiveStatus(null);
+          return;
+        }
+
+        const { error: payErr } = await supabase.from('service_order_payments').insert({
+          service_order_id: osId,
+          amount: num,
+          payment_method: deliveryPayMethod,
+          author_id: currentUserId,
+        } as never);
+        if (payErr) throw payErr;
+
+        const methodMeta = PAYMENT_METHODS.find((m) => m.value === deliveryPayMethod)?.label ?? deliveryPayMethod;
+        paymentNote = ` · Pagamento de ${fmtBRL(num)} recebido via ${methodMeta}`;
+      }
+
+      const now = new Date().toISOString();
+      const { error: upErr } = await supabase
+        .from('service_orders')
+        .update({
+          status: 'delivered',
+          delivered_at: now,
+          delivered_to_name: who,
+        })
+        .eq('id', osId);
+      if (upErr) throw upErr;
+
+      await supabase.from('service_order_events').insert({
+        service_order_id: osId,
+        event_type: 'delivered',
+        from_value: currentStatus,
+        to_value: 'delivered',
+        note: `Aparelho entregue para ${who}${paymentNote}`,
+        author_id: currentUserId,
+      });
+
+      setDelivering(false);
+      startTransition(() => router.refresh());
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setActiveStatus(null);
+    }
   }
 
   return (
@@ -171,7 +274,7 @@ export function StatusQuickActions({
         {secondary.map((s) => (
           <button
             key={s}
-            onClick={() => changeTo(s)}
+            onClick={() => handleSecondaryClick(s)}
             disabled={pending || activeStatus !== null}
             className="rounded-md border border-slate-300 bg-white px-2 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-50"
           >
@@ -250,6 +353,137 @@ export function StatusQuickActions({
             className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
           >
             {activeStatus === 'approved' ? 'Salvando…' : 'Confirmar aprovação'}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal open={delivering} onClose={() => setDelivering(false)} titleId={deliveryTitleId}>
+        <h2 id={deliveryTitleId} className="text-lg font-bold text-slate-900">
+          Entregar aparelho {osLabel ? `· OS ${osLabel}` : ''}
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Finaliza a ordem de serviço e registra quem retirou e o pagamento no balcão.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Quem está retirando? *
+            </label>
+            <input
+              type="text"
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
+              placeholder="Nome de quem retirou"
+              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            />
+          </div>
+
+          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Pagamento na Entrega
+            </h3>
+
+            {isAlreadyPaid ? (
+              <p className="mt-2 text-sm font-medium text-zinc-900">
+                ✓ Esta OS já está com pagamento concluído ({fmtBRL(totalPaid)}).
+              </p>
+            ) : (
+              <div className="mt-2 space-y-3">
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <input
+                      type="radio"
+                      name="deliveryPaymentMode"
+                      checked={registerPaymentOnDelivery}
+                      onChange={() => setRegisterPaymentOnDelivery(true)}
+                      className="h-4 w-4 text-black focus:ring-black"
+                    />
+                    Receber pagamento agora
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <input
+                      type="radio"
+                      name="deliveryPaymentMode"
+                      checked={!registerPaymentOnDelivery}
+                      onChange={() => setRegisterPaymentOnDelivery(false)}
+                      className="h-4 w-4 text-black focus:ring-black"
+                    />
+                    Entregar sem receber agora (pagar depois / faturado)
+                  </label>
+                </div>
+
+                {registerPaymentOnDelivery && (
+                  <div className="space-y-2 border-t border-zinc-200 pt-2">
+                    <div>
+                      <span className="block text-xs font-medium text-slate-600">Valor a receber</span>
+                      <div className="relative mt-1">
+                        <span className="pointer-events-none absolute left-3 top-2 text-sm text-slate-500">R$</span>
+                        <input
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          placeholder="0,00"
+                          inputMode="decimal"
+                          className="block w-full rounded-md border border-slate-300 bg-white pl-10 pr-3 py-2 text-sm font-mono text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                        />
+                      </div>
+                      {remainingToPay > 0 && (
+                        <p className="mt-1 text-[11px] text-slate-500">
+                          Saldo restante da OS: <strong>{fmtBRL(remainingToPay)}</strong>
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="block text-xs font-medium text-slate-600">Forma de pagamento</span>
+                      <div className="mt-1 grid grid-cols-3 gap-1.5">
+                        {PAYMENT_METHODS.map((m) => (
+                          <button
+                            key={m.value}
+                            type="button"
+                            onClick={() => setDeliveryPayMethod(m.value)}
+                            className={`rounded-md border-2 px-2 py-1.5 text-xs font-medium ${
+                              deliveryPayMethod === m.value
+                                ? 'border-black bg-zinc-100 text-black font-semibold'
+                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            {m.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!registerPaymentOnDelivery && (
+                  <p className="text-xs text-amber-800 bg-amber-50 rounded p-2 border border-amber-200">
+                    Aparelho será entregue e a OS constará como <strong>"Entregue, não pago"</strong> no painel até que o pagamento seja registrado.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {error && <p className="mt-3 rounded-md bg-red-50 p-2 text-xs text-red-700">{error}</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setDelivering(false)}
+            disabled={activeStatus !== null}
+            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={confirmDelivery}
+            disabled={activeStatus !== null}
+            className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          >
+            {activeStatus === 'delivered' ? 'Salvando…' : registerPaymentOnDelivery && !isAlreadyPaid ? 'Confirmar Pagamento e Entrega' : 'Confirmar Entrega'}
           </button>
         </div>
       </Modal>

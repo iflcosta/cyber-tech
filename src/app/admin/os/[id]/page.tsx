@@ -96,7 +96,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     0,
   );
   const laborCost = Number(so.labor_cost ?? 0);
-  const grandTotal = laborCost + partsTotal;
+  const calculatedTotal = laborCost + partsTotal;
+  const estimatedVal = Number(so.estimated_value ?? 0);
+  const grandTotal = calculatedTotal > 0 ? calculatedTotal : estimatedVal;
 
   const { data: payments } = await supabase
     .from('service_order_payments')
@@ -148,6 +150,25 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
           <strong>OS finalizada</strong> — status <em>{so.status === 'delivered' ? 'entregue' : 'cancelada'}</em>.
           A OS nao aparece na lista de ativas mas pode ser consultada por este link.
+        </div>
+      )}
+
+      {so.status === 'delivered' && normalizedSo.payment_status !== 'paid' && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <div>
+            <p className="font-semibold flex items-center gap-1.5">
+              ⚠️ OS entregue com pagamento pendente
+            </p>
+            <p className="mt-0.5 text-xs text-amber-800">
+              O aparelho já foi retirado pelo cliente, mas o valor total ainda não foi quitado no sistema.
+            </p>
+          </div>
+          <a
+            href="#pagamento-section"
+            className="flex-shrink-0 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-black transition-colors"
+          >
+            Registrar pagamento agora ↓
+          </a>
         </div>
       )}
 
@@ -350,6 +371,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               osLabel={normalizedSo.short_id ?? normalizedSo.os_number ?? undefined}
               canEdit={canEdit}
               currentEstimatedValue={normalizedSo.estimated_value}
+              grandTotal={grandTotal}
+              payments={(payments ?? []) as never}
+              paymentStatus={normalizedSo.payment_status}
             />
           )}
 
@@ -362,7 +386,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 canEdit={canEdit}
               />
             </div>
-            <div className="mt-3 border-t border-slate-100 pt-3">
+            <div id="pagamento-section" className="scroll-mt-4 mt-3 border-t border-slate-100 pt-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pagamento</h3>
               <div className="mt-1">
                 <PaymentStatusEditor

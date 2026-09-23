@@ -57,10 +57,16 @@ export function PaymentStatusEditor({
   const totalPaid = payments.reduce((acc, p) => acc + Number(p.amount), 0);
   const remaining = Math.max(0, grandTotal - totalPaid);
   const status: 'pending' | 'partial' | 'paid' =
-    totalPaid <= 0 ? 'pending' : totalPaid >= grandTotal && grandTotal > 0 ? 'paid' : 'partial';
+    totalPaid <= 0 ? 'pending' : (grandTotal > 0 ? totalPaid >= grandTotal : totalPaid > 0) ? 'paid' : 'partial';
 
   function openRegister() {
-    setAmount(remaining > 0 ? remaining.toFixed(2).replace('.', ',') : '');
+    setAmount(
+      remaining > 0
+        ? remaining.toFixed(2).replace('.', ',')
+        : grandTotal > 0
+          ? grandTotal.toFixed(2).replace('.', ',')
+          : '',
+    );
     setError(null);
     setRegistering(true);
   }
@@ -84,7 +90,7 @@ export function PaymentStatusEditor({
       } as never);
       if (err) throw err;
       // service_orders.payment_status é recalculado automaticamente
-      // por trigger no banco (ver migration 0030) — não precisa
+      // por trigger no banco (ver migration 0030/0034) — não precisa
       // (e não deve) ser escrito daqui.
       setRegistering(false);
       setSaving(false);
@@ -123,18 +129,18 @@ export function PaymentStatusEditor({
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         {badge}
-        {canEdit && remaining > 0 && !registering && (
+        {canEdit && !registering && (
           <button
             type="button"
             onClick={openRegister}
             className="text-xs font-semibold text-zinc-900 underline hover:text-black"
           >
-            Registrar pagamento
+            {status === 'paid' ? '+ Adicionar pagamento' : 'Registrar pagamento'}
           </button>
         )}
       </div>
 
-      {grandTotal > 0 && (
+      {grandTotal > 0 ? (
         <p className="text-xs text-slate-600">
           Pago: <strong>{fmtBRL(totalPaid)}</strong> de {fmtBRL(grandTotal)}
           {remaining > 0 && (
@@ -143,7 +149,11 @@ export function PaymentStatusEditor({
             </>
           )}
         </p>
-      )}
+      ) : totalPaid > 0 ? (
+        <p className="text-xs text-slate-600">
+          Pago: <strong>{fmtBRL(totalPaid)}</strong>
+        </p>
+      ) : null}
 
       {payments.length > 0 && (
         <ul className="space-y-1 border-t border-slate-100 pt-2">
