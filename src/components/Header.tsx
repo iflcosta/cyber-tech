@@ -1,53 +1,32 @@
 "use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Menu, X, MessageCircle } from "lucide-react";
 
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Menu, X, MessageSquare, Search, ChevronRight, ExternalLink, Activity } from "lucide-react";
 import { brand } from "@/lib/brand";
-import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
 import CyberLogo from "./CyberLogo";
+import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
 
 const TELAS_URL = "https://telas.cyberinformatica.tech";
 
-// Fora do componente porque é estático (não depende de props/state) — se
-// ficasse dentro, seria um array NOVO a cada render, e o scrollspy abaixo
-// teria que recriar o IntersectionObserver toda vez que activeSection
-// mudasse (que é toda vez que ele dispara), virando um loop.
 const NAV_ITEMS = [
-  { href: "#catalogo", label: "Varejo High-End", sectionId: "catalogo" },
-  { href: "#laboratorio", label: "Engenharia & Bancada", sectionId: "laboratorio" },
-  { href: "#mezanino", label: "Mezanino OCA & GPU", sectionId: "mezanino" },
-  { href: "#parceiros", label: "B2B Lojistas", sectionId: "parceiros" },
-  { href: "/status", label: "Rastrear OS", sectionId: "status" },
+  { href: "#facility", label: "01 // Instalações (2 Pisos)", sectionId: "facility" },
+  { href: "#solucoes", label: "02 // Spec-Sheets Modulares", sectionId: "solucoes" },
+  { href: "#triagem", label: "03 // Seletor de Demanda", sectionId: "triagem" },
+  { href: "#laudo", label: "04 // Laudo Pericial", sectionId: "laudo" },
+  { href: "#localizacao", label: "05 // Sede Física 10 Anos", sectionId: "localizacao" },
 ];
 
-/**
- * Header — Cyber Informática
- *
- * Melhorias aplicadas:
- *  - Background sólido (navy-mid) com sombra sutil — não some mais sobre fundo escuro
- *  - Border-bottom com gradiente discreto navy-mid → navy
- *  - Logo SVG horizontal própria (substitui o "C" num quadrado)
- *  - Altura 72px (h-18) — mais respiro que o h-16 anterior
- *  - CTA WhatsApp com mais peso (sem inline style encolhendo)
- *  - Indicador de seção ativa (scrollspy) com underline animado
- *  - Hover state nos nav items com underline
- *  - Mobile: drawer mais alto e com cross-link telas
- */
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
-  const nav = NAV_ITEMS;
 
-  const headerMessage = "Olá! Vim pelo site da Cyber.";
+  const headerWhatsappMessage = "Olá! Vim pelo site da Cyber Informática e gostaria de atendimento técnico especializado.";
 
-  // Scrollspy: detecta qual seção está visível e marca o nav correspondente
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (typeof IntersectionObserver === "undefined") return;
+    if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") return;
 
-    const sections = nav
-      .filter((item) => item.href.startsWith("#"))
+    const sections = NAV_ITEMS
       .map((item) => document.getElementById(item.sectionId))
       .filter((el): el is HTMLElement => el !== null);
 
@@ -62,130 +41,172 @@ export default function Header() {
           setActiveSection(visible[0].target.id);
         }
       },
-      { rootMargin: "-30% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+      { rootMargin: "-25% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
 
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
-  }, [nav]);
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--navy-mid)]/95 backdrop-blur-md border-b border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-      <div className="container-narrow">
-        <div className="flex items-center justify-between h-[72px]">
-          {/* Logo / Brand */}
-          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-            <CyberLogo height={36} className="transition-transform group-hover:scale-[1.02]" />
+    <header className="sticky top-0 z-50 bg-[#09090c]/95 backdrop-blur-md border-b border-[#242429]">
+      {/* Régua Técnica de Metrologia Superior (Top Ribbon) */}
+      <div className="hidden md:block bg-[#060608] border-b border-[#1c1c21] py-1 px-4 sm:px-6 lg:px-8 font-mono text-[10px] text-zinc-400">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-zinc-300 font-bold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              CYBER INSTRUMENTATION // LAB CODE: 967-BRG
+            </span>
+            <span className="text-zinc-700">|</span>
+            <span>22°57&apos;07&quot;S 46°32&apos;28&quot;W • CENTRO HISTÓRICO BRAGANÇA PAULISTA</span>
+          </div>
+
+          <div className="flex items-center gap-4 text-zinc-400">
+            <span className="flex items-center gap-1">
+              <Activity className="w-3 h-3 text-emerald-400" />
+              BANCADA ESD: OPERACIONAL
+            </span>
+            <span className="text-zinc-700">|</span>
+            <span>MEZANINO: AUTOCLAVE 6.0 BAR / VÁCUO 0.08 MPa</span>
+            <span className="text-zinc-700">|</span>
+            <span className="text-zinc-300 font-bold">10 ANOS DE BANCADA</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Header Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 sm:h-18">
+          
+          {/* Logo Arquitetônica */}
+          <Link href="/" className="flex items-center gap-3 group focus:outline-none">
+            <CyberLogo height={34} className="transition-transform duration-200 group-hover:scale-[1.02]" />
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {nav.map((item) => {
+          {/* Navegação Desktop Metrológica */}
+          <nav className="hidden xl:flex items-center gap-5 font-mono text-[11px] uppercase tracking-wider">
+            {NAV_ITEMS.map((item) => {
               const isActive = activeSection === item.sectionId;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative px-3 py-2 text-sm font-medium transition-colors rounded-md group ${
+                  className={`px-2.5 py-1 rounded transition-colors ${
                     isActive
-                      ? "text-[var(--color-circuit-green)]"
-                      : "text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)]"
+                      ? "text-white bg-zinc-900 border border-zinc-700 font-bold"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-900/40"
                   }`}
-                  aria-current={isActive ? "true" : undefined}
                 >
                   {item.label}
-                  <span
-                    className={`absolute bottom-0.5 left-3 right-3 h-0.5 bg-[var(--color-circuit-green)] rounded-full transition-transform origin-left ${
-                      isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                    }`}
-                  />
                 </Link>
               );
             })}
-            {/* Cross-link para unidade de laminação OCA */}
+
             <a
               href={TELAS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 text-sm font-medium text-[var(--color-circuit-green)]/80 hover:text-[var(--color-circuit-green)] transition-colors rounded-md inline-flex items-center gap-1.5 ml-1 border-l border-white/[0.08] pl-4"
-              aria-label="Centro de Laminação OCA — site dedicado"
+              className="inline-flex items-center gap-1.5 text-zinc-400 hover:text-white border-l border-zinc-800 pl-4 py-0.5 font-bold transition-colors"
             >
-              <span className="w-1.5 h-1.5 bg-[var(--color-circuit-green)] rounded-full animate-pulse" />
-              Laminação OCA
-              <span aria-hidden className="text-[10px]">↗</span>
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+              <span>Portal Telas OCA</span>
+              <ExternalLink size={11} className="text-zinc-500" />
             </a>
           </nav>
 
-          {/* Desktop right side */}
-          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          {/* Ações Tácteis à Direita */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Botão Rastrear OS Táctil com Indicador de Serial */}
+            <Link
+              href="/status"
+              className="inline-flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2 bg-[#121216] border border-[#27272a] hover:border-zinc-500 text-zinc-300 hover:text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all"
+            >
+              <Search className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="hidden sm:inline">RASTREIO</span>
+              <span className="text-white font-mono bg-zinc-800/80 px-1 py-0.5 rounded text-[10px]">OS</span>
+            </Link>
+
+            {/* CTA WhatsApp Responsivo */}
             <TrackedWhatsAppLink
               phone={brand.whatsapp}
-              message={headerMessage}
-              source="header"
-              className="btn-primary inline-flex items-center gap-2"
-              ariaLabel="Chamar no WhatsApp da Cyber Informática"
+              message={headerWhatsappMessage}
+              source="header_btn"
+              className="btn-tactile-primary !py-2 !px-3 sm:!px-4 text-[10px] sm:text-[11px]"
+              ariaLabel="Falar com Especialista"
             >
-              <MessageCircle size={18} />
-              <span>Chamar no WhatsApp</span>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">CONSULTAR BANCADA</span>
+              <span className="sm:hidden">ORÇAR</span>
             </TrackedWhatsAppLink>
+
+            {/* Botão Menu Mobile */}
+            <button
+              onClick={() => setOpen(!open)}
+              className="xl:hidden w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-white bg-[#121216] border border-[#27272a] hover:border-zinc-400 rounded-sm focus:outline-none transition-colors cursor-pointer shrink-0"
+              aria-label={open ? "Fechar Menu" : "Abrir Menu"}
+              aria-expanded={open}
+            >
+              {open ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Régua milimétrica sutil na borda inferior do header */}
+      <div className="metrology-scale opacity-20 w-full" />
+
+      {/* Menu Mobile Retrátil */}
+      {open && (
+        <div className="xl:hidden bg-[#0d0d10] border-t border-[#242429] px-5 py-6 font-mono text-xs shadow-2xl">
+          <div className="flex flex-col space-y-2 mb-6">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between font-bold uppercase text-zinc-300 hover:text-white p-3 rounded bg-zinc-900/50 border border-zinc-800/80 transition-colors"
+              >
+                <span>{item.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
+              </Link>
+            ))}
+            <a
+              href={TELAS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between font-bold uppercase text-emerald-400 p-3 rounded bg-emerald-950/20 border border-emerald-900/40 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                Portal Remanufatura Telas OCA
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+            </a>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setOpen(!open)}
-            className="md:hidden p-2 text-[var(--color-text-on-dark)] hover:bg-white/5 rounded-md transition-colors"
-            aria-label={open ? "Fechar menu" : "Abrir menu"}
-          >
-            {open ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="pt-4 border-t border-[#242429] flex flex-col gap-3">
+            <Link
+              href="/status"
+              onClick={() => setOpen(false)}
+              className="w-full btn-tactile-secondary text-center justify-center text-xs"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>CONSULTAR ORDEM DE SERVIÇO (OS)</span>
+            </Link>
+            <TrackedWhatsAppLink
+              phone={brand.whatsapp}
+              message={headerWhatsappMessage}
+              source="header_drawer"
+              className="w-full btn-tactile-primary text-center justify-center text-xs"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>ATENDIMENTO TÉCNICO DIRETO</span>
+            </TrackedWhatsAppLink>
+          </div>
         </div>
-
-        {/* Mobile nav */}
-        {open && (
-          <nav className="md:hidden py-4 border-t border-white/[0.06] bg-[var(--navy-mid)]">
-            <div className="flex flex-col gap-1">
-              {nav.map((item) => {
-                const isActive = activeSection === item.sectionId;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? "text-[var(--color-circuit-green)] bg-[var(--color-circuit-green)]/10"
-                        : "text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] hover:bg-white/5"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-              {/* Cross-link mobile */}
-              <a
-                href={TELAS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2.5 text-sm font-medium text-[var(--color-circuit-green)] hover:bg-[var(--color-circuit-green)]/10 rounded-md inline-flex items-center gap-2"
-              >
-                <span className="w-1.5 h-1.5 bg-[var(--color-circuit-green)] rounded-full animate-pulse" />
-                Laminação OCA
-                <span aria-hidden className="text-[10px]">↗</span>
-              </a>
-              <TrackedWhatsAppLink
-                phone={brand.whatsapp}
-                message={headerMessage}
-                source="header_mobile"
-                className="btn-primary mt-3 w-full inline-flex items-center justify-center gap-2"
-                ariaLabel="Abrir WhatsApp da Cyber Informática"
-              >
-                <MessageCircle size={18} />
-                WhatsApp
-              </TrackedWhatsAppLink>
-            </div>
-          </nav>
-        )}
-      </div>
+      )}
     </header>
   );
 }

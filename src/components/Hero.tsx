@@ -1,231 +1,389 @@
 "use client";
-import { MessageCircle, Building2, Sparkles, Cpu, Zap, Shield, Microscope } from "lucide-react";
-import Link from "next/link";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { 
+  Cpu, 
+  Layers, 
+  Building2, 
+  ShieldCheck, 
+  Search, 
+  ArrowRight,
+  Activity,
+  Maximize2,
+  Sliders,
+  CheckCircle2,
+  Disc,
+  Flame,
+  Zap,
+  Clock
+} from "lucide-react";
 import { brand } from "@/lib/brand";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
-import HeroOSTrack from "./HeroOSTrack";
 
-/**
- * Hero — Cyber Informática V2 (Stealth Industrial & Google Ads Compliant)
- */
-export default function Hero({ serviceParam, personaParam }: {
+export default function Hero({ 
+  serviceParam, 
+  personaParam 
+}: {
   serviceParam?: string | null;
   personaParam?: string | null;
-} = {}) {
-  const isB2B = personaParam === 'lojista' || personaParam === 'parceiro';
+  } = {}) {
+  const router = useRouter();
+  const [trackingInput, setTrackingInput] = useState("");
+  const [activeFloor, setActiveFloor] = useState<"all" | "level2" | "level1">("all");
 
-  const whatsappCuradoriaMessage = "Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica sobre PCs, Workstations e Laboratório.";
-  const whatsappB2BMessage = isB2B
-    ? "Olá! Sou lojista/assistência em Bragança e região. Vim pelo site da Cyber e gostaria de falar sobre terceirização técnica e parcerias B2B."
-    : "Olá! Sou lojista/assistência técnica. Gostaria de falar sobre terceirização com a Cyber.";
+  const isB2B = personaParam === "lojista" || personaParam === "parceiro";
 
-  const headline = isB2B ? (
-    <>
-      Terceirização e Engenharia B2B para <span className="gradient-text">Lojistas & Parceiros</span>.
-    </>
-  ) : (
-    <>
-      Laboratório de Engenharia e <span className="gradient-text">Varejo de Alta Performance</span>.
-    </>
-  );
+  const whatsappHeroMessage = isB2B
+    ? "Olá! Sou lojista/assistência técnica na região de Bragança. Vim pelo site da Cyber e gostaria de falar sobre terceirização técnica e parcerias B2B."
+    : "Olá! Vim pelo site da Cyber Informática e gostaria de solicitar um diagnóstico pericial para minha máquina.";
 
-  const subheadline = isB2B ? (
-    "Estrutura avançada de microeletrônica, reballing de placas e laminação óptica OCA para atender a demanda pesada da sua loja com garantia e margem."
-  ) : (
-    "A maior infraestrutura de tecnologia e microeletrônica no Centro de Bragança Paulista. Varejo de PCs Gamers, Workstations sob medida e bancada pericial com total transparência."
-  );
+  const whatsappB2BMessage = "Olá! Gostaria de credenciar minha loja/assistência técnica como parceira B2B da Cyber Informática.";
+
+  function handleTrack(e: React.FormEvent) {
+    e.preventDefault();
+    const query = trackingInput.trim();
+    if (!query) return;
+    router.push(`/status?q=${encodeURIComponent(query)}`);
+  }
 
   return (
-    <section className="relative overflow-hidden bg-[#09090b] pt-28 pb-16 md:pt-32 md:pb-24 border-b border-white/[0.06]">
-      {/* Grid sutil de precisão aeroespacial */}
+    <section className="relative bg-[#09090c] border-b border-[#242429] pt-8 sm:pt-14 pb-14 sm:pb-20 overflow-hidden font-sans">
+      {/* Grade técnica milimétrica de metrologia óptica de fundo */}
       <div
         aria-hidden
-        className="absolute inset-0 opacity-[0.05] pointer-events-none"
+        className="absolute inset-0 opacity-[0.035] pointer-events-none"
         style={{
-          backgroundImage: "linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-          maskImage: "radial-gradient(ellipse 900px 600px at center, black 10%, transparent 80%)",
-          WebkitMaskImage: "radial-gradient(ellipse 900px 600px at center, black 10%, transparent 80%)",
+          backgroundImage: `
+            linear-gradient(to right, #ffffff 1px, transparent 1px),
+            linear-gradient(to bottom, #ffffff 1px, transparent 1px)
+          `,
+          backgroundSize: "40px 40px",
         }}
       />
 
-      <div className="container-narrow relative">
-        <div className="grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center mb-12">
-          {/* Coluna de Texto e Rastreio */}
-          <div>
-            {/* Badge com dot pulsante */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full bg-white/5 border border-white/15 text-xs font-mono font-semibold uppercase tracking-[0.14em] text-white">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-              </span>
-              Lab Bragança Paulista · Bancada Ativa ESD
-            </div>
+      {/* Marcações de mira ótica nas extremidades (Leica Reticle Crosshairs) */}
+      <div aria-hidden className="absolute top-4 left-4 text-zinc-700 font-mono text-[9px] select-none pointer-events-none">
+        + 00.00.00 // NORTH ALIGN
+      </div>
+      <div aria-hidden className="absolute top-4 right-4 text-zinc-700 font-mono text-[9px] select-none pointer-events-none hidden sm:block">
+        ELEV +817m // BRAGANÇA SP +
+      </div>
 
-            {/* H1 Principal */}
-            <h1 className="display text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.04] mb-6 text-white">
-              {headline}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Header Eyebrow Metrológico */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 font-mono text-[11px]">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#121216] border border-[#27272a] text-zinc-300 rounded-sm font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>SEDE FÍSICA // 10 ANOS DE BANCADA ATIVA</span>
+          </span>
+          <span className="text-zinc-600 hidden sm:inline">•</span>
+          <span className="text-zinc-400">RUA CORONEL TEÓFILO LEME, 967 • CENTRO</span>
+          <span className="text-zinc-600 hidden sm:inline">•</span>
+          <span className="text-zinc-400 hidden md:inline">2 PISOS TÉCNICOS: TÉRREO 6M + MEZANINO OCA</span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          
+          {/* Coluna Esquerda: Tipografia Arquitetônica Sólida & Ações (7 colunas) */}
+          <div className="lg:col-span-7">
+            
+            {/* H1 Principal Monumental e 100% Sólido — ZERO stroke text cópia do IF Tech */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.05] mb-5">
+              Arquitetura de Hardware &amp;<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
+                Engenharia de Precisão.
+              </span>
             </h1>
 
-            {/* Subtítulo Institucional */}
-            <p className="text-base sm:text-lg text-zinc-400 mb-8 leading-relaxed max-w-xl">
-              {subheadline}
+            {/* Subtítulo Técnico Direto e Físico */}
+            <p className="text-base sm:text-lg text-zinc-300 font-normal leading-relaxed mb-6 max-w-2xl">
+              Eliminamos diagnósticos no chute. Montagem de workstations de alta performance no balcão térreo de 6 metros de pé-direito, e cirurgia de circuitos BGA com laminação óptica OCA a vácuo no mezanino industrial.
             </p>
 
-            {/* Rastreio Instantâneo de OS no Hero */}
-            <div className="mb-8 max-w-lg">
-              <HeroOSTrack />
+            {/* Micro-Chips de Instrumentação Técnica (Teenage Engineering Inspired Spec-Chips) */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              <div className="spec-chip">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-zinc-400">ΔT GPU:</span>
+                <span className="text-white font-bold">-28°C CURADORIA</span>
+              </div>
+              <div className="spec-chip">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-zinc-400">VÁCUO OCA:</span>
+                <span className="text-white font-bold">0.08 MPa</span>
+              </div>
+              <div className="spec-chip">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-zinc-400">AUTOCLAVE:</span>
+                <span className="text-white font-bold">6.0 BAR</span>
+              </div>
+              <div className="spec-chip">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-zinc-400">LINHA 12V:</span>
+                <span className="text-white font-bold">&lt;15mV RIPPLE</span>
+              </div>
+              <div className="spec-chip hidden sm:inline-flex">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-zinc-400">DDR5:</span>
+                <span className="text-white font-bold">DUAL-CH 6000MHz</span>
+              </div>
             </div>
 
-            {/* Ações Primárias */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+            {/* Botões Tácteis Principais */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
               <TrackedWhatsAppLink
                 phone={brand.whatsapp}
-                message={whatsappCuradoriaMessage}
-                source="hero_curadoria"
-                className="btn-primary inline-flex items-center justify-center gap-2 text-sm sm:text-base px-6 py-3.5 font-bold"
-                ariaLabel="Falar com a curadoria técnica"
+                message={whatsappHeroMessage}
+                source="hero_cta_primary"
+                className="btn-tactile-primary text-xs sm:text-sm py-3.5 px-6 sm:px-8"
+                ariaLabel="Solicitar Laudo Pericial"
               >
-                <MessageCircle size={18} />
-                Falar com a Curadoria
+                <span>SOLICITAR DIAGNÓSTICO PERICIAL</span>
+                <ArrowRight className="w-4 h-4" />
               </TrackedWhatsAppLink>
 
               <TrackedWhatsAppLink
                 phone={brand.whatsapp}
                 message={whatsappB2BMessage}
-                source="hero_b2b"
-                className="btn-ghost inline-flex items-center justify-center gap-2 text-sm sm:text-base px-6 py-3.5 font-semibold"
-                ariaLabel="Parceria para Lojistas"
+                source="hero_cta_b2b"
+                className="btn-tactile-secondary text-xs sm:text-sm py-3.5 px-6"
+                ariaLabel="Canal B2B para Lojistas"
               >
-                <Building2 size={18} />
-                Canal para Lojistas
+                <Building2 className="w-4 h-4 text-zinc-400" />
+                <span>CANAL LOJISTAS &amp; B2B</span>
               </TrackedWhatsAppLink>
             </div>
 
-            {/* Badges de Confiança Pericial */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono text-zinc-400">
-              <span className="inline-flex items-center gap-1.5">
-                <Microscope size={14} className="text-emerald-400" />
-                Microeletrônica & Mezanino OCA
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Shield size={14} className="text-white" />
-                Garantia Legal CDC 90 Dias
-              </span>
+            {/* Painel Integrado de Rastreio de OS — Estética Milled Chassi */}
+            <div className="p-4 sm:p-5 bg-[#0f0f13] border border-[#242429] rounded-sm max-w-2xl">
+              <div className="flex items-center justify-between mb-3 font-mono text-[11px]">
+                <span className="text-zinc-300 font-bold uppercase flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  CONSULTA DE PROTOCOLO PERICIAL
+                </span>
+                <span className="text-zinc-400 text-[10px]">SN-OS-2026 // LGPD SAFE</span>
+              </div>
+
+              <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-zinc-400 text-xs select-none">
+                    OS-
+                  </span>
+                  <input
+                    type="text"
+                    value={trackingInput}
+                    onChange={(e) => setTrackingInput(e.target.value)}
+                    placeholder="Digite número, celular ou UUID..."
+                    className="w-full bg-[#15151a] border border-[#2e2e36] pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 font-mono focus:outline-none focus:border-white transition-colors rounded-sm"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn-tactile-primary !py-2.5 !px-5 text-xs shrink-0"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  <span>INSPECIONAR OS</span>
+                </button>
+              </form>
+
+              <div className="flex items-center justify-between mt-2.5 font-mono text-[10px] text-zinc-400">
+                <span>Horário de bancada: Seg a Sex 09h-18h • Sáb 09h-13h</span>
+                <span className="text-emerald-400 font-bold">TEMPO REAL 24/7</span>
+              </div>
             </div>
+
           </div>
 
-          {/* Coluna Visual — Bancada de Engenharia Stealth */}
-          <div className="relative">
-            <BancadaStealthMockup />
-          </div>
-        </div>
-
-        {/* Stats em Grid de Precisão */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t border-white/[0.08]">
-          {[
-            { value: '10+', label: 'Anos no Centro de Bragança', icon: Sparkles },
-            { value: '500+', label: 'Itens em Estoque Físico', icon: Cpu },
-            { value: '100%', label: 'Bancada Aterrada ESD', icon: Shield },
-            { value: 'CDC 90D', label: 'Garantia Legal Registrada', icon: Zap },
-          ].map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                className="p-5 rounded-lg bg-[#111114] border border-white/[0.08] hover:border-white/20 transition-all font-mono"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <Icon size={16} className="text-zinc-400" />
+          {/* Coluna Direita: Console Arquitetônico Cross-Section dos 2 Pisos (5 colunas) */}
+          <div className="lg:col-span-5">
+            <div className="milled-chassis p-5 sm:p-6 rounded-sm">
+              
+              {/* Cabeçalho do Console Arquitetônico */}
+              <div className="flex items-center justify-between border-b border-[#242429] pb-3 mb-4 font-mono">
+                <div>
+                  <span className="text-[10px] text-zinc-400 block tracking-widest uppercase">
+                    CORTE ESQUEMÁTICO // FACILITY 967
+                  </span>
+                  <h2 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                    <Maximize2 className="w-3.5 h-3.5 text-zinc-400" />
+                    DUAL-LEVEL HARDWARE FACILITY
+                  </h2>
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-[11px] uppercase tracking-[0.1em] text-zinc-400 font-sans">
-                  {stat.label}
+                <div className="text-right">
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-sm block">
+                    ONLINE • ESD SAFE
+                  </span>
+                  <span className="text-[9px] text-zinc-400">PÉ-DIREITO 6.00m</span>
                 </div>
               </div>
-            );
-          })}
+
+              {/* Seletor Táctil de Nível (Teenage Engineering Tabs) */}
+              <div className="grid grid-cols-3 gap-1.5 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveFloor("all")}
+                  className={`console-tab ${activeFloor === "all" ? "active" : ""}`}
+                >
+                  COMPLEXO
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFloor("level2")}
+                  className={`console-tab ${activeFloor === "level2" ? "active" : ""}`}
+                >
+                  PISO 02 // LAB
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFloor("level1")}
+                  className={`console-tab ${activeFloor === "level1" ? "active" : ""}`}
+                >
+                  PISO 01 // 6M
+                </button>
+              </div>
+
+              {/* Diagrama Esquemático dos Pisos Físicos */}
+              <div className="space-y-3 font-mono text-xs">
+                
+                {/* NÍVEL 02: MEZANINO INDUSTRIAL (ELEV +3.60m) */}
+                {(activeFloor === "all" || activeFloor === "level2") && (
+                  <div className="bg-[#121217] border border-[#292930] p-4 rounded-sm transition-all duration-300">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 bg-zinc-800 text-[9px] text-zinc-300 font-bold rounded-sm">
+                            ELEV +3.60m
+                          </span>
+                          <span className="text-white font-bold text-xs flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5 text-zinc-300" />
+                            MEZANINO // OCA &amp; BGA SURGERY
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-400 block mt-0.5">
+                          Operado por Jefferson • Microeletrônica &amp; Laminação
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-1.5 py-0.5 border border-emerald-900/60 rounded-sm">
+                        SELADO
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-[#1f1f26] text-[11px] text-zinc-400">
+                      <div className="bg-[#0b0b0e] p-2 rounded border border-[#202028]">
+                        <span className="text-[9px] text-zinc-400 block uppercase">Câmara a Vácuo OCA</span>
+                        <strong className="text-white font-mono text-xs">0.08 MPa</strong>
+                        <span className="text-[9px] text-zinc-400 block">Sem microbolhas</span>
+                      </div>
+                      <div className="bg-[#0b0b0e] p-2 rounded border border-[#202028]">
+                        <span className="text-[9px] text-zinc-400 block uppercase">Autoclave Industrial</span>
+                        <strong className="text-white font-mono text-xs">6.0 Bar Pressão</strong>
+                        <span className="text-[9px] text-zinc-400 block">Displays originais</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-2 text-[10px] text-zinc-400 flex items-center justify-between">
+                      <span>• Estação BGA Infravermelha</span>
+                      <span>• Microscópio Trinocular 4K</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Linha Divisória de Laje Estrutural com Metrologia */}
+                {activeFloor === "all" && (
+                  <div className="flex items-center gap-2 py-1 text-[9px] text-zinc-400 font-mono">
+                    <span className="w-3 border-t border-zinc-700" />
+                    <span>LAJE ESTRUTURAL // ISOLAMENTO TÉRMICO E ACÚSTICO</span>
+                    <span className="flex-1 border-t border-zinc-700" />
+                  </div>
+                )}
+
+                {/* NÍVEL 01: TÉRREO COM PÉ-DIREITO DE 6 METROS (ELEV +0.00m) */}
+                {(activeFloor === "all" || activeFloor === "level1") && (
+                  <div className="bg-[#121217] border border-[#292930] p-4 rounded-sm transition-all duration-300">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-1.5 py-0.5 bg-zinc-800 text-[9px] text-zinc-300 font-bold rounded-sm">
+                            ELEV +0.00m
+                          </span>
+                          <span className="text-white font-bold text-xs flex items-center gap-1.5">
+                            <Cpu className="w-3.5 h-3.5 text-zinc-300" />
+                            TÉRREO // ESTANTE 6M &amp; WORKSTATIONS
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-400 block mt-0.5">
+                          Atendimento: Iago &amp; Felipe • Balcão Pericial &amp; Curadoria
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-zinc-300 font-bold bg-zinc-800/80 px-1.5 py-0.5 border border-zinc-700 rounded-sm">
+                        BALCÃO
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-[#1f1f26] text-[11px] text-zinc-400">
+                      <div className="bg-[#0b0b0e] p-2 rounded border border-[#202028]">
+                        <span className="text-[9px] text-zinc-400 block uppercase">Estante Industrial</span>
+                        <strong className="text-white font-mono text-xs">6 Metros Altura</strong>
+                        <span className="text-[9px] text-zinc-400 block">Estoque próprio imediato</span>
+                      </div>
+                      <div className="bg-[#0b0b0e] p-2 rounded border border-[#202028]">
+                        <span className="text-[9px] text-zinc-400 block uppercase">Aterramento ESD</span>
+                        <strong className="text-white font-mono text-xs">&lt; 1.0 Ω Loop</strong>
+                        <span className="text-[9px] text-zinc-400 block">Proteção eletrostática</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-2 text-[10px] text-zinc-400 flex items-center justify-between">
+                      <span>• Montagem Pericial Workstation</span>
+                      <span>• Estresse AIDA64 / FurMark</span>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+
+              {/* Rodapé Metrológico do Console */}
+              <div className="mt-4 pt-3 border-t border-[#242429] flex items-center justify-between font-mono text-[10px] text-zinc-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  BANCADA PERICIAL CALIBRADA
+                </span>
+                <span className="text-zinc-400">SERIAL: CYB-HQ-967</span>
+              </div>
+
+            </div>
+          </div>
+
         </div>
+
+        {/* Faixa de Pilares de Autoridade Física (4 Módulos Metrológicos) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-12 pt-8 border-t border-[#242429] font-mono">
+          {[
+            { tag: "01 // HISTÓRICO", val: "10 ANOS", desc: "Loja física no Centro de Bragança", sub: "Rua Cel. Teófilo Leme 967" },
+            { tag: "02 // INFRAESTRUTURA", val: "PÉ-DIREITO 6M", desc: "Estante industrial monumental", sub: "Estoque de hardware real" },
+            { tag: "03 // MEZANINO", val: "OCA + BGA", desc: "Laboratório cirúrgico pesado", sub: "Autoclave 6 bar + Vácuo" },
+            { tag: "04 // JURÍDICO", val: "90 DIAS CDC", desc: "Garantia legal integral Art. 26", sub: "Certificado pericial com S/N" },
+          ].map((item) => (
+            <div key={item.val} className="p-3.5 sm:p-4 bg-[#0d0d11] border border-[#242429] rounded-sm">
+              <span className="text-[9px] text-zinc-400 block uppercase font-bold mb-1">
+                {item.tag}
+              </span>
+              <strong className="text-white text-base sm:text-lg block tracking-tight">
+                {item.val}
+              </strong>
+              <p className="text-zinc-400 text-xs mt-1 font-sans">
+                {item.desc}
+              </p>
+              <span className="text-[10px] text-zinc-400 block mt-1">
+                {item.sub}
+              </span>
+            </div>
+          ))}
+        </div>
+
       </div>
     </section>
-  );
-}
-
-/**
- * BancadaStealthMockup — Visualização gráfica SVG em estética Stealth Industrial
- * Representa estação de trabalho de alta engenharia, osciloscópio e telemetria térmica.
- */
-function BancadaStealthMockup() {
-  return (
-    <div className="relative aspect-[4/3] w-full">
-      {/* Sutil halo cinza de profundidade */}
-      <div
-        className="absolute inset-0 rounded-2xl blur-3xl opacity-20 pointer-events-none"
-        style={{ background: "radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%)" }}
-        aria-hidden
-      />
-
-      <div className="relative w-full h-full rounded-xl bg-[#111114] border border-white/10 overflow-hidden shadow-2xl p-6 flex flex-col justify-between font-mono">
-        {/* Top bar de telemetria */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-3 text-xs text-zinc-400">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-white font-bold tracking-wider">LAB_TELEMETRY // V2</span>
-          </div>
-          <span className="text-[10px] uppercase text-zinc-500">STATION_B01 · 24.1°C</span>
-        </div>
-
-        {/* Diagrama pericial de hardware e osciloscópio */}
-        <div className="my-auto space-y-3">
-          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-            <div className="bg-black/50 border border-white/5 p-2.5 rounded">
-              <span className="text-zinc-500 block">VRAM_CLK</span>
-              <span className="text-white font-bold text-xs">1750 MHz</span>
-            </div>
-            <div className="bg-black/50 border border-white/5 p-2.5 rounded">
-              <span className="text-zinc-500 block">GPU_HOTSPOT</span>
-              <span className="text-emerald-400 font-bold text-xs">62.4 °C</span>
-            </div>
-            <div className="bg-black/50 border border-white/5 p-2.5 rounded">
-              <span className="text-zinc-500 block">SMART_NVME</span>
-              <span className="text-white font-bold text-xs">HEALTH 100%</span>
-            </div>
-          </div>
-
-          {/* Gráfico vetorial de estresse pericial */}
-          <div className="bg-black/60 border border-white/10 p-3 rounded h-28 relative flex items-center justify-center overflow-hidden">
-            <svg viewBox="0 0 300 80" className="w-full h-full opacity-80" preserveAspectRatio="none">
-              <line x1="0" y1="20" x2="300" y2="20" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="0" y1="40" x2="300" y2="40" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4 4" />
-              <line x1="0" y1="60" x2="300" y2="60" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4 4" />
-              <path
-                d="M0,65 L30,62 L60,45 L90,48 L120,30 L150,32 L180,22 L210,24 L240,18 L270,19 L300,18"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-              />
-              <path
-                d="M0,72 L35,70 L70,55 L105,58 L140,42 L175,44 L210,34 L245,36 L280,28 L300,28"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-            </svg>
-            <div className="absolute top-2 left-3 text-[9px] text-zinc-500 uppercase">
-              Curva de Carga Térmica (Bancada AIDA64)
-            </div>
-          </div>
-        </div>
-
-        {/* Rodapé do mockup */}
-        <div className="border-t border-white/10 pt-3 flex items-center justify-between text-[11px] text-zinc-400">
-          <span>Microscópio Óptico 4K</span>
-          <span className="text-zinc-300 font-bold">Câmara a Vácuo OCA</span>
-        </div>
-      </div>
-    </div>
   );
 }
