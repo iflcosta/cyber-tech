@@ -14,11 +14,11 @@ const TELAS_URL = "https://telas.cyberinformatica.tech";
 // teria que recriar o IntersectionObserver toda vez que activeSection
 // mudasse (que é toda vez que ele dispara), virando um loop.
 const NAV_ITEMS = [
-  { href: "#catalogo", label: "Catálogo", sectionId: "catalogo" },
-  { href: "#curadoria", label: "Curadoria", sectionId: "curadoria" },
-  { href: "#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
-  { href: "#parceiros", label: "Parceiros", sectionId: "parceiros" },
-  { href: "/contato", label: "Contato", sectionId: "contato" },
+  { href: "#catalogo", label: "Varejo High-End", sectionId: "catalogo" },
+  { href: "#laboratorio", label: "Engenharia & Bancada", sectionId: "laboratorio" },
+  { href: "#mezanino", label: "Mezanino OCA & GPU", sectionId: "mezanino" },
+  { href: "#parceiros", label: "B2B Lojistas", sectionId: "parceiros" },
+  { href: "/status", label: "Rastrear OS", sectionId: "status" },
 ];
 
 /**

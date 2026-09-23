@@ -21,6 +21,7 @@ export type Database = {
           role: 'owner' | 'technician';
           active: boolean;
           can_delete: boolean;
+          commission_rate: number;
           created_at: string;
         };
         Insert: {
@@ -30,6 +31,7 @@ export type Database = {
           role: 'owner' | 'technician';
           active?: boolean;
           can_delete?: boolean;
+          commission_rate?: number;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
@@ -82,6 +84,8 @@ export type Database = {
             | 'cancelled';
           blocking_reason: string | null;
           estimated_value: number | null;
+          labor_cost: number | null;
+          technician_id: string | null;
           estimated_ready_at: string | null;
           payment_status: 'pending' | 'partial' | 'paid';
           payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
@@ -121,6 +125,8 @@ export type Database = {
             | 'cancelled';
           blocking_reason?: string | null;
           estimated_value?: number | null;
+          labor_cost?: number | null;
+          technician_id?: string | null;
           estimated_ready_at?: string | null;
           payment_status?: 'pending' | 'partial' | 'paid';
           payment_method?: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
@@ -431,12 +437,47 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['part_order_events']['Insert']>;
       };
+      commission_ledger: {
+        Row: {
+          id: string;
+          service_order_id: string;
+          technician_id: string;
+          technician_name: string;
+          labor_amount: number;
+          commission_rate: number;
+          commission_amount: number;
+          os_payment_status: string;
+          status: 'pending' | 'paid_out';
+          payout_date: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          service_order_id: string;
+          technician_id: string;
+          technician_name: string;
+          labor_amount?: number;
+          commission_rate?: number;
+          commission_amount?: number;
+          os_payment_status?: string;
+          status?: 'pending' | 'paid_out';
+          payout_date?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['commission_ledger']['Insert']>;
+      };
     };
     Views: {
       service_orders_with_stale: {
         Row: Database['public']['Tables']['service_orders']['Row'] & {
           customer_name: string;
           customer_phone: string | null;
+          technician_name: string | null;
+          technician_commission_rate: number | null;
           days_since_update: number;
         };
       };

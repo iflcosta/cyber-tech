@@ -72,6 +72,27 @@ export function NewOSForm({
   const [searchingCustomer, setSearchingCustomer] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(initialCustomer ?? null);
 
+  const [technicians, setTechnicians] = useState<Array<{ id: string; full_name: string; commission_rate: number }>>([]);
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(currentUserId);
+
+  useEffect(() => {
+    async function loadTechs() {
+      try {
+        const supabase = createCRMBrowserClient();
+        const { data } = await supabase
+          .from('profiles')
+          .select('id, full_name, commission_rate')
+          .eq('active', true);
+        if (data && data.length > 0) {
+          setTechnicians(data);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar técnicos:', err);
+      }
+    }
+    loadTechs();
+  }, []);
+
   // Busca cliente já cadastrado enquanto digita telefone ou nome —
   // evita criar um customer novo pra quem já veio na loja antes.
   useEffect(() => {
@@ -228,6 +249,7 @@ export function NewOSForm({
           blocking_reason: blocking.trim() || null,
           estimated_ready_at: estimatedReady || null,
           created_by: currentUserId,
+          technician_id: selectedTechnicianId || null,
         })
         .select('id, os_number')
         .single();
@@ -519,6 +541,23 @@ export function NewOSForm({
               className="form-input"
               placeholder="Ex: aguardando cabo iPhone 4"
             />
+          </Field>
+          <Field label="Técnico Responsável">
+            <select
+              value={selectedTechnicianId}
+              onChange={(e) => setSelectedTechnicianId(e.target.value)}
+              className="form-input"
+            >
+              <option value="">Sem técnico atribuído (Loja / Geral)</option>
+              {technicians.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.full_name} {t.commission_rate > 0 ? `(${Math.round(t.commission_rate * 100)}% comissão)` : '(Sem comissão)'}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              💡 Iago recebe 30% e Jefferson opera no modelo 50/50 sobre a mão de obra líquida.
+            </p>
           </Field>
         </div>
       )}

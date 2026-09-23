@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/admin/clientes', label: 'Clientes' },
   { href: '/admin/estoque', label: 'Estoque' },
   { href: '/admin/vendas', label: 'Vendas' },
+  { href: '/admin/comissoes', label: 'Comissões' },
   { href: '/admin/pecas', label: 'Peças' },
   { href: '/admin/fornecedores', label: 'Fornecedores' },
 ];
@@ -40,10 +41,10 @@ export function DesktopNav({
               key={link.href}
               href={link.href}
               aria-current={active ? 'page' : undefined}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
+              className={`rounded-md px-2.5 py-1.5 text-xs font-mono font-medium transition ${
                 active
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-zinc-800 text-white border border-zinc-700'
+                  : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-white'
               }`}
             >
               {link.label}
@@ -55,34 +56,34 @@ export function DesktopNav({
       <div className="flex items-center gap-2">
         <Link
           href="/admin/os/new"
-          className="whitespace-nowrap rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+          className="whitespace-nowrap rounded-md bg-white px-3 py-1.5 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition"
         >
           + Nova OS
         </Link>
         <Link
           href="/admin/vender"
-          className="whitespace-nowrap rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800"
+          className="whitespace-nowrap rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-mono font-bold text-white hover:bg-emerald-500 transition"
         >
           + Vender
         </Link>
         <Link
           href="/admin/pecas/new"
-          className="whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          className="whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-mono font-medium text-zinc-300 hover:bg-zinc-800 transition"
         >
-          + Novo pedido
+          + Pedido Peça
         </Link>
       </div>
 
-      <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
+      <div className="flex items-center gap-2 border-l border-zinc-800 pl-4">
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-700"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700 text-xs font-mono font-semibold text-zinc-200"
           aria-hidden="true"
         >
           {initials(userName)}
         </div>
         <div className="hidden text-right sm:block">
-          <p className="text-sm font-medium leading-tight text-slate-900">{userName}</p>
-          <p className="text-xs leading-tight text-slate-500">{roleLabel}</p>
+          <p className="text-xs font-semibold leading-tight text-white">{userName}</p>
+          <p className="text-[10px] font-mono leading-tight text-zinc-400">{roleLabel}</p>
         </div>
         <LogoutButton />
       </div>
