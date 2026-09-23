@@ -271,21 +271,21 @@ export function NewOSForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+    <div className="rounded-xl border border-zinc-800 bg-[#111114]/90 p-4 shadow-2xl backdrop-blur-md text-zinc-100 sm:p-6">
       <div className="mb-4 flex items-center gap-2">
         {[1, 2, 3].map((n) => (
           <div key={n} className="flex flex-1 items-center gap-2">
             <div
               className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
-                n <= step ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'
+                n <= step ? 'bg-emerald-600 text-white font-mono font-bold' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
               }`}
             >
               {n}
             </div>
-            <div className={`text-sm font-medium ${n === step ? 'text-slate-900' : 'text-slate-500'}`}>
+            <div className={`text-sm font-medium ${n === step ? 'text-white font-bold' : 'text-zinc-500'}`}>
               {n === 1 ? 'Cliente' : n === 2 ? 'Aparelho' : 'Serviço'}
             </div>
-            {n < 3 && <div className="h-px flex-1 bg-slate-200" />}
+            {n < 3 && <div className="h-px flex-1 bg-zinc-800" />}
           </div>
         ))}
       </div>
@@ -293,15 +293,15 @@ export function NewOSForm({
       {step === 1 && (
         <div className="space-y-3">
           {selectedCustomer ? (
-            <div className="rounded-md border-2 border-emerald-300 bg-emerald-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+            <div className="rounded-xl border border-emerald-800/60 bg-emerald-950/20 p-4">
+              <p className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
                 Cliente já cadastrado
               </p>
-              <p className="mt-1 font-medium text-slate-900">{selectedCustomer.name}</p>
-              <p className="text-sm text-slate-600">
+              <p className="mt-1 font-bold text-white">{selectedCustomer.name}</p>
+              <p className="text-sm text-zinc-400">
                 {selectedCustomer.phone}
                 {selectedCustomer.osCount > 0 && (
-                  <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">
+                  <span className="ml-2 rounded bg-emerald-950/80 px-2 py-0.5 text-xs font-mono font-bold text-emerald-300 border border-emerald-800/40">
                     {selectedCustomer.osCount} OS anterior{selectedCustomer.osCount === 1 ? '' : 'es'}
                   </span>
                 )}
@@ -309,7 +309,7 @@ export function NewOSForm({
               <button
                 type="button"
                 onClick={clearCustomerSelection}
-                className="mt-2 text-xs font-medium text-slate-600 underline hover:text-slate-800"
+                className="mt-2 text-xs font-medium text-zinc-400 underline hover:text-white"
               >
                 Não é esse cliente — trocar
               </button>
@@ -336,11 +336,11 @@ export function NewOSForm({
               </Field>
 
               {searchingCustomer && (
-                <p className="text-xs text-slate-500">Buscando cliente cadastrado…</p>
+                <p className="text-xs text-zinc-400">Buscando cliente cadastrado…</p>
               )}
               {customerMatches.length > 0 && (
-                <div className="rounded-md border border-blue-200 bg-blue-50/60 p-2">
-                  <p className="mb-1.5 text-xs font-medium text-blue-800">
+                <div className="rounded-xl border border-blue-900/40 bg-blue-950/30 p-3">
+                  <p className="mb-2 text-xs font-mono font-bold text-blue-300 uppercase tracking-wider">
                     Encontramos {customerMatches.length === 1 ? 'este cadastro' : 'estes cadastros'}:
                   </p>
                   <ul className="space-y-1.5">
@@ -349,7 +349,7 @@ export function NewOSForm({
                         <button
                           type="button"
                           onClick={() => pickCustomer(m)}
-                          className="flex w-full items-center justify-between gap-2 rounded-md border border-blue-200 bg-white px-3 py-2 text-left text-sm hover:border-blue-400 hover:bg-blue-50"
+                          className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-left text-sm text-zinc-200 hover:border-zinc-700 hover:bg-zinc-800"
                         >
                           <span>
                             <span className="font-medium text-slate-900">{m.name}</span>
@@ -460,14 +460,14 @@ export function NewOSForm({
           <Field label="Checklist de entrada">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {ENTRY_CHECKLIST_FIELDS.map((f) => (
-                <label key={f.key} className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900">
+                <label key={f.key} className="flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 hover:border-zinc-700 transition">
                   <input
                     type="checkbox"
                     checked={checklist[f.key] ?? false}
                     onChange={(e) => setChecklist({ ...checklist, [f.key]: e.target.checked })}
                     className="h-4 w-4 rounded border-slate-300 text-blue-600"
                   />
-                  <span className="text-slate-900">{f.label}</span>
+                  <span className="text-zinc-200 font-medium">{f.label}</span>
                 </label>
               ))}
             </div>
@@ -476,7 +476,7 @@ export function NewOSForm({
             <input value={accessories} onChange={(e) => setAccessories(e.target.value)} className="form-input" placeholder="Ex: carregador + capa" />
           </Field>
           <Field label="Foto do aparelho (opcional, mas recomendado)">
-            <label className="flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-sm font-medium text-slate-600 hover:bg-slate-100">
+            <label className="flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-zinc-700 bg-zinc-950/80 px-3 py-4 text-sm font-mono text-zinc-300 hover:border-zinc-500 hover:bg-zinc-900 transition">
               {uploadingPhotos ? 'Enviando…' : '📷 Tirar foto / escolher da galeria'}
               <input
                 type="file"
@@ -571,7 +571,7 @@ export function NewOSForm({
           type="button"
           onClick={() => setStep((s) => Math.max(1, s - 1))}
           disabled={step === 1 || submitting}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+          className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-mono font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition disabled:opacity-30"
         >
           Voltar
         </button>
@@ -579,7 +579,7 @@ export function NewOSForm({
           <button
             type="button"
             onClick={next}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            className="rounded-lg bg-white px-5 py-2 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition shadow"
           >
             Próximo →
           </button>
@@ -588,7 +588,7 @@ export function NewOSForm({
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+            className="rounded-lg bg-emerald-600 px-5 py-2 text-xs font-mono font-bold text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-900/30 disabled:opacity-50"
           >
             {submitting ? 'Salvando…' : 'Criar OS'}
           </button>
@@ -596,25 +596,26 @@ export function NewOSForm({
       </div>
 
       <style jsx global>{`
-        .form-input {
-          width: 100%;
-          border-radius: 0.375rem;
-          border: 1px solid rgb(203 213 225);
-          padding: 0.5rem 0.75rem;
-          font-size: 1rem;
-          line-height: 1.5;
-          color: rgb(15 23 42);
-          background: white;
-        }
-        .form-input:focus {
-          outline: none;
-          border-color: rgb(59 130 246);
-          box-shadow: 0 0 0 1px rgb(59 130 246);
-        }
-        .form-input::placeholder {
-          color: rgb(148 163 184);
-        }
-      `}</style>
+  .form-input {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid #27272a;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #f4f4f5;
+    background: #09090b;
+    transition: border-color 0.15s ease;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 1px #10b981;
+  }
+  .form-input::placeholder {
+    color: #71717a;
+  }
+`}</style>
     </div>
   );
 }
@@ -622,7 +623,7 @@ export function NewOSForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

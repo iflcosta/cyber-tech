@@ -51,6 +51,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-[#09090c]/95 backdrop-blur-md border-b border-[#242429]">
       {/* Régua Técnica de Metrologia Superior (Top Ribbon) */}
+      {/* Desktop Ribbon */}
       <div className="hidden md:block bg-[#060608] border-b border-[#1c1c21] py-1 px-4 sm:px-6 lg:px-8 font-mono text-[10px] text-zinc-400">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -72,6 +73,26 @@ export default function Header() {
             <span className="text-zinc-700">|</span>
             <span className="text-zinc-300 font-bold">10 ANOS DE BANCADA</span>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Ribbon — Ticker Compacto Metrológico */}
+      <div className="md:hidden bg-[#060608] border-b border-[#1c1c21] py-1.5 px-3 font-mono text-[9px] text-zinc-400 flex items-center justify-between overflow-x-auto whitespace-nowrap scrollbar-none">
+        <div className="flex items-center gap-2">
+          <span className="text-zinc-200 font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            967-BRG
+          </span>
+          <span className="text-zinc-700">|</span>
+          <span className="text-zinc-300">22°57&apos;07&quot;S 46°32&apos;28&quot;W</span>
+        </div>
+        <div className="flex items-center gap-2 pl-2">
+          <span className="text-emerald-400 font-bold flex items-center gap-1">
+            <Activity className="w-2.5 h-2.5" />
+            ESD ATIVA
+          </span>
+          <span className="text-zinc-700">|</span>
+          <span className="text-zinc-400">MEZANINO 6.0 BAR</span>
         </div>
       </div>
 

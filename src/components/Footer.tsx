@@ -76,22 +76,22 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-xs font-mono">
               <li>
-                <Link href="#catalogo" className="text-zinc-400 hover:text-white transition-colors">
+                <Link href="#solucoes" className="text-zinc-400 hover:text-white transition-colors">
                   Varejo & Workstations
                 </Link>
               </li>
               <li>
-                <Link href="#laboratorio" className="text-zinc-400 hover:text-white transition-colors">
+                <Link href="#facility" className="text-zinc-400 hover:text-white transition-colors">
                   Bancada & Engenharia
                 </Link>
               </li>
               <li>
-                <Link href="#mezanino" className="text-zinc-400 hover:text-white transition-colors">
+                <Link href="#facility" className="text-zinc-400 hover:text-white transition-colors">
                   Mezanino OCA & GPU
                 </Link>
               </li>
               <li>
-                <Link href="#parceiros" className="text-zinc-400 hover:text-white transition-colors">
+                <Link href="#solucoes" className="text-zinc-400 hover:text-white transition-colors">
                   Canal B2B para Lojistas
                 </Link>
               </li>

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { brand } from "@/lib/brand";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
+import HeroOSTrack from "./HeroOSTrack";
 
 export default function Hero({ 
   serviceParam, 
@@ -29,7 +30,6 @@ export default function Hero({
   personaParam?: string | null;
   } = {}) {
   const router = useRouter();
-  const [trackingInput, setTrackingInput] = useState("");
   const [activeFloor, setActiveFloor] = useState<"all" | "level2" | "level1">("all");
 
   const isB2B = personaParam === "lojista" || personaParam === "parceiro";
@@ -39,13 +39,6 @@ export default function Hero({
     : "Olá! Vim pelo site da Cyber Informática e gostaria de solicitar um diagnóstico pericial para minha máquina.";
 
   const whatsappB2BMessage = "Olá! Gostaria de credenciar minha loja/assistência técnica como parceira B2B da Cyber Informática.";
-
-  function handleTrack(e: React.FormEvent) {
-    e.preventDefault();
-    const query = trackingInput.trim();
-    if (!query) return;
-    router.push(`/status?q=${encodeURIComponent(query)}`);
-  }
 
   return (
     <section className="relative bg-[#09090c] border-b border-[#242429] pt-8 sm:pt-14 pb-14 sm:pb-20 overflow-hidden font-sans">
@@ -156,44 +149,8 @@ export default function Hero({
               </TrackedWhatsAppLink>
             </div>
 
-            {/* Painel Integrado de Rastreio de OS — Estética Milled Chassi */}
-            <div className="p-4 sm:p-5 bg-[#0f0f13] border border-[#242429] rounded-sm max-w-2xl">
-              <div className="flex items-center justify-between mb-3 font-mono text-[11px]">
-                <span className="text-zinc-300 font-bold uppercase flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  CONSULTA DE PROTOCOLO PERICIAL
-                </span>
-                <span className="text-zinc-400 text-[10px]">SN-OS-2026 // LGPD SAFE</span>
-              </div>
-
-              <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-zinc-400 text-xs select-none">
-                    OS-
-                  </span>
-                  <input
-                    type="text"
-                    value={trackingInput}
-                    onChange={(e) => setTrackingInput(e.target.value)}
-                    placeholder="Digite número, celular ou UUID..."
-                    className="w-full bg-[#15151a] border border-[#2e2e36] pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 font-mono focus:outline-none focus:border-white transition-colors rounded-sm"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="btn-tactile-primary !py-2.5 !px-5 text-xs shrink-0"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                  <span>INSPECIONAR OS</span>
-                </button>
-              </form>
-
-              <div className="flex items-center justify-between mt-2.5 font-mono text-[10px] text-zinc-400">
-                <span>Horário de bancada: Seg a Sex 09h-18h • Sáb 09h-13h</span>
-                <span className="text-emerald-400 font-bold">TEMPO REAL 24/7</span>
-              </div>
-            </div>
-
+            {/* Painel Integrado de Rastreio de OS (HeroOSTrack) */}
+            <HeroOSTrack />
           </div>
 
           {/* Coluna Direita: Console Arquitetônico Cross-Section dos 2 Pisos (5 colunas) */}
@@ -226,21 +183,21 @@ export default function Hero({
                   onClick={() => setActiveFloor("all")}
                   className={`console-tab ${activeFloor === "all" ? "active" : ""}`}
                 >
-                  COMPLEXO
+                  COMPLEXO GERAL
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveFloor("level2")}
                   className={`console-tab ${activeFloor === "level2" ? "active" : ""}`}
                 >
-                  PISO 02 // LAB
+                  NÍVEL 02 // MEZANINO OCA
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveFloor("level1")}
                   className={`console-tab ${activeFloor === "level1" ? "active" : ""}`}
                 >
-                  PISO 01 // 6M
+                  NÍVEL 01 // TÉRREO 6M
                 </button>
               </div>
 
@@ -314,7 +271,7 @@ export default function Hero({
                           </span>
                         </div>
                         <span className="text-[10px] text-zinc-400 block mt-0.5">
-                          Atendimento: Iago &amp; Felipe • Balcão Pericial &amp; Curadoria
+                          Bancada ESD: Iago &amp; Felipe • Estante 6m &amp; Cabos: Eduardo
                         </span>
                       </div>
                       <span className="text-[10px] text-zinc-300 font-bold bg-zinc-800/80 px-1.5 py-0.5 border border-zinc-700 rounded-sm">
@@ -326,7 +283,7 @@ export default function Hero({
                       <div className="bg-[#0b0b0e] p-2 rounded border border-[#202028]">
                         <span className="text-[9px] text-zinc-400 block uppercase">Estante Industrial</span>
                         <strong className="text-white font-mono text-xs">6 Metros Altura</strong>
-                        <span className="text-[9px] text-zinc-400 block">Estoque próprio imediato</span>
+                        <span className="text-[9px] text-zinc-400 block">Cabos blindados Eduardo</span>
                       </div>
                       <div className="bg-[#0b0b0e] p-2 rounded border border-[#202028]">
                         <span className="text-[9px] text-zinc-400 block uppercase">Aterramento ESD</span>

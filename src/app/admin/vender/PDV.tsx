@@ -379,8 +379,8 @@ export function PDV({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Vender (PDV)</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-black tracking-tight text-white">PDV Rápido · Balcão Cyber</h1>
+          <p className="text-xs text-zinc-400">
             Bipe o codigo de barras ou digite o nome. Operador: {currentUserName}.
           </p>
         </div>
@@ -389,10 +389,10 @@ export function PDV({
       {/* Input de bipagem — SEMPRE com autofocus (leitor envia rapido) */}
       <form
         onSubmit={submitCode}
-        className="rounded-lg border-2 border-blue-300 bg-blue-50 p-4 shadow-sm"
+        className="rounded-xl border border-emerald-900/40 bg-[#111114]/90 p-4 shadow-xl backdrop-blur-md"
       >
         <label className="block">
-          <span className="block text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <span className="block text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
             Bipar / buscar
           </span>
           <input
@@ -405,7 +405,7 @@ export function PDV({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="mt-1 w-full rounded-md border border-blue-300 bg-white px-4 py-3 text-lg font-mono focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-lg font-mono text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
           />
         </label>
         {flash && (
@@ -418,25 +418,25 @@ export function PDV({
       )}
 
       {/* Busca manual (caso leitor nao funcione) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="rounded-xl border border-zinc-800 bg-[#111114]/90 p-3 shadow-lg backdrop-blur-md">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Ou busque manualmente por nome/marca…"
           aria-label="Buscar item por nome ou marca"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
         />
         <button
           type="button"
           onClick={openAddPart}
-          className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+          className="mt-2 text-xs font-mono text-emerald-400 hover:text-emerald-300 transition"
         >
           ➕ Não achou? Cadastrar peça nova e vender
-          {search.trim() && <span className="text-slate-500"> — &quot;{search.trim()}&quot;</span>}
+          {search.trim() && <span className="text-zinc-500"> — &quot;{search.trim()}&quot;</span>}
         </button>
         {searchSuggestions.length > 0 && (
-          <ul className="mt-2 divide-y divide-slate-200">
+          <ul className="mt-2 divide-y divide-zinc-800/80">
             {searchSuggestions.map((i) => (
               <li
                 key={i.id}
@@ -448,9 +448,9 @@ export function PDV({
                     addItem(i);
                     setSearch('');
                   }}
-                  className="flex-1 text-left hover:text-blue-700"
+                  className="flex-1 text-left hover:text-emerald-400 transition"
                 >
-                  <span className="font-medium text-slate-900">{i.name}</span>
+                  <span className="font-bold text-zinc-100">{i.name}</span>
                   {i.brand && (
                     <span className="ml-1 text-xs text-slate-500">· {i.brand}</span>
                   )}
@@ -468,23 +468,23 @@ export function PDV({
       </div>
 
       {/* Carrinho */}
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <header className="border-b border-slate-200 px-4 py-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <section className="rounded-xl border border-zinc-800 bg-[#111114]/90 shadow-2xl backdrop-blur-md">
+        <header className="border-b border-zinc-800 px-4 py-2.5 bg-zinc-900/50">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
             Carrinho ({cart.length})
           </h2>
         </header>
         {cart.length === 0 ? (
-          <p className="p-6 text-center text-sm text-slate-500">
+          <p className="p-8 text-center text-xs font-mono text-zinc-500">
             Bipe um codigo ou adicione um item acima pra comecar.
           </p>
         ) : (
           <>
-            <ul className="divide-y divide-slate-200">
+            <ul className="divide-y divide-zinc-800/60 font-mono text-xs text-zinc-200">
               {cart.map((c) => (
                 <li key={c.stock_item_id} className="flex items-center gap-3 px-4 py-2">
                   <div className="flex-1">
-                    <p className="font-medium text-slate-900">{c.name}</p>
+                    <p className="font-bold text-zinc-100">{c.name}</p>
                     <p className="text-xs text-slate-500">
                       {fmtBRL(c.unit_price)} cada · {c.stock_available} em estoque
                     </p>
@@ -495,15 +495,15 @@ export function PDV({
                     max={c.stock_available}
                     value={c.quantity}
                     onChange={(e) => updateQty(c.stock_item_id, Number(e.target.value))}
-                    className="w-16 rounded-md border border-slate-300 px-2 py-1 text-center font-mono text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-16 rounded-md border border-zinc-800 bg-zinc-950 px-2 py-1 text-center font-mono text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none"
                   />
-                  <span className="w-24 text-right font-mono font-medium text-slate-900">
+                  <span className="w-24 text-right font-mono font-bold text-emerald-400">
                     {fmtBRL(c.unit_price * c.quantity)}
                   </span>
                   <button
                     type="button"
                     onClick={() => removeItem(c.stock_item_id)}
-                    className="rounded-md p-1 text-slate-500 hover:bg-red-50 hover:text-red-600"
+                    className="rounded-md p-1 text-zinc-500 hover:bg-red-950/40 hover:text-red-400"
                     aria-label="Remover"
                   >
                     ✕
@@ -511,11 +511,11 @@ export function PDV({
                 </li>
               ))}
             </ul>
-            <footer className="border-t border-slate-200 bg-slate-50 px-4 py-3">
+            <footer className="border-t border-zinc-800 bg-zinc-900/60 px-4 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs text-slate-500">Subtotal</p>
-                  <p className="text-lg font-bold text-slate-900">
+                  <p className="text-xl font-black font-mono text-emerald-400">
                     {fmtBRL(subtotal)}
                   </p>
                 </div>
@@ -523,7 +523,7 @@ export function PDV({
                   type="button"
                   onClick={() => setFinalizing(true)}
                   disabled={cart.length === 0}
-                  className="rounded-md bg-emerald-700 px-5 py-2.5 text-base font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:opacity-30"
+                  className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-mono font-bold text-white shadow-lg shadow-emerald-900/40 hover:bg-emerald-500 transition disabled:opacity-30"
                 >
                   Finalizar venda →
                 </button>

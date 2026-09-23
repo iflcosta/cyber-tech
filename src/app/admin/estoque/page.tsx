@@ -32,7 +32,7 @@ export default async function StockListPage({
   if (params.q) {
     const q = sanitizeSearchTerm(params.q);
     itemsQuery = itemsQuery.or(
-      `name.ilike.%${q}%,brand.ilike.%${q}%,model.ilike.%${q}%,category.ilike.%${q}%,ean13.ilike.%${q}%`,
+      `name.ilike.%${q}%,brand.ilike.%${q}%,model.ilike.%${q}%,category.ilike.%${q}%,ean13.ilike.%${q}%,internal_sku.ilike.%${q}%`,
     );
   }
 
@@ -57,8 +57,8 @@ export default async function StockListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Estoque</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-black tracking-tight text-white">Catálogo & Estoque (Eduardo)</h1>
+          <p className="text-xs text-zinc-400">
             {filtered.length} {filtered.length === 1 ? 'item' : 'itens'}
             {params.q && ` (busca: "${params.q}")`}
             {params.low === '1' && ' · só estoque baixo'}
@@ -68,7 +68,7 @@ export default async function StockListPage({
           {canDelete && <WipeStockButtons />}
           <Link
             href="/admin/estoque/new"
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+            className="rounded-lg bg-emerald-600 px-3.5 py-2 text-xs font-mono font-bold text-white shadow-lg shadow-emerald-900/30 hover:bg-emerald-500 transition"
           >
             + Novo item
           </Link>
@@ -78,7 +78,7 @@ export default async function StockListPage({
       {(lowItems ?? []).length > 0 && params.low !== '1' && (
         <Link
           href="/admin/estoque?low=1"
-          className="block rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800 hover:bg-orange-100"
+          className="block rounded-xl border border-amber-900/40 bg-amber-950/30 p-3.5 text-xs text-amber-300 hover:bg-amber-950/40 transition"
         >
           <strong>{lowItems!.length} {lowItems!.length === 1 ? 'item precisa' : 'itens precisam'}</strong> de
           reposição (estoque ≤ mínimo). Clique para ver.
@@ -108,9 +108,9 @@ export default async function StockListPage({
           </Link>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-[#111114]/90 shadow-2xl backdrop-blur-md">
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-zinc-800 bg-zinc-900/80 text-left text-[10px] font-mono uppercase tracking-wider text-zinc-400">
               <tr>
                 <th className="px-3 py-2 font-medium">Item</th>
                 <th className="hidden px-3 py-2 font-medium sm:table-cell">Categoria</th>
@@ -119,16 +119,16 @@ export default async function StockListPage({
                 <th className="px-3 py-2 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-zinc-800/60 font-mono text-xs text-zinc-200">
               {filtered.map((item) => {
                 const isLow = item.current_stock <= item.min_stock;
                 const isOut = item.current_stock === 0;
                 return (
-                  <tr key={item.id} className="hover:bg-slate-50">
+                  <tr key={item.id} className="hover:bg-zinc-800/40 transition">
                     <td className="px-3 py-2">
                       <Link
                         href={`/admin/estoque/${item.id}`}
-                        className="font-medium text-slate-900 hover:text-blue-700"
+                        className="font-bold text-white hover:text-emerald-400 transition"
                       >
                         {item.name}
                       </Link>
@@ -148,7 +148,7 @@ export default async function StockListPage({
                         </span>
                       )}
                     </td>
-                    <td className="hidden px-3 py-2 text-slate-600 sm:table-cell">
+                    <td className="hidden px-3 py-2 text-zinc-400 sm:table-cell">
                       {item.category ?? <span className="text-slate-500">—</span>}
                     </td>
                     <td className="px-3 py-2 text-right">
@@ -158,14 +158,14 @@ export default async function StockListPage({
                             ? 'font-semibold text-red-600'
                             : isLow
                               ? 'font-semibold text-orange-600'
-                              : 'text-slate-900'
+                              : 'text-zinc-200 font-bold'
                         }
                       >
                         {item.current_stock}
                       </span>
                       <span className="text-xs text-slate-500"> / {item.min_stock}</span>
                     </td>
-                    <td className="hidden px-3 py-2 text-right font-medium text-slate-900 sm:table-cell">
+                    <td className="hidden px-3 py-2 text-right font-bold text-zinc-100 sm:table-cell">
                       {item.unit_price.toLocaleString('pt-BR', {
                         style: 'currency',
                         currency: 'BRL',

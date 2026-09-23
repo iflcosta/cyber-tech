@@ -40,7 +40,7 @@ export default function Home() {
   const [selectedDemand, setSelectedDemand] = useState<"retail" | "lab" | "b2b">("retail");
   
   // Estado para o Corte Arquitetônico da Seção Facility
-  const [facilityFloor, setFacilityFloor] = useState<"level1" | "level2" | "b2b">("level1");
+  const [facilityFloor, setFacilityFloor] = useState<"all" | "level1" | "level2" | "b2b">("all");
 
   const whatsappRetailMessage = "Olá! Vim pelo site da Cyber e gostaria de um orçamento para montagem de PC / upgrade de hardware com Iago ou Felipe.";
   const whatsappLabMessage = "Olá! Vim pelo site da Cyber e gostaria de um laudo para recuperação de placa de vídeo / tela quebrada com Jefferson no mezanino.";
@@ -94,6 +94,13 @@ export default function Home() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
+                    onClick={() => setFacilityFloor("all")}
+                    className={`console-tab ${facilityFloor === "all" ? "active" : ""}`}
+                  >
+                    COMPLEXO GERAL (2 PISOS)
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setFacilityFloor("level1")}
                     className={`console-tab ${facilityFloor === "level1" ? "active" : ""}`}
                   >
@@ -118,6 +125,125 @@ export default function Home() {
 
               {/* Conteúdo Dinâmico do Piso Inspecionado */}
               <div className="mt-8">
+                {facilityFloor === "all" && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#242429] font-mono text-xs text-zinc-400">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        CORTE ESQUEMÁTICO INTEGRAL // SEDE FÍSICA 10 ANOS NA RUA CEL. TEÓFILO LEME 967
+                      </span>
+                      <span className="text-zinc-500 hidden sm:inline">PÉ-DIREITO 6.00m + MEZANINO INDUSTRIAL</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Nível 02: Mezanino */}
+                      <div className="bg-[#121217] border border-[#24242c] p-6 rounded-sm font-mono text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start pb-3 border-b border-[#202027] mb-4">
+                            <div>
+                              <span className="px-1.5 py-0.5 bg-zinc-800 text-[10px] text-zinc-300 font-bold rounded-sm">
+                                ELEV +3.60m
+                              </span>
+                              <h4 className="text-sm font-bold text-white mt-1.5 flex items-center gap-2">
+                                <Layers className="w-4 h-4 text-zinc-300" />
+                                MEZANINO // OCA &amp; CIRURGIA BGA
+                              </h4>
+                              <span className="text-[10px] text-zinc-400 block mt-0.5 font-sans">
+                                Especialista Residente: Jefferson • Microeletrônica &amp; Laminação
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 border border-emerald-900/60 rounded-sm">
+                              SALA SELADA
+                            </span>
+                          </div>
+
+                          <div className="space-y-2.5 text-[11px]">
+                            <div className="flex justify-between py-1 border-b border-[#1a1a22]">
+                              <span className="text-zinc-400">Autoclave Desbolhadora:</span>
+                              <span className="text-white font-bold">6.0 Bar Regulados</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-[#1a1a22]">
+                              <span className="text-zinc-400">Câmara Pneumática Vácuo:</span>
+                              <span className="text-white font-bold">-0.08 MPa Constante</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-[#1a1a22]">
+                              <span className="text-zinc-400">Estação de Retrabalho BGA:</span>
+                              <span className="text-white font-bold">Infravermelho 4 Estágios</span>
+                            </div>
+                            <div className="flex justify-between py-1">
+                              <span className="text-zinc-400">Microscópio Trinocular:</span>
+                              <span className="text-emerald-400 font-bold">4K Óptico (Microtrilhas 0.05mm)</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-[#1c1c24] flex items-center justify-between">
+                          <span className="text-[10px] text-zinc-400">Preserva display 100% original</span>
+                          <button
+                            type="button"
+                            onClick={() => setFacilityFloor("level2")}
+                            className="text-[11px] text-zinc-300 hover:text-white font-bold underline cursor-pointer"
+                          >
+                            Ver Detalhes do Mezanino &rarr;
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Nível 01: Térreo */}
+                      <div className="bg-[#121217] border border-[#24242c] p-6 rounded-sm font-mono text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start pb-3 border-b border-[#202027] mb-4">
+                            <div>
+                              <span className="px-1.5 py-0.5 bg-zinc-800 text-[10px] text-zinc-300 font-bold rounded-sm">
+                                ELEV +0.00m
+                              </span>
+                              <h4 className="text-sm font-bold text-white mt-1.5 flex items-center gap-2">
+                                <Cpu className="w-4 h-4 text-zinc-300" />
+                                TÉRREO // ESTANTE 6M &amp; WORKSTATIONS
+                              </h4>
+                              <span className="text-[10px] text-zinc-400 block mt-0.5 font-sans">
+                                Bancada ESD: Iago &amp; Felipe • Gestão de Cabos: Eduardo
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-zinc-300 font-bold bg-zinc-800/80 px-2 py-0.5 border border-zinc-700 rounded-sm">
+                              BALCÃO FÍSICO
+                            </span>
+                          </div>
+
+                          <div className="space-y-2.5 text-[11px]">
+                            <div className="flex justify-between py-1 border-b border-[#1a1a22]">
+                              <span className="text-zinc-400">Pé-Direito Arquitetônico:</span>
+                              <span className="text-white font-bold">6,00 metros livres</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-[#1a1a22]">
+                              <span className="text-zinc-400">Estante Industrial Aço:</span>
+                              <span className="text-white font-bold">Estoque Cabos do Eduardo</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-[#1a1a22]">
+                              <span className="text-zinc-400">Aterramento Eletrostático:</span>
+                              <span className="text-white font-bold">Malha ESD &lt; 1.0Ω</span>
+                            </div>
+                            <div className="flex justify-between py-1">
+                              <span className="text-zinc-400">Garantia Legal CDC:</span>
+                              <span className="text-emerald-400 font-bold">90 Dias com Certificado</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-[#1c1c24] flex items-center justify-between">
+                          <span className="text-[10px] text-zinc-400">Curadoria e estresse FurMark</span>
+                          <button
+                            type="button"
+                            onClick={() => setFacilityFloor("level1")}
+                            className="text-[11px] text-zinc-300 hover:text-white font-bold underline cursor-pointer"
+                          >
+                            Ver Detalhes do Térreo &rarr;
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {facilityFloor === "level1" && (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                     <div className="lg:col-span-6 space-y-4">
@@ -129,7 +255,7 @@ export default function Home() {
                         Térreo: Pé-Direito de 6 Metros &amp; Estante Industrial
                       </h4>
                       <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-                        Nosso térreo abriga uma monumental estante industrial de aço de 6 metros de altura com centenas de componentes a pronta-entrega: fontes com certificação 80 Plus Gold/Platinum, cabos blindados HDMI 2.1 / DisplayPort 1.4, memórias de alta densidade e gabinetes de fluxo otimizado.
+                        Nosso térreo abriga uma monumental estante industrial de aço de 6 metros de altura com estoque imediato curado por Eduardo (cabos blindados HDMI 2.1 / DisplayPort 1.4, cabos sleeved, adaptadores industriais e fontes 80 Plus Gold/Platinum), além de bancadas de montagem pericial operadas por Iago e Felipe.
                       </p>
                       <div className="space-y-2 font-mono text-xs text-zinc-400 pt-2">
                         <div className="flex items-center gap-2">
@@ -173,8 +299,8 @@ export default function Home() {
                           <span className="text-white font-bold">Aço Carbono Industrial 6m</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-[#1a1a22]">
-                          <span className="text-zinc-400">Técnicos de Bancada:</span>
-                          <span className="text-white font-bold">Iago &amp; Felipe</span>
+                          <span className="text-zinc-400">Equipe de Bancada &amp; Estoque:</span>
+                          <span className="text-white font-bold">Iago, Felipe &amp; Eduardo</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-[#1a1a22]">
                           <span className="text-zinc-400">Aterramento Eletrostático:</span>
@@ -394,8 +520,16 @@ export default function Home() {
                   {/* Tabela de Especificações do Módulo */}
                   <div className="bg-[#121217] border border-[#24242c] p-3 rounded-sm font-mono text-[11px] mb-5 space-y-2">
                     <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
-                      <span className="text-zinc-400">Delta Térmico em Carga:</span>
-                      <span className="text-white font-bold">&Delta;T -20°C a -28°C</span>
+                      <span className="text-zinc-400">Delta Térmico sob Carga:</span>
+                      <span className="text-white font-bold">&Delta;T -20°C a -28°C Estável</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
+                      <span className="text-zinc-400">Ripple Linha 12V:</span>
+                      <span className="text-white font-bold">&lt; 15mV Peak-to-Peak</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
+                      <span className="text-zinc-400">Impedância de Aterramento:</span>
+                      <span className="text-white font-bold">&lt; 1.0 &Omega; Loop ESD</span>
                     </div>
                     <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
                       <span className="text-zinc-400">Estresse Obrigatório:</span>
@@ -406,8 +540,8 @@ export default function Home() {
                       <span className="text-white font-bold">80 Plus Gold / Platinum</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">Curadoria de Peças:</span>
-                      <span className="text-emerald-400 font-bold">Iago &amp; Felipe</span>
+                      <span className="text-zinc-400">Bancada &amp; Cabos 6m:</span>
+                      <span className="text-emerald-400 font-bold">Iago, Felipe &amp; Eduardo</span>
                     </div>
                   </div>
 
@@ -468,6 +602,14 @@ export default function Home() {
                       <span className="text-white font-bold">6.0 Bar Regulados</span>
                     </div>
                     <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
+                      <span className="text-zinc-400">Curva Térmica BGA:</span>
+                      <span className="text-white font-bold">4 Estágios (150°C-217°C)</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
+                      <span className="text-zinc-400">Resolução Microtrilhas:</span>
+                      <span className="text-white font-bold">0.05mm Óptico 4K</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
                       <span className="text-zinc-400">Fidelidade do Display:</span>
                       <span className="text-white font-bold">100% Original de Fábrica</span>
                     </div>
@@ -526,8 +668,12 @@ export default function Home() {
                   {/* Tabela de Especificações do Módulo */}
                   <div className="bg-[#121217] border border-[#24242c] p-3 rounded-sm font-mono text-[11px] mb-5 space-y-2">
                     <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
+                      <span className="text-zinc-400">SLA Triagem Lojista:</span>
+                      <span className="text-white font-bold">&lt; 24h Prioritário</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
                       <span className="text-zinc-400">Emissão de Laudo:</span>
-                      <span className="text-white font-bold">Identificação Neutra</span>
+                      <span className="text-white font-bold">100% White-Label Neutro</span>
                     </div>
                     <div className="flex justify-between border-b border-[#1c1c24] pb-1.5">
                       <span className="text-zinc-400">Sigilo de Dados:</span>
@@ -1144,6 +1290,16 @@ export default function Home() {
                       </div>
                       <p className="text-zinc-400 text-[11px] leading-relaxed">
                         Curadoria de hardware, montagem de workstations, upgrades e atendimento direto no balcão pericial.
+                      </p>
+                    </div>
+
+                                        <div className="p-3 bg-[#121217] border border-[#202028] rounded-sm">
+                      <div className="flex justify-between items-center text-white font-bold mb-1">
+                        <span>EDUARDO</span>
+                        <span className="text-[10px] text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded-sm">ESTANTE 6M</span>
+                      </div>
+                      <p className="text-zinc-400 text-[11px] leading-relaxed">
+                        Gestão da monumental estante de 6m e estoque de cabos blindados HDMI 2.1, DisplayPort 1.4, fontes 80 Plus e insumos de bancada.
                       </p>
                     </div>
 

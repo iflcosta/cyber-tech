@@ -1,15 +1,30 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
+import QRCode from 'qrcode';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { ConfirmDeliveryButton } from './ConfirmDeliveryButton';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import { EQUIPMENT_TYPES, WARRANTY_DAYS, type EquipmentTypeValue } from '@/app/admin/types/database';
 import { formatDateBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
+import { brand } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ReciboPage({ params }: { params: Promise<{ id: string }> }) {
+function fmtBRL(n: number): string {
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+export default async function ReciboPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ format?: string }>;
+}) {
   const { id } = await params;
+  const sParams = await searchParams;
+  const isA4 = sParams.format === 'a4';
+
   const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
@@ -30,7 +45,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
     .single();
   if (!so) notFound();
 
-  // Pecas usadas (stock_movements onde reference = os_number)
+  // Peças usadas na OS (stock_movements onde reference = os_number ou service_order_id = id)
   type PartRow = {
     id: string;
     quantity: number;
@@ -41,246 +56,310 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
     created_at: string;
     stock_item: { name: string; ean13: string | null; brand: string | null; model: string | null } | null;
   };
+
   const { data: partsRaw } = await supabase
     .from('stock_movements')
     .select(`
       id, quantity, unit_price, total_amount, movement_type, notes, created_at,
       stock_item:stock_items(name, ean13, brand, model)
     `)
-    .eq('reference', so.os_number)
+    .or(`service_order_id.eq.${id},reference.eq.${so.os_number}`)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
-  // Select com join via string: supabase-js não infere a cardinalidade
-  // 1:1 sozinho — cast pro formato real (mesmo padrão usado alhures).
-  const parts = partsRaw as unknown as PartRow[] | null;
+
+  const parts = (partsRaw as unknown as PartRow[] | null) ?? [];
 
   const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
-  const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
+  const customerName = soWithCustomer.customer?.name ?? '(cliente não informado)';
   const customerPhone = soWithCustomer.customer?.phone ?? null;
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
 
   const laborCost = Number(so.labor_cost ?? 0);
-  const partsTotal = (parts ?? []).reduce((acc, p) => acc + Number(p.total_amount ?? 0), 0);
+  const partsTotal = parts.reduce((acc, p) => acc + Number(p.total_amount ?? 0), 0);
   const grandTotal = laborCost + partsTotal;
 
-  // Garantia: 90 dias a partir da entrega (delivered_at) ou criacao
+  // Garantia legal de 90 dias pelo Código de Defesa do Consumidor (Art. 26, II da Lei 8.078/90)
   const warrantyStart = so.delivered_at ?? so.created_at;
   const warrantyEnd = new Date(new Date(warrantyStart).getTime() + WARRANTY_DAYS * 86400000);
 
   const isFinal = so.status === 'delivered';
   const canConfirmDelivery = profile?.role === 'owner' || profile?.role === 'technician';
 
+  // QR Code de autenticidade / rastreio do recibo
+  const trackingQuery = so.short_id || so.os_number || so.id;
+  const trackingUrl = `${brand.url}/status?q=${encodeURIComponent(trackingQuery)}`;
+  const qrDataUrl = await QRCode.toDataURL(trackingUrl, {
+    width: 120,
+    margin: 1,
+    errorCorrectionLevel: 'M',
+  });
+
   return (
     <>
-      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
-        <span className="text-blue-800">
-          Recibo de entrega. <strong>Use Ctrl+P</strong> pra salvar como PDF ou imprimir.
-        </span>
-        <div className="flex gap-2">
-          <Link
-            href={`/admin/os/${so.id}/recibo/mpt`}
-            target="_blank"
-            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Versão MPT-II 58mm
-          </Link>
-          <Link
-            href={`/admin/os/${so.id}`}
-            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-          >
-            ← Voltar pra OS
-          </Link>
+      {/* Barra de Ações Superior (Oculta na Impressão) */}
+      <div className="print:hidden mx-auto mb-6 max-w-2xl rounded-xl border border-zinc-800 bg-[#111114]/90 p-4 shadow-xl backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
+                Recibo Oficial do Cliente (80mm / A4)
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-zinc-400">
+              Discriminação de mão de obra e peças com Termo de Garantia CDC.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/admin/os/${so.id}/recibo${isA4 ? '' : '?format=a4'}`}
+              className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-mono font-medium text-zinc-200 hover:bg-zinc-700 transition"
+            >
+              {isA4 ? 'Mudar p/ Bobina 80mm' : 'Mudar p/ Formato A4'}
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') window.print();
+              }}
+              className="rounded-md bg-white px-3 py-1.5 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition"
+            >
+              🖨️ Imprimir Recibo
+            </button>
+            <Link
+              href={`/admin/os/${so.id}`}
+              className="rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-mono text-zinc-400 hover:text-white transition"
+            >
+              ← OS
+            </Link>
+          </div>
         </div>
       </div>
 
       {!isFinal && canConfirmDelivery && (
-        <div className="print:hidden mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-emerald-800">
-              <strong>OS ainda não entregue.</strong> Preencha quem retirou e confirme pra marcar como entregue.
-            </span>
-          </div>
+        <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-xs text-amber-300">
+          ⚠️ <strong>OS ainda não entregue.</strong> Preencha quem retirou no rodapé para confirmar a entrega formal.
         </div>
       )}
 
-      <article className="print:bg-white print:text-slate-900 mx-auto max-w-2xl bg-white p-6 shadow print:max-w-none print:shadow-none print:p-8 sm:p-8">
-        {/* Header */}
-        <header className="border-b border-slate-300 pb-4">
-          <div className="flex items-baseline justify-between">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Cyber <span className="text-blue-600">Informática</span>
-            </h1>
-            <div className="text-right">
-              <p className="font-mono text-lg font-semibold text-slate-900">{so.os_number}</p>
-              <p className="text-xs text-slate-500">
-                {so.short_id && `ID: ${so.short_id}`}
-              </p>
-            </div>
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Recibo de entrega · {formatDateTimeBR(so.delivered_at ?? so.created_at)}
+      {/* ============ RECIBO DO CLIENTE (80MM OU A4) ============ */}
+      <article
+        className={`receipt-container mx-auto bg-white text-black font-sans shadow-2xl print:shadow-none ${
+          isA4 ? 'max-w-2xl p-8 rounded-lg' : 'receipt-80mm p-4 text-xs'
+        }`}
+      >
+        {/* Cabeçalho */}
+        <header className="border-b-2 border-black pb-3 text-center">
+          <h1 className="text-xl font-black uppercase tracking-tight">
+            Cyber Informática
+          </h1>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-zinc-700">
+            Laboratório de Engenharia e Tecnologia de Hardware
           </p>
+          <div className="mt-1 flex items-center justify-between border-t border-dashed border-zinc-400 pt-1 text-[11px] font-mono">
+            <span>OS: <strong>{so.short_id ?? so.os_number}</strong></span>
+            <span>{formatDateBR(so.delivered_at ?? so.created_at)}</span>
+          </div>
         </header>
 
-        {/* Cliente + Aparelho */}
-        <section className="mt-4 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cliente</h2>
-            <p className="mt-1 font-semibold text-slate-900">{customerName}</p>
-            {customerPhone && <p className="text-slate-700">{customerPhone}</p>}
+        {/* Cliente & Equipamento */}
+        <section className="py-2 border-b border-zinc-300 space-y-1">
+          <div className="flex justify-between">
+            <span className="font-bold text-zinc-600 uppercase text-[10px]">Cliente:</span>
+            <span className="font-bold">{customerName}</span>
           </div>
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Aparelho</h2>
-            <p className="mt-1 font-semibold text-slate-900">
-              {typeMeta?.label}
-              {so.equipment_brand ? ` · ${so.equipment_brand}` : ''}
-              {so.equipment_model ? ` ${so.equipment_model}` : ''}
-            </p>
-            {so.equipment_color && <p className="text-slate-700">Cor: {so.equipment_color}</p>}
-            {so.equipment_serial && <p className="text-slate-700">IMEI/Serial: {so.equipment_serial}</p>}
+          {customerPhone && (
+            <div className="flex justify-between text-[11px]">
+              <span className="text-zinc-500">Telefone:</span>
+              <span>{customerPhone}</span>
+            </div>
+          )}
+          <div className="flex justify-between pt-1">
+            <span className="font-bold text-zinc-600 uppercase text-[10px]">Aparelho:</span>
+            <span className="font-bold text-right">
+              {typeMeta?.label} {so.equipment_brand} {so.equipment_model}
+            </span>
           </div>
-        </section>
-
-        {/* Defeito */}
-        <section className="mt-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Defeito relatado</h2>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-900">{so.reported_defect}</p>
-        </section>
-
-        {/* Diagnóstico técnico */}
-        {so.repair_notes && (
-          <section className="mt-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Diagnóstico / Reparo executado</h2>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-slate-900">{so.repair_notes}</p>
-          </section>
-        )}
-
-        {/* Pecas usadas */}
-        <section className="mt-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Peças usadas</h2>
-          {parts && parts.length > 0 ? (
-            <table className="mt-2 w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-300 text-left text-xs uppercase tracking-wide text-slate-500">
-                  <th className="py-1">Item</th>
-                  <th className="py-1 text-center">Qtd</th>
-                  <th className="py-1 text-right">Unit.</th>
-                  <th className="py-1 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {parts.map((p) => (
-                  <tr key={p.id} className="border-b border-slate-100 text-slate-900">
-                    <td className="py-1.5">
-                      {p.stock_item?.name ?? '(item removido)'}
-                      {p.notes && <div className="text-xs text-slate-500">{p.notes}</div>}
-                    </td>
-                    <td className="py-1.5 text-center font-mono">{p.quantity}</td>
-                    <td className="py-1.5 text-right font-mono">
-                      {p.unit_price ? `R$ ${Number(p.unit_price).toFixed(2)}` : '-'}
-                    </td>
-                    <td className="py-1.5 text-right font-mono">
-                      R$ {Number(p.total_amount ?? 0).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="mt-1 text-sm text-slate-500 italic">Nenhuma peça registrada.</p>
+          {so.equipment_serial && (
+            <div className="flex justify-between text-[10px] text-zinc-600">
+              <span>Serial / IMEI:</span>
+              <span className="font-mono">{so.equipment_serial}</span>
+            </div>
           )}
         </section>
 
-        {/* Totais */}
-        <section className="mt-4 space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-slate-700">Peças</span>
-            <span className="font-mono text-slate-900">R$ {partsTotal.toFixed(2)}</span>
+        {/* Defeito e Reparo Executado */}
+        <section className="py-2 border-b border-zinc-300 text-[11px]">
+          <div>
+            <span className="font-bold uppercase text-[9px] text-zinc-500">Defeito Relatado:</span>
+            <p className="text-zinc-800">{so.reported_defect}</p>
           </div>
-          <div className="flex justify-between">
-            <span className="text-slate-700">Mão de obra</span>
-            <span className="font-mono text-slate-900">R$ {laborCost.toFixed(2)}</span>
-          </div>
-          <div className="mt-2 flex justify-between border-t-2 border-slate-900 pt-2 text-base font-bold">
-            <span className="text-slate-900">TOTAL</span>
-            <span className="font-mono text-slate-900">R$ {grandTotal.toFixed(2)}</span>
-          </div>
-        </section>
-
-        {/* Garantia */}
-        <section className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Garantia</h2>
-          <p className="mt-1 text-slate-900">
-            <strong>{WARRANTY_DAYS} dias</strong> a partir de{' '}
-            {formatDateBR(warrantyStart)}{' '}
-            — válida até <strong>{formatDateBR(warrantyEnd)}</strong>.
-          </p>
-          <p className="mt-1 text-xs text-slate-600">
-            Cobre defeitos relacionados ao reparo executado. Não cobre danos por mau uso,
-            quedas, contato com líquido ou abertura por terceiros.
-          </p>
-        </section>
-
-        {/* PIX (se houver total a cobrar) */}
-        {grandTotal > 0 && (
-          <section className="print:hidden mt-6 rounded-md border border-teal-200 bg-teal-50/50 p-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Pagamento via PIX
-            </h2>
-            <p className="mt-1 text-xs text-slate-600">
-              Total a cobrar: <strong className="text-slate-900">R$ {grandTotal.toFixed(2)}</strong>.
-              Gere o QR pra o cliente pagar.
-            </p>
-            <div className="mt-2">
-              <PixQRButton
-                defaultAmount={grandTotal}
-                txid={so.os_number ?? undefined}
-                description={`OS ${so.os_number ?? ''} - ${customerName}`.substring(0, 50)}
-                buttonLabel="Gerar QR do PIX"
-              />
+          {so.repair_notes && (
+            <div className="mt-1.5">
+              <span className="font-bold uppercase text-[9px] text-zinc-500">Serviço Executado:</span>
+              <p className="font-medium text-black">{so.repair_notes}</p>
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
-        {/* Quem retirou (se ja entregue) */}
-        {so.delivered_to_name && (
-          <section className="mt-4 text-sm">
-            <p className="text-slate-700">
-              Retirado por: <strong className="text-slate-900">{so.delivered_to_name}</strong>
-              {so.delivered_at && ` em ${formatDateTimeBR(so.delivered_at)}`}
-            </p>
-          </section>
-        )}
+        {/* Discriminação de Peças e Mão de Obra */}
+        <section className="py-2 border-b border-black">
+          <h2 className="text-[10px] font-black uppercase tracking-wider text-zinc-700 mb-1">
+            Discriminação de Valores
+          </h2>
 
-        {/* Assinaturas */}
-        <section className="mt-8 grid grid-cols-2 gap-8 text-xs text-slate-700">
-          <div className="border-t border-slate-400 pt-1">
-            <p>Assinatura do cliente (retirada)</p>
-          </div>
-          <div className="border-t border-slate-400 pt-1">
-            <p>Responsável Cyber Informática</p>
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="border-b border-zinc-300 text-left text-[9px] uppercase text-zinc-500 font-bold">
+                <th className="pb-1">Item / Descrição</th>
+                <th className="pb-1 text-center">Qtd</th>
+                <th className="pb-1 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200">
+              <tr>
+                <td className="py-1">
+                  <div className="font-semibold">Mão de Obra Técnica Especializada</div>
+                  <div className="text-[9px] text-zinc-500">Execução, testes QA e bancada pericial</div>
+                </td>
+                <td className="py-1 text-center font-mono">1</td>
+                <td className="py-1 text-right font-mono font-bold">{fmtBRL(laborCost)}</td>
+              </tr>
+
+              {parts.map((p) => (
+                <tr key={p.id}>
+                  <td className="py-1">
+                    <div className="font-semibold">{p.stock_item?.name ?? 'Peça/Componente'}</div>
+                    {p.notes && <div className="text-[9px] text-zinc-500">{p.notes}</div>}
+                  </td>
+                  <td className="py-1 text-center font-mono">{p.quantity}</td>
+                  <td className="py-1 text-right font-mono font-bold">
+                    {fmtBRL(Number(p.total_amount ?? 0))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Subtotais e Total Geral */}
+          <div className="mt-3 pt-2 border-t border-dashed border-zinc-400 space-y-1 text-[11px]">
+            <div className="flex justify-between text-zinc-600">
+              <span>Subtotal Mão de Obra:</span>
+              <span className="font-mono">{fmtBRL(laborCost)}</span>
+            </div>
+            <div className="flex justify-between text-zinc-600">
+              <span>Subtotal Peças:</span>
+              <span className="font-mono">{fmtBRL(partsTotal)}</span>
+            </div>
+            <div className="flex justify-between text-base font-black border-t-2 border-black pt-1 mt-1">
+              <span>TOTAL A PAGAR:</span>
+              <span className="font-mono">{fmtBRL(grandTotal)}</span>
+            </div>
           </div>
         </section>
 
-        {/* Confirmar entrega (se ainda nao entregue) */}
+        {/* Termo de Garantia CDC (Lei nº 8.078/1990) */}
+        <section className="py-2.5 border-b border-zinc-300 text-[9px] leading-tight text-zinc-700 space-y-1">
+          <div className="font-bold uppercase text-[9px] text-black">
+            Termo de Garantia Legal (Art. 26, II — CDC)
+          </div>
+          <p>
+            1. Conforme estabelece o Artigo 26, Inciso II da Lei nº 8.078/1990 (Código de Defesa do Consumidor),
+            o serviço e peças aplicadas têm garantia legal de <strong>90 (noventa) dias</strong> a contar da data de entrega,
+            válida até <strong>{formatDateBR(warrantyEnd)}</strong>.
+          </p>
+          <p>
+            2. A garantia cobre unicamente os defeitos nos componentes substituídos e no serviço técnico realizado.
+            Cessa automaticamente caso haja sinais de queda, choques físicos, contato com líquido/oxidação, lacres rompidos,
+            sobretensão na rede elétrica ou abertura/modificação por terceiros.
+          </p>
+          <p>
+            3. Equipamentos concluídos e não retirados pelo cliente no prazo de 90 (noventa) dias após aviso formal
+            poderão ser alienados ou destinados ao descarte conforme o Art. 1.275, Inciso III do Código Civil Brasileiro.
+          </p>
+        </section>
+
+        {/* Informações de Retirada & Assinaturas */}
+        <section className="pt-3 pb-2 text-[10px]">
+          {so.delivered_to_name && (
+            <p className="mb-2 text-zinc-800">
+              Retirado por: <strong>{so.delivered_to_name}</strong> em {formatDateTimeBR(so.delivered_at)}
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 pt-6 text-center text-[9px]">
+            <div>
+              <div className="border-t border-black pt-1 font-bold">Assinatura do Cliente</div>
+              <div className="text-zinc-500 text-[8px]">Declaro ter recebido e testado o aparelho</div>
+            </div>
+            <div>
+              <div className="border-t border-black pt-1 font-bold">Cyber Informática</div>
+              <div className="text-zinc-500 text-[8px]">Técnico Responsável</div>
+            </div>
+          </div>
+        </section>
+
+        {/* QR Code de Autenticidade do Recibo */}
+        <footer className="mt-3 pt-2 border-t border-dashed border-zinc-400 flex items-center justify-between">
+          <div className="text-[8px] text-zinc-500">
+            <div>Autenticidade e Rastreio CDC</div>
+            <div className="font-mono">{so.id.slice(0, 18)}</div>
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrDataUrl}
+            alt="QR Code de Autenticidade"
+            className="w-12 h-12 object-contain"
+            style={{ imageRendering: 'pixelated' }}
+          />
+        </footer>
+
+        {/* Ação de Confirmar Entrega se Pendente */}
         {!isFinal && canConfirmDelivery && (
-          <div className="print:hidden mt-6 border-t border-slate-200 pt-4">
-            <ConfirmDeliveryButton
-              osId={so.id}
-              osNumber={so.os_number ?? ''}
-            />
+          <div className="print:hidden mt-6 border-t border-zinc-200 pt-4">
+            <ConfirmDeliveryButton osId={so.id} osNumber={so.os_number ?? ''} />
           </div>
         )}
       </article>
 
       <style>{`
+        @page {
+          size: ${isA4 ? 'A4 portrait' : '80mm auto'};
+          margin: ${isA4 ? '10mm' : '0'};
+        }
         @media print {
-          html, body { background: white !important; color: #0f172a !important; }
-          article { background: white !important; color: #0f172a !important; }
-          article * { color: #0f172a !important; }
-          article .text-blue-600 { color: #2563eb !important; }
-          article .text-emerald-600 { color: #059669 !important; }
-          header.sticky, nav, .print-hidden { display: none !important; }
+          html, body {
+            background: white !important;
+            color: black !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body * {
+            visibility: hidden;
+          }
+          .receipt-container, .receipt-container * {
+            visibility: visible;
+          }
+          .receipt-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: white !important;
+            color: black !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            border: 0 !important;
+          }
+          .receipt-80mm {
+            width: 80mm !important;
+            max-width: 80mm !important;
+            padding: 3mm 4mm !important;
+          }
+        }
+        .receipt-80mm {
+          width: 80mm;
+          max-width: 80mm;
         }
       `}</style>
     </>

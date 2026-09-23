@@ -19,7 +19,7 @@ export default async function LoginPage() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Cyber <span className="text-blue-600">ERP</span>
           </h1>
-          <p className="mt-2 text-sm text-slate-500">Acesso interno da assistência técnica</p>
+          <p className="mt-2 text-sm text-slate-500">Acesso interno do laboratório técnico</p>
         </div>
         <LoginForm />
         <p className="mt-6 text-center text-xs text-slate-500">

@@ -12,7 +12,7 @@ async function wait(ms) {
 }
 
 async function main() {
-  const port = 3045;
+  const port = 3048;
   console.log(`Starting next server on port ${port}...`);
 
   const server = spawn("npx", ["next", "start", "-p", String(port)], {
@@ -21,14 +21,9 @@ async function main() {
     shell: true,
   });
 
-  server.stdout.on("data", (d) => {
-    // console.log(`[Next] ${d.toString()}`);
-  });
-  server.stderr.on("data", (d) => {
-    // console.error(`[Next ERR] ${d.toString()}`);
-  });
+  server.stdout.on("data", (d) => console.log(`[Next STDOUT] ${d.toString().trim()}`));
+  server.stderr.on("data", (d) => console.error(`[Next STDERR] ${d.toString().trim()}`));
 
-  // Wait for server to come up
   let ready = false;
   for (let i = 0; i < 40; i++) {
     try {
@@ -37,9 +32,7 @@ async function main() {
         ready = true;
         break;
       }
-    } catch {
-      // wait
-    }
+    } catch {}
     await wait(500);
   }
 
@@ -60,29 +53,35 @@ async function main() {
     fs.mkdirSync(screenshotsDir, { recursive: true });
   }
 
-  // Desktop 1440x900
+  // 1. Desktop 1440x900 - Home
   {
-    console.log("Capturing Desktop screenshots...");
+    console.log("Capturing Desktop Home screenshots...");
     const context = await browser.newContext({
       viewport: { width: 1440, height: 900 },
     });
     const page = await context.newPage();
+    page.on("console", (m) => console.log("[Page Console]", m.text()));
+    page.on("pageerror", (e) => console.error("[Page Error]", e));
+    page.on("requestfailed", (r) => console.log("[Req Failed]", r.url(), r.failure()));
+    page.on("response", (res) => {
+      if (res.status() >= 400) {
+        console.log(`[HTTP ${res.status()}]`, res.url());
+      }
+    });
+
     await page.goto(`http://localhost:${port}`, { waitUntil: "networkidle" });
     await page.waitForSelector("header");
-    // Ensure styles are applied (body has bg #09090b or #09090c)
-    await page.waitForFunction(() => {
-      const bg = window.getComputedStyle(document.body).backgroundColor;
-      return bg !== "rgba(0, 0, 0, 0)" && bg !== "rgb(255, 255, 255)";
-    }, { timeout: 10000 }).catch(() => {});
+
+    const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
+    console.log("Calculated body background color on Desktop:", bg);
+
     await wait(2000);
 
-    // Desktop Hero
     await page.screenshot({
       path: path.join(screenshotsDir, "desktop_hero.png"),
       clip: { x: 0, y: 0, width: 1440, height: 900 },
     });
 
-    // Desktop Full
     await page.screenshot({
       path: path.join(screenshotsDir, "desktop_full.png"),
       fullPage: true,
@@ -90,9 +89,27 @@ async function main() {
     await context.close();
   }
 
-  // Mobile 390x844 (iPhone 14)
+  // 2. Desktop 1440x900 - Status OS 1042
   {
-    console.log("Capturing Mobile screenshots...");
+    console.log("Capturing Desktop Status Tracker screenshots...");
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+    });
+    const page = await context.newPage();
+    await page.goto(`http://localhost:${port}/status?q=1042`, { waitUntil: "networkidle" });
+    await page.waitForSelector("header");
+    await wait(2500);
+
+    await page.screenshot({
+      path: path.join(screenshotsDir, "desktop_status.png"),
+      fullPage: true,
+    });
+    await context.close();
+  }
+
+  // 3. Mobile 390x844 - Home
+  {
+    console.log("Capturing Mobile Home screenshots...");
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },
       isMobile: true,
@@ -101,21 +118,35 @@ async function main() {
     const page = await context.newPage();
     await page.goto(`http://localhost:${port}`, { waitUntil: "networkidle" });
     await page.waitForSelector("header");
-    await page.waitForFunction(() => {
-      const bg = window.getComputedStyle(document.body).backgroundColor;
-      return bg !== "rgba(0, 0, 0, 0)" && bg !== "rgb(255, 255, 255)";
-    }, { timeout: 10000 }).catch(() => {});
     await wait(2000);
 
-    // Mobile Hero
     await page.screenshot({
       path: path.join(screenshotsDir, "mobile_hero.png"),
       clip: { x: 0, y: 0, width: 390, height: 844 },
     });
 
-    // Mobile Full
     await page.screenshot({
       path: path.join(screenshotsDir, "mobile_full.png"),
+      fullPage: true,
+    });
+    await context.close();
+  }
+
+  // 4. Mobile 390x844 - Status OS 1042
+  {
+    console.log("Capturing Mobile Status Tracker screenshots...");
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+    await page.goto(`http://localhost:${port}/status?q=1042`, { waitUntil: "networkidle" });
+    await page.waitForSelector("header");
+    await wait(2500);
+
+    await page.screenshot({
+      path: path.join(screenshotsDir, "mobile_status.png"),
       fullPage: true,
     });
     await context.close();

@@ -86,8 +86,8 @@ export default async function OSListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ordens de Serviço</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-black tracking-tight text-white">Ordens de Serviço</h1>
+          <p className="text-xs text-zinc-400">
             {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
             {params.status && params.status !== 'all' && ` (filtrado por ${params.status})`}
           </p>
@@ -109,8 +109,8 @@ export default async function OSListPage({
       )}
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-slate-200 bg-white p-8 text-center">
-          <p className="text-slate-500">Nenhuma OS encontrada com esses filtros.</p>
+        <div className="rounded-lg border border-dashed border-zinc-800 bg-[#111114]/60 rounded-xl p-12 text-center">
+          <p className="text-sm text-zinc-400">Nenhuma OS encontrada com esses filtros.</p>
           <Link
             href="/admin/os/new"
             className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"

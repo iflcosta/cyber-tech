@@ -37,37 +37,37 @@ export function StockFilter() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar por nome, marca, modelo, EAN…"
-        aria-label="Buscar por nome, marca, modelo, EAN"
-        className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        placeholder="Buscar no catálogo: nome, código de barras (EAN-13), SKU interno, marca…"
+        aria-label="Buscar no catálogo: nome, código de barras, SKU interno, marca"
+        className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
       />
       <button
         type="submit"
-        className="rounded-md bg-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300"
+        className="rounded-lg bg-white px-4 py-2 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition shadow"
       >
         Buscar
       </button>
       <button
         type="button"
         onClick={() => apply({ low: lowActive ? null : '1' })}
-        className={`rounded-md px-3 py-2 text-sm font-medium ${
+        className={`rounded-lg px-3 py-2 text-xs font-mono font-medium transition ${
           lowActive
-            ? 'bg-orange-600 text-white hover:bg-orange-700'
-            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            ? 'bg-amber-600 text-white border border-amber-500 shadow-sm'
+            : 'border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
         }`}
       >
-        {lowActive ? '✓ Estoque baixo' : 'Estoque baixo'}
+        {lowActive ? '✓ Só Estoque Baixo' : 'Estoque Baixo'}
       </button>
       <button
         type="button"
         onClick={() => apply({ inactive: inactiveActive ? null : '1' })}
-        className={`rounded-md px-3 py-2 text-sm font-medium ${
+        className={`rounded-lg px-3 py-2 text-xs font-mono font-medium transition ${
           inactiveActive
-            ? 'bg-slate-600 text-white hover:bg-slate-700'
-            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            ? 'bg-zinc-700 text-white border border-zinc-600'
+            : 'border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
         }`}
       >
-        {inactiveActive ? '✓ Inativos' : 'Mostrar inativos'}
+        {inactiveActive ? '✓ Mostrando Inativos' : 'Ver Inativos'}
       </button>
     </form>
   );
