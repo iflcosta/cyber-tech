@@ -133,7 +133,15 @@ export default async function ReciboPage({
             Se cancelou, clique em <strong>Imprimir novamente</strong>.
           </p>
         </div>
-        <ReciboPrintButton />
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/admin/vendas/${sale.id}/nota`}
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors"
+          >
+            📄 Nota / Comprovante (PDF / A4)
+          </Link>
+          <ReciboPrintButton />
+        </div>
       </div>
 
       {/* Preview do recibo */}

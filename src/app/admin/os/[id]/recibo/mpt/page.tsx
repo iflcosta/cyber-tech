@@ -46,17 +46,22 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
     total_amount: number | null;
     stock_item: { name: string } | null;
   };
-  const { data: partsRaw } = await supabase
+  let partsQuery = supabase
     .from('stock_movements')
     .select(`
       id, quantity, unit_price, total_amount,
       stock_item:stock_items(name)
     `)
-    .eq('reference', so.os_number)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
-  // Select com join via string: supabase-js não infere a cardinalidade
-  // 1:1 sozinho — cast pro formato real (mesmo padrão usado alhures).
+
+  if (so.os_number) {
+    partsQuery = partsQuery.or(`service_order_id.eq.${id},reference.eq.${so.os_number}`);
+  } else {
+    partsQuery = partsQuery.eq('service_order_id', id);
+  }
+
+  const { data: partsRaw } = await partsQuery;
   const parts = partsRaw as unknown as PartRow[] | null;
 
   const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };

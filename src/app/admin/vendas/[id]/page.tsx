@@ -69,11 +69,18 @@ export default async function VendaDetailPage({
 
       <div className="flex flex-wrap gap-2">
         <Link
+          href={`/admin/vendas/${sale.id}/nota`}
+          target="_blank"
+          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors"
+        >
+          📄 Nota / Comprovante (PDF)
+        </Link>
+        <Link
           href={`/admin/vendas/${sale.id}/recibo`}
           target="_blank"
-          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
         >
-          🖨️ {sale.voided_at ? 'Reimprimir recibo' : 'Imprimir recibo'}
+          🧾 {sale.voided_at ? 'Reimprimir cupom 58mm' : 'Cupom 58mm'}
         </Link>
         {!sale.voided_at && (
           <CancelSaleButton saleId={sale.id} saleNumber={sale.sale_number} />

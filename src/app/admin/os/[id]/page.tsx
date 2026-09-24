@@ -199,23 +199,23 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           <Link
             href={`/admin/os/${normalizedSo.id}/label`}
             target="_blank"
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             🏷️ Etiqueta
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/print`}
             target="_blank"
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
-            🖨️ Imprimir
+            🖨️ Entrada (A4)
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/recibo`}
             target="_blank"
-            className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+            className="rounded-md bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors"
           >
-            🧾 Recibo
+            📄 Nota / Recibo (PDF)
           </Link>
         </div>
       </div>
@@ -396,6 +396,15 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                   canEdit={canEdit}
                   canDelete={profile?.can_delete === true}
                 />
+              </div>
+              <div className="mt-3 border-t border-zinc-100 pt-2.5">
+                <Link
+                  href={`/admin/os/${normalizedSo.id}/recibo`}
+                  target="_blank"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors"
+                >
+                  📄 Emitir Nota / Recibo (PDF) &rarr;
+                </Link>
               </div>
             </div>
           </section>
