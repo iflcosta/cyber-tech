@@ -30,6 +30,7 @@ export function ContactForm() {
   const [phone, setPhone] = useState("");
   const [type, setType] = useState<LeadType>("cliente");
   const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // Honeypot anti-spam
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,13 +43,19 @@ export function ContactForm() {
     e.preventDefault();
     setError(null);
 
-    // Validacao client-side
+    // Honeypot anti-bot check: silently succeed without hitting DB
+    if (website.trim().length > 0) {
+      setSuccess(true);
+      return;
+    }
+
+    // Validação client-side
     if (name.trim().length < 2) {
       setError("Nome precisa ter pelo menos 2 caracteres.");
       return;
     }
     if (!validateEmail(email)) {
-      setError("E-mail invalido.");
+      setError("E-mail inválido.");
       return;
     }
     if (message.trim().length < 10) {
@@ -56,7 +63,7 @@ export function ContactForm() {
       return;
     }
     if (message.trim().length > 5000) {
-      setError("Mensagem muito longa (max 5000 caracteres).");
+      setError("Mensagem muito longa (máx. 5000 caracteres).");
       return;
     }
 
@@ -100,7 +107,7 @@ export function ContactForm() {
             Recebido!
           </h2>
           <p className="text-[var(--color-text-on-dark-muted)] mb-6">
-            A gente responde em ate 1 dia util pelo WhatsApp ou e-mail.
+            A gente responde em até 1 dia útil pelo WhatsApp ou e-mail.
           </p>
           <button
             onClick={() => setSuccess(false)}
@@ -125,13 +132,28 @@ export function ContactForm() {
         Manda sua mensagem
       </h2>
       <p className="text-sm text-[var(--color-text-on-dark-muted)] mb-6">
-        Campos com * sao obrigatorios.
+        Campos com * são obrigatórios.
       </p>
+
+      {/* Honeypot oculto para bots */}
+      <div className="hidden" aria-hidden="true">
+        <label>
+          Website
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </label>
+      </div>
 
       {/* Tipo de lead */}
       <fieldset className="mb-5">
         <legend className="block text-xs uppercase tracking-wider text-[var(--color-text-on-dark-muted)] font-semibold mb-2">
-          Voce e *
+          Você é *
         </legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {leadTypes.map((opt) => {
@@ -214,7 +236,7 @@ export function ContactForm() {
             maxLength={5000}
             rows={5}
             className="w-full rounded-md border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition resize-y"
-            placeholder="Conta o que voce precisa. Quanto mais detalhe, melhor a gente te ajuda."
+            placeholder="Conta o que você precisa. Quanto mais detalhe, melhor a gente te ajuda."
           />
           <p className="text-xs text-[var(--color-text-on-dark-muted)] mt-1 text-right">
             {message.length} / 5000
@@ -244,7 +266,11 @@ export function ContactForm() {
         </button>
 
         <p className="text-xs text-[var(--color-text-on-dark-muted)] text-center">
-          Ao enviar, voce concorda com a politica de privacidade. A gente nao compartilha seus dados.
+          Ao enviar, você concorda com a{" "}
+          <a href="/politica-privacidade" className="underline hover:text-[var(--color-cyber-blue)]">
+            Política de Privacidade
+          </a>
+          . A gente não compartilha seus dados.
         </p>
       </div>
     </form>

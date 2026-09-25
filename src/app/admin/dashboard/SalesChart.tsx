@@ -75,7 +75,7 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
                 width={barW}
                 height={d.total > 0 ? Math.max(2, barH) : 2}
                 rx={3}
-                fill={d.isToday ? '#1d4ed8' : '#93c5fd'}
+                fill={d.isToday ? '#09090b' : '#a1a1aa'}
               />
               {d.isToday && (
                 <text
@@ -84,7 +84,7 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
                   textAnchor="middle"
                   fontSize={12}
                   fontWeight={700}
-                  fill="#1d4ed8"
+                  fill="#09090b"
                 >
                   {fmtBRLShort(d.total)}
                 </text>

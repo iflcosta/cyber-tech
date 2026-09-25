@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
+import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { PAYMENT_METHODS, STOCK_CATEGORY_SUGGESTIONS, type PaymentMethodValue } from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
@@ -26,8 +27,12 @@ type CartItem = {
 };
 
 function parseBRL(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  const clean = v.trim().replace(/[R$\s]/g, '');
+  if (!clean) return null;
+  const normalized = clean.includes(',')
+    ? clean.replace(/\./g, '').replace(',', '.')
+    : clean;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -47,7 +52,13 @@ export function PDV({
   /** Pré-vincula a venda a esse cliente (ex: veio da ficha do cliente). */
   initialCustomer?: { id: string; name: string; phone: string | null };
 }) {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [localItems, setLocalItems] = useState<Item[]>(items);
+
+  useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
 
   const [code, setCode] = useState('');
   const [search, setSearch] = useState('');
@@ -250,10 +261,13 @@ export function PDV({
       });
       if (movErr) throw movErr;
 
-      addItem({ ...newItem, current_stock: qty }, qty);
+      const createdWithStock: Item = { ...newItem, current_stock: qty };
+      setLocalItems((prev) => [createdWithStock, ...prev]);
+      addItem(createdWithStock, qty);
       setAddingPart(false);
       setSearch('');
       setNewPartSubmitting(false);
+      router.refresh();
       inputRef.current?.focus();
     } catch (e) {
       setNewPartError((e as Error).message);
@@ -269,13 +283,13 @@ export function PDV({
 
     // 1. Tenta por EAN-13 (fornecedor) ou SKU interno (Cyber)
     const cUpper = c.toUpperCase();
-    let found = items.find((i) => i.ean13 === c)
-              ?? items.find((i) => i.internal_sku === cUpper);
+    let found = localItems.find((i) => i.ean13 === c)
+              ?? localItems.find((i) => i.internal_sku === cUpper);
     // 2. Tenta por nome exato
-    if (!found) found = items.find((i) => i.name.toLowerCase() === c.toLowerCase());
+    if (!found) found = localItems.find((i) => i.name.toLowerCase() === c.toLowerCase());
     // 3. Tenta match parcial no nome (se for digitado)
     if (!found && c.length >= 3) {
-      found = items.find((i) =>
+      found = localItems.find((i) =>
         i.name.toLowerCase().includes(c.toLowerCase()),
       );
     }
@@ -337,6 +351,15 @@ export function PDV({
       );
       if (rpcErr) throw rpcErr;
 
+      // Atualiza estoque local imediatamente para próxima venda sem F5
+      const soldMap = new Map(cart.map((c) => [c.stock_item_id, c.quantity]));
+      setLocalItems((prev) =>
+        prev.map((item) => {
+          const soldQty = soldMap.get(item.id);
+          return soldQty ? { ...item, current_stock: Math.max(0, item.current_stock - soldQty) } : item;
+        }),
+      );
+
       // Abre recibo em NOVA JANELA: gesto do user (clique em "Confirmar venda")
       // permite auto-print sem bloqueio do Chrome. Janela anterior fica no PDV
       // pra iniciar proxima venda.
@@ -351,6 +374,7 @@ export function PDV({
       setSelectedCustomer(null);
       setCustomerMatches([]);
       setSubmitting(false);
+      router.refresh();
       // Volta foco pro input de bipagem
       inputRef.current?.focus();
     } catch (e) {
@@ -364,16 +388,16 @@ export function PDV({
   const searchSuggestions = useMemo(() => {
     if (!search.trim()) return [];
     const s = search.toLowerCase().trim();
-    return items
+    return localItems
       .filter(
         (i) =>
           i.name.toLowerCase().includes(s) ||
           (i.brand?.toLowerCase().includes(s) ?? false) ||
           (i.ean13?.includes(s) ?? false) ||
-                      (i.internal_sku?.toUpperCase().includes(s.toUpperCase()) ?? false),
+          (i.internal_sku?.toUpperCase().includes(s.toUpperCase()) ?? false),
       )
       .slice(0, 8);
-  }, [search, items]);
+  }, [search, localItems]);
 
   return (
     <div className="space-y-4">

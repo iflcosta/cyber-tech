@@ -9,8 +9,12 @@ type Supplier = { id: string; name: string; phone: string | null };
 type ServiceOrderOption = { id: string; label: string; customerName: string };
 
 function parseBRLInput(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  const clean = v.trim().replace(/[R$\s]/g, '');
+  if (!clean) return null;
+  const normalized = clean.includes(',')
+    ? clean.replace(/\./g, '').replace(',', '.')
+    : clean;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -18,10 +22,12 @@ export function NewPartOrderForm({
   currentUserId,
   suppliers,
   serviceOrders,
+  initialServiceOrderId,
 }: {
   currentUserId: string;
   suppliers: Supplier[];
   serviceOrders: ServiceOrderOption[];
+  initialServiceOrderId?: string;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -37,8 +43,8 @@ export function NewPartOrderForm({
   const [newSupplierName, setNewSupplierName] = useState('');
   const [newSupplierPhone, setNewSupplierPhone] = useState('');
   const [partValue, setPartValue] = useState('');
-  const [hasOS, setHasOS] = useState(serviceOrders.length > 0);
-  const [serviceOrderId, setServiceOrderId] = useState('');
+  const [hasOS, setHasOS] = useState(Boolean(initialServiceOrderId) || serviceOrders.length > 0);
+  const [serviceOrderId, setServiceOrderId] = useState(initialServiceOrderId ?? '');
   const [contextNote, setContextNote] = useState('');
 
   async function submit() {

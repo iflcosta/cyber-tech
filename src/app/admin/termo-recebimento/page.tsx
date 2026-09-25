@@ -126,7 +126,7 @@ export default function TermoRecebimentoPage() {
             type="button"
             onClick={() => window.print()}
             disabled={!recipientName.trim() || !productDescription.trim() || !value.trim()}
-            className="rounded-md bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-30"
+            className="rounded-md bg-black px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-30"
           >
             🖨️ Imprimir termo
           </button>

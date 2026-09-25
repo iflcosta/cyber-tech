@@ -14,25 +14,15 @@ const TELAS_URL = "https://telas.cyberinformatica.tech";
 // teria que recriar o IntersectionObserver toda vez que activeSection
 // mudasse (que é toda vez que ele dispara), virando um loop.
 const NAV_ITEMS = [
-  { href: "#catalogo", label: "Catálogo", sectionId: "catalogo" },
-  { href: "#curadoria", label: "Curadoria", sectionId: "curadoria" },
-  { href: "#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
-  { href: "#parceiros", label: "Parceiros", sectionId: "parceiros" },
+  { href: "/#catalogo", label: "Catálogo", sectionId: "catalogo" },
+  { href: "/#curadoria", label: "Curadoria", sectionId: "curadoria" },
+  { href: "/#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
+  { href: "/#parceiros", label: "Parceiros", sectionId: "parceiros" },
   { href: "/contato", label: "Contato", sectionId: "contato" },
 ];
 
 /**
  * Header — Cyber Informática
- *
- * Melhorias aplicadas:
- *  - Background sólido (navy-mid) com sombra sutil — não some mais sobre fundo escuro
- *  - Border-bottom com gradiente discreto navy-mid → navy
- *  - Logo SVG horizontal própria (substitui o "C" num quadrado)
- *  - Altura 72px (h-18) — mais respiro que o h-16 anterior
- *  - CTA WhatsApp com mais peso (sem inline style encolhendo)
- *  - Indicador de seção ativa (scrollspy) com underline animado
- *  - Hover state nos nav items com underline
- *  - Mobile: drawer mais alto e com cross-link telas
  */
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -47,7 +37,7 @@ export default function Header() {
     if (typeof IntersectionObserver === "undefined") return;
 
     const sections = nav
-      .filter((item) => item.href.startsWith("#"))
+      .filter((item) => item.href.includes("#"))
       .map((item) => document.getElementById(item.sectionId))
       .filter((el): el is HTMLElement => el !== null);
 
@@ -70,7 +60,7 @@ export default function Header() {
   }, [nav]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--navy-mid)]/95 backdrop-blur-md border-b border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--color-cyber-navy-mid)]/95 backdrop-blur-md border-b border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
       <div className="container-narrow">
         <div className="flex items-center justify-between h-[72px]">
           {/* Logo / Brand */}
@@ -142,7 +132,7 @@ export default function Header() {
 
         {/* Mobile nav */}
         {open && (
-          <nav className="md:hidden py-4 border-t border-white/[0.06] bg-[var(--navy-mid)]">
+          <nav className="md:hidden py-4 border-t border-white/[0.06] bg-[var(--color-cyber-navy-mid)]">
             <div className="flex flex-col gap-1">
               {nav.map((item) => {
                 const isActive = activeSection === item.sectionId;

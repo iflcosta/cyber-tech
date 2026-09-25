@@ -4,6 +4,7 @@ import { getAuthedUser } from '@/app/admin/lib/auth';
 import { STOCK_MOVEMENT_TYPES } from '@/app/admin/types/database';
 import { DeleteStockItemButton } from './DeleteStockItemButton';
 import { ToggleActiveButton } from './ToggleActiveButton';
+import { StockItemEditor } from './StockItemEditor';
 import { formatDateBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
@@ -144,7 +145,14 @@ export default async function StockItemDetailPage({
               <ul className="mt-3 divide-y divide-slate-200">
                 {(movements ?? []).map((m) => {
                   const meta = STOCK_MOVEMENT_TYPES.find((t) => t.value === m.movement_type);
-                  const sign = m.movement_type === 'in' || m.movement_type === 'adjust' ? '+' : '-';
+                  const sign =
+                    m.movement_type === 'in'
+                      ? '+'
+                      : m.movement_type === 'adjust'
+                        ? m.quantity > 0
+                          ? '+'
+                          : ''
+                        : '-';
                   const signColor =
                     m.movement_type === 'in'
                       ? 'text-emerald-600'
@@ -204,9 +212,25 @@ export default async function StockItemDetailPage({
 
         <aside className="space-y-4">
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Dados do item
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Dados do item
+              </h2>
+              <StockItemEditor
+                item={{
+                  id: item.id,
+                  name: item.name,
+                  category: item.category,
+                  brand: item.brand,
+                  model: item.model,
+                  ean13: item.ean13,
+                  unit_price: item.unit_price,
+                  unit_cost: item.unit_cost,
+                  min_stock: item.min_stock,
+                  notes: item.notes,
+                }}
+              />
+            </div>
             <dl className="mt-2 space-y-1.5 text-sm">
               {item.ean13 && (
                 <Row label="EAN-13" value={<span className="font-mono">{item.ean13}</span>} />
@@ -230,7 +254,7 @@ export default async function StockItemDetailPage({
                   })}
                 />
               )}
-              {item.unit_cost !== null && (
+              {item.unit_cost !== null && item.unit_price > 0 && (
                 <Row
                   label="Margem"
                   value={`${(((item.unit_price - item.unit_cost) / item.unit_price) * 100).toFixed(1)}%`}

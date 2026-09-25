@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { PartOrderFilter } from './PartOrderFilter';
@@ -28,7 +29,7 @@ export default async function PartOrdersListPage({
 }) {
   const params = await searchParams;
   const { supabase, user } = await getAuthedUser();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   let query = supabase
     .from('part_orders')

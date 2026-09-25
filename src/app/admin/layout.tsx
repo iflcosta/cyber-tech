@@ -50,14 +50,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // barra de topo por cima, senão dobra o espaço vertical e empurra
   // o formulário pra baixo (bug visto no celular).
   if (!user) {
-    return <>{children}</>;
+    return <div className="admin-scope">{children}</div>;
   }
 
   return (
-    <div className="min-h-dvh bg-slate-50 text-slate-900">
-      <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white">
+    <div className="admin-scope min-h-dvh bg-zinc-50 text-zinc-900">
+      <header className="print:hidden sticky top-0 z-10 border-b border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/admin/os" className="text-lg font-bold tracking-tight text-slate-900">
+          <Link href="/admin/os" className="text-lg font-bold tracking-tight text-zinc-900">
             Cyber <span className="font-extrabold text-black">ERP</span>
           </Link>
 

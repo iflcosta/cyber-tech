@@ -70,6 +70,7 @@
   --bg-secondary: #112240;
   --bg-surface: #0a1929;
   --bg-elevated: #112240;
+  --navy-mid: #112240;
 }
 
 html, body {
@@ -92,11 +93,15 @@ body {
   line-height: 1.6;
 }
 
-/* Garante texto escuro de alto contraste em inputs, selects e textareas (evita herdar texto branco do body) */
-input, select, textarea {
+/* Garante texto escuro de alto contraste nos inputs, selects e textareas do ERP (/admin),
+   sem sobrescrever os inputs de tema escuro do Portal Público (/contato). */
+.admin-scope input,
+.admin-scope select,
+.admin-scope textarea {
   color: #09090b !important;
 }
-input::placeholder, textarea::placeholder {
+.admin-scope input::placeholder,
+.admin-scope textarea::placeholder {
   color: #71717a !important;
 }
 

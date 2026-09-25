@@ -6,8 +6,12 @@ import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { STOCK_MOVEMENT_TYPES, type StockMovementTypeValue } from '@/app/admin/types/database';
 
 function parseBRL(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  const clean = v.trim().replace(/[R$\s]/g, '');
+  if (!clean) return null;
+  const normalized = clean.includes(',')
+    ? clean.replace(/\./g, '').replace(',', '.')
+    : clean;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -33,22 +37,46 @@ export function MovementForm({
   const [notes, setNotes] = useState('');
 
   const qtyNum = parseInt(quantity, 10);
-  const projectedStock =
-    movementType === 'in' || movementType === 'adjust'
+  const isAdjust = movementType === 'adjust';
+  const projectedStock = isAdjust
+    ? Number.isFinite(qtyNum)
+      ? qtyNum
+      : currentStock
+    : movementType === 'in'
       ? currentStock + (Number.isFinite(qtyNum) ? qtyNum : 0)
       : currentStock - (Number.isFinite(qtyNum) ? qtyNum : 0);
 
   const showPrice = movementType === 'out' || movementType === 'sale';
   const priceNum = parseBRL(unitPrice);
 
-  async function submit() {
-    if (!Number.isFinite(qtyNum) || qtyNum <= 0) {
-      setError('Quantidade deve ser maior que zero.');
-      return;
+  function selectMovementType(nextType: StockMovementTypeValue) {
+    setMovementType(nextType);
+    if (nextType === 'adjust') {
+      setQuantity(String(currentStock));
+    } else if (movementType === 'adjust') {
+      setQuantity('1');
     }
-    if ((movementType === 'out' || movementType === 'sale') && qtyNum > currentStock) {
-      setError(`Estoque insuficiente. Atual: ${currentStock}, tentativa: ${qtyNum}.`);
-      return;
+  }
+
+  async function submit() {
+    if (isAdjust) {
+      if (!Number.isFinite(qtyNum) || qtyNum < 0) {
+        setError('A nova quantidade em estoque deve ser 0 ou maior.');
+        return;
+      }
+      if (qtyNum === currentStock) {
+        setError(`O estoque atual já é ${currentStock}. Digite a nova contagem física.`);
+        return;
+      }
+    } else {
+      if (!Number.isFinite(qtyNum) || qtyNum <= 0) {
+        setError('Quantidade deve ser maior que zero.');
+        return;
+      }
+      if ((movementType === 'out' || movementType === 'sale') && qtyNum > currentStock) {
+        setError(`Estoque insuficiente. Atual: ${currentStock}, tentativa: ${qtyNum}.`);
+        return;
+      }
     }
     if (showPrice && (priceNum === null || priceNum < 0)) {
       setError('Preço unitário inválido.');
@@ -58,15 +86,19 @@ export function MovementForm({
     setError(null);
     try {
       const supabase = createCRMBrowserClient();
-      const total = showPrice && priceNum !== null ? priceNum * qtyNum : null;
+      const movementQty = isAdjust ? qtyNum - currentStock : qtyNum;
+      const total = showPrice && priceNum !== null ? priceNum * movementQty : null;
+      const defaultAdjustNote = isAdjust
+        ? `Ajuste de inventário (${currentStock} → ${qtyNum})`
+        : null;
       const { error: insErr } = await supabase.from('stock_movements').insert({
         stock_item_id: stockItemId,
         movement_type: movementType,
-        quantity: qtyNum,
+        quantity: movementQty,
         unit_price: showPrice ? priceNum : null,
         total_amount: total,
         reference: reference.trim() || null,
-        notes: notes.trim() || null,
+        notes: notes.trim() || defaultAdjustNote,
         author_id: currentUserId,
       });
       if (insErr) throw insErr;
@@ -88,7 +120,7 @@ export function MovementForm({
               <button
                 key={t.value}
                 type="button"
-                onClick={() => setMovementType(t.value)}
+                onClick={() => selectMovementType(t.value)}
                 className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
                   movementType === t.value
                     ? 'border-black bg-zinc-100 text-black font-semibold'
@@ -102,11 +134,11 @@ export function MovementForm({
         </Field>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Quantidade *">
+          <Field label={isAdjust ? 'Nova quantidade física em estoque *' : 'Quantidade *'}>
             <input
               autoFocus
               type="number"
-              min="1"
+              min={isAdjust ? '0' : '1'}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className="form-input"

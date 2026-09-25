@@ -23,22 +23,81 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, full_name, role, can_delete')
-    .eq('id', user.id)
-    .single();
+  type PartUsed = {
+    id: string;
+    quantity: number;
+    unit_price: number;
+    total_amount: number | null;
+    created_at: string;
+    stock_item: { name: string; ean13: string | null } | null;
+  };
 
-  // Busca direto da tabela (nao da view) pra OSs finalizadas
-  // (delivered/cancelled) nao darem 404. A view filtra essas fora.
-  const { data: so } = await supabase
-    .from('service_orders')
-    .select(`
-      *,
-      customer:customers(name, phone)
-    `)
-    .eq('id', id)
-    .single();
+  type LinkedPartOrder = {
+    id: string;
+    part_description: string;
+    part_variant: string | null;
+    status: string;
+    part_value: number;
+    supplier: { name: string } | null;
+  };
+
+  // Executa todas as 7 queries independentes em paralelo para eliminar waterfall
+  const [
+    { data: profile },
+    { data: so },
+    { data: events },
+    { data: partsUsedRaw },
+    { data: payments },
+    { data: stockItemsForUse },
+    { data: partOrdersRaw },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, full_name, role, can_delete')
+      .eq('id', user.id)
+      .single(),
+    // Busca direto da tabela (nao da view) pra OSs finalizadas
+    // (delivered/cancelled) nao darem 404. A view filtra essas fora.
+    supabase
+      .from('service_orders')
+      .select(`
+        *,
+        customer:customers(name, phone)
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('service_order_events')
+      .select('*')
+      .eq('service_order_id', id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('stock_movements')
+      .select(`
+        id, quantity, unit_price, total_amount, created_at,
+        stock_item:stock_items(name, ean13)
+      `)
+      .eq('service_order_id', id)
+      .in('movement_type', ['out', 'sale'])
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('service_order_payments')
+      .select('id, amount, payment_method, paid_at')
+      .eq('service_order_id', id)
+      .order('paid_at', { ascending: false }),
+    supabase
+      .from('stock_items')
+      .select('id, name, ean13, internal_sku, unit_price, current_stock')
+      .eq('active', true)
+      .gt('current_stock', 0)
+      .order('name'),
+    supabase
+      .from('part_orders')
+      .select('id, part_description, part_variant, status, part_value, supplier:suppliers(name)')
+      .eq('service_order_id', id)
+      .order('created_at', { ascending: false }),
+  ]);
+
   if (!so) notFound();
 
   // Normalizar campos que a view fornecia
@@ -60,30 +119,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     days_since_update: daysSinceUpdate,
   };
 
-  const { data: events } = await supabase
-    .from('service_order_events')
-    .select('*')
-    .eq('service_order_id', id)
-    .order('created_at', { ascending: false });
-
-  // Peças usadas (vínculo real via service_order_id)
-  type PartUsed = {
-    id: string;
-    quantity: number;
-    unit_price: number;
-    total_amount: number | null;
-    created_at: string;
-    stock_item: { name: string; ean13: string | null } | null;
-  };
-  const { data: partsUsedRaw } = await supabase
-    .from('stock_movements')
-    .select(`
-      id, quantity, unit_price, total_amount, created_at,
-      stock_item:stock_items(name, ean13)
-    `)
-    .eq('service_order_id', id)
-    .in('movement_type', ['out', 'sale'])
-    .order('created_at', { ascending: true });
   const partsUsed = partsUsedRaw as unknown as PartUsed[] | null;
 
   const partsTotal = (partsUsed ?? []).reduce(
@@ -98,41 +133,13 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   const effectiveLaborCost = laborCost > 0 ? laborCost : Math.max(0, estimatedVal - partsTotal);
   const grandTotal = effectiveLaborCost + partsTotal;
 
-  const { data: payments } = await supabase
-    .from('service_order_payments')
-    .select('id, amount, payment_method, paid_at')
-    .eq('service_order_id', id)
-    .order('paid_at', { ascending: false });
-
-  // Itens de estoque ativos pro mini-formulário "usar peça do estoque"
-  const { data: stockItemsForUse } = await supabase
-    .from('stock_items')
-    .select('id, name, ean13, internal_sku, unit_price, current_stock')
-    .eq('active', true)
-    .gt('current_stock', 0)
-    .order('name');
-
-  // Pedidos de peça vinculados a esta OS (fornecedor, não estoque)
-  type LinkedPartOrder = {
-    id: string;
-    part_description: string;
-    part_variant: string | null;
-    status: string;
-    part_value: number;
-    supplier: { name: string } | null;
-  };
-  const { data: partOrdersRaw } = await supabase
-    .from('part_orders')
-    .select('id, part_description, part_variant, status, part_value, supplier:suppliers(name)')
-    .eq('service_order_id', id)
-    .order('created_at', { ascending: false });
   const partOrders = partOrdersRaw as unknown as LinkedPartOrder[] | null;
 
   const authorIds = Array.from(new Set((events ?? []).map((e) => e.author_id)));
-  const { data: authorProfiles } = await supabase
-    .from('profiles')
-    .select('id, full_name')
-    .in('id', authorIds);
+  const { data: authorProfiles } =
+    authorIds.length > 0
+      ? await supabase.from('profiles').select('id, full_name').in('id', authorIds)
+      : { data: [] };
   const authorNames = Object.fromEntries(
     (authorProfiles ?? []).map((p) => [p.id, p.full_name]),
   );
@@ -331,7 +338,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                   Encomendas a fornecedor {partOrders && partOrders.length > 0 ? `(${partOrders.length})` : ''}
                 </h3>
                 <Link
-                  href="/admin/pecas/new"
+                  href={`/admin/pecas/new?os=${normalizedSo.id}`}
                   className="text-xs font-semibold text-zinc-900 underline hover:text-black"
                 >
                   + Encomendar peça externa

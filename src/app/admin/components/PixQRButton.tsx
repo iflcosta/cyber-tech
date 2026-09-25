@@ -27,7 +27,14 @@ export function PixQRButton({
   );
   const [desc, setDesc] = useState(description ?? '');
 
-  const amountNum = Number(amount.replace(/\./g, '').replace(',', '.')) || 0;
+  const amountNum = (() => {
+    const clean = amount.trim().replace(/[R$\s]/g, '');
+    if (!clean) return 0;
+    const normalized = clean.includes(',')
+      ? clean.replace(/\./g, '').replace(',', '.')
+      : clean;
+    return Number(normalized) || 0;
+  })();
 
   const brCode = useMemo(
     () => buildPixBRCode({ amount: amountNum > 0 ? amountNum : undefined, txid, description: desc }),
@@ -36,7 +43,7 @@ export function PixQRButton({
 
   function copyCode() {
     navigator.clipboard.writeText(brCode).then(
-      () => alert('Codigo PIX (copia e cola) copiado!'),
+      () => alert('Código PIX (copia e cola) copiado!'),
       () => alert('Erro ao copiar. Tente selecionar manualmente.'),
     );
   }
@@ -48,7 +55,7 @@ export function PixQRButton({
         onClick={() => setOpen((v) => !v)}
         className={
           buttonClassName ??
-          'inline-flex items-center gap-2 rounded-md bg-teal-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-700'
+          'inline-flex items-center gap-2 rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800'
         }
       >
         💰 {buttonLabel}
@@ -61,24 +68,24 @@ export function PixQRButton({
       )}
 
       {open && PIX_CONFIG.key && (
-        <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="flex flex-col items-center gap-1">
               <QRCodeImage
                 value={brCode}
                 size={200}
                 alt="QR Code PIX"
-                className="rounded border border-slate-200"
+                className="rounded border border-zinc-200"
               />
-              <p className="text-[10px] text-slate-500">QR Code PIX</p>
+              <p className="text-[10px] text-zinc-500">QR Code PIX</p>
             </div>
             <div className="flex-1 space-y-2">
-              <p className="text-xs font-medium text-slate-700">
+              <p className="text-xs font-medium text-zinc-700">
                 Cliente escaneia com o app do banco pra pagar.
               </p>
 
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                <label className="block text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                   Valor (R$)
                 </label>
                 <input
@@ -87,12 +94,12 @@ export function PixQRButton({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0,00 (deixe vazio pra valor aberto)"
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="mt-1 block w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                <label className="block text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
                   Descrição (opcional)
                 </label>
                 <input
@@ -100,7 +107,7 @@ export function PixQRButton({
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
                   placeholder={customerName ? `Pagamento OS - ${customerName}` : 'Pagamento OS'}
-                  className="mt-1 block w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="mt-1 block w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                 />
               </div>
 

@@ -211,17 +211,17 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
             deliveredToName={so.delivered_to_name}
           />
           <p className="text-xs text-zinc-600">
-            O botão verde manda comandos reais (negrito, corte) via agente de impressão local —
+            O botão abaixo manda comandos reais (negrito, corte) via agente de impressão local —
             precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
           </p>
         </div>
         <AutoPrint />
-        <pre className="mt-2 whitespace-pre-wrap rounded-md border border-slate-300 bg-white p-3 font-mono text-xs leading-tight text-black print:border-none print:p-0">
+        <pre className="mt-2 whitespace-pre-wrap rounded-md border border-zinc-300 bg-white p-3 font-mono text-xs leading-tight text-black print:border-none print:p-0">
 {reciboText}
         </pre>
         {grandTotal > 0 && (
-          <div className="print:hidden mt-4 rounded-md border border-teal-200 bg-teal-50/50 p-3">
-            <p className="text-xs font-semibold text-slate-700">
+          <div className="print:hidden mt-4 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+            <p className="text-xs font-semibold text-zinc-700">
               💰 PIX pra cobrar R$ {grandTotal.toFixed(2)}
             </p>
             <div className="mt-2">
@@ -230,7 +230,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
                 txid={so.os_number ?? undefined}
                 description={`OS ${so.os_number ?? ''}`.substring(0, 50)}
                 buttonLabel="Gerar QR do PIX"
-                buttonClassName="w-full justify-center rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+                buttonClassName="w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
               />
             </div>
           </div>

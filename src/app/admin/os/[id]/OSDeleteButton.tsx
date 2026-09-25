@@ -29,17 +29,34 @@ export function OSDeleteButton({
     setError(null);
     try {
       const supabase = createCRMBrowserClient();
-      // Apaga primeiro os eventos (CASCADE ja faria, mas explicito e' mais seguro)
-      await supabase
-        .from('service_order_events')
-        .delete()
-        .eq('service_order_id', osId);
-      // Depois a OS em si
+      // Busca URLs de fotos antes de apagar para limpar do Storage depois
+      const { data: osRow } = await supabase
+        .from('service_orders')
+        .select('equipment_photos')
+        .eq('id', osId)
+        .single();
+
+      // Apaga a OS atomicamente (eventos e pagamentos caem via ON DELETE CASCADE)
       const { error: delErr } = await supabase
         .from('service_orders')
         .delete()
         .eq('id', osId);
       if (delErr) throw delErr;
+
+      // Limpa fotos órfãs no bucket equipment-photos (best-effort)
+      const photos: string[] = Array.isArray(osRow?.equipment_photos) ? osRow.equipment_photos : [];
+      const storagePaths = photos
+        .map((url) => {
+          const marker = '/storage/v1/object/public/equipment-photos/';
+          const idx = url.indexOf(marker);
+          return idx !== -1 ? decodeURIComponent(url.slice(idx + marker.length)) : null;
+        })
+        .filter((p): p is string => Boolean(p));
+
+      if (storagePaths.length > 0) {
+        await supabase.storage.from('equipment-photos').remove(storagePaths);
+      }
+
       // Redireciona pra lista
       router.push('/admin/os');
       router.refresh();

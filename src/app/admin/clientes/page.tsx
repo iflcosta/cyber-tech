@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { sanitizeSearchTerm, customerSearchOr } from '@/app/admin/lib/search';
 
@@ -11,7 +12,7 @@ export default async function ClientesListPage({
 }) {
   const params = await searchParams;
   const { supabase, user } = await getAuthedUser();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   let query = supabase
     .from('customers')
@@ -48,11 +49,19 @@ export default async function ClientesListPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Clientes</h1>
-        <p className="text-sm text-slate-500">
-          {(customers ?? []).length} resultado{(customers ?? []).length === 1 ? '' : 's'}
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Clientes</h1>
+          <p className="text-sm text-slate-500">
+            {(customers ?? []).length} resultado{(customers ?? []).length === 1 ? '' : 's'}
+          </p>
+        </div>
+        <Link
+          href="/admin/clientes/leads"
+          className="rounded-md bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
+        >
+          📲 Central de Leads & WhatsApp (Suporte TI)
+        </Link>
       </div>
 
       <form className="rounded-lg border border-slate-200 bg-white p-3" method="get">

@@ -88,21 +88,26 @@ export function NewOSForm({
         const supabase = createCRMBrowserClient();
         let query = supabase
           .from('customers')
-          .select('id, name, phone, email')
+          .select('id, name, phone, email, service_orders(count)')
           .limit(5);
         query = digits.length >= 4
           ? query.ilike('phone_search', `%${digits}%`)
           : query.ilike('name', `%${nameQuery}%`);
         const { data } = await query;
-        const withCounts = await Promise.all(
-          (data ?? []).map(async (c) => {
-            const { count } = await supabase
-              .from('service_orders')
-              .select('id', { count: 'exact', head: true })
-              .eq('customer_id', c.id);
-            return { ...c, osCount: count ?? 0 };
-          }),
-        );
+        type RawMatch = {
+          id: string;
+          name: string;
+          phone: string | null;
+          email: string | null;
+          service_orders: { count: number }[] | null;
+        };
+        const withCounts: CustomerMatch[] = ((data ?? []) as unknown as RawMatch[]).map((c) => ({
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          email: c.email,
+          osCount: c.service_orders?.[0]?.count ?? 0,
+        }));
         setCustomerMatches(withCounts);
       } finally {
         setSearchingCustomer(false);

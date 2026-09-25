@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
@@ -16,7 +17,7 @@ function fmtBRL(n: number): string {
 
 export default async function DashboardPage() {
   const { supabase, user } = await getAuthedUser();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   // Janelas de tempo — sempre no fuso de Brasília, não no fuso do
   // servidor (Vercel roda em UTC, o que fazia "hoje" começar 3h adiantado).

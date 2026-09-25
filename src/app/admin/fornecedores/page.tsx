@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { AddSupplierForm } from './AddSupplierForm';
 import { ToggleSupplierActive } from './ToggleSupplierActive';
@@ -6,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function SuppliersPage() {
   const { supabase, user } = await getAuthedUser();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   const { data: suppliers, error } = await supabase
     .from('suppliers')

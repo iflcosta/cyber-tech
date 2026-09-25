@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { StockFilter } from './StockFilter';
 import { WipeStockButtons } from './WipeStockButtons';
@@ -13,7 +14,7 @@ export default async function StockListPage({
 }) {
   const params = await searchParams;
   const { supabase, user, profile } = await getAuthedProfile();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   // Query de itens
   let itemsQuery = supabase

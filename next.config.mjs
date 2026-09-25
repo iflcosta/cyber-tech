@@ -77,10 +77,10 @@ const nextConfig = {
         ],
       },
       {
-        // HTML publico (NÃO /admin): cache no edge (5min) + SWR (24h)
+        // HTML publico (NÃO /admin, /api, /_next): cache no edge (5min) + SWR (24h)
         // - Visita em <5min: serve do edge (instant)
         // - Visita em 5min-24h: serve do edge (stale) + atualiza em background
-        source: '/((?!admin).*)',
+        source: '/((?!admin|api|_next).*)',
         headers: [
           {
             key: 'Cache-Control',
@@ -90,7 +90,7 @@ const nextConfig = {
       },
       {
         // Home: regex explicito (rota raiz as vezes nao pega com
-        // source: /((?!admin).*) por causa do catch-all do Next.js)
+        // source: /((?!admin|api|_next).*) por causa do catch-all do Next.js)
         source: '/',
         headers: [
           {
@@ -100,8 +100,17 @@ const nextConfig = {
         ],
       },
       {
-        // /admin/* NUNCA cache (sessoes sao criticas)
+        // /admin/* e /api/* NUNCA cache (sessoes e cron endpoints sao criticos)
         source: '/admin/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, no-store, no-cache, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',

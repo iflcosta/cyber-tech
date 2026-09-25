@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { OSCard } from '@/app/admin/components/OSCard';
 import { OSFilter } from './OSFilter';
@@ -18,7 +19,7 @@ export default async function OSListPage({
 }) {
   const params = await searchParams;
   const { supabase, user } = await getAuthedUser();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   // Query direto na tabela (nao na view) pra permitir ver OSs
   // entregues/canceladas via filtro de status especifico.

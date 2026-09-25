@@ -179,10 +179,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
                 Use nosso builder online pra simular a configuração. Quer assessoria técnica? A gente monta pra você, com peças curadas e teste de stress antes da entrega.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                <button className="btn-primary w-full sm:w-auto text-base px-7 py-4">
+                <TrackedWhatsAppLink
+                  phone={brand.whatsapp}
+                  message="Olá! Quero montar um PC sob medida com a curadoria técnica da Cyber."
+                  source="page_pc_builder_primary"
+                  className="btn-primary w-full sm:w-auto text-base px-7 py-4"
+                  ariaLabel="Simular montagem de PC com especialista"
+                >
                   <Wrench size={18} />
-                  Abrir o builder
-                </button>
+                  Montar PC com especialista
+                </TrackedWhatsAppLink>
                 <TrackedWhatsAppLink
                   phone={brand.whatsapp}
                   message={whatsappCuradoriaMessage}

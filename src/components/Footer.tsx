@@ -3,18 +3,10 @@ import { Instagram, Facebook, MessageCircle, MapPin, Clock, Phone } from "lucide
 
 import { brand } from "@/lib/brand";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
+import CyberLogo from "./CyberLogo";
 
 const TELAS_URL = "https://telas.cyberinformatica.tech";
 
-/**
- * Footer — Cyber Informática
- * Copy B2B-friendly do reboot/01-plano-estruturante.md (seção 6.7)
- *
- * Mudanças aplicadas:
- *   - Removido link "/admin" do público (vazava CRM interno)
- *   - WhatsApp agora passa por TrackedWhatsAppLink (UTM tracking + gtag event)
- *   - Adicionado cross-link para o site telas.cyberinformatica.tech
- */
 export default function Footer() {
   const year = new Date().getFullYear();
 
@@ -24,13 +16,10 @@ export default function Footer() {
         <div className="grid gap-8 md:grid-cols-4 mb-10">
           {/* Brand + tagline */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-[var(--color-cyber-blue)] flex items-center justify-center">
-                <span className="display text-white text-lg font-bold">C</span>
-              </div>
-              <span className="display text-base font-bold text-[var(--color-text-on-dark)]">
-                Cyber <span className="text-[var(--color-cyber-blue)]">Informática</span>
-              </span>
+            <div className="mb-3">
+              <Link href="/" className="inline-block">
+                <CyberLogo height={32} />
+              </Link>
             </div>
             <p className="text-sm text-[var(--color-text-on-dark-muted)] leading-relaxed">
               Loja técnica de PC, notebook e celular. Atendemos cliente final com curadoria e montagem — e lojistas e assistências parceiras com indicação técnica e pós-venda estendido.
@@ -82,10 +71,10 @@ export default function Footer() {
               Links
             </h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#catalogo" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Catálogo</Link></li>
-              <li><Link href="#curadoria" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Curadoria</Link></li>
-              <li><Link href="#monte-seu-pc" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Monte seu PC</Link></li>
-              <li><Link href="#parceiros" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Para parceiros</Link></li>
+              <li><Link href="/#catalogo" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Catálogo</Link></li>
+              <li><Link href="/#curadoria" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Curadoria</Link></li>
+              <li><Link href="/#monte-seu-pc" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Monte seu PC</Link></li>
+              <li><Link href="/#parceiros" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Para parceiros</Link></li>
               <li>
                 <Link href="/politica-privacidade" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">
                   Política de Privacidade

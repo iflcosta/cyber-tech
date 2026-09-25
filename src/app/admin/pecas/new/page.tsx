@@ -4,7 +4,12 @@ import { NewPartOrderForm } from './NewPartOrderForm';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewPartOrderPage() {
+export default async function NewPartOrderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ os?: string }>;
+}) {
+  const { os } = await searchParams;
   const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
@@ -47,6 +52,7 @@ export default async function NewPartOrderPage() {
         currentUserId={user.id}
         suppliers={suppliers ?? []}
         serviceOrders={normalizedOrders}
+        initialServiceOrderId={os}
       />
     </div>
   );

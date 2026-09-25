@@ -38,6 +38,7 @@ const TABLES = [
   'suppliers',
   'service_orders',
   'service_order_events',
+  'service_order_payments',
   'stock_category_codes',
   'stock_items',
   'stock_movements',
@@ -63,6 +64,32 @@ async function ensureBucket(supabase: ReturnType<typeof createCRMServiceClient>)
   if (error && !error.message.includes('already exists')) throw error;
 }
 
+const PAGE_SIZE = 1000;
+
+async function fetchAllRows(
+  supabase: ReturnType<typeof createCRMServiceClient>,
+  table: string,
+): Promise<{ rows: unknown[]; error: { message: string } | null }> {
+  const allRows: unknown[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (error) {
+      return { rows: allRows, error };
+    }
+    const batch = data ?? [];
+    allRows.push(...batch);
+    if (batch.length < PAGE_SIZE) {
+      break;
+    }
+    offset += PAGE_SIZE;
+  }
+  return { rows: allRows, error: null };
+}
+
 async function runBackup() {
   const supabase = createCRMServiceClient();
   await ensureBucket(supabase);
@@ -71,7 +98,7 @@ async function runBackup() {
   const counts: Record<string, number> = {};
 
   for (const table of TABLES) {
-    const { data, error } = await supabase.from(table).select('*');
+    const { rows, error } = await fetchAllRows(supabase, table);
     if (error) {
       // Uma tabela falhando não deve derrubar o backup inteiro das outras —
       // registra o erro dentro do próprio dump e segue.
@@ -80,8 +107,8 @@ async function runBackup() {
       dump[`${table}__error`] = [{ message: error.message }] as unknown[];
       continue;
     }
-    dump[table] = data ?? [];
-    counts[table] = data?.length ?? 0;
+    dump[table] = rows;
+    counts[table] = rows.length;
   }
 
   const now = new Date();

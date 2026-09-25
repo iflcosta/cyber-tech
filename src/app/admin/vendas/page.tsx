@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
 import { formatDateTimeBR, todayBR, startOfMonthBRStr } from '@/app/admin/lib/datetime';
@@ -18,7 +19,7 @@ export default async function VendasListPage({
 }) {
   const params = await searchParams;
   const { supabase, user } = await getAuthedUser();
-  if (!user) return null;
+  if (!user) redirect('/admin/login');
 
   let query = supabase
     .from('sales')
@@ -212,7 +213,7 @@ export default async function VendasListPage({
           </p>
           <Link
             href="/admin/vender"
-            className="mt-3 inline-block text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            className="mt-3 inline-block text-sm font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
           >
             Fazer primeira venda →
           </Link>
