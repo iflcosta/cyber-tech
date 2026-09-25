@@ -123,21 +123,32 @@ function formatPhoneBR(digits: string): string {
   return `+${digits}`;
 }
 
+export type PreloadedWhatsAppLead = {
+  name: string;
+  phone: string;
+  segment?: string;
+  lastInteraction?: string;
+};
+
 export function WhatsAppLeadsClient({
   initialLeads,
+  preloadedWhatsAppLeads = [],
   currentUserId,
 }: {
   initialLeads: InitialERPLead[];
+  preloadedWhatsAppLeads?: PreloadedWhatsAppLead[];
   currentUserId: string;
 }) {
   const router = useRouter();
   const [copiedScript, setCopiedScript] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
 
-  const [importedLeads, setImportedLeads] = useState<
-    { name: string; phone: string; segment?: string; lastInteraction?: string }[]
-  >([]);
-  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [importedLeads, setImportedLeads] = useState<PreloadedWhatsAppLead[]>(preloadedWhatsAppLeads);
+  const [importStatus, setImportStatus] = useState<string | null>(
+    preloadedWhatsAppLeads.length > 0
+      ? `✅ ${preloadedWhatsAppLeads.length} contatos extraídos do WhatsApp Desktop da loja já estão pré-carregados nesta lista!`
+      : null,
+  );
   const [savingToDb, setSavingToDb] = useState(false);
 
   const [filterSegment, setFilterSegment] = useState<'all' | 'b2b' | 'erp' | 'whatsapp_new' | 'uncontacted'>('all');

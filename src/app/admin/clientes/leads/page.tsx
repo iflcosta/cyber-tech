@@ -1,7 +1,13 @@
+import fs from 'fs';
+import path from 'path';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
-import { WhatsAppLeadsClient, type InitialERPLead } from './WhatsAppLeadsClient';
+import {
+  WhatsAppLeadsClient,
+  type InitialERPLead,
+  type PreloadedWhatsAppLead,
+} from './WhatsAppLeadsClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,6 +96,29 @@ export default async function ClientesLeadsPage() {
     });
   }
 
+  let preloadedWhatsAppLeads: PreloadedWhatsAppLead[] = [];
+  try {
+    const jsonPath = path.join(
+      process.cwd(),
+      'tools',
+      'whatsapp-leads',
+      'output',
+      'leads-whatsapp-nomeados.json',
+    );
+    if (fs.existsSync(jsonPath)) {
+      const raw = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+      if (Array.isArray(raw)) {
+        preloadedWhatsAppLeads = raw.map((item) => ({
+          name: String(item.name || ''),
+          phone: String(item.phone || ''),
+          segment: item.segment ? String(item.segment) : undefined,
+        }));
+      }
+    }
+  } catch {
+    // Ignorar caso arquivo não exista
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -106,7 +135,11 @@ export default async function ClientesLeadsPage() {
         </div>
       </div>
 
-      <WhatsAppLeadsClient initialLeads={initialLeads} currentUserId={user.id} />
+      <WhatsAppLeadsClient
+        initialLeads={initialLeads}
+        preloadedWhatsAppLeads={preloadedWhatsAppLeads}
+        currentUserId={user.id}
+      />
     </div>
   );
 }
