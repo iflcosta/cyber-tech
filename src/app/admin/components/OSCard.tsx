@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { StatusBadge } from './StatusBadge';
 import { StaleBadge } from './StaleBadge';
-import { EQUIPMENT_TYPES, type ServiceOrderWithStale } from '../types/database';
+import { getEquipmentTypeLabel, type ServiceOrderWithStale } from '../types/database';
 
 const TYPE_ICONS: Record<string, string> = {
   computador: '🖥️',
@@ -25,7 +25,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export function OSCard({ so }: { so: ServiceOrderWithStale }) {
-  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === so.equipment_type);
+  const typeLabel = getEquipmentTypeLabel(so.equipment_type);
   const equip = [so.equipment_brand, so.equipment_model, so.equipment_color].filter(Boolean).join(' ');
 
   return (
@@ -46,8 +46,8 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
           </div>
           <h3 className="mt-1 truncate text-base font-semibold text-slate-900">{so.customer_name}</h3>
           <p className="mt-0.5 text-sm text-slate-600">
-            <span className="mr-1">{TYPE_ICONS[so.equipment_type]}</span>
-            {typeMeta?.label}
+            <span className="mr-1">{TYPE_ICONS[so.equipment_type] ?? '📦'}</span>
+            {typeLabel}
             {equip ? ` · ${equip}` : ''}
           </p>
           {so.reported_defect && (

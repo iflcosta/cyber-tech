@@ -79,7 +79,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     .filter(Boolean).join(' ');
   const equipNorm = norm(equipRaw);
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
-  const typeLabel = norm(typeMeta?.label ?? '');
+  const typeLabel = norm(typeMeta?.label ?? so.equipment_type ?? '');
   const shortId = norm(so.short_id ?? '');
   const created = formatDateBR(so.created_at);
   const defectNorm = norm(so.reported_defect ?? '');

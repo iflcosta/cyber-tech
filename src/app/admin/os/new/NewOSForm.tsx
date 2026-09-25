@@ -123,6 +123,7 @@ export function NewOSForm({
   }
   const [equipment, setEquipment] = useState({
     type: 'notebook' as EquipmentTypeValue,
+    customType: '',
     brand: '',
     model: '',
     color: '',
@@ -145,6 +146,10 @@ export function NewOSForm({
   function next() {
     if (step === 1 && !customer.name.trim()) {
       setError('Nome do cliente é obrigatório.');
+      return;
+    }
+    if (step === 2 && equipment.type === 'outro' && !equipment.customType.trim()) {
+      setError('Especifique qual é o aparelho (ex: GPS, Monitor, Videogame).');
       return;
     }
     // Computador (principalmente montado) não tem "modelo" de fábrica —
@@ -220,6 +225,10 @@ export function NewOSForm({
       }
 
       const initialStatus = approvedOnCounter ? 'in_progress' : 'awaiting_approval';
+      const finalEquipmentType =
+        equipment.type === 'outro'
+          ? equipment.customType.trim() || 'outro'
+          : equipment.type;
 
       // 2. OS
       const { data: newOS, error: osErr } = await supabase
@@ -227,7 +236,7 @@ export function NewOSForm({
         .insert({
           customer_id: customerId,
           status: initialStatus,
-          equipment_type: equipment.type,
+          equipment_type: finalEquipmentType,
           equipment_brand: equipment.brand.trim() || null,
           equipment_model: equipment.model.trim() || null,
           equipment_color: equipment.color.trim() || null,
@@ -397,6 +406,17 @@ export function NewOSForm({
               ))}
             </div>
           </Field>
+          {equipment.type === 'outro' && (
+            <Field label="Qual é o aparelho? (especifique) *">
+              <input
+                autoFocus
+                value={equipment.customType}
+                onChange={(e) => setEquipment({ ...equipment, customType: e.target.value })}
+                className="form-input"
+                placeholder="Ex: GPS, Monitor, Videogame, Impressora, Caixa de som…"
+              />
+            </Field>
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Marca">
               <input

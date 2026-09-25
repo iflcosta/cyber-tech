@@ -54,6 +54,7 @@ export default async function OSListPage({
     const orParts = [
       `os_number.ilike.%${q}%`,
       `short_id.ilike.%${q}%`,
+      `equipment_type.ilike.%${q}%`,
       `equipment_serial.ilike.%${q}%`,
       `equipment_model.ilike.%${q}%`,
       `equipment_brand.ilike.%${q}%`,

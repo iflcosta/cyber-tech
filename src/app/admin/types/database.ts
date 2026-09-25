@@ -62,7 +62,7 @@ export type Database = {
           os_number: string | null;
           short_id: string;
           customer_id: string;
-          equipment_type: 'computador' | 'notebook' | 'celular' | 'tablet' | 'outro';
+          equipment_type: 'computador' | 'notebook' | 'celular' | 'tablet' | 'outro' | (string & {});
           equipment_brand: string | null;
           equipment_model: string | null;
           equipment_color: string | null;
@@ -101,7 +101,8 @@ export type Database = {
             | 'notebook'
             | 'celular'
             | 'tablet'
-            | 'outro';
+            | 'outro'
+            | (string & {});
           equipment_brand?: string | null;
           equipment_model?: string | null;
           equipment_color?: string | null;
@@ -514,6 +515,18 @@ export const EQUIPMENT_TYPES = [
 ] as const;
 
 export type EquipmentTypeValue = (typeof EQUIPMENT_TYPES)[number]['value'];
+
+/**
+ * Retorna o rótulo legível do tipo de aparelho:
+ * - Se for um dos tipos padrão ('computador', 'notebook', etc.), retorna o label ('Computador', 'Notebook', etc.).
+ * - Se o usuário especificou um tipo customizado ao escolher "Outro" (ex: "GPS", "Monitor", "Videogame"),
+ *   retorna o próprio texto informado.
+ */
+export function getEquipmentTypeLabel(type: string | null | undefined): string {
+  if (!type) return 'Outro';
+  const found = EQUIPMENT_TYPES.find((t) => t.value === type);
+  return found ? found.label : type;
+}
 
 export const ENTRY_CHECKLIST_FIELDS = [
   { key: 'liga', label: 'Liga' },

@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PrintButton } from './PrintButton';
-import { ENTRY_CHECKLIST_FIELDS, EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { ENTRY_CHECKLIST_FIELDS, getEquipmentTypeLabel } from '@/app/admin/types/database';
 import { formatDateOnlyBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
   const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
   const customerPhone = soWithCustomer.customer?.phone ?? null;
 
-  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
+  const typeLabel = getEquipmentTypeLabel(so.equipment_type);
   const checklist = so.entry_checklist ?? {};
 
   return (
@@ -60,7 +60,7 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Aparelho</h2>
             <p className="mt-1 font-semibold text-slate-900">
-              {typeMeta?.label}
+              {typeLabel}
               {so.equipment_brand ? ` · ${so.equipment_brand}` : ''}
               {so.equipment_model ? ` ${so.equipment_model}` : ''}
             </p>

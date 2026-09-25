@@ -13,8 +13,8 @@ import { ChecklistEditor } from './ChecklistEditor';
 import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
-import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
-import { formatDateOnlyBR } from '@/app/admin/lib/datetime';
+import { EquipmentEditor } from './EquipmentEditor';
+import { getEquipmentTypeLabel } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,7 +139,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
   const canEdit =
     profile?.role === 'owner' || profile?.role === 'technician';
-  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
+  const typeLabel = getEquipmentTypeLabel(so.equipment_type);
   const isFinal = so.status === 'delivered' || so.status === 'cancelled';
 
   return (
@@ -189,7 +189,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             <StaleBadge days={normalizedSo.days_since_update} />
           </h1>
           <p className="text-sm text-zinc-500">
-            {normalizedSo.customer_name} · {typeMeta?.label}
+            {normalizedSo.customer_name} · {typeLabel}
             {normalizedSo.equipment_brand ? ` · ${normalizedSo.equipment_brand}` : ''}
             {normalizedSo.equipment_model ? ` ${normalizedSo.equipment_model}` : ''}
           </p>
@@ -451,32 +451,17 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             </div>
 
             <div className="border-t border-zinc-100 pt-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-                Aparelho
-              </h2>
-              <dl className="mt-1.5 space-y-1 text-sm">
-                <Row label="Tipo" value={typeMeta?.label} />
-                {normalizedSo.equipment_brand && <Row label="Marca" value={normalizedSo.equipment_brand} />}
-                {normalizedSo.equipment_model && <Row label="Modelo" value={normalizedSo.equipment_model} />}
-                {normalizedSo.equipment_color && <Row label="Cor" value={normalizedSo.equipment_color} />}
-                {normalizedSo.equipment_serial && <Row label="IMEI / Serial" value={normalizedSo.equipment_serial} />}
-                {normalizedSo.equipment_password && (
-                  <Row
-                    label="Senha"
-                    value={
-                      <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs text-zinc-900">
-                        {normalizedSo.equipment_password}
-                      </code>
-                    }
-                  />
-                )}
-                {normalizedSo.estimated_ready_at && (
-                  <Row
-                    label="Previsão"
-                    value={<strong>{formatDateOnlyBR(normalizedSo.estimated_ready_at)}</strong>}
-                  />
-                )}
-              </dl>
+              <EquipmentEditor
+                osId={normalizedSo.id}
+                initialType={normalizedSo.equipment_type}
+                initialBrand={normalizedSo.equipment_brand}
+                initialModel={normalizedSo.equipment_model}
+                initialColor={normalizedSo.equipment_color}
+                initialSerial={normalizedSo.equipment_serial}
+                initialPassword={normalizedSo.equipment_password}
+                initialEstimatedReadyAt={normalizedSo.estimated_ready_at}
+                canEdit={canEdit}
+              />
             </div>
           </section>
 
@@ -489,15 +474,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           )}
         </aside>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex justify-between gap-2">
-      <dt className="text-zinc-500">{label}</dt>
-      <dd className="text-right text-zinc-900">{value}</dd>
     </div>
   );
 }
