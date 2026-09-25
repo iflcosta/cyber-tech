@@ -86,7 +86,7 @@ export default async function DashboardPage() {
       .eq('status', 'ready'),
     supabase
       .from('service_orders')
-      .select('labor_cost')
+      .select('labor_cost, estimated_value')
       .eq('status', 'delivered')
       .gte('delivered_at', monthStart.toISOString()),
     // Peças de fornecedores — fluxo TOTALMENTE separado de Vendas (PDV).
@@ -143,7 +143,12 @@ export default async function DashboardPage() {
   const osStaleCount = osStale.count ?? 0;
   const osReadyCount = osReady.count ?? 0;
   const laborRevenueMonth = (osDeliveredMonth.data ?? []).reduce(
-    (acc, o) => acc + Number((o as { labor_cost: number }).labor_cost ?? 0),
+    (acc, o) => {
+      const row = o as { labor_cost: number | null; estimated_value: number | null };
+      const labor = Number(row.labor_cost ?? 0);
+      const est = Number(row.estimated_value ?? 0);
+      return acc + (labor > 0 ? labor : est);
+    },
     0,
   );
 
@@ -429,16 +434,16 @@ export default async function DashboardPage() {
           </Link>
           <Link
             href="/admin/os?status=ready"
-            className="block rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4 transition hover:shadow-md"
+            className="block rounded-lg border-2 border-zinc-300 bg-white p-4 transition hover:border-black hover:shadow-md"
           >
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Prontas p/ retirada
             </p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">{osReadyCount}</p>
+            <p className="mt-1 text-2xl font-bold text-zinc-950">{osReadyCount}</p>
           </Link>
           <div className="block rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Mão de obra (mês)
+              Serviços / Mão de obra (mês)
             </p>
             <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(laborRevenueMonth)}</p>
           </div>
@@ -513,11 +518,11 @@ export default async function DashboardPage() {
               {partsOrderedCount} pedido{partsOrderedCount === 1 ? '' : 's'}
             </p>
           </div>
-          <div className="rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4">
+          <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Aplicado (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">{fmtBRL(partsAppliedTotal)}</p>
+            <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(partsAppliedTotal)}</p>
             <p className="mt-1 text-xs text-slate-600">
               {partsAppliedCount} peça{partsAppliedCount === 1 ? '' : 's'} usada{partsAppliedCount === 1 ? '' : 's'}
             </p>

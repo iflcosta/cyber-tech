@@ -46,11 +46,12 @@ export function ConfirmDeliveryButton({ osId, osNumber }: { osId: string; osNumb
         return;
       }
 
-      // 2. Insere evento na timeline
+      // 2. Insere evento na timeline (padrão unificado com StatusQuickActions)
       await supabase.from('service_order_events').insert({
         service_order_id: osId,
         event_type: 'delivered',
-        to_value: `Entregue para ${name.trim()}`,
+        to_value: 'delivered',
+        note: `Aparelho entregue para ${name.trim()}`,
         author_id: user.id,
       });
 

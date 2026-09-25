@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { ENTRY_CHECKLIST_FIELDS } from '@/app/admin/types/database';
@@ -15,12 +15,19 @@ export function ChecklistEditor({
   canEdit: boolean;
 }) {
   const router = useRouter();
-  const [checklist, setChecklist] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(ENTRY_CHECKLIST_FIELDS.map((f) => [f.key, Boolean(initialChecklist?.[f.key])]))
+  const baseState = useMemo(
+    () => Object.fromEntries(ENTRY_CHECKLIST_FIELDS.map((f) => [f.key, Boolean(initialChecklist?.[f.key])])),
+    [initialChecklist],
   );
+  const [checklist, setChecklist] = useState<Record<string, boolean>>(baseState);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isDirty = useMemo(
+    () => ENTRY_CHECKLIST_FIELDS.some((f) => Boolean(checklist[f.key]) !== Boolean(baseState[f.key])),
+    [checklist, baseState],
+  );
 
   function toggle(key: string) {
     if (!canEdit) return;
@@ -55,7 +62,7 @@ export function ChecklistEditor({
 
   return (
     <div>
-      <ul className="mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+      <ul className="mt-1.5 grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-3">
         {ENTRY_CHECKLIST_FIELDS.map((f) => {
           const val = checklist[f.key];
           return (
@@ -64,28 +71,34 @@ export function ChecklistEditor({
                 type="button"
                 onClick={() => toggle(f.key)}
                 disabled={!canEdit}
-                className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left ${
-                  canEdit ? 'hover:bg-slate-50' : 'cursor-default'
-                }`}
+                className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left transition-colors ${
+                  val
+                    ? 'border-zinc-300 bg-zinc-50 text-zinc-950 font-medium'
+                    : 'border-zinc-200 bg-white text-zinc-500'
+                } ${canEdit ? 'hover:border-zinc-400 cursor-pointer' : 'cursor-default'}`}
               >
-                <span className={val ? 'text-emerald-600' : 'text-red-500'}>{val ? '✓' : '✗'}</span>
-                <span className="text-slate-700">{f.label}</span>
+                <span className={`font-mono text-xs font-bold ${val ? 'text-black' : 'text-zinc-400'}`}>
+                  {val ? '✓' : '—'}
+                </span>
+                <span>{f.label}</span>
               </button>
             </li>
           );
         })}
       </ul>
-      {canEdit && (
-        <div className="mt-2 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-          >
-            {saving ? 'Salvando...' : 'Salvar checklist'}
-          </button>
-          {saved && <span className="text-xs text-emerald-600">✓ Salvo</span>}
+      {canEdit && (isDirty || saved || error) && (
+        <div className="mt-2.5 flex items-center gap-3">
+          {isDirty && (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+            >
+              {saving ? 'Salvando...' : 'Salvar checklist'}
+            </button>
+          )}
+          {saved && !isDirty && <span className="text-xs font-medium text-zinc-900">✓ Checklist salvo</span>}
           {error && <span className="text-xs text-red-600">{error}</span>}
         </div>
       )}

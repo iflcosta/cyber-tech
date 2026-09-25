@@ -10,7 +10,6 @@ import { OSDeleteButton } from './OSDeleteButton';
 import { OSTimeline } from '@/app/admin/components/OSTimeline';
 import { RepairNotesEditor } from './RepairNotesEditor';
 import { ChecklistEditor } from './ChecklistEditor';
-import { EstimatedValueEditor } from './EstimatedValueEditor';
 import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
@@ -67,7 +66,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('service_order_id', id)
     .order('created_at', { ascending: false });
 
-  // Pecas usadas (vinculo real via service_order_id, nao mais texto)
+  // Peças usadas (vínculo real via service_order_id)
   type PartUsed = {
     id: string;
     quantity: number;
@@ -85,10 +84,6 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('service_order_id', id)
     .in('movement_type', ['out', 'sale'])
     .order('created_at', { ascending: true });
-  // Select com join via string-template: o supabase-js não consegue
-  // inferir a cardinalidade (1:1) de stock_item a partir da string só —
-  // sem isso ele tipa como array. Mesmo padrão de cast já usado mais
-  // abaixo pra partOrders.
   const partsUsed = partsUsedRaw as unknown as PartUsed[] | null;
 
   const partsTotal = (partsUsed ?? []).reduce(
@@ -96,9 +91,12 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     0,
   );
   const laborCost = Number(so.labor_cost ?? 0);
-  const calculatedTotal = laborCost + partsTotal;
   const estimatedVal = Number(so.estimated_value ?? 0);
-  const grandTotal = calculatedTotal > 0 ? calculatedTotal : estimatedVal;
+  // Fonte única de verdade: Serviço (Mão de Obra) + Peças = Total da OS.
+  // Retrocompatibilidade: se uma OS antiga tinha só estimated_value preenchido e labor_cost = 0,
+  // derivamos o valor de serviço efetivo a partir de estimated_value.
+  const effectiveLaborCost = laborCost > 0 ? laborCost : Math.max(0, estimatedVal - partsTotal);
+  const grandTotal = effectiveLaborCost + partsTotal;
 
   const { data: payments } = await supabase
     .from('service_order_payments')
@@ -106,7 +104,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     .eq('service_order_id', id)
     .order('paid_at', { ascending: false });
 
-  // Itens de estoque ativos pro mini-formulario "usar peca do estoque"
+  // Itens de estoque ativos pro mini-formulário "usar peça do estoque"
   const { data: stockItemsForUse } = await supabase
     .from('stock_items')
     .select('id, name, ean13, internal_sku, unit_price, current_stock')
@@ -147,9 +145,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-6">
       {isFinal && (
-        <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
+        <div className="rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm text-zinc-700">
           <strong>OS finalizada</strong> — status <em>{so.status === 'delivered' ? 'entregue' : 'cancelada'}</em>.
-          A OS nao aparece na lista de ativas mas pode ser consultada por este link.
+          A OS não aparece na lista de ativas mas pode ser consultada por este link.
         </div>
       )}
 
@@ -172,30 +170,31 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-3">
+      {/* Cabeçalho da OS */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/admin/os" className="text-sm text-slate-600 hover:text-black">
+          <Link href="/admin/os" className="text-sm text-zinc-600 hover:text-black">
             ← Todas as OS
           </Link>
-          <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
-            <span className="font-mono text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-zinc-950">
+            <span className="font-mono text-2xl font-bold tracking-tight text-zinc-950">
               {normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
             </span>
             {normalizedSo.os_number && (
-              <span className="font-mono text-sm font-medium text-slate-500">
+              <span className="font-mono text-sm font-medium text-zinc-500">
                 {normalizedSo.os_number}
               </span>
             )}
             <StatusBadge status={normalizedSo.status} />
             <StaleBadge days={normalizedSo.days_since_update} />
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-zinc-500">
             {normalizedSo.customer_name} · {typeMeta?.label}
             {normalizedSo.equipment_brand ? ` · ${normalizedSo.equipment_brand}` : ''}
             {normalizedSo.equipment_model ? ` ${normalizedSo.equipment_model}` : ''}
           </p>
         </div>
-        <div className="flex flex-shrink-0 gap-2">
+        <div className="flex flex-shrink-0 flex-wrap gap-2">
           <Link
             href={`/admin/os/${normalizedSo.id}/label`}
             target="_blank"
@@ -221,128 +220,53 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
+        {/* Coluna Principal (2/3): 3 blocos coesos */}
         <div className="space-y-4 lg:col-span-2">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Defeito relatado</h2>
-            <p className="mt-1 whitespace-pre-wrap text-slate-900">{normalizedSo.reported_defect}</p>
-            {normalizedSo.blocking_reason && (
-              <div className="mt-3 rounded-md bg-orange-50 p-3 text-sm text-orange-800 ring-1 ring-orange-200">
-                <strong>Travado em:</strong> {normalizedSo.blocking_reason}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Diagnóstico e reparo
-            </h2>
-            <div className="mt-3">
-              <RepairNotesEditor
-                osId={normalizedSo.id}
-                initialNotes={normalizedSo.repair_notes ?? ''}
-                initialLaborCost={Number(normalizedSo.labor_cost ?? 0)}
-                canEdit={canEdit}
-              />
+          {/* BLOCO 1: Entrada & Inspeção do Aparelho */}
+          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                1. Entrada & Defeito Relatado
+              </h2>
+              <p className="mt-1.5 whitespace-pre-wrap text-base text-zinc-950">
+                {normalizedSo.reported_defect}
+              </p>
+              {normalizedSo.blocking_reason && (
+                <div className="mt-3 rounded-md bg-orange-50 p-3 text-sm text-orange-800 ring-1 ring-orange-200">
+                  <strong>⚠️ Travado em:</strong> {normalizedSo.blocking_reason}
+                </div>
+              )}
             </div>
 
-            {(partsUsed && partsUsed.length > 0) ? (
-              <div className="mt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Peças usadas ({partsUsed.length})
-                </h3>
-                <ul className="mt-2 divide-y divide-slate-200 text-sm">
-                  {partsUsed.map((p) => (
-                    <li key={p.id} className="flex items-center justify-between py-1.5">
-                      <span className="text-slate-900">
-                        {p.stock_item?.name ?? '(item removido)'}
-                        <span className="ml-2 font-mono text-slate-500">×{p.quantity}</span>
-                      </span>
-                      <span className="font-mono text-slate-900">
-                        R$ {Number(p.total_amount ?? 0).toFixed(2)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-3 space-y-1 border-t border-slate-300 pt-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Peças</span>
-                    <span className="font-mono text-slate-900">R$ {partsTotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Mão de obra</span>
-                    <span className="font-mono text-slate-900">R$ {laborCost.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between border-t border-slate-400 pt-1.5 text-base font-bold">
-                    <span className="text-slate-900">Total</span>
-                    <span className="font-mono text-slate-900">R$ {grandTotal.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {canEdit && !isFinal && (
-              <div className="mt-4 border-t border-zinc-200 pt-3">
-                <UsePartForm
-                  serviceOrderId={normalizedSo.id}
-                  currentUserId={profile?.id ?? ''}
-                  items={stockItemsForUse ?? []}
-                />
-              </div>
-            )}
-          </section>
-
-          {(partOrders && partOrders.length > 0) && (
-            <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Pedidos de peça (fornecedor)
-                </h2>
-                <Link href="/admin/pecas/new" className="text-xs font-semibold text-zinc-900 underline hover:text-black">
-                  + Novo pedido
-                </Link>
-              </div>
-              <ul className="mt-2 divide-y divide-slate-200 text-sm">
-                {partOrders.map((po) => (
-                  <li key={po.id} className="py-1.5">
-                    <Link href={`/admin/pecas/${po.id}`} className="flex items-center justify-between gap-2 hover:text-black">
-                      <span className="text-slate-900">
-                        {po.part_description}
-                        {po.part_variant ? ` · ${po.part_variant}` : ''}
-                        <span className="ml-2 text-xs text-slate-500">{po.supplier?.name}</span>
-                      </span>
-                      <PartOrderStatusBadge status={po.status} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Checklist de entrada</h2>
-            <ChecklistEditor
-              osId={normalizedSo.id}
-              initialChecklist={normalizedSo.entry_checklist}
-              canEdit={canEdit}
-            />
-            {normalizedSo.accessories_in && (
-              <p className="mt-3 text-sm text-slate-600">
-                <strong>Acessórios:</strong> {normalizedSo.accessories_in}
-              </p>
-            )}
-            {normalizedSo.equipment_photos && normalizedSo.equipment_photos.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Foto na entrada ({normalizedSo.equipment_photos.length})
+            <div className="border-t border-zinc-100 pt-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Checklist de entrada
+              </h3>
+              <ChecklistEditor
+                osId={normalizedSo.id}
+                initialChecklist={normalizedSo.entry_checklist}
+                canEdit={canEdit}
+              />
+              {normalizedSo.accessories_in && (
+                <p className="mt-3 text-sm text-zinc-700">
+                  <strong>Acessórios deixados:</strong> {normalizedSo.accessories_in}
                 </p>
-                <div className="mt-1.5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              )}
+            </div>
+
+            {normalizedSo.equipment_photos && normalizedSo.equipment_photos.length > 0 && (
+              <div className="border-t border-zinc-100 pt-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Fotos na entrada ({normalizedSo.equipment_photos.length})
+                </p>
+                <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {normalizedSo.equipment_photos.map((url: string) => (
                     <a key={url} href={url} target="_blank" rel="noopener noreferrer">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
                         alt="Foto do aparelho na entrada"
-                        className="aspect-square w-full rounded-md border border-slate-200 object-cover hover:opacity-90"
+                        className="aspect-square w-full rounded-md border border-zinc-200 object-cover hover:opacity-90"
                       />
                     </a>
                   ))}
@@ -351,15 +275,118 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Linha do tempo</h2>
+          {/* BLOCO 2: Bancada — Diagnóstico, Peças & Valores */}
+          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                2. Bancada — Diagnóstico, Serviço & Peças
+              </h2>
+              <p className="mt-0.5 text-xs text-zinc-500">
+                Defina o laudo técnico, o valor do serviço (mão de obra) e as peças utilizadas. O total da OS é calculado automaticamente.
+              </p>
+            </div>
+
+            <RepairNotesEditor
+              osId={normalizedSo.id}
+              initialNotes={normalizedSo.repair_notes ?? ''}
+              initialLaborCost={effectiveLaborCost}
+              partsTotal={partsTotal}
+              canEdit={canEdit}
+            />
+
+            {(partsUsed && partsUsed.length > 0) && (
+              <div className="border-t border-zinc-200 pt-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Peças aplicadas do estoque ({partsUsed.length})
+                </h3>
+                <ul className="mt-2 divide-y divide-zinc-100 text-sm">
+                  {partsUsed.map((p) => (
+                    <li key={p.id} className="flex items-center justify-between py-1.5">
+                      <span className="text-zinc-900">
+                        {p.stock_item?.name ?? '(item removido)'}
+                        <span className="ml-2 font-mono text-zinc-500">×{p.quantity}</span>
+                      </span>
+                      <span className="font-mono font-medium text-zinc-900">
+                        R$ {Number(p.total_amount ?? 0).toFixed(2)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {canEdit && !isFinal && (
+              <div className="border-t border-zinc-200 pt-3">
+                <UsePartForm
+                  serviceOrderId={normalizedSo.id}
+                  currentUserId={profile?.id ?? ''}
+                  items={stockItemsForUse ?? []}
+                />
+              </div>
+            )}
+
+            <div className="border-t border-zinc-200 pt-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Encomendas a fornecedor {partOrders && partOrders.length > 0 ? `(${partOrders.length})` : ''}
+                </h3>
+                <Link
+                  href="/admin/pecas/new"
+                  className="text-xs font-semibold text-zinc-900 underline hover:text-black"
+                >
+                  + Encomendar peça externa
+                </Link>
+              </div>
+              {partOrders && partOrders.length > 0 ? (
+                <ul className="mt-2 divide-y divide-zinc-100 text-sm">
+                  {partOrders.map((po) => (
+                    <li key={po.id} className="py-1.5">
+                      <Link
+                        href={`/admin/pecas/${po.id}`}
+                        className="flex items-center justify-between gap-2 hover:text-black"
+                      >
+                        <span className="text-zinc-900">
+                          {po.part_description}
+                          {po.part_variant ? ` · ${po.part_variant}` : ''}
+                          <span className="ml-2 text-xs text-zinc-500">{po.supplier?.name}</span>
+                        </span>
+                        <PartOrderStatusBadge status={po.status} />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-xs text-zinc-400">
+                  Nenhuma peça encomendada de fornecedor para esta OS.
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* BLOCO 3: Linha do Tempo & Anotações */}
+          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                3. Linha do Tempo & Histórico
+              </h2>
+              {profile && !isFinal && (
+                <OSDetailActions
+                  osId={normalizedSo.id}
+                  currentBlocking={normalizedSo.blocking_reason}
+                  canEdit={canEdit}
+                  currentUserId={profile.id}
+                />
+              )}
+            </div>
             <div className="mt-3">
               <OSTimeline events={events ?? []} authorNames={authorNames} />
             </div>
           </section>
         </div>
 
+        {/* Barra Lateral (1/3): 3 blocos operacionais */}
         <aside className="space-y-4">
+          {/* BLOCO 4: Fluxo da OS (StatusQuickActions) */}
           {profile && !isFinal && (
             <StatusQuickActions
               osId={normalizedSo.id}
@@ -370,94 +397,89 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               customerName={normalizedSo.customer_name}
               osLabel={normalizedSo.short_id ?? normalizedSo.os_number ?? undefined}
               canEdit={canEdit}
+              currentLaborCost={effectiveLaborCost}
+              partsTotal={partsTotal}
               currentEstimatedValue={normalizedSo.estimated_value}
               grandTotal={grandTotal}
+              reportedDefect={normalizedSo.reported_defect}
+              repairNotes={normalizedSo.repair_notes}
               payments={(payments ?? []) as never}
               paymentStatus={normalizedSo.payment_status}
             />
           )}
 
-          <section id="orcamento-section" className="scroll-mt-4 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Orçamento</h2>
-            <div className="mt-1">
-              <EstimatedValueEditor
+          {/* BLOCO 5: Financeiro & Pagamento */}
+          <section
+            id="pagamento-section"
+            className="scroll-mt-4 rounded-lg border border-zinc-200 bg-white p-4 sm:p-5"
+          >
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+              Financeiro & Pagamento
+            </h2>
+            <div className="mt-2.5">
+              <PaymentStatusEditor
                 osId={normalizedSo.id}
-                initialValue={normalizedSo.estimated_value}
+                serviceCost={effectiveLaborCost}
+                partsTotal={partsTotal}
+                grandTotal={grandTotal}
+                payments={(payments ?? []) as never}
                 canEdit={canEdit}
+                canDelete={profile?.can_delete === true}
               />
             </div>
-            <div id="pagamento-section" className="scroll-mt-4 mt-3 border-t border-slate-100 pt-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pagamento</h3>
-              <div className="mt-1">
-                <PaymentStatusEditor
-                  osId={normalizedSo.id}
-                  grandTotal={grandTotal}
-                  payments={(payments ?? []) as never}
-                  canEdit={canEdit}
-                  canDelete={profile?.can_delete === true}
+          </section>
+
+          {/* BLOCO 6: Ficha do Cliente & Aparelho */}
+          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                Cliente
+              </h2>
+              <p className="mt-1 font-semibold text-zinc-950">{normalizedSo.customer_name}</p>
+              {normalizedSo.customer_phone && (
+                <p className="text-xs font-mono text-zinc-600 mt-0.5">
+                  {normalizedSo.customer_phone}
+                </p>
+              )}
+              <div className="mt-2.5">
+                <WhatsAppButton
+                  phone={normalizedSo.customer_phone}
+                  customerName={normalizedSo.customer_name}
+                  context="os"
                 />
               </div>
-              <div className="mt-3 border-t border-zinc-100 pt-2.5">
-                <Link
-                  href={`/admin/os/${normalizedSo.id}/recibo`}
-                  target="_blank"
-                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors"
-                >
-                  📄 Emitir Nota / Recibo (PDF) &rarr;
-                </Link>
-              </div>
+            </div>
+
+            <div className="border-t border-zinc-100 pt-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                Aparelho
+              </h2>
+              <dl className="mt-1.5 space-y-1 text-sm">
+                <Row label="Tipo" value={typeMeta?.label} />
+                {normalizedSo.equipment_brand && <Row label="Marca" value={normalizedSo.equipment_brand} />}
+                {normalizedSo.equipment_model && <Row label="Modelo" value={normalizedSo.equipment_model} />}
+                {normalizedSo.equipment_color && <Row label="Cor" value={normalizedSo.equipment_color} />}
+                {normalizedSo.equipment_serial && <Row label="IMEI / Serial" value={normalizedSo.equipment_serial} />}
+                {normalizedSo.equipment_password && (
+                  <Row
+                    label="Senha"
+                    value={
+                      <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs text-zinc-900">
+                        {normalizedSo.equipment_password}
+                      </code>
+                    }
+                  />
+                )}
+                {normalizedSo.estimated_ready_at && (
+                  <Row
+                    label="Previsão"
+                    value={<strong>{formatDateOnlyBR(normalizedSo.estimated_ready_at)}</strong>}
+                  />
+                )}
+              </dl>
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Cliente</h2>
-            <p className="mt-1 font-medium text-slate-900">{normalizedSo.customer_name}</p>
-            {normalizedSo.customer_phone && (
-              <p className="text-sm text-slate-600">
-                <a href={`tel:${normalizedSo.customer_phone}`} className="font-semibold text-zinc-900 underline hover:text-black">
-                  📞 {normalizedSo.customer_phone}
-                </a>
-              </p>
-            )}
-            <div className="mt-3 border-t border-slate-100 pt-3">
-              <WhatsAppButton
-                phone={normalizedSo.customer_phone}
-                customerName={normalizedSo.customer_name}
-                context="os"
-              />
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Aparelho</h2>
-            <dl className="mt-1 space-y-1 text-sm">
-              <Row label="Tipo" value={typeMeta?.label} />
-              {normalizedSo.equipment_brand && <Row label="Marca" value={normalizedSo.equipment_brand} />}
-              {normalizedSo.equipment_model && <Row label="Modelo" value={normalizedSo.equipment_model} />}
-              {normalizedSo.equipment_color && <Row label="Cor" value={normalizedSo.equipment_color} />}
-              {normalizedSo.equipment_serial && <Row label="IMEI / Serial" value={normalizedSo.equipment_serial} />}
-              {normalizedSo.equipment_password && (
-                <Row label="Senha" value={<code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">{normalizedSo.equipment_password}</code>} />
-              )}
-            </dl>
-          </section>
-
-          {normalizedSo.estimated_ready_at && (
-            <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Previsão</h2>
-              <p className="mt-1 text-sm"><strong>{formatDateOnlyBR(normalizedSo.estimated_ready_at)}</strong></p>
-            </section>
-          )}
-
-          {profile && !isFinal && (
-            <OSDetailActions
-              osId={normalizedSo.id}
-              currentBlocking={normalizedSo.blocking_reason}
-              canEdit={canEdit}
-              currentUserId={profile.id}
-              isOwner={profile.role === 'owner'}
-            />
-          )}
           {profile && (
             <OSDeleteButton
               osId={normalizedSo.id}
@@ -474,8 +496,8 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-2">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-right text-slate-900">{value}</dd>
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className="text-right text-zinc-900">{value}</dd>
     </div>
   );
 }

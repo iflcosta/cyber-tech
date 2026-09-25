@@ -2,8 +2,8 @@ import { OS_STATUSES, type OSStatusValue } from '../types/database';
 
 const COLOR_CLASSES: Record<string, string> = {
   amber: 'bg-amber-100 text-amber-800 ring-amber-200',
-  blue: 'bg-zinc-200 text-zinc-900 ring-zinc-300',
-  indigo: 'bg-zinc-200 text-zinc-900 ring-zinc-300',
+  blue: 'bg-zinc-100 text-zinc-800 ring-zinc-300',
+  indigo: 'bg-zinc-900 text-white ring-zinc-900',
   orange: 'bg-orange-100 text-orange-800 ring-orange-200',
   emerald: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
   slate: 'bg-slate-100 text-slate-700 ring-slate-200',

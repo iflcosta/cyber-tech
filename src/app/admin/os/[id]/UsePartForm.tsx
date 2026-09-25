@@ -289,7 +289,7 @@ export function UsePartForm({
       )}
       {error && <p className="mt-1.5 rounded-md bg-red-50 p-1.5 text-xs text-red-700">{error}</p>}
       {newSaved && (
-        <p className="mt-1.5 text-xs font-medium text-emerald-600">
+        <p className="mt-1.5 text-xs font-medium text-zinc-900">
           ✓ Peça cadastrada e usada nesta OS
         </p>
       )}

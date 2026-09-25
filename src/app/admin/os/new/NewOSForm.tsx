@@ -137,6 +137,8 @@ export function NewOSForm({
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [defect, setDefect] = useState('');
+  const [initialLaborCost, setInitialLaborCost] = useState('');
+  const [approvedOnCounter, setApprovedOnCounter] = useState(false);
   const [blocking, setBlocking] = useState('');
   const [estimatedReady, setEstimatedReady] = useState('');
 
@@ -190,6 +192,13 @@ export function NewOSForm({
       setError('Defeito relatado é obrigatório.');
       return;
     }
+    const parsedLabor = initialLaborCost.trim()
+      ? Number(initialLaborCost.replace(/\./g, '').replace(',', '.'))
+      : 0;
+    if (!Number.isFinite(parsedLabor) || parsedLabor < 0) {
+      setError('Valor do serviço inválido.');
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -210,11 +219,14 @@ export function NewOSForm({
         customerId = newCustomer.id;
       }
 
+      const initialStatus = approvedOnCounter ? 'in_progress' : 'awaiting_approval';
+
       // 2. OS
       const { data: newOS, error: osErr } = await supabase
         .from('service_orders')
         .insert({
           customer_id: customerId,
+          status: initialStatus,
           equipment_type: equipment.type,
           equipment_brand: equipment.brand.trim() || null,
           equipment_model: equipment.model.trim() || null,
@@ -222,6 +234,8 @@ export function NewOSForm({
           equipment_serial: equipment.serial.trim() || null,
           equipment_password: equipment.password.trim() || null,
           reported_defect: defect.trim(),
+          labor_cost: parsedLabor,
+          estimated_value: parsedLabor > 0 ? parsedLabor : null,
           entry_checklist: checklist,
           accessories_in: accessories.trim() || null,
           equipment_photos: photos,
@@ -237,7 +251,12 @@ export function NewOSForm({
       await supabase.from('service_order_events').insert({
         service_order_id: newOS.id,
         event_type: 'created',
-        to_value: 'awaiting_approval',
+        to_value: initialStatus,
+        note: approvedOnCounter
+          ? `Aprovado na abertura (balcão)${parsedLabor > 0 ? ` — Serviço R$ ${parsedLabor.toFixed(2).replace('.', ',')}` : ''}`
+          : parsedLabor > 0
+            ? `Valor pré-informado: R$ ${parsedLabor.toFixed(2).replace('.', ',')}`
+            : null,
         author_id: currentUserId,
       });
 
@@ -271,15 +290,15 @@ export function NewOSForm({
       {step === 1 && (
         <div className="space-y-3">
           {selectedCustomer ? (
-            <div className="rounded-md border-2 border-emerald-300 bg-emerald-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                Cliente já cadastrado
+            <div className="rounded-md border-2 border-zinc-900 bg-zinc-50 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-900">
+                ✓ Cliente já cadastrado
               </p>
-              <p className="mt-1 font-medium text-slate-900">{selectedCustomer.name}</p>
-              <p className="text-sm text-slate-600">
+              <p className="mt-1 font-semibold text-zinc-950">{selectedCustomer.name}</p>
+              <p className="text-sm text-zinc-600">
                 {selectedCustomer.phone}
                 {selectedCustomer.osCount > 0 && (
-                  <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-800">
+                  <span className="ml-2 rounded bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-900">
                     {selectedCustomer.osCount} OS anterior{selectedCustomer.osCount === 1 ? '' : 'es'}
                   </span>
                 )}
@@ -287,7 +306,7 @@ export function NewOSForm({
               <button
                 type="button"
                 onClick={clearCustomerSelection}
-                className="mt-2 text-xs font-medium text-slate-600 underline hover:text-slate-800"
+                className="mt-2 text-xs font-medium text-zinc-600 underline hover:text-black"
               >
                 Não é esse cliente — trocar
               </button>
@@ -494,24 +513,51 @@ export function NewOSForm({
 
       {step === 3 && (
         <div className="space-y-3">
-          <Field label="Defeito relatado pelo cliente *">
+          <Field label="Defeito relatado / serviço solicitado pelo cliente *">
             <textarea
               autoFocus
               value={defect}
               onChange={(e) => setDefect(e.target.value)}
               rows={3}
               className="form-input"
-              placeholder="Ex: tela trincada após queda, não carrega"
+              placeholder="Ex: tela trincada após queda, não carrega, formatação com backup"
             />
           </Field>
-          <Field label="Previsão (opcional)">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Valor do serviço / mão de obra R$ (opcional)">
+              <input
+                value={initialLaborCost}
+                onChange={(e) => setInitialLaborCost(e.target.value)}
+                inputMode="decimal"
+                className="form-input font-mono"
+                placeholder="0,00 (pode definir depois na bancada)"
+              />
+            </Field>
+            <Field label="Previsão de entrega (opcional)">
+              <input
+                type="date"
+                value={estimatedReady}
+                onChange={(e) => setEstimatedReady(e.target.value)}
+                className="form-input"
+              />
+            </Field>
+          </div>
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-900">
             <input
-              type="date"
-              value={estimatedReady}
-              onChange={(e) => setEstimatedReady(e.target.value)}
-              className="form-input"
+              type="checkbox"
+              checked={approvedOnCounter}
+              onChange={(e) => setApprovedOnCounter(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-zinc-300 accent-black text-black"
             />
-          </Field>
+            <div>
+              <span className="font-semibold text-zinc-950">
+                Cliente já aprovou o serviço no balcão (iniciar direto em bancada)
+              </span>
+              <p className="mt-0.5 text-xs text-zinc-600">
+                Marque para serviços tabelados (formatação, limpeza, película, etc.) em que não é necessário aguardar aprovação posterior.
+              </p>
+            </div>
+          </label>
           <Field label="Já trava em algo? (opcional)">
             <input
               value={blocking}

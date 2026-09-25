@@ -93,7 +93,7 @@ export function WhatsAppButton({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={defaultMsg}
                 rows={3}
-                className="block w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="block w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
               <p className="text-[10px] text-slate-500">
                 O texto acima sera enviado como primeira mensagem (opcional).
