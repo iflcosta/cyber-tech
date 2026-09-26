@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUpRight, RotateCcw, Check } from "lucide-react";
+import { ArrowUpRight, ArrowRight, ArrowLeft, RotateCcw } from "lucide-react";
 import { brand } from "@/lib/brand";
 import { trackWhatsAppClick } from "@/lib/gtag";
 
 const PURPOSES = [
   {
     id: "gamer_fhd",
-    label: "Jogos Competitivos & Full HD",
-    desc: "CS2, Valorant, Warzone, GTA V, Fortnite, EA FC com alto FPS",
+    label: "Jogos Full HD & Competitivo",
+    desc: "CS2, Valorant, Warzone, GTA V e Fortnite com alto FPS",
     presetCpu: "ryzen5",
     presetGpu: "rtx4060",
     presetRam: "16gb",
@@ -19,7 +19,7 @@ const PURPOSES = [
   {
     id: "gamer_ultra",
     label: "Jogos no Ultra / Quad HD & 4K",
-    desc: "Jogos AAA pesados com Ray Tracing, DLSS e máxima qualidade gráfica",
+    desc: "Jogos AAA pesados com Ray Tracing e DLSS",
     presetCpu: "ryzen7",
     presetGpu: "rtx4070",
     presetRam: "32gb",
@@ -28,8 +28,8 @@ const PURPOSES = [
   },
   {
     id: "workstation",
-    label: "Arquitetura, Engenharia & Edição",
-    desc: "AutoCAD, Revit, SketchUp, Lumion, SolidWorks, Premiere Pro e 3D",
+    label: "Arquitetura, Engenharia & 3D",
+    desc: "AutoCAD, Revit, SketchUp, Lumion e Premiere Pro",
     presetCpu: "corei7",
     presetGpu: "rtx4070",
     presetRam: "32gb",
@@ -38,8 +38,8 @@ const PURPOSES = [
   },
   {
     id: "office",
-    label: "Escritório Rápido, Comércio & Estudos",
-    desc: "Multitarefa ágil, sistemas comerciais, contabilidade, clínicas e uso diário",
+    label: "Escritório Rápido & Estudos",
+    desc: "Sistemas comerciais, contabilidade, clínicas e uso diário",
     presetCpu: "ryzen5",
     presetGpu: "integrado",
     presetRam: "16gb",
@@ -49,40 +49,48 @@ const PURPOSES = [
 ];
 
 const CPUS = [
-  { id: "ryzen5", label: "AMD Ryzen 5", sub: "Excelente custo-benefício para jogos e trabalho" },
-  { id: "ryzen7", label: "AMD Ryzen 7 / Ryzen 9", sub: "Alta performance para jogos pesados e renderização" },
-  { id: "corei5", label: "Intel Core i5", sub: "Desempenho sólido em jogos e multitarefa" },
-  { id: "corei7", label: "Intel Core i7 / Core i9", sub: "Máxima capacidade para workstations e entusiastas" },
-  { id: "consultoria", label: "Indicação Técnica da Loja", sub: "Deixar a equipe indicar o melhor custo-benefício hoje" },
+  { id: "ryzen5", label: "AMD Ryzen 5", sub: "Melhor custo-benefício p/ jogos e trabalho" },
+  { id: "ryzen7", label: "AMD Ryzen 7 / 9", sub: "Alta performance p/ jogos e render" },
+  { id: "corei5", label: "Intel Core i5", sub: "Desempenho sólido em multitarefa" },
+  { id: "corei7", label: "Intel Core i7 / i9", sub: "Máxima capacidade p/ workstations" },
+  { id: "consultoria", label: "Indicação da Loja", sub: "Deixar a equipe indicar o melhor hoje" },
 ];
 
 const GPUS = [
-  { id: "integrado", label: "Vídeo Integrado (Sem Placa Dedicada)", sub: "Ideal para escritório, estudos e jogos leves" },
-  { id: "rtx4060", label: "GeForce RTX 4060 8GB", sub: "A mais procurada para Full HD Ultra e DLSS 3" },
-  { id: "rtx4070", label: "GeForce RTX 4060 Ti / 4070 Super", sub: "Alta performance para Quad HD, 4K e Render 3D" },
-  { id: "radeon", label: "AMD Radeon RX 7600 / 7700 XT", sub: "Excelente performance bruta por real investido" },
-  { id: "consultoria_gpu", label: "Me Indique a Melhor Opção", sub: "Dimensionar conforme meu orçamento e objetivo" },
+  { id: "integrado", label: "Vídeo Integrado", sub: "Para escritório, estudos e jogos leves" },
+  { id: "rtx4060", label: "GeForce RTX 4060 8GB", sub: "Ideal p/ Full HD Ultra e DLSS 3" },
+  { id: "rtx4070", label: "RTX 4060 Ti / 4070 Super", sub: "Quad HD, 4K e Renderização 3D" },
+  { id: "radeon", label: "Radeon RX 7600 / 7700 XT", sub: "Ótima performance por real investido" },
+  { id: "consultoria_gpu", label: "Indicação da Loja", sub: "Dimensionar conforme meu orçamento" },
 ];
 
 const RAMS = [
-  { id: "16gb", label: "16GB (2x8GB Dual-Channel)", sub: "Padrão ideal para jogos atuais e escritório avançado" },
-  { id: "32gb", label: "32GB (2x16GB Dual-Channel)", sub: "Recomendado para longevidade, jogos pesados e projetos" },
-  { id: "64gb", label: "64GB (2x32GB Workstation)", sub: "Para edição 4K, modelagem 3D pesada e virtualização" },
+  { id: "16gb", label: "16GB (2x8GB Dual-Channel)", sub: "Padrão para jogos e escritório" },
+  { id: "32gb", label: "32GB (2x16GB Dual-Channel)", sub: "Recomendado p/ jogos pesados e CAD" },
+  { id: "64gb", label: "64GB (2x32GB Workstation)", sub: "Edição 4K e projetos complexos" },
 ];
 
 const SSDS = [
-  { id: "500gb", label: "SSD 500GB NVMe M.2", sub: "Sistema rápido + programas principais" },
-  { id: "1tb", label: "SSD 1TB NVMe M.2 Gen4", sub: "O mais equilibrado para vários jogos e arquivos" },
-  { id: "2tb", label: "SSD 2TB NVMe M.2 Gen4", sub: "Espaço amplo de altíssima velocidade" },
+  { id: "500gb", label: "SSD 500GB NVMe M.2", sub: "Sistema rápido + programas" },
+  { id: "1tb", label: "SSD 1TB NVMe M.2 Gen4", sub: "Equilíbrio ideal p/ jogos e projetos" },
+  { id: "2tb", label: "SSD 2TB NVMe M.2 Gen4", sub: "Espaço amplo de alta velocidade" },
 ];
 
 const CABINETS = [
-  { id: "aquario_air", label: "Gabinete Aquário Vidro + Air Cooler", sub: "Visual moderno com lateral transparente e ótimo fluxo de ar" },
-  { id: "aquario_wc", label: "Gabinete Aquário + Water Cooler 240/360mm", sub: "Estética limpa e refrigeração líquida silenciosa" },
-  { id: "executivo", label: "Gabinete Sóbrio Preto Fosco (Discreto)", sub: "Visual executivo sem luzes RGB para escritórios ou setups minimalistas" },
+  { id: "aquario_air", label: "Gabinete Aquário + Air Cooler", sub: "Lateral de vidro e ótimo fluxo de ar" },
+  { id: "aquario_wc", label: "Gabinete Aquário + Water Cooler", sub: "Estética limpa e refrigeração líquida" },
+  { id: "executivo", label: "Gabinete Sóbrio Preto Fosco", sub: "Discreto sem RGB p/ escritórios" },
+];
+
+const STEPS = [
+  { id: 1, title: "1. Objetivo" },
+  { id: 2, title: "2. CPU & Vídeo" },
+  { id: 3, title: "3. RAM & SSD" },
+  { id: 4, title: "4. Gabinete" },
 ];
 
 export default function PCBuilderSection() {
+  const [activeStep, setActiveStep] = useState<number>(1);
   const [purpose, setPurpose] = useState(PURPOSES[0].id);
   const [cpu, setCpu] = useState(CPUS[0].id);
   const [gpu, setGpu] = useState(GPUS[1].id);
@@ -115,18 +123,19 @@ export default function PCBuilderSection() {
     handlePresetPurpose("gamer_fhd");
     setPeripherals("somente_pc");
     setNotes("");
+    setActiveStep(1);
   };
 
   const waMessage = [
-    `Olá! Montei uma configuração no *PC Builder* do site da Cyber Informática e gostaria de receber um orçamento:`,
-    `*1. Objetivo:* ${selectedPurpose.label}`,
-    `*2. Processador:* ${selectedCpu.label}`,
-    `*3. Placa de Vídeo:* ${selectedGpu.label}`,
-    `*4. Memória RAM:* ${selectedRam.label}`,
-    `*5. Armazenamento:* ${selectedSsd.label}`,
-    `*6. Gabinete & Cooler:* ${selectedCabinet.label}`,
-    `*7. Periféricos:* ${peripherals === "completo" ? "Incluir Monitor, Teclado e Mouse" : "Somente o Computador (Gabinete Completo)"}`,
-    notes.trim() ? `*Observações / Jogos / Orçamento alvo:* ${notes.trim()}` : "",
+    `Olá! Montei uma configuração no *PC Builder* do site da Cyber Informática e gostaria de um orçamento:`,
+    `• *Objetivo:* ${selectedPurpose.label}`,
+    `• *Processador:* ${selectedCpu.label}`,
+    `• *Placa de Vídeo:* ${selectedGpu.label}`,
+    `• *Memória RAM:* ${selectedRam.label}`,
+    `• *Armazenamento:* ${selectedSsd.label}`,
+    `• *Gabinete:* ${selectedCabinet.label}`,
+    `• *Formato:* ${peripherals === "completo" ? "PC + Monitor, Teclado e Mouse" : "Somente o Gabinete Completo"}`,
+    notes.trim() ? `• *Obs / Orçamento alvo:* ${notes.trim()}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -134,370 +143,365 @@ export default function PCBuilderSection() {
   const waUrl = `https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <section id="pc-builder" className="py-16 sm:py-24 bg-[#09090b] text-white border-b border-zinc-800">
+    <section id="pc-builder" className="py-14 sm:py-20 bg-[#09090b] text-white border-b border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Cabeçalho */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-10 border-b border-zinc-800 items-end">
-          <div className="lg:col-span-8">
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
-              02 // CONFIGURADOR SOB MEDIDA · PC BUILDER CYBER
+        {/* Cabeçalho Enxuto */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-8 border-b border-zinc-800">
+          <div>
+            <div className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">
+              02 // PC BUILDER SOB MEDIDA
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.05]">
-              Monte Seu Computador e Peça o Orçamento na Hora.
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              Monte Seu PC e Peça Orçamento em 1 Clique.
             </h2>
           </div>
-          <div className="lg:col-span-4">
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              Escolha o seu objetivo no Passo 01 para carregar automaticamente uma recomendação da nossa bancada — ou personalize peça por peça abaixo.
-            </p>
-          </div>
+          <p className="text-xs sm:text-sm text-zinc-400 max-w-md">
+            Escolha o perfil no Passo 1 para carregar nossa configuração recomendada na hora — ou navegue pelas abas para personalizar cada peça.
+          </p>
         </div>
 
-        {/* Grid Principal: 8 Colunas de Seleção + 4 Colunas de Ficha Técnica Sticky */}
+        {/* Console Compacto em Abas (Apenas 1 Etapa Visível por Vez = Zero Poluição) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-zinc-800 border-x border-b border-zinc-800">
-          {/* Coluna Esquerda: Passos */}
-          <div className="lg:col-span-8 divide-y divide-zinc-800">
-            {/* Passo 1: Objetivo + Preset Rápido */}
-            <div className="p-6 sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300">
-                  PASSO 01 / QUAL O OBJETIVO PRINCIPAL DA MÁQUINA?
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300">
-                  SELECIONA AS PEÇAS RECOMENDADAS AUTOMATICAMENTE
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {PURPOSES.map((item) => {
-                  const active = purpose === item.id;
+          {/* Coluna Esquerda (8 cols): Navegação por 4 Abas */}
+          <div className="lg:col-span-8 flex flex-col justify-between">
+            <div>
+              {/* Barra de Abas Stepper */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-zinc-800 divide-x divide-y sm:divide-y-0 divide-zinc-800 bg-zinc-950">
+                {STEPS.map((st) => {
+                  const isCurrent = activeStep === st.id;
                   return (
                     <button
-                      key={item.id}
+                      key={st.id}
                       type="button"
-                      onClick={() => handlePresetPurpose(item.id)}
-                      className={`p-4 text-left border transition-colors cursor-pointer ${
-                        active
-                          ? "bg-white text-black border-white"
-                          : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                      onClick={() => setActiveStep(st.id)}
+                      className={`py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider text-left transition-colors cursor-pointer ${
+                        isCurrent
+                          ? "bg-white text-black"
+                          : "bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900"
                       }`}
                     >
-                      <strong className="text-sm font-extrabold block mb-1">
-                        {item.label}
-                      </strong>
-                      <span
-                        className={`text-xs block leading-snug ${
-                          active ? "text-zinc-700" : "text-zinc-400"
-                        }`}
-                      >
-                        {item.desc}
-                      </span>
+                      {st.title}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Box de Conversão Rápida em 1 Clique para Clientes Leigos */}
-              <div className="mt-5 p-4 bg-zinc-900 border border-zinc-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase text-white mb-1">
-                    <Check className="w-3.5 h-3.5 text-white shrink-0" />
-                    <span>RECOMENDAÇÃO PRONTA PARA {selectedPurpose.label.toUpperCase()}:</span>
+              {/* Conteúdo da Aba Ativa */}
+              <div className="p-6 sm:p-8">
+                {activeStep === 1 && (
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <span className="font-mono text-xs font-bold uppercase text-zinc-300">
+                        QUAL O OBJETIVO PRINCIPAL DA MÁQUINA?
+                      </span>
+                      <span className="font-mono text-[10px] uppercase text-zinc-500 hidden sm:inline">
+                        PREENCHE AS PEÇAS AUTOMATICAMENTE
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {PURPOSES.map((item) => {
+                        const active = purpose === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handlePresetPurpose(item.id)}
+                            className={`p-4 text-left border transition-colors cursor-pointer ${
+                              active
+                                ? "bg-white text-black border-white"
+                                : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                            }`}
+                          >
+                            <strong className="text-sm font-extrabold block mb-1">
+                              {item.label}
+                            </strong>
+                            <span
+                              className={`text-xs block leading-snug ${
+                                active ? "text-zinc-700" : "text-zinc-400"
+                              }`}
+                            >
+                              {item.desc}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="text-xs font-mono text-zinc-300">
-                    {selectedCpu.label} · {selectedGpu.label} · {selectedRam.label} · {selectedSsd.label}
-                  </p>
-                </div>
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackWhatsAppClick("pc_builder_quick_preset")}
-                  className="bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-2.5 px-4 text-[11px] shrink-0 flex items-center justify-center gap-1.5 transition-colors"
+                )}
+
+                {activeStep === 2 && (
+                  <div className="space-y-6">
+                    <div>
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                        PROCESSADOR (AMD RYZEN OU INTEL CORE)
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {CPUS.map((item) => {
+                          const active = cpu === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setCpu(item.id)}
+                              className={`p-3 text-left border transition-colors cursor-pointer ${
+                                active
+                                  ? "bg-white text-black border-white"
+                                  : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                              }`}
+                            >
+                              <strong className="text-xs font-extrabold block mb-0.5">
+                                {item.label}
+                              </strong>
+                              <span
+                                className={`text-[11px] block leading-tight ${
+                                  active ? "text-zinc-700" : "text-zinc-400"
+                                }`}
+                              >
+                                {item.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                        PLACA DE VÍDEO (GPU)
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {GPUS.map((item) => {
+                          const active = gpu === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setGpu(item.id)}
+                              className={`p-3 text-left border transition-colors cursor-pointer ${
+                                active
+                                  ? "bg-white text-black border-white"
+                                  : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                              }`}
+                            >
+                              <strong className="text-xs font-extrabold block mb-0.5">
+                                {item.label}
+                              </strong>
+                              <span
+                                className={`text-[11px] block leading-tight ${
+                                  active ? "text-zinc-700" : "text-zinc-400"
+                                }`}
+                              >
+                                {item.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeStep === 3 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                        MEMÓRIA RAM
+                      </div>
+                      <div className="space-y-2.5">
+                        {RAMS.map((item) => {
+                          const active = ram === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setRam(item.id)}
+                              className={`w-full p-3.5 text-left border transition-colors cursor-pointer ${
+                                active
+                                  ? "bg-white text-black border-white"
+                                  : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                              }`}
+                            >
+                              <strong className="text-xs sm:text-sm font-extrabold block">
+                                {item.label}
+                              </strong>
+                              <span
+                                className={`text-[11px] block mt-0.5 ${
+                                  active ? "text-zinc-700" : "text-zinc-400"
+                                }`}
+                              >
+                                {item.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                        ARMAZENAMENTO SSD NVME
+                      </div>
+                      <div className="space-y-2.5">
+                        {SSDS.map((item) => {
+                          const active = ssd === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setSsd(item.id)}
+                              className={`w-full p-3.5 text-left border transition-colors cursor-pointer ${
+                                active
+                                  ? "bg-white text-black border-white"
+                                  : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                              }`}
+                            >
+                              <strong className="text-xs sm:text-sm font-extrabold block">
+                                {item.label}
+                              </strong>
+                              <span
+                                className={`text-[11px] block mt-0.5 ${
+                                  active ? "text-zinc-700" : "text-zinc-400"
+                                }`}
+                              >
+                                {item.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeStep === 4 && (
+                  <div className="space-y-5">
+                    <div>
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                        ESTÉTICA DO GABINETE & REFRIGERAÇÃO
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {CABINETS.map((item) => {
+                          const active = cabinet === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setCabinet(item.id)}
+                              className={`p-3.5 text-left border transition-colors cursor-pointer ${
+                                active
+                                  ? "bg-white text-black border-white"
+                                  : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
+                              }`}
+                            >
+                              <strong className="text-xs font-extrabold block mb-1">
+                                {item.label}
+                              </strong>
+                              <span
+                                className={`text-[11px] block leading-snug ${
+                                  active ? "text-zinc-700" : "text-zinc-400"
+                                }`}
+                              >
+                                {item.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                      <div>
+                        <label className="block font-mono text-[11px] uppercase text-zinc-400 mb-2">
+                          PRECISA DE MONITOR E KIT?
+                        </label>
+                        <div className="grid grid-cols-2 border border-zinc-700">
+                          <button
+                            type="button"
+                            onClick={() => setPeripherals("somente_pc")}
+                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer ${
+                              peripherals === "somente_pc"
+                                ? "bg-white text-black"
+                                : "bg-zinc-900 text-zinc-400 hover:text-white"
+                            }`}
+                          >
+                            Só o PC
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPeripherals("completo")}
+                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer ${
+                              peripherals === "completo"
+                                ? "bg-white text-black"
+                                : "bg-zinc-900 text-zinc-400 hover:text-white"
+                            }`}
+                          >
+                            PC + Monitor
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="pc-builder-notes"
+                          className="block font-mono text-[11px] uppercase text-zinc-400 mb-2"
+                        >
+                          ORÇAMENTO ALVO OU USADO NA TROCA (OPCIONAL)
+                        </label>
+                        <input
+                          id="pc-builder-notes"
+                          type="text"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Ex: Até R$ 4.500 / Tenho notebook p/ troca"
+                          className="w-full bg-zinc-900 border border-zinc-700 px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Rodapé de Navegação entre Abas */}
+            <div className="px-6 py-4 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between gap-4">
+              {activeStep > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(activeStep - 1)}
+                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-zinc-400 hover:text-white cursor-pointer"
                 >
-                  <span>Orçar Recomendação</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Etapa Anterior</span>
+                </button>
+              ) : (
+                <span className="font-mono text-[11px] text-zinc-500">
+                  Peças recomendadas já selecionadas ao lado →
+                </span>
+              )}
 
-            {/* Passo 2: Processador */}
-            <div className="p-6 sm:p-8">
-              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300 mb-4">
-                PASSO 02 / PROCESSADOR (PLATAFORMA AMD OU INTEL)
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {CPUS.map((item) => {
-                  const active = cpu === item.id;
-                  const isRec = selectedPurpose.presetCpu === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setCpu(item.id)}
-                      className={`p-3.5 text-left border transition-colors cursor-pointer ${
-                        active
-                          ? "bg-white text-black border-white"
-                          : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
-                      }`}
-                    >
-                      {isRec && (
-                        <span
-                          className={`inline-block font-mono text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 mb-1.5 ${
-                            active ? "bg-black text-white" : "bg-zinc-800 text-zinc-300"
-                          }`}
-                        >
-                          ★ Recomendado p/ seu perfil
-                        </span>
-                      )}
-                      <strong className="text-xs sm:text-sm font-extrabold block mb-1">
-                        {item.label}
-                      </strong>
-                      <span
-                        className={`text-[11px] block leading-snug ${
-                          active ? "text-zinc-700" : "text-zinc-400"
-                        }`}
-                      >
-                        {item.sub}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Passo 3: Placa de Vídeo */}
-            <div className="p-6 sm:p-8">
-              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300 mb-4">
-                PASSO 03 / PLACA DE VÍDEO (GPU)
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {GPUS.map((item) => {
-                  const active = gpu === item.id;
-                  const isRec = selectedPurpose.presetGpu === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setGpu(item.id)}
-                      className={`p-3.5 text-left border transition-colors cursor-pointer ${
-                        active
-                          ? "bg-white text-black border-white"
-                          : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
-                      }`}
-                    >
-                      {isRec && (
-                        <span
-                          className={`inline-block font-mono text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 mb-1.5 ${
-                            active ? "bg-black text-white" : "bg-zinc-800 text-zinc-300"
-                          }`}
-                        >
-                          ★ Recomendado p/ seu perfil
-                        </span>
-                      )}
-                      <strong className="text-xs sm:text-sm font-extrabold block mb-1">
-                        {item.label}
-                      </strong>
-                      <span
-                        className={`text-[11px] block leading-snug ${
-                          active ? "text-zinc-700" : "text-zinc-400"
-                        }`}
-                      >
-                        {item.sub}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Passo 4 e 5: Memória RAM + SSD NVMe */}
-            <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300 mb-3">
-                  PASSO 04 / MEMÓRIA RAM
-                </div>
-                <div className="space-y-2.5">
-                  {RAMS.map((item) => {
-                    const active = ram === item.id;
-                    const isRec = selectedPurpose.presetRam === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setRam(item.id)}
-                        className={`w-full p-3.5 text-left border transition-colors cursor-pointer ${
-                          active
-                            ? "bg-white text-black border-white"
-                            : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <strong className="text-xs sm:text-sm font-extrabold block">
-                            {item.label}
-                          </strong>
-                          {isRec && (
-                            <span
-                              className={`font-mono text-[9px] font-bold uppercase px-1.5 py-0.5 ${
-                                active ? "bg-black text-white" : "bg-zinc-800 text-zinc-300"
-                              }`}
-                            >
-                              ★ Ideal
-                            </span>
-                          )}
-                        </div>
-                        <span
-                          className={`text-[11px] block mt-0.5 ${
-                            active ? "text-zinc-700" : "text-zinc-400"
-                          }`}
-                        >
-                          {item.sub}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300 mb-3">
-                  PASSO 05 / ARMAZENAMENTO SSD NVME
-                </div>
-                <div className="space-y-2.5">
-                  {SSDS.map((item) => {
-                    const active = ssd === item.id;
-                    const isRec = selectedPurpose.presetSsd === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setSsd(item.id)}
-                        className={`w-full p-3.5 text-left border transition-colors cursor-pointer ${
-                          active
-                            ? "bg-white text-black border-white"
-                            : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <strong className="text-xs sm:text-sm font-extrabold block">
-                            {item.label}
-                          </strong>
-                          {isRec && (
-                            <span
-                              className={`font-mono text-[9px] font-bold uppercase px-1.5 py-0.5 ${
-                                active ? "bg-black text-white" : "bg-zinc-800 text-zinc-300"
-                              }`}
-                            >
-                              ★ Ideal
-                            </span>
-                          )}
-                        </div>
-                        <span
-                          className={`text-[11px] block mt-0.5 ${
-                            active ? "text-zinc-700" : "text-zinc-400"
-                          }`}
-                        >
-                          {item.sub}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Passo 6: Gabinete, Periféricos e Observações */}
-            <div className="p-6 sm:p-8 space-y-6">
-              <div>
-                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-300 mb-3">
-                  PASSO 06 / ESTÉTICA DO GABINETE & REFRIGERAÇÃO
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {CABINETS.map((item) => {
-                    const active = cabinet === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setCabinet(item.id)}
-                        className={`p-3.5 text-left border transition-colors cursor-pointer ${
-                          active
-                            ? "bg-white text-black border-white"
-                            : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
-                        }`}
-                      >
-                        <strong className="text-xs font-extrabold block mb-1">
-                          {item.label}
-                        </strong>
-                        <span
-                          className={`text-[11px] block leading-snug ${
-                            active ? "text-zinc-700" : "text-zinc-400"
-                          }`}
-                        >
-                          {item.sub}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block font-mono text-[11px] uppercase tracking-wider text-zinc-400 mb-2">
-                    PRECISA DE MONITOR, TECLADO E MOUSE?
-                  </label>
-                  <div className="grid grid-cols-2 border border-zinc-700">
-                    <button
-                      type="button"
-                      onClick={() => setPeripherals("somente_pc")}
-                      className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer ${
-                        peripherals === "somente_pc"
-                          ? "bg-white text-black"
-                          : "bg-zinc-900 text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      Só o PC
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPeripherals("completo")}
-                      className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer ${
-                        peripherals === "completo"
-                          ? "bg-white text-black"
-                          : "bg-zinc-900 text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      PC + Monitor/Kit
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="pc-builder-notes"
-                    className="block font-mono text-[11px] uppercase tracking-wider text-zinc-400 mb-2"
-                  >
-                    JOGO, PROGRAMA OU ORÇAMENTO ALVO (OPCIONAL)
-                  </label>
-                  <input
-                    id="pc-builder-notes"
-                    type="text"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Ex: Quero gastar até R$ 4.500 / Tenho PC usado p/ troca"
-                    className="w-full bg-zinc-900 border border-zinc-700 px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white"
-                  />
-                </div>
-              </div>
+              {activeStep < 4 ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(activeStep + 1)}
+                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white cursor-pointer"
+                >
+                  <span>Personalizar Peças ({STEPS[activeStep].title})</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <span className="font-mono text-xs font-bold text-white uppercase">
+                  Configuração Pronta →
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Coluna Direita: Ficha Técnica Sticky (Sem espaço vazio no desktop) */}
-          <div className="lg:col-span-4 bg-zinc-950 border-t lg:border-t-0 border-zinc-800">
-            <div className="p-6 sm:p-8 lg:sticky lg:top-24">
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-5">
+          {/* Coluna Direita (4 cols): Ficha Compacta + CTA Direto */}
+          <div className="lg:col-span-4 p-6 sm:p-8 bg-zinc-950 flex flex-col justify-between border-t lg:border-t-0 border-zinc-800">
+            <div>
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
                 <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
-                  RESUMO DA SUA MÁQUINA
+                  SUA CONFIGURAÇÃO
                 </span>
                 <button
                   type="button"
@@ -509,91 +513,50 @@ export default function PCBuilderSection() {
                 </button>
               </div>
 
-              <div className="divide-y divide-zinc-800 border-b border-zinc-800 text-xs mb-5">
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    01 · OBJETIVO
-                  </span>
-                  <strong className="text-white font-bold block mt-0.5">
-                    {selectedPurpose.label}
-                  </strong>
+              <div className="grid grid-cols-2 gap-2.5 mb-5 text-xs">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 col-span-2">
+                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">OBJETIVO</span>
+                  <strong className="text-white font-bold block truncate">{selectedPurpose.label}</strong>
                 </div>
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    02 · PROCESSADOR
-                  </span>
-                  <strong className="text-white font-bold block mt-0.5">
-                    {selectedCpu.label}
-                  </strong>
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">PROCESSADOR</span>
+                  <strong className="text-white font-bold block truncate">{selectedCpu.label}</strong>
                 </div>
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    03 · PLACA DE VÍDEO (GPU)
-                  </span>
-                  <strong className="text-white font-bold block mt-0.5">
-                    {selectedGpu.label}
-                  </strong>
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">PLACA DE VÍDEO</span>
+                  <strong className="text-white font-bold block truncate">{selectedGpu.label}</strong>
                 </div>
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    04 · MEMÓRIA RAM
-                  </span>
-                  <strong className="text-white font-bold block mt-0.5">
-                    {selectedRam.label}
-                  </strong>
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">MEMÓRIA RAM</span>
+                  <strong className="text-white font-bold block truncate">{selectedRam.label}</strong>
                 </div>
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    05 · ARMAZENAMENTO SSD
-                  </span>
-                  <strong className="text-white font-bold block mt-0.5">
-                    {selectedSsd.label}
-                  </strong>
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">SSD NVME</span>
+                  <strong className="text-white font-bold block truncate">{selectedSsd.label}</strong>
                 </div>
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    06 · GABINETE & COOLER
-                  </span>
-                  <strong className="text-white font-bold block mt-0.5">
-                    {selectedCabinet.label}
-                  </strong>
-                </div>
-                <div className="py-2.5">
-                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">
-                    07 · FORMATO DO ORÇAMENTO
-                  </span>
-                  <strong className="text-zinc-300 font-bold block mt-0.5">
-                    {peripherals === "completo"
-                      ? "PC + Monitor, Teclado e Mouse"
-                      : "Somente o Gabinete Completo"}
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 col-span-2">
+                  <span className="font-mono text-[10px] uppercase text-zinc-500 block">GABINETE & EXTRAS</span>
+                  <strong className="text-zinc-200 font-bold block truncate">
+                    {selectedCabinet.label} · {peripherals === "completo" ? "Com Monitor/Kit" : "Só o Gabinete"}
                   </strong>
                 </div>
               </div>
+            </div>
 
-              <div className="border border-zinc-800 bg-zinc-900/50 p-4 mb-5 text-xs text-zinc-300 space-y-1.5">
-                <div className="font-mono text-[11px] font-bold text-white uppercase">
-                  INCLUSO EM TODA MONTAGEM CYBER:
-                </div>
-                <p>— Montagem limpa com organização profissional de cabos</p>
-                <p>— Atualização de BIOS, perfil XMP/EXPO e sistema instalado</p>
-                <p>— Aceitamos seu PC/notebook usado como parte do pagamento</p>
-              </div>
-
-              <div className="space-y-3">
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackWhatsAppClick("pc_builder_submit")}
-                  className="w-full bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-4 px-6 text-xs flex items-center justify-center gap-2 transition-colors"
-                >
-                  <span>Pedir Orçamento Desta Máquina</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </a>
-                <p className="text-[11px] font-mono text-zinc-500 text-center">
-                  Abre o WhatsApp da loja já com toda a ficha preenchida.
-                </p>
-              </div>
+            <div className="space-y-2.5">
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsAppClick("pc_builder_submit")}
+                className="w-full bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-4 px-5 text-xs flex items-center justify-center gap-2 transition-colors"
+              >
+                <span>Pedir Orçamento no WhatsApp</span>
+                <ArrowUpRight className="w-4 h-4" />
+              </a>
+              <p className="text-[11px] font-mono text-zinc-500 text-center">
+                Enviamos o valor à vista e em 12x no seu WhatsApp.
+              </p>
             </div>
           </div>
         </div>

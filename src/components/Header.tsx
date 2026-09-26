@@ -12,9 +12,8 @@ const TELAS_URL = "https://telas.cyberinformatica.tech";
 const NAV_ITEMS = [
   { href: "/#showroom", label: "Showroom Pronta-Entrega", sectionId: "showroom" },
   { href: "/#pc-builder", label: "PC Builder", sectionId: "pc-builder" },
-  { href: "/#servicos", label: "Manutenção & Laboratório", sectionId: "servicos" },
-  { href: "/#estrutura", label: "Nossa Loja", sectionId: "estrutura" },
-  { href: "/#localizacao", label: "Endereço", sectionId: "localizacao" },
+  { href: "/#servicos", label: "Serviços & 2 Andares", sectionId: "servicos" },
+  { href: "/#localizacao", label: "Endereço & Garantia", sectionId: "localizacao" },
 ];
 
 export default function Header() {
