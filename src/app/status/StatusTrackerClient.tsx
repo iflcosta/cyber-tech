@@ -197,7 +197,7 @@ export default function StatusTrackerClient() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Digite o nº da OS (ex: 1042) ou seu WhatsApp..."
+              placeholder="Digite o nº da sua OS ou seu WhatsApp cadastrado..."
               className="w-full bg-transparent pl-14 pr-4 py-4 text-sm sm:text-base text-zinc-950 placeholder-zinc-400 font-mono focus:outline-none"
             />
           </div>
@@ -218,20 +218,9 @@ export default function StatusTrackerClient() {
         </form>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-zinc-500">
-          <div className="flex items-center gap-2">
-            <span>Demonstração rápida:</span>
-            <button
-              type="button"
-              onClick={() => {
-                setQuery('1042');
-                handleSearch('1042');
-              }}
-              className="inline-flex items-center gap-1 font-bold text-zinc-950 hover:text-zinc-600 underline underline-offset-4 cursor-pointer"
-            >
-              <span>Ver Exemplo OS #1042</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
+          <span>
+            Informe o código impresso no seu comprovante de entrada ou seu telefone.
+          </span>
           <span className="hidden sm:inline text-zinc-500">
             RUA CORONEL TEÓFILO LEME, 967 — CENTRO
           </span>

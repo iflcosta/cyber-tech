@@ -42,6 +42,9 @@ export function NewItemForm({ initialShowroom = false }: { initialShowroom?: boo
   const [pcSsd, setPcSsd] = useState('SSD 1TB NVMe M.2');
   const [pcCase, setPcCase] = useState('Fonte 600W 80 Plus + Gabinete Aquário Vidro');
   const [pcSummary, setPcSummary] = useState('');
+  const [pcRuns, setPcRuns] = useState('CS2, Valorant, Warzone, GTA V / FiveM, Fortnite');
+  const [pcImageUrl, setPcImageUrl] = useState('');
+  const [pcInstallment, setPcInstallment] = useState('');
 
   function toggleMode(showroom: boolean) {
     setIsShowroomMode(showroom);
@@ -82,6 +85,9 @@ export function NewItemForm({ initialShowroom = false }: { initialShowroom?: boo
           pcRam.trim() ? `RAM: ${pcRam.trim()}` : '',
           pcSsd.trim() ? `SSD: ${pcSsd.trim()}` : '',
           pcCase.trim() ? `Gabinete: ${pcCase.trim()}` : '',
+          pcRuns.trim() ? `Roda: ${pcRuns.trim()}` : '',
+          pcImageUrl.trim() ? `Foto: ${pcImageUrl.trim()}` : '',
+          pcInstallment.trim() ? `Parcelamento: ${pcInstallment.trim()}` : '',
           notes.trim() ? `Obs: ${notes.trim()}` : '',
         ]
           .filter(Boolean)
@@ -217,6 +223,57 @@ export function NewItemForm({ initialShowroom = false }: { initialShowroom?: boo
                   onChange={(e) => setPcSummary(e.target.value)}
                   className="form-input"
                   placeholder="Ex: Pronto para Full HD Ultra, BIOS atualizada e Windows 11 Pro"
+                />
+              </Field>
+            </div>
+
+            <Field label="Jogos ou Programas que Roda (Separados por vírgula)">
+              <input
+                value={pcRuns}
+                onChange={(e) => setPcRuns(e.target.value)}
+                className="form-input"
+                placeholder="Ex: CS2, Valorant, Warzone, GTA V / FiveM, Fortnite"
+              />
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPcRuns('CS2, Valorant, Warzone, GTA V / FiveM, Fortnite, EA FC')}
+                  className="px-2 py-0.5 border border-zinc-400 bg-white font-mono text-[10px] font-bold text-zinc-800 hover:bg-zinc-200 cursor-pointer"
+                >
+                  + Preset Gamer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPcRuns('AutoCAD, Revit, SketchUp, Lumion, Premiere Pro, Render 3D')}
+                  className="px-2 py-0.5 border border-zinc-400 bg-white font-mono text-[10px] font-bold text-zinc-800 hover:bg-zinc-200 cursor-pointer"
+                >
+                  + Preset Workstation
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPcRuns('Sistemas ERP, Pacote Office, Contabilidade, Estudos, 2 Monitores')}
+                  className="px-2 py-0.5 border border-zinc-400 bg-white font-mono text-[10px] font-bold text-zinc-800 hover:bg-zinc-200 cursor-pointer"
+                >
+                  + Preset Office
+                </button>
+              </div>
+            </Field>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Condição de Parcelamento (Opcional — Automático se vazio)">
+                <input
+                  value={pcInstallment}
+                  onChange={(e) => setPcInstallment(e.target.value)}
+                  className="form-input"
+                  placeholder="Ex: ou em até 12x de R$ 369,00 no cartão"
+                />
+              </Field>
+              <Field label="Foto Real da Máquina (URL Opcional)">
+                <input
+                  value={pcImageUrl}
+                  onChange={(e) => setPcImageUrl(e.target.value)}
+                  className="form-input"
+                  placeholder="https://..."
                 />
               </Field>
             </div>

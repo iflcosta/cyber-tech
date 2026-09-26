@@ -30,13 +30,13 @@ export function OSFilter() {
           name="q"
           type="search"
           defaultValue={urlQ}
-          placeholder="Buscar por nome, OS (#1042), telefone, IMEI, modelo…"
+          placeholder="Buscar por cliente, nº da OS, telefone, série/IMEI ou modelo…"
           aria-label="Buscar por nome, OS, telefone, IMEI, modelo"
-          className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
+          className="flex-1 border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-950 placeholder-zinc-400 focus:border-zinc-950 focus:outline-none"
         />
         <button
           type="submit"
-          className="rounded-lg bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-sky-700 transition shadow-xs"
+          className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer"
         >
           Buscar
         </button>
@@ -59,7 +59,7 @@ export function OSFilter() {
           />
         ))}
         <FilterChip
-          label="🛡️ Em garantia"
+          label="Em Garantia"
           value="warranty"
           active={params.get('status') === 'warranty'}
           onClick={() => update('status', 'warranty')}
@@ -74,10 +74,10 @@ function FilterChip({ label, active, onClick }: { label: string; value: string; 
     <button
       type="button"
       onClick={onClick}
-      className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+      className={`whitespace-nowrap px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
         active
-          ? 'bg-sky-600 text-white border border-sky-600 shadow-xs'
-          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+          ? 'bg-zinc-950 text-white border border-zinc-950'
+          : 'bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-100 hover:text-zinc-950'
       }`}
     >
       {label}
