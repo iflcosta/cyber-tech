@@ -129,12 +129,12 @@ export function resolveUserContext(
       break;
 
     case 'stock_intern':
-      canViewStoreFinancials = false;
-      canViewAllCommissions = false;
-      canViewOwnCommissions = false;
-      canViewSupplierCosts = false;
-      canViewSalesFinancials = false; // Eduardo foca em contagem de estoque, não em valores de faturamento
-      facilityFocus = 'estoque';
+      canViewStoreFinancials = false; // Faturamento e lucro retido da loja exclusivo do Felipe
+      canViewAllCommissions = false;  // Extrato de comissões de terceiros exclusivo do Felipe
+      canViewOwnCommissions = false;  // Estagiário não remunerado: zero comissões
+      canViewSupplierCosts = false;   // Custos de fornecedores exclusivo do Felipe
+      canViewSalesFinancials = true;  // Vendas de balcão e PDV liberados (mesmo acesso de Iago/Jefferson)
+      facilityFocus = 'all';          // Acesso operacional completo de balcão, bancada e estoque
       break;
   }
 

@@ -96,11 +96,9 @@ export function MobileNav({
             </Link>
 
             {LINKS.filter((link) => {
+              // Estagiário não remunerado: comissões oculto, todos os outros módulos liberados
               if (role === 'stock_intern') {
-                return !['/admin/comissoes', '/admin/fornecedores', '/admin/pecas'].includes(link.href);
-              }
-              if (role === 'mezanino_specialist') {
-                return !['/admin/fornecedores'].includes(link.href);
+                return link.href !== '/admin/comissoes';
               }
               return true;
             }).map((link) => (

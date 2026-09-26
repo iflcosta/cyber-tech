@@ -20,11 +20,9 @@ export function AttentionRadar({
   unpaidOSs,
   lowStockItems,
 }: AttentionRadarProps) {
-  // Se for o Eduardo (estagiário), o foco principal é o estoque baixo
-  const isEduardo = userCtx.effectiveRole === 'stock_intern';
-
   const totalAlerts =
-    (isEduardo ? 0 : staleOSs.length + readyOSs.length) +
+    staleOSs.length +
+    readyOSs.length +
     (userCtx.canViewStoreFinancials ? unpaidOSs.length : 0) +
     lowStockItems.length;
 
@@ -86,7 +84,7 @@ export function AttentionRadar({
         )}
 
         {/* 2. OSs Prontas sem Retirada */}
-        {!isEduardo && readyOSs.length > 0 && (
+        {readyOSs.length > 0 && (
           <div className="border-2 border-emerald-500 bg-emerald-50/70 p-3.5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -119,7 +117,7 @@ export function AttentionRadar({
         )}
 
         {/* 3. OSs Paradas na Bancada (≥ 3 dias) */}
-        {!isEduardo && staleOSs.length > 0 && (
+        {staleOSs.length > 0 && (
           <div className="border-2 border-zinc-950 bg-zinc-50 p-3.5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">

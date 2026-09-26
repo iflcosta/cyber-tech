@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
+import { resolveUserContext } from '@/app/admin/lib/rbac';
 import { formatDateBR } from '@/app/admin/lib/datetime';
 import { SettleFridayButton } from './SettleFridayButton';
 
@@ -42,8 +44,14 @@ export default async function ComissoesPage({
   }>;
 }) {
   const params = await searchParams;
-  const { supabase, user } = await getAuthedProfile();
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) return null;
+
+  // Estagiário não remunerado não acessa comissões
+  const userCtx = resolveUserContext(user, profile);
+  if (userCtx.effectiveRole === 'stock_intern') {
+    redirect('/admin/dashboard');
+  }
 
   const now = new Date();
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -100,6 +108,7 @@ export default async function ComissoesPage({
     if (nameLower.includes('iago')) return 0.30;
     if (nameLower.includes('jefferson')) return 0.50;
     if (nameLower.includes('felipe')) return 0.00;
+    if (nameLower.includes('eduardo')) return 0.00; // Estagiário não remunerado: zero comissões
     if (rateFromDb !== undefined && rateFromDb !== null) return Number(rateFromDb);
     return 0.00;
   };

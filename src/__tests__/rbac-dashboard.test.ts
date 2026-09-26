@@ -46,19 +46,20 @@ describe('RBAC & Permissões do Dashboard — Cyber Informática V2', () => {
     expect(ctx.facilityFocus).toBe('mezanino');
   });
 
-  it('Eduardo (Estagiário de Estoque): ZERO dados financeiros ou comissões, foco total no estoque físico', () => {
+  it('Eduardo (Estagiário de Estoque & Balcão): mesmos acessos operacionais (OS, estoque, vendas), mas ZERO comissões', () => {
     const user = { id: 'user-eduardo', email: 'eduardo@cyberinformatica.tech' };
     const profile = { full_name: 'Eduardo Estoque', role: 'technician', can_delete: false };
 
     const ctx = resolveUserContext(user, profile);
 
     expect(ctx.effectiveRole).toBe('stock_intern');
-    expect(ctx.canViewStoreFinancials).toBe(false); // ZERO acesso a faturamento
-    expect(ctx.canViewAllCommissions).toBe(false);   // ZERO acesso a comissões
-    expect(ctx.canViewOwnCommissions).toBe(false);
-    expect(ctx.canViewSalesFinancials).toBe(false); // Não vê valores em R$
+    expect(ctx.canViewStoreFinancials).toBe(false); // ZERO acesso a faturamento/lucro global da loja
+    expect(ctx.canViewAllCommissions).toBe(false);   // ZERO acesso a comissões gerais
+    expect(ctx.canViewOwnCommissions).toBe(false);   // Estagiário não remunerado: zero comissões
+    expect(ctx.canViewSalesFinancials).toBe(true);   // Acesso liberado a vendas/balcão
     expect(ctx.canManageStock).toBe(true);          // Acesso total a peças e catálogo
-    expect(ctx.facilityFocus).toBe('estoque');
+    expect(ctx.canManageOS).toBe(true);             // Acesso total a ordens de serviço
+    expect(ctx.facilityFocus).toBe('all');
   });
 
   it('Iago como Desenvolvedor Master: acesso total e capacidade de alternar simulações', () => {
@@ -76,5 +77,38 @@ describe('RBAC & Permissões do Dashboard — Cyber Informática V2', () => {
     expect(simEduardo.isSimulating).toBe(true);
     expect(simEduardo.effectiveRole).toBe('stock_intern');
     expect(simEduardo.canViewStoreFinancials).toBe(false);
+  });
+
+  it('Contas Corporativas Oficiais (@cyberinformatica.tech): resolução automática de papéis', () => {
+    // 1. Felipe (Dono)
+    const felipeCtx = resolveUserContext(
+      { id: 'usr-felipe', email: 'felipe@cyberinformatica.tech' },
+      { full_name: 'Felipe', role: 'owner', can_delete: true }
+    );
+    expect(felipeCtx.effectiveRole).toBe('owner');
+    expect(felipeCtx.canViewStoreFinancials).toBe(true);
+    expect(felipeCtx.canViewAllCommissions).toBe(true);
+
+    // 2. Jefferson (Técnico Mezanino)
+    const jeffCtx = resolveUserContext(
+      { id: 'usr-jefferson', email: 'jefferson@cyberinformatica.tech' },
+      { full_name: 'Jefferson', role: 'technician', can_delete: false }
+    );
+    expect(jeffCtx.effectiveRole).toBe('mezanino_specialist');
+    expect(jeffCtx.canViewOwnCommissions).toBe(true);
+    expect(jeffCtx.canViewStoreFinancials).toBe(false);
+
+    // 3. Eduardo (Estagiário Não Remunerado)
+    const eduardoCtx = resolveUserContext(
+      { id: 'usr-eduardo', email: 'eduardo@cyberinformatica.tech' },
+      { full_name: 'Eduardo', role: 'technician', can_delete: false }
+    );
+    expect(eduardoCtx.effectiveRole).toBe('stock_intern');
+    expect(eduardoCtx.canViewOwnCommissions).toBe(false); // Sem comissão
+    expect(eduardoCtx.canViewAllCommissions).toBe(false); // Sem comissão
+    expect(eduardoCtx.canViewStoreFinancials).toBe(false); // Sem financeiro global
+    expect(eduardoCtx.canManageOS).toBe(true);             // Mesmo acesso operacional
+    expect(eduardoCtx.canManageStock).toBe(true);          // Mesmo acesso operacional
+    expect(eduardoCtx.canViewSalesFinancials).toBe(true);  // Balcão/PDV liberado
   });
 });
