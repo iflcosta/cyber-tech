@@ -40,6 +40,12 @@ export type PreloadedWhatsAppLead = {
   status?: LeadStatus;
   notes?: string | null;
   lastContactedAt?: string | null;
+  isHotLead?: boolean;
+  hasDirectChat?: boolean;
+  isAddressBook?: boolean;
+  msgsSent?: number;
+  msgsReceived?: number;
+  lastChatDate?: string | null;
 };
 
 type UnifiedLead = {
@@ -56,6 +62,13 @@ type UnifiedLead = {
   osCount: number;
   salesCount: number;
   fromWhatsApp: boolean;
+  isHotLead: boolean;
+  hasDirectChat: boolean;
+  isAddressBook: boolean;
+  msgsSent: number;
+  msgsReceived: number;
+  totalMessages: number;
+  lastChatDate: string | null;
   status: LeadStatus;
   notes: string;
   lastContactedAt: string | null;
@@ -186,8 +199,34 @@ function inferNiche(name: string, explicitNiche?: string): LeadNiche {
 }
 
 const MESSAGE_TEMPLATES: Record<string, { title: string; text: string }> = {
+  avaliacao_google: {
+    title: '⭐ Pedir Avaliação no Google (Pós-Venda Clientes Atendidos)',
+    text: `Olá, *{primeiro_nome}*! Tudo bem? Aqui é da *Cyber Informática* (Bragança Paulista).
+
+Muito obrigado por já ter confiado no nosso trabalho e atendimento aqui na loja! 🙏
+
+Estamos reunindo a opinião dos nossos clientes no Google para ajudar mais pessoas de Bragança e região a conhecerem nosso laboratório. Você consegue tirar 30 segundinhos para deixar suas *5 estrelas* e contar rapidinho como foi sua experiência com a gente?
+
+⭐ *Avaliar a Cyber Informática no Google:*
+👉 https://www.google.com/maps/search/?api=1&query=Cyber+Inform%C3%A1tica+Rua+Coronel+Te%C3%B3filo+Leme+967+Bragan%C3%A7a+Paulista
+
+Qualquer dúvida, revisão ou suporte que precisar para computador, notebook ou celular, pode contar sempre com a gente por aqui!`,
+  },
+  clientes_quentes_servicos: {
+    title: '🔥 Oferecer Novos Serviços (Para Clientes Já Atendidos)',
+    text: `Olá, *{primeiro_nome}*! Tudo bem? Aqui é da *Cyber Informática* (Bragança Paulista).
+
+Como já atendemos você aqui na loja, estamos passando para compartilhar as novidades da nossa estrutura em 2 andares na Cel. Teófilo Leme, 967:
+
+• *Suporte em TI Remoto e Presencial* (para empresas, escritórios e Home Office)
+• *Upgrade de SSD NVMe / RAM e Limpeza Térmica* entregues no mesmo dia
+• *Laboratório 2º Andar:* Reparo eletrônico de Placas de Vídeo (GPUs) e Troca só do Vidro de Celular mantendo sua tela original de fábrica
+
+Se tiver algum computador, notebook ou aparelho precisando de revisão, upgrade ou suporte técnico, me chama aqui que damos prioridade total para você!
+👉 https://www.cyberinformatica.tech`,
+  },
   saude_clinicas: {
-    title: '🏥 Saúde, Clínicas & Consultórios',
+    title: '🏥 Saúde, Clínicas & Consultórios (Suporte TI)',
     text: `Olá, *{nome}*! Tudo bem? Aqui é da *Cyber Informática* (Bragança Paulista).
 
 Sabemos que em clínica e consultório a recepção, o sistema de agenda/prontuário e as impressoras não podem travar no meio do atendimento aos pacientes.
@@ -386,10 +425,10 @@ export function WhatsAppLeadsClient({
   const [noteDraft, setNoteDraft] = useState<string>('');
   const [savingRowPhone, setSavingRowPhone] = useState<string | null>(null);
 
-  // Filtros
+  // Filtros (inicia focado nos Leads Quentes / Clientes Já Atendidos)
   const [filterSegment, setFilterSegment] = useState<
-    'b2b' | 'all' | 'erp' | 'whatsapp_new'
-  >('b2b');
+    'hot' | 'direct_chat' | 'b2b' | 'erp' | 'all'
+  >('hot');
   const [filterNiche, setFilterNiche] = useState<'all' | LeadNiche>('all');
   const [filterRegion, setFilterRegion] = useState<'regional' | 'all'>(
     'regional',
@@ -397,10 +436,10 @@ export function WhatsAppLeadsClient({
   const [filterStatus, setFilterStatus] = useState<'all' | LeadStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Script ativo
-  const [templateKey, setTemplateKey] = useState<string>('saude_clinicas');
+  // Script ativo (inicia com Avaliação no Google / Clientes Quentes)
+  const [templateKey, setTemplateKey] = useState<string>('avaliacao_google');
   const [customMessage, setCustomMessage] = useState(
-    MESSAGE_TEMPLATES.saude_clinicas.text,
+    MESSAGE_TEMPLATES.avaliacao_google.text,
   );
 
   function selectNicheFilter(niche: 'all' | LeadNiche) {
@@ -415,6 +454,27 @@ export function WhatsAppLeadsClient({
     setTemplateKey(key);
     if (MESSAGE_TEMPLATES[key]) {
       setCustomMessage(MESSAGE_TEMPLATES[key].text);
+    }
+  }
+
+  function applyQuickCampaign(
+    mode: 'google_review' | 'hot_services' | 'b2b_it_support',
+  ) {
+    if (mode === 'google_review') {
+      setFilterSegment('hot');
+      setFilterNiche('all');
+      handleTemplateChange('avaliacao_google');
+    } else if (mode === 'hot_services') {
+      setFilterSegment('hot');
+      setFilterNiche('all');
+      handleTemplateChange('clientes_quentes_servicos');
+    } else {
+      setFilterSegment('b2b');
+      if (filterNiche === 'all' || filterNiche === 'residencial_pf') {
+        handleTemplateChange('saude_clinicas');
+      } else {
+        handleTemplateChange(filterNiche);
+      }
     }
   }
 
@@ -445,6 +505,13 @@ export function WhatsAppLeadsClient({
           osCount: item.osCount,
           salesCount: item.salesCount,
           fromWhatsApp: false,
+          isHotLead: true,
+          hasDirectChat: false,
+          isAddressBook: false,
+          msgsSent: 0,
+          msgsReceived: 0,
+          totalMessages: 0,
+          lastChatDate: null,
           status: 'novo',
           notes: '',
           lastContactedAt: null,
@@ -454,6 +521,7 @@ export function WhatsAppLeadsClient({
           existing.inErp = true;
           existing.erpCustomerId = item.id;
         }
+        existing.isHotLead = true;
         existing.osCount += item.osCount;
         existing.salesCount += item.salesCount;
         if (!existing.email && item.email) existing.email = item.email;
@@ -474,6 +542,12 @@ export function WhatsAppLeadsClient({
         wa.segment?.toLowerCase().includes('b2b') ||
         wa.segment?.toLowerCase().includes('empresa') ||
         niche !== 'residencial_pf';
+      const msgsSent = Number(wa.msgsSent || 0);
+      const msgsReceived = Number(wa.msgsReceived || 0);
+      const totalMessages = msgsSent + msgsReceived;
+      const hasDirectChat = Boolean(wa.hasDirectChat || totalMessages > 0);
+      const isAddressBook = Boolean(wa.isAddressBook);
+      const isHotLead = Boolean(wa.isHotLead || hasDirectChat || isAddressBook);
 
       const existing = map.get(p);
       if (!existing) {
@@ -491,6 +565,13 @@ export function WhatsAppLeadsClient({
           osCount: 0,
           salesCount: 0,
           fromWhatsApp: true,
+          isHotLead,
+          hasDirectChat,
+          isAddressBook,
+          msgsSent,
+          msgsReceived,
+          totalMessages,
+          lastChatDate: wa.lastChatDate || null,
           status: wa.status || 'novo',
           notes: wa.notes || '',
           lastContactedAt: wa.lastContactedAt || null,
@@ -507,6 +588,17 @@ export function WhatsAppLeadsClient({
         }
         if (isB2B) existing.segment = 'b2b';
         if (niche !== 'residencial_pf') existing.niche = niche;
+        if (isHotLead) existing.isHotLead = true;
+        if (hasDirectChat) existing.hasDirectChat = true;
+        if (isAddressBook) existing.isAddressBook = true;
+        if (msgsSent > existing.msgsSent) existing.msgsSent = msgsSent;
+        if (msgsReceived > existing.msgsReceived) {
+          existing.msgsReceived = msgsReceived;
+        }
+        existing.totalMessages = existing.msgsSent + existing.msgsReceived;
+        if (wa.lastChatDate && (!existing.lastChatDate || wa.lastChatDate > existing.lastChatDate)) {
+          existing.lastChatDate = wa.lastChatDate;
+        }
         if (wa.status && wa.status !== 'novo') existing.status = wa.status;
         if (wa.notes) existing.notes = wa.notes;
         if (wa.lastContactedAt) existing.lastContactedAt = wa.lastContactedAt;
@@ -526,17 +618,29 @@ export function WhatsAppLeadsClient({
     }
 
     return Array.from(map.values()).sort((a, b) => {
-      if (a.segment !== b.segment) return a.segment === 'b2b' ? -1 : 1;
-      if (a.isRegional !== b.isRegional) return a.isRegional ? -1 : 1;
+      if (a.isHotLead !== b.isHotLead) return a.isHotLead ? -1 : 1;
       if (a.osCount + a.salesCount !== b.osCount + b.salesCount) {
         return b.osCount + b.salesCount - (a.osCount + a.salesCount);
       }
+      if (a.totalMessages !== b.totalMessages) {
+        return b.totalMessages - a.totalMessages;
+      }
+      if (a.lastChatDate !== b.lastChatDate) {
+        return (b.lastChatDate || '').localeCompare(a.lastChatDate || '');
+      }
+      if (a.segment !== b.segment) return a.segment === 'b2b' ? -1 : 1;
+      if (a.isRegional !== b.isRegional) return a.isRegional ? -1 : 1;
       return a.name.localeCompare(b.name, 'pt-BR');
     });
   }, [initialLeads, importedLeads, crmOverrides]);
 
   const stats = useMemo(() => {
     const total = unifiedLeads.length;
+    const hot = unifiedLeads.filter((l) => l.isHotLead).length;
+    const directChat = unifiedLeads.filter(
+      (l) => l.hasDirectChat || l.osCount > 0 || l.salesCount > 0,
+    ).length;
+    const erp = unifiedLeads.filter((l) => l.inErp || l.osCount > 0 || l.salesCount > 0).length;
     const b2b = unifiedLeads.filter((l) => l.segment === 'b2b').length;
     const b2bRegional = unifiedLeads.filter(
       (l) => l.segment === 'b2b' && l.isRegional,
@@ -560,18 +664,51 @@ export function WhatsAppLeadsClient({
     };
     for (const l of unifiedLeads) {
       if (filterRegion === 'regional' && !l.isRegional) continue;
+      if (filterSegment === 'hot' && !l.isHotLead) continue;
+      if (
+        filterSegment === 'direct_chat' &&
+        !l.hasDirectChat &&
+        l.osCount === 0 &&
+        l.salesCount === 0
+      ) {
+        continue;
+      }
+      if (filterSegment === 'b2b' && l.segment !== 'b2b') continue;
+      if (filterSegment === 'erp' && !l.inErp && l.osCount === 0 && l.salesCount === 0) {
+        continue;
+      }
       byNiche[l.niche] = (byNiche[l.niche] || 0) + 1;
     }
 
-    return { total, b2b, b2bRegional, contacted, negotiating, byNiche };
-  }, [unifiedLeads, filterRegion]);
+    return {
+      total,
+      hot,
+      directChat,
+      erp,
+      b2b,
+      b2bRegional,
+      contacted,
+      negotiating,
+      byNiche,
+    };
+  }, [unifiedLeads, filterRegion, filterSegment]);
 
   const filteredLeads = useMemo(() => {
     return unifiedLeads.filter((l) => {
       if (filterRegion === 'regional' && !l.isRegional) return false;
+      if (filterSegment === 'hot' && !l.isHotLead) return false;
+      if (
+        filterSegment === 'direct_chat' &&
+        !l.hasDirectChat &&
+        l.osCount === 0 &&
+        l.salesCount === 0
+      ) {
+        return false;
+      }
       if (filterSegment === 'b2b' && l.segment !== 'b2b') return false;
-      if (filterSegment === 'erp' && !l.inErp) return false;
-      if (filterSegment === 'whatsapp_new' && l.inErp) return false;
+      if (filterSegment === 'erp' && !l.inErp && l.osCount === 0 && l.salesCount === 0) {
+        return false;
+      }
       if (filterNiche !== 'all' && l.niche !== filterNiche) return false;
       if (filterStatus !== 'all' && l.status !== filterStatus) return false;
 
@@ -770,7 +907,7 @@ export function WhatsAppLeadsClient({
 
   function exportFilteredCSV() {
     const header =
-      'Nome;Telefone_E164;Telefone_Formatado;DDD;Segmento;Nicho_TI;Status_Funil;Observacoes;Ja_Cliente_ERP;Qtd_OS;Qtd_Vendas';
+      'Nome;Telefone_E164;Telefone_Formatado;DDD;Lead_Quente;Conversa_Direta_1a1;Msgs_Trocadas;Msgs_Enviadas_Loja;Msgs_Recebidas_Cliente;Ultima_Conversa;Salvo_Na_Agenda;Segmento;Nicho_TI;Status_Funil;Observacoes;Ja_Cliente_ERP;Qtd_OS;Qtd_Vendas';
     const esc = (v: string | number | null | undefined) =>
       `"${String(v ?? '').replace(/"/g, '""')}"`;
 
@@ -780,6 +917,13 @@ export function WhatsAppLeadsClient({
         esc(l.phoneE164),
         esc(l.phoneFormatted),
         esc(l.ddd),
+        esc(l.isHotLead ? 'Sim' : 'Não'),
+        esc(l.hasDirectChat ? 'Sim' : 'Não'),
+        l.totalMessages,
+        l.msgsSent,
+        l.msgsReceived,
+        esc(l.lastChatDate),
+        esc(l.isAddressBook ? 'Sim' : 'Não'),
         esc(l.segment === 'b2b' ? 'Empresa / B2B' : 'Cliente / Residencial'),
         esc(NICHE_META[l.niche].label),
         esc(STATUS_META[l.status].label),
@@ -794,7 +938,7 @@ export function WhatsAppLeadsClient({
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `leads-suporte-ti-${filterNiche}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `leads-cyber-${filterSegment}-${filterNiche}-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -802,8 +946,17 @@ export function WhatsAppLeadsClient({
 
   return (
     <div className="space-y-6">
-      {/* KPIs da Campanha de Suporte em TI */}
+      {/* KPIs da Central de Leads Quentes & Suporte em TI */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="rounded-lg border-2 border-black bg-white p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+            🔥 Leads Quentes (Atendidos)
+          </p>
+          <p className="mt-1 text-2xl font-bold text-zinc-950">{stats.hot}</p>
+          <p className="mt-0.5 text-xs text-zinc-600">
+            {stats.directChat} conversas 1-a-1 + agenda/ERP
+          </p>
+        </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
             Empresas B2B (Região)
@@ -817,22 +970,13 @@ export function WhatsAppLeadsClient({
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-            Base Nomeada Unificada
-          </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">{stats.total}</p>
-          <p className="mt-0.5 text-xs text-zinc-500">
-            WhatsApp Desktop + ERP
-          </p>
-        </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-            Já Abordados
+            Já Abordados no Funil
           </p>
           <p className="mt-1 text-2xl font-bold text-zinc-950">
             {stats.contacted}
           </p>
           <p className="mt-0.5 text-xs text-zinc-500">
-            Salvos no funil do Supabase
+            Sincronizados no Supabase
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
@@ -863,13 +1007,97 @@ export function WhatsAppLeadsClient({
         </div>
       </div>
 
+      {/* Atalhos Rápidos de Campanha (1 clique configura Público + Script) */}
+      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-950">
+              Escolha o Modo de Campanha (Configura Filtro + Mensagem Automaticamente)
+            </h2>
+            <p className="text-xs text-zinc-600">
+              Selecione o objetivo abaixo para filtrar os clientes certos e já carregar o texto ideal de abordagem:
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => applyQuickCampaign('google_review')}
+            className={`rounded-md border p-3 text-left transition ${
+              templateKey === 'avaliacao_google' && filterSegment === 'hot'
+                ? 'border-black bg-black text-white'
+                : 'border-zinc-300 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
+            }`}
+          >
+            <div className="text-xs font-bold">
+              ⭐ 1. Pedir Avaliação no Google (Pós-Venda)
+            </div>
+            <p
+              className={`mt-1 text-[11px] ${
+                templateKey === 'avaliacao_google' && filterSegment === 'hot'
+                  ? 'text-zinc-300'
+                  : 'text-zinc-600'
+              }`}
+            >
+              Filtra apenas <strong>Clientes Já Atendidos / Conversas 1-a-1</strong> e carrega mensagem pedindo 5 estrelas no Google.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyQuickCampaign('hot_services')}
+            className={`rounded-md border p-3 text-left transition ${
+              templateKey === 'clientes_quentes_servicos' &&
+              filterSegment === 'hot'
+                ? 'border-black bg-black text-white'
+                : 'border-zinc-300 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
+            }`}
+          >
+            <div className="text-xs font-bold">
+              🔥 2. Oferecer Novos Serviços (Clientes Quentes)
+            </div>
+            <p
+              className={`mt-1 text-[11px] ${
+                templateKey === 'clientes_quentes_servicos' &&
+                filterSegment === 'hot'
+                  ? 'text-zinc-300'
+                  : 'text-zinc-600'
+              }`}
+            >
+              Aborda clientes que já conhecem a loja oferecendo Suporte TI, Upgrades no mesmo dia, Reparo de GPU e Troca de Vidro.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyQuickCampaign('b2b_it_support')}
+            className={`rounded-md border p-3 text-left transition ${
+              filterSegment === 'b2b'
+                ? 'border-black bg-black text-white'
+                : 'border-zinc-300 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
+            }`}
+          >
+            <div className="text-xs font-bold">
+              🏢 3. Prospecção B2B por Sub-Nicho (Suporte TI)
+            </div>
+            <p
+              className={`mt-1 text-[11px] ${
+                filterSegment === 'b2b' ? 'text-zinc-300' : 'text-zinc-600'
+              }`}
+            >
+              Filtra as <strong>320 Empresas/Comércios</strong> por ramo (Clínicas, Escritórios, Lojas, etc.) com script sob medida.
+            </p>
+          </button>
+        </div>
+      </div>
+
       {/* Seletor de Sub-Nichos Estratégicos + Script de Abordagem */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Coluna Esquerda: Sub-Nichos de Ataque */}
         <div className="rounded-lg border border-zinc-200 bg-white p-5 lg:col-span-5">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-bold text-zinc-950">
-              1. Escolha o Nicho para Abordar
+              1. Filtrar por Ramo / Sub-Nicho
             </h2>
             <div className="inline-flex rounded-md border border-zinc-300 bg-zinc-50 p-0.5 text-xs">
               <button
@@ -897,8 +1125,8 @@ export function WhatsAppLeadsClient({
             </div>
           </div>
           <p className="mt-1 text-xs text-zinc-600">
-            Ao clicar em um nicho, a tabela filtra os leads daquele ramo e o
-            script ao lado muda automaticamente para a dor específica do setor.
+            Ao clicar em um sub-nicho empresarial, o script ao lado adapta o
+            argumento para a dor daquele setor.
           </p>
 
           <div className="mt-3 space-y-1.5">
@@ -911,7 +1139,7 @@ export function WhatsAppLeadsClient({
                   : 'border-zinc-200 bg-zinc-50 text-zinc-800 hover:bg-zinc-100'
               }`}
             >
-              <span>Todos os Sub-Nichos</span>
+              <span>Todos os Ramos (No Filtro Atual)</span>
               <span className="rounded bg-white/20 px-1.5 py-0.5 text-[11px]">
                 {Object.values(stats.byNiche).reduce((a, b) => a + b, 0)}
               </span>
@@ -935,11 +1163,6 @@ export function WhatsAppLeadsClient({
                   type="button"
                   onClick={() => {
                     selectNicheFilter(nicheKey);
-                    if (nicheKey === 'residencial_pf') {
-                      setFilterSegment('all');
-                    } else if (filterSegment !== 'all') {
-                      setFilterSegment('b2b');
-                    }
                   }}
                   className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-xs font-medium transition ${
                     active
@@ -976,7 +1199,7 @@ export function WhatsAppLeadsClient({
                 <code className="rounded bg-zinc-100 px-1">
                   {'{primeiro_nome}'}
                 </code>{' '}
-                para preencher automaticamente o nome da empresa/contato.
+                para preencher automaticamente o nome da empresa/cliente.
               </p>
             </div>
             <select
@@ -1082,17 +1305,24 @@ export function WhatsAppLeadsClient({
           {/* Filtro de Segmento */}
           <div className="flex flex-wrap gap-1.5">
             {[
-              { id: 'b2b', label: 'Empresas / B2B' },
-              { id: 'all', label: 'Todos (B2B + PF)' },
-              { id: 'erp', label: 'Já Clientes no ERP' },
-              { id: 'whatsapp_new', label: 'Apenas no WhatsApp' },
+              {
+                id: 'hot',
+                label: `🔥 Leads Quentes / Já Atendidos (${stats.hot})`,
+              },
+              {
+                id: 'direct_chat',
+                label: `💬 Conversas 1-a-1 Ativas (${stats.directChat})`,
+              },
+              { id: 'b2b', label: `🏢 Empresas / B2B (${stats.b2b})` },
+              { id: 'erp', label: `🛠️ Já no ERP (${stats.erp})` },
+              { id: 'all', label: `👥 Todos (${stats.total})` },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() =>
                   setFilterSegment(
-                    tab.id as 'b2b' | 'all' | 'erp' | 'whatsapp_new',
+                    tab.id as 'hot' | 'direct_chat' | 'b2b' | 'erp' | 'all',
                   )
                 }
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
@@ -1142,10 +1372,10 @@ export function WhatsAppLeadsClient({
           <table className="w-full border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                <th className="px-3 py-2.5">Empresa / Contato</th>
+                <th className="px-3 py-2.5">Cliente / Empresa</th>
                 <th className="px-3 py-2.5">WhatsApp</th>
                 <th className="px-3 py-2.5">Sub-Nicho TI</th>
-                <th className="px-3 py-2.5">Histórico</th>
+                <th className="px-3 py-2.5">Histórico & Conversas 1-a-1</th>
                 <th className="px-3 py-2.5">Etapa do Funil</th>
                 <th className="px-3 py-2.5">Anotações Comerciais</th>
                 <th className="px-3 py-2.5 text-right">Disparo Rápido</th>
@@ -1167,7 +1397,17 @@ export function WhatsAppLeadsClient({
                     }
                   >
                     <td className="px-3 py-2.5 font-medium text-zinc-950">
-                      <div>{lead.name}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span>{lead.name}</span>
+                        {lead.isHotLead && (
+                          <span
+                            title="Cliente Quente (Já atendido no WhatsApp, Agenda ou ERP)"
+                            className="inline-block rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white"
+                          >
+                            Quente
+                          </span>
+                        )}
+                      </div>
                       {lead.email && (
                         <div className="text-xs font-normal text-zinc-500">
                           {lead.email}
@@ -1189,16 +1429,44 @@ export function WhatsAppLeadsClient({
                     </td>
                     <td className="px-3 py-2.5 text-xs text-zinc-600">
                       <div className="flex flex-wrap gap-1">
-                        {lead.inErp && (
+                        {(lead.inErp ||
+                          lead.osCount > 0 ||
+                          lead.salesCount > 0) && (
+                          <span className="rounded border border-zinc-900 bg-zinc-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                            🛠️ ERP ({lead.osCount} OS · {lead.salesCount} Vendas)
+                          </span>
+                        )}
+                        {lead.totalMessages > 0 ? (
+                          <span
+                            title={`${lead.msgsSent} mensagens enviadas pela loja · ${lead.msgsReceived} recebidas do cliente`}
+                            className="rounded border border-zinc-400 bg-zinc-100 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-900"
+                          >
+                            💬 {lead.totalMessages} msgs ({lead.msgsSent} env ·{' '}
+                            {lead.msgsReceived} rec)
+                          </span>
+                        ) : lead.hasDirectChat ? (
                           <span className="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-800">
-                            ERP ({lead.osCount} OS · {lead.salesCount} Vendas)
+                            💬 Conversa 1-a-1
+                          </span>
+                        ) : null}
+                        {lead.lastChatDate && (
+                          <span className="rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] text-zinc-600">
+                            📅 {lead.lastChatDate}
                           </span>
                         )}
-                        {lead.fromWhatsApp && !lead.inErp && (
-                          <span className="rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[11px] text-zinc-600">
-                            WhatsApp Loja
+                        {lead.isAddressBook && (
+                          <span className="rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-zinc-700">
+                            📒 Na Agenda
                           </span>
                         )}
+                        {lead.fromWhatsApp &&
+                          !lead.inErp &&
+                          !lead.hasDirectChat &&
+                          !lead.isAddressBook && (
+                            <span className="rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] text-zinc-400">
+                              Contato Geral / Grupo
+                            </span>
+                          )}
                       </div>
                     </td>
                     <td className="px-3 py-2.5">

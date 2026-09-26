@@ -39,7 +39,7 @@ export default async function ClientesLeadsPage() {
     supabase
       .from('it_support_leads')
       .select(
-        'phone_e164, name, segment, niche, status, notes, last_contacted_at',
+        'phone_e164, name, segment, niche, status, notes, last_contacted_at, is_hot_lead, has_direct_chat, is_address_book, msgs_sent, msgs_received, last_chat_date',
       ),
   ]);
 
@@ -130,6 +130,12 @@ export default async function ClientesLeadsPage() {
             status: 'novo',
             notes: null,
             lastContactedAt: null,
+            isHotLead: Boolean(item.isHotLead),
+            hasDirectChat: Boolean(item.hasDirectChat),
+            isAddressBook: Boolean(item.isAddressBook),
+            msgsSent: Number(item.msgsSent || 0),
+            msgsReceived: Number(item.msgsReceived || 0),
+            lastChatDate: item.lastChatDate ? String(item.lastChatDate) : null,
           });
         }
       }
@@ -151,6 +157,12 @@ export default async function ClientesLeadsPage() {
       status: (row.status as LeadStatus) || 'novo',
       notes: row.notes ?? null,
       lastContactedAt: row.last_contacted_at ?? null,
+      isHotLead: Boolean(row.is_hot_lead ?? existing?.isHotLead),
+      hasDirectChat: Boolean(row.has_direct_chat ?? existing?.hasDirectChat),
+      isAddressBook: Boolean(row.is_address_book ?? existing?.isAddressBook),
+      msgsSent: Number(row.msgs_sent ?? existing?.msgsSent ?? 0),
+      msgsReceived: Number(row.msgs_received ?? existing?.msgsReceived ?? 0),
+      lastChatDate: row.last_chat_date ?? existing?.lastChatDate ?? null,
     });
   }
 
@@ -167,11 +179,12 @@ export default async function ClientesLeadsPage() {
             ← Voltar para Clientes
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-zinc-950">
-            Central CRM de Leads & Prospecção — Suporte em TI
+            Central CRM de Leads Quentes, Pós-Venda & Suporte em TI
           </h1>
           <p className="text-sm text-zinc-600">
-            320 empresas/comércios e 1.456 contatos extraídos do WhatsApp da
-            loja, segmentados por Sub-Nicho de TI e sincronizados no Supabase.
+            Clientes já atendidos (conversas 1-a-1 reais no WhatsApp da loja +
+            agenda + OS/PDV) prontos para pedir Avaliação no Google, oferecer
+            novos serviços e prospectar empresas B2B.
           </p>
         </div>
       </div>

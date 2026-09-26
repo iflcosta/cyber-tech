@@ -1,13 +1,13 @@
-# 📲 Tutorial Completo: Extração de Contatos do WhatsApp & Central de Leads (Suporte em TI)
+# 📲 Tutorial Completo: Extração de Contatos, Conversas Reais (Leads Quentes) & Central CRM
 
 > **🤖 Contexto Rápido para o Antigravity (Handoff entre Dispositivos):**
-> - **Status atual:** A extração direta do **WhatsApp Desktop** do computador da loja já foi executada e commitada neste repositório (`tools/whatsapp-leads/output/`).
+> - **Status atual:** A extração profunda do **WhatsApp Desktop** do computador da loja já foi executada, enriquecida com métricas reais de **Conversas 1-a-1 (mensagens enviadas pela loja vs. recebidas do cliente + data da última conversa)** e sincronizada tanto no Git (`tools/whatsapp-leads/output/`) quanto no banco Supabase (`public.it_support_leads`).
 > - **Arquivos já extraídos e prontos no repositório:**
->   1. `tools/whatsapp-leads/output/leads-whatsapp-empresas-b2b.csv` — **91 Empresas / B2B** (clínicas, escritórios, escolas, comércios, oficinas, etc.).
->   2. `tools/whatsapp-leads/output/leads-whatsapp-nomeados.csv` — **1.510 contatos com nome identificado** (sendo **983 da região DDD 11/19/12/35**).
->   3. `tools/whatsapp-leads/output/leads-whatsapp-completo.csv` — **9.495 números únicos de WhatsApp (Brasil)** que já conversaram com a loja.
->   4. `tools/whatsapp-leads/output/leads-whatsapp-nomeados.json` — Base JSON **pré-carregada automaticamente** na tela `/admin/clientes/leads` do ERP.
-> - **Integração no ERP:** A rota `/admin/clientes/leads` (`src/app/admin/clientes/leads/page.tsx` e `WhatsAppLeadsClient.tsx`) já cruza automaticamente os contatos do banco do Supabase (`customers`, `service_orders`, `sales`, `contact_leads`) com os 1.510 leads pré-carregados do WhatsApp Desktop.
+>   1. 🔥 `tools/whatsapp-leads/output/leads-quentes-clientes-atendidos.csv` (e `.json`) — **965 Leads Quentes (Clientes Já Atendidos)**, incluindo **444 conversas diretas 1-a-1 no WhatsApp da loja** (com contagem exata de mensagens trocadas e data da última interação) + **586 contatos salvos manualmente na agenda da loja** durante atendimentos.
+>   2. 🏢 `tools/whatsapp-leads/output/leads-whatsapp-empresas-b2b.csv` — **320 Empresas / B2B** segmentadas em 6 Sub-Nichos de Suporte em TI (sendo **228 na região DDD 11/19/12/35**).
+>   3. 👤 `tools/whatsapp-leads/output/leads-whatsapp-nomeados.csv` (e `.json`) — **1.715 contatos nomeados / com conversa ativa**, pré-carregados automaticamente em `/admin/clientes/leads`.
+>   4. 📋 `tools/whatsapp-leads/output/leads-whatsapp-completo.csv` — **9.435 números únicos de WhatsApp (Brasil, sem robôs/0800)**.
+> - **Integração no ERP (`/admin/clientes/leads`):** Já conta com 3 Modos de Campanha em 1 clique (**1. Pedir Avaliação no Google**, **2. Oferecer Novos Serviços para Clientes Quentes**, **3. Prospecção B2B por Sub-Nicho de Suporte em TI**), funil CRM persistido no Supabase (`public.it_support_leads`) e landing page comercial em `/suporte-ti`.
 
 ---
 

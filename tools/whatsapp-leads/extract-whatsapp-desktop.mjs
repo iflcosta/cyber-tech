@@ -310,6 +310,7 @@ function main() {
   const lidToPhone = new Map();
   const contactsByPhone = new Map();
   const namesByLid = new Map();
+  const chatStatsById = new Map(); // key: raw id before @ (phone or lid)
 
   function ensurePhone(phone) {
     let c = contactsByPhone.get(phone);
@@ -322,10 +323,23 @@ function main() {
         isAddressBook: false,
         isBusiness: false,
         hasChat: false,
+        hasDirectChat: false,
+        msgsSent: 0,
+        msgsReceived: 0,
+        lastChatTs: 0,
       };
       contactsByPhone.set(phone, c);
     }
     return c;
+  }
+
+  function ensureChatStat(rawId) {
+    let st = chatStatsById.get(rawId);
+    if (!st) {
+      st = { hasChatThread: false, lastChatTs: 0, sentIds: new Set(), recvIds: new Set() };
+      chatStatsById.set(rawId, st);
+    }
+    return st;
   }
 
   const allBlocks = [];
@@ -398,7 +412,7 @@ function main() {
       idx = endBracket !== -1 ? endBracket + 2 : idx + 12;
     }
 
-    // 2. V8 serialized contact objects starting with o"\x02id
+    // 2. V8 serialized contact & chat objects starting with o"\x02id
     idx = 0;
     while ((idx = s.indexOf('o"\x02id', idx)) !== -1) {
       const nextObjIdx = s.indexOf('o"\x02id', idx + 5);
@@ -407,6 +421,21 @@ function main() {
         const chunkEnd = nextObjIdx !== -1 ? Math.min(nextObjIdx, idx + 1200) : Math.min(b.length, idx + 1200);
         const chunk = b.subarray(idx, chunkEnd);
         const chunkLatin = chunk.toString('latin1');
+        const rawId = idStr.split('@')[0].replace(/\D/g, '');
+
+        // Check if this V8 object is an active 1-on-1 Chat entry (has unreadCount or timestamp tN)
+        if (chunkLatin.includes('unreadCount') || chunkLatin.includes('notSpam')) {
+          const st = ensureChatStat(rawId);
+          st.hasChatThread = true;
+          const tIdx = chunkLatin.indexOf('"\x01tN');
+          if (tIdx !== -1 && tIdx + 12 <= chunk.length) {
+            const tsVal = chunk.readDoubleLE(tIdx + 4);
+            // Valid timestamp between 2020 and 2028
+            if (tsVal > 1577836800 && tsVal < 1830297600 && tsVal > st.lastChatTs) {
+              st.lastChatTs = Math.floor(tsVal);
+            }
+          }
+        }
 
         let phoneNumber = null;
         const pnIdx = chunkLatin.indexOf('"\x0bphoneNumber');
@@ -455,7 +484,7 @@ function main() {
         }
 
         if (idStr.endsWith('@lid')) {
-          const lid = idStr.split('@')[0];
+          const lid = rawId;
           if (phoneNumber && phoneNumber.length >= 10) {
             lidToPhone.set(lid, phoneNumber);
           }
@@ -466,7 +495,7 @@ function main() {
           if (verifiedName) existingLid.verifiedName = verifiedName;
           namesByLid.set(lid, existingLid);
         } else {
-          const phone = idStr.split('@')[0].replace(/\D/g, '');
+          const phone = rawId;
           if (phone.length >= 10 && phone.length <= 15) {
             const rec = ensurePhone(phone);
             if (name && name.length >= rec.savedName.length) rec.savedName = name;
@@ -485,7 +514,31 @@ function main() {
       idx += 5;
     }
 
-    // 3. Raw 55... phone numbers from chat/message history
+    // 3. Direct 1-on-1 message IDs: (true|false)_<phone_or_lid>@(c.us|s.whatsapp.net|lid)_<msgId>
+    // Avoids group messages (which have @g.us after the first _)
+    const msgMatches = s.matchAll(/(true|false)_(\d{10,20})@(c\.us|s\.whatsapp\.net|lid)_([A-Za-z0-9]{8,32})/g);
+    for (const m of msgMatches) {
+      const fromMe = m[1] === 'true';
+      const rawId = m[2];
+      const msgId = m[4];
+      const st = ensureChatStat(rawId);
+      if (fromMe) st.sentIds.add(msgId);
+      else st.recvIds.add(msgId);
+
+      if (m.index !== undefined) {
+        const subEnd = Math.min(b.length, m.index + 240);
+        const subLatin = s.slice(m.index, subEnd);
+        const tIdx = subLatin.indexOf('"\x01tN');
+        if (tIdx !== -1 && m.index + tIdx + 12 <= b.length) {
+          const tsVal = b.readDoubleLE(m.index + tIdx + 4);
+          if (tsVal > 1577836800 && tsVal < 1830297600 && tsVal > st.lastChatTs) {
+            st.lastChatTs = Math.floor(tsVal);
+          }
+        }
+      }
+    }
+
+    // 4. Raw 55... phone numbers from general history (groups + chats)
     const rawPhones = s.match(/55\d{10,11}(?=@c\.us|@s\.whatsapp\.net)/g) || [];
     for (const p of rawPhones) {
       const rec = ensurePhone(p);
@@ -507,6 +560,21 @@ function main() {
     }
   }
 
+  // Merge 1-on-1 chat & message stats into phone records (resolving LIDs when mapped)
+  for (const [rawId, st] of chatStatsById.entries()) {
+    const phone = lidToPhone.get(rawId) || (rawId.startsWith('55') && rawId.length <= 13 ? rawId : null);
+    if (!phone) continue;
+    const rec = ensurePhone(phone);
+    rec.msgsSent += st.sentIds.size;
+    rec.msgsReceived += st.recvIds.size;
+    if (st.hasChatThread || st.sentIds.size > 0 || st.recvIds.size > 0) {
+      rec.hasDirectChat = true;
+    }
+    if (st.lastChatTs > rec.lastChatTs) {
+      rec.lastChatTs = st.lastChatTs;
+    }
+  }
+
   // Filter out the store's own number (5511954369269), 0800s, and national chatbots
   const allFormatted = Array.from(contactsByPhone.values())
     .filter((c) => c.phone.startsWith('55') && c.phone.length >= 12 && c.phone.length <= 13)
@@ -521,6 +589,10 @@ function main() {
       const displayName = c.savedName || c.verifiedName || c.pushName || '';
       const ddd = c.phone.slice(2, 4);
       const classification = classifyContact(displayName, c.isBusiness);
+      const totalMessages = c.msgsSent + c.msgsReceived;
+      const isHotLead = Boolean(c.hasDirectChat || c.isAddressBook);
+      const lastChatDate =
+        c.lastChatTs > 0 ? new Date(c.lastChatTs * 1000).toISOString().slice(0, 10) : '';
       return {
         name: displayName || `Contato WhatsApp ${formatPhoneBR(c.phone)}`,
         hasRealName: Boolean(displayName),
@@ -535,16 +607,33 @@ function main() {
         pushName: c.pushName,
         verifiedName: c.verifiedName,
         isAddressBook: c.isAddressBook,
+        hasDirectChat: c.hasDirectChat,
+        isHotLead,
+        msgsSent: c.msgsSent,
+        msgsReceived: c.msgsReceived,
+        totalMessages,
+        lastChatDate,
       };
     })
     .sort((a, b) => {
+      if (a.isHotLead !== b.isHotLead) return a.isHotLead ? -1 : 1;
+      if (a.totalMessages !== b.totalMessages) return b.totalMessages - a.totalMessages;
       if (a.hasRealName !== b.hasRealName) return a.hasRealName ? -1 : 1;
       if (a.segment !== b.segment) return a.segment === 'Empresa / B2B' ? -1 : 1;
       if (a.isRegional !== b.isRegional) return a.isRegional ? -1 : 1;
       return a.name.localeCompare(b.name, 'pt-BR');
     });
 
-  const namedLeads = allFormatted.filter((c) => c.hasRealName);
+  // Include both named contacts AND any direct 1-on-1 chats in namedLeads so no hot chat is lost
+  const namedLeads = allFormatted.filter((c) => c.hasRealName || c.hasDirectChat);
+  const hotLeads = allFormatted
+    .filter((c) => c.isHotLead)
+    .sort((a, b) => {
+      if (b.totalMessages !== a.totalMessages) return b.totalMessages - a.totalMessages;
+      if (a.lastChatDate !== b.lastChatDate) return (b.lastChatDate || '').localeCompare(a.lastChatDate || '');
+      if (a.isAddressBook !== b.isAddressBook) return a.isAddressBook ? -1 : 1;
+      return a.name.localeCompare(b.name, 'pt-BR');
+    });
   const b2bLeads = namedLeads.filter((c) => c.segment === 'Empresa / B2B');
 
   const outDir = path.resolve('tools/whatsapp-leads/output');
@@ -554,22 +643,34 @@ function main() {
   const toCSV = (rows) =>
     '\uFEFF' +
     [
-      'Nome;Telefone_E164;Telefone_Formatado;DDD;Segmento;Nicho_TI;Salvo_Na_Agenda;Nome_Agenda;Nome_Perfil_WhatsApp',
+      'Nome;Telefone_E164;Telefone_Formatado;DDD;Lead_Quente;Conversa_Direta_1a1;Msgs_Trocadas;Msgs_Enviadas_Loja;Msgs_Recebidas_Cliente;Ultima_Conversa;Salvo_Na_Agenda;Segmento;Nicho_TI;Nome_Agenda;Nome_Perfil_WhatsApp',
       ...rows.map((r) =>
         [
           esc(r.name),
           esc(r.phone),
           esc(r.phoneFormatted),
           esc(r.ddd),
+          esc(r.isHotLead ? 'Sim' : 'Não'),
+          esc(r.hasDirectChat ? 'Sim' : 'Não'),
+          r.totalMessages,
+          r.msgsSent,
+          r.msgsReceived,
+          esc(r.lastChatDate),
+          esc(r.isAddressBook ? 'Sim' : 'Não'),
           esc(r.segment),
           esc(r.nicheLabel),
-          esc(r.isAddressBook ? 'Sim' : 'Não'),
           esc(r.savedName),
           esc(r.pushName),
         ].join(';'),
       ),
     ].join('\r\n');
 
+  fs.writeFileSync(path.join(outDir, 'leads-quentes-clientes-atendidos.csv'), toCSV(hotLeads), 'utf8');
+  fs.writeFileSync(
+    path.join(outDir, 'leads-quentes-clientes-atendidos.json'),
+    JSON.stringify(hotLeads, null, 2),
+    'utf8',
+  );
   fs.writeFileSync(path.join(outDir, 'leads-whatsapp-empresas-b2b.csv'), toCSV(b2bLeads), 'utf8');
   fs.writeFileSync(path.join(outDir, 'leads-whatsapp-nomeados.csv'), toCSV(namedLeads), 'utf8');
   fs.writeFileSync(path.join(outDir, 'leads-whatsapp-completo.csv'), toCSV(allFormatted), 'utf8');
@@ -585,11 +686,14 @@ function main() {
   }
 
   console.log(`\n✅ Extração e Segmentação Inteligente concluída com sucesso!`);
-  console.log(`   - Total de números únicos (Brasil, sem bots): ${allFormatted.length}`);
-  console.log(`   - Contatos com nome identificado:             ${namedLeads.length}`);
-  console.log(`   - Empresas / B2B identificadas (Total):       ${b2bLeads.length}`);
-  console.log(`   - Empresas / B2B na Região (DDD 11/19/12/35): ${b2bLeads.filter((c) => c.isRegional).length}`);
-  console.log(`   - Contatos DDD 11/19/12/35 (Região Total):    ${namedLeads.filter((c) => c.isRegional).length}`);
+  console.log(`   - Total de números únicos (Brasil, sem bots):          ${allFormatted.length}`);
+  console.log(`   - Contatos nomeados / com conversa ativa:              ${namedLeads.length}`);
+  console.log(`   - 🔥 LEADS QUENTES (Clientes Atendidos / Conversa 1a1): ${hotLeads.length}`);
+  console.log(`     • Com conversa direta 1-a-1 no WhatsApp da loja:     ${hotLeads.filter((c) => c.hasDirectChat).length}`);
+  console.log(`     • Com mensagens enviadas pela loja (atendidos):      ${hotLeads.filter((c) => c.msgsSent > 0).length}`);
+  console.log(`     • Salvos manualmente na agenda da loja:              ${hotLeads.filter((c) => c.isAddressBook).length}`);
+  console.log(`   - Empresas / B2B identificadas (Total):                ${b2bLeads.length}`);
+  console.log(`   - Empresas / B2B na Região (DDD 11/19/12/35):          ${b2bLeads.filter((c) => c.isRegional).length}`);
   console.log(`\n📊 Distribuição de Leads B2B por Sub-Nicho de Suporte em TI:`);
   for (const [k, v] of Object.entries(byNiche)) {
     console.log(`   • ${k}: ${v} leads`);
