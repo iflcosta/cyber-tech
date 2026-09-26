@@ -1,9 +1,15 @@
 import Link from 'next/link';
-import { getAuthedUser } from '@/app/admin/lib/auth';
+import { getAuthedProfile } from '@/app/admin/lib/auth';
+import { resolveUserContext } from '@/app/admin/lib/rbac';
 import { PAYMENT_METHODS } from '@/app/admin/types/database';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
-import { SalesChart } from './SalesChart';
 import { formatDateTimeBR, startOfDayBR, startOfMonthBR } from '@/app/admin/lib/datetime';
+import { SalesChart, DayPoint } from './SalesChart';
+import { DashboardTacticalBar } from './DashboardTacticalBar';
+import { AttentionRadar } from './AttentionRadar';
+import { FacilityLevelSplit } from './FacilityLevelSplit';
+import { CommissionsSummary } from './CommissionsSummary';
+import { StockAndSalesGiro } from './StockAndSalesGiro';
 
 const CHART_DAYS = 14;
 const TZ = 'America/Sao_Paulo';
@@ -14,198 +20,200 @@ function fmtBRL(n: number): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-export default async function DashboardPage() {
-  const { supabase, user } = await getAuthedUser();
+function getFridayCycleBounds(refDate: Date): { start: Date; end: Date; label: string } {
+  const d = new Date(refDate);
+  d.setHours(12, 0, 0, 0);
+  const day = d.getDay();
+  const daysSinceSaturday = (day + 1) % 7;
+  const start = new Date(d);
+  start.setDate(d.getDate() - daysSinceSaturday);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  const fmt = (dt: Date) => dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  return { start, end, label: `Fechamento Sexta-Feira (${fmt(start)} a ${fmt(end)})` };
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string }>;
+}) {
+  const params = await searchParams;
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) return null;
 
-  // Janelas de tempo — sempre no fuso de Brasília, não no fuso do
-  // servidor (Vercel roda em UTC, o que fazia "hoje" começar 3h adiantado).
+  // 1. Resolução do Contexto e Papéis RBAC
+  const userCtx = resolveUserContext(user, profile, params.role);
+
+  // 2. Janelas de tempo — no fuso de Brasília (BRT)
+  const now = new Date();
   const todayStart = startOfDayBR();
   const chartStart = new Date(todayStart.getTime() - (CHART_DAYS - 1) * 86400000);
   const monthStart = startOfMonthBR();
+  const fridayCycle = getFridayCycleBounds(now);
 
-  // Busca vendas nao canceladas dos periodos + numeros de OS (em paralelo)
+  // 3. Status de Conexão da Evolution API na VPS (com timeout rápido de contingência)
+  let vpsConnected = false;
+  try {
+    const vpsRes = await fetch(
+      `${process.env.CYBER_VPS_WA_URL || 'http://148.113.247.44:8085'}/instance/connectionState/cyber-loja`,
+      {
+        headers: { apikey: process.env.CYBER_VPS_WA_KEY || 'cyber_wa_sec_2026_braganca_ifl' },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(1800),
+      }
+    );
+    if (vpsRes.ok) {
+      const vpsData = await vpsRes.json();
+      vpsConnected = (vpsData?.instance?.state || vpsData?.state) === 'open';
+    }
+  } catch {
+    vpsConnected = false;
+  }
+
+  // 4. Consultas paralelas e resilientes ao Supabase CRM
   const [
     salesLast14Days,
     salesMonth,
     lastSales,
     topItems,
+    stockItemsRes,
     osOpen,
     osStale,
     osReady,
     osDeliveredMonth,
-    partsOrderedMonth,
-    partsAppliedMonth,
-    partsReturnedMonth,
-    partsOpenNow,
+    unpaidList,
     staleList,
     readyList,
-    unpaidList,
-    partsWaitingList,
+    commissionLedgerMonth,
+    partsOrderedMonth,
   ] = await Promise.all([
-    // Uma query só cobre o gráfico E os cards "Hoje"/"Últimos 7 dias" —
-    // ambos derivados por agregação em memória dos mesmos buckets diários
-    // (ver abaixo), pra garantir que o número do card bate exatamente com
-    // as barras do gráfico (antes eram duas queries com janelas de tempo
-    // levemente diferentes).
+    // Vendas dos últimos 14 dias para o gráfico e tendências
     supabase
       .from('sales')
       .select('total, created_at')
       .is('voided_at', null)
       .gte('created_at', chartStart.toISOString()),
+
+    // Vendas do mês atual
     supabase
       .from('sales')
       .select('total')
       .is('voided_at', null)
       .gte('created_at', monthStart.toISOString()),
+
+    // Últimas 6 vendas registradas no PDV
     supabase
       .from('sales')
       .select(`
-        *,
+        id, sale_number, total, payment_method, customer_name, created_at,
         author:profiles!sales_author_id_fkey(full_name)
       `)
       .is('voided_at', null)
       .order('created_at', { ascending: false })
-      .limit(5),
+      .limit(6),
+
+    // Itens mais vendidos no balcão no mês
     supabase
       .from('sale_items')
       .select('item_name, quantity, subtotal, sale:sales!inner(created_at, voided_at)')
       .gte('sale.created_at', monthStart.toISOString())
       .is('sale.voided_at', null)
       .limit(500),
+
+    // Estoque do Eduardo (Catálogo da estante de 6m)
+    supabase
+      .from('stock_items')
+      .select('id, name, current_stock, min_stock, unit_price, internal_sku, category')
+      .order('name'),
+
+    // Contagem de OSs abertas
     supabase
       .from('service_orders_with_stale')
       .select('id', { count: 'exact', head: true }),
+
+    // Contagem de OSs paradas (≥ 3 dias sem movimentação)
     supabase
       .from('service_orders_with_stale')
       .select('id', { count: 'exact', head: true })
       .gte('days_since_update', 3),
+
+    // Contagem de OSs prontas para retirada no balcão
     supabase
       .from('service_orders')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'ready'),
+
+    // OSs entregues no mês (para telemetria por nível e cálculo de mão de obra)
     supabase
       .from('service_orders')
-      .select('labor_cost')
+      .select('id, labor_cost, equipment_type, reported_defect, technician_id, delivered_at')
       .eq('status', 'delivered')
       .gte('delivered_at', monthStart.toISOString()),
-    // Peças de fornecedores — fluxo TOTALMENTE separado de Vendas (PDV).
-    // O que disso vira venda pro cliente é calculado à parte pelo dono.
-    supabase
-      .from('part_orders')
-      .select('part_value, supplier:suppliers(name)')
-      .neq('status', 'cancelled')
-      .gte('created_at', monthStart.toISOString()),
-    supabase
-      .from('part_orders')
-      .select('part_value')
-      .eq('status', 'applied')
-      .gte('updated_at', monthStart.toISOString()),
-    supabase
-      .from('part_orders')
-      .select('part_value')
-      .eq('status', 'returned')
-      .gte('updated_at', monthStart.toISOString()),
-    supabase
-      .from('part_orders')
-      .select('part_value, status')
-      .in('status', ['ordered', 'received', 'return_pending', 'awaiting_exchange']),
-    // Painel "hoje" — o que precisa de atenção, não só contador.
-    supabase
-      .from('service_orders_with_stale')
-      .select('id, short_id, os_number, customer_name, days_since_update')
-      .gte('days_since_update', 3)
-      .order('days_since_update', { ascending: false })
-      .limit(5),
-    supabase
-      .from('service_orders')
-      .select('id, short_id, os_number, customer:customers(name), updated_at')
-      .eq('status', 'ready')
-      .order('updated_at', { ascending: true })
-      .limit(5),
+
+    // OSs entregues sem pagamento integral
     supabase
       .from('service_orders')
       .select('id, short_id, os_number, customer:customers(name), delivered_at, labor_cost, estimated_value')
       .eq('status', 'delivered')
       .in('payment_status', ['pending', 'partial'])
       .order('delivered_at', { ascending: true })
-      .limit(5),
+      .limit(6),
+
+    // Lista detalhada de OSs paradas (para o Radar de Atenção)
     supabase
-      .from('part_orders')
-      .select('id, part_description, created_at, supplier:suppliers(name)')
-      .eq('status', 'ordered')
-      .order('created_at', { ascending: true })
-      .limit(5),
+      .from('service_orders_with_stale')
+      .select('id, short_id, os_number, customer_name, days_since_update, equipment_type')
+      .gte('days_since_update', 3)
+      .order('days_since_update', { ascending: false })
+      .limit(6),
+
+    // Lista de OSs prontas no balcão (para o Radar de Atenção)
+    supabase
+      .from('service_orders')
+      .select('id, short_id, os_number, customer:customers(name), updated_at, equipment_type')
+      .eq('status', 'ready')
+      .order('updated_at', { ascending: true })
+      .limit(6),
+
+    // Lançamentos no livro-razão de comissões (migration 0034)
+    supabase
+      .from('commission_ledger')
+      .select('technician_name, labor_amount, commission_rate, commission_amount, status, created_at')
+      .gte('created_at', fridayCycle.start.toISOString())
+      .lte('created_at', fridayCycle.end.toISOString()),
+
+    // Peças de fornecedores pedidas no mês (apenas para Dono / Dev)
+    userCtx.canViewSupplierCosts
+      ? supabase
+          .from('part_orders')
+          .select('part_value, supplier:suppliers(name)')
+          .neq('status', 'cancelled')
+          .gte('created_at', monthStart.toISOString())
+      : Promise.resolve({ data: [] }),
   ]);
 
-  // Numeros de OS
-  const osOpenCount = osOpen.count ?? 0;
-  const osStaleCount = osStale.count ?? 0;
-  const osReadyCount = osReady.count ?? 0;
-  const laborRevenueMonth = (osDeliveredMonth.data ?? []).reduce(
-    (acc, o) => acc + Number((o as { labor_cost: number }).labor_cost ?? 0),
-    0,
+  // 5. Normalização de dados do Estoque do Eduardo
+  const allStockItems = stockItemsRes.data ?? [];
+  const lowStockItems = allStockItems.filter(
+    (item) => item.min_stock !== null && item.current_stock <= (item.min_stock ?? 0)
   );
 
-  // Calcula totais
-  const sumTotal = (rows: { total: number }[] | null) =>
-    (rows ?? []).reduce((acc, r) => acc + Number(r.total), 0);
-
-  const totalMonth = sumTotal(salesMonth.data);
-  const countMonth = salesMonth.data?.length ?? 0;
-
-  // Buckets diários (fuso de Brasília) — index 0 = há CHART_DAYS-1 dias,
-  // index CHART_DAYS-1 = hoje. Alimenta o gráfico E os cards de "Hoje"/
-  // "Últimos 7 dias" (ver comentário na query acima).
-  const dayBuckets = Array.from({ length: CHART_DAYS }, (_, i) => {
-    const start = new Date(chartStart.getTime() + i * 86400000);
-    return {
-      start,
-      weekday: new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, weekday: 'short' })
-        .format(start)
-        .replace('.', ''),
-      dateLabel: new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, day: '2-digit', month: '2-digit' }).format(start),
-      total: 0,
-      count: 0,
-    };
-  });
-  for (const row of salesLast14Days.data ?? []) {
-    const idx = Math.round((new Date(row.created_at).getTime() - chartStart.getTime()) / 86400000);
-    if (idx >= 0 && idx < CHART_DAYS) {
-      dayBuckets[idx].total += Number(row.total);
-      dayBuckets[idx].count += 1;
-    }
-  }
-  const todayBucket = dayBuckets[CHART_DAYS - 1];
-  const yesterdayBucket = dayBuckets[CHART_DAYS - 2];
-  const last7 = dayBuckets.slice(CHART_DAYS - 7);
-  const prev7 = dayBuckets.slice(CHART_DAYS - 14, CHART_DAYS - 7);
-
-  const totalToday = todayBucket.total;
-  const countToday = todayBucket.count;
-  const totalWeek = last7.reduce((acc, d) => acc + d.total, 0);
-  const countWeek = last7.reduce((acc, d) => acc + d.count, 0);
-  const totalPrevWeek = prev7.reduce((acc, d) => acc + d.total, 0);
-
-  // Variação % vs período anterior — só mostra se o período anterior teve
-  // alguma venda (senão a % "explode" pra um número sem sentido tipo
-  // +∞% quando ontem foi 0 e hoje não).
-  const trend = (curr: number, prev: number): { pct: number; up: boolean } | null => {
-    if (prev <= 0) return null;
-    const pct = Math.round(((curr - prev) / prev) * 100);
-    return { pct, up: pct >= 0 };
+  const stockStats = {
+    totalItems: allStockItems.length,
+    totalUnits: allStockItems.reduce((acc, it) => acc + (it.current_stock || 0), 0),
+    totalStockValue: allStockItems.reduce(
+      (acc, it) => acc + (it.current_stock || 0) * Number(it.unit_price || 0),
+      0
+    ),
+    lowStockCount: lowStockItems.length,
   };
-  const todayTrend = trend(totalToday, yesterdayBucket.total);
-  const weekTrend = trend(totalWeek, totalPrevWeek);
 
-  const chartData = dayBuckets.map((d, i) => ({
-    weekday: d.weekday,
-    dateLabel: d.dateLabel,
-    total: d.total,
-    isToday: i === CHART_DAYS - 1,
-  }));
-
-  // Top 5 itens vendidos no mes
+  // 6. Agrupamento dos itens mais vendidos no balcão (Top 5)
   const itemAgg = new Map<string, { name: string; qty: number; total: number }>();
   for (const row of topItems.data ?? []) {
     const key = row.item_name;
@@ -225,471 +233,390 @@ export default async function DashboardPage() {
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 5);
 
-  // Peças de fornecedores — totais do mês + em aberto agora.
-  const sumPartValue = (rows: { part_value: number }[] | null) =>
-    (rows ?? []).reduce((acc, r) => acc + Number(r.part_value), 0);
+  // 7. Buckets diários para o Gráfico de Vendas CIS-01 (14 dias)
+  const dayBuckets: DayPoint[] = Array.from({ length: CHART_DAYS }, (_, i) => {
+    const start = new Date(chartStart.getTime() + i * 86400000);
+    return {
+      start,
+      weekday: new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, weekday: 'short' })
+        .format(start)
+        .replace('.', ''),
+      dateLabel: new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, day: '2-digit', month: '2-digit' }).format(start),
+      total: 0,
+      count: 0,
+      isToday: i === CHART_DAYS - 1,
+    };
+  });
 
-  const partsOrderedTotal = sumPartValue(partsOrderedMonth.data);
-  const partsOrderedCount = partsOrderedMonth.data?.length ?? 0;
-  const partsAppliedTotal = sumPartValue(partsAppliedMonth.data);
-  const partsAppliedCount = partsAppliedMonth.data?.length ?? 0;
-  const partsReturnedTotal = sumPartValue(partsReturnedMonth.data);
-  const partsReturnedCount = partsReturnedMonth.data?.length ?? 0;
-  const partsOpenTotal = sumPartValue(partsOpenNow.data);
-  const partsOpenCount = partsOpenNow.data?.length ?? 0;
-
-  // Pedido no mês, por fornecedor (pra reconciliação — quanto foi
-  // encomendado de cada um, sem misturar com venda nenhuma).
-  const supplierAgg = new Map<string, { name: string; total: number; count: number }>();
-  for (const row of (partsOrderedMonth.data ?? []) as unknown as {
-    part_value: number;
-    supplier: { name: string } | null;
-  }[]) {
-    const name = row.supplier?.name ?? '(fornecedor removido)';
-    const existing = supplierAgg.get(name);
-    if (existing) {
-      existing.total += Number(row.part_value);
-      existing.count += 1;
-    } else {
-      supplierAgg.set(name, { name, total: Number(row.part_value), count: 1 });
+  for (const row of salesLast14Days.data ?? []) {
+    const idx = Math.round((new Date(row.created_at).getTime() - chartStart.getTime()) / 86400000);
+    if (idx >= 0 && idx < CHART_DAYS) {
+      dayBuckets[idx].total += Number(row.total);
+      dayBuckets[idx].count += 1;
     }
   }
-  const supplierTotalsSorted = Array.from(supplierAgg.values()).sort((a, b) => b.total - a.total);
 
-  // Painel "hoje" — normaliza cada lista (join vira campo direto) e
-  // calcula "há quantos dias" onde faz sentido. "agora" lido uma vez só
-  // (Server Component, sem re-render no cliente) — Date.now() aqui é
-  // seguro, o linter de pureza só não distingue Server de Client.
-  // eslint-disable-next-line react-hooks/purity
+  const todayBucket = dayBuckets[CHART_DAYS - 1];
+  const yesterdayBucket = dayBuckets[CHART_DAYS - 2];
+  const last7 = dayBuckets.slice(CHART_DAYS - 7);
+  const prev7 = dayBuckets.slice(CHART_DAYS - 14, CHART_DAYS - 7);
+
+  const totalToday = todayBucket.total;
+  const countToday = todayBucket.count;
+  const totalWeek = last7.reduce((acc, d) => acc + d.total, 0);
+  const countWeek = last7.reduce((acc, d) => acc + d.count, 0);
+  const totalPrevWeek = prev7.reduce((acc, d) => acc + d.total, 0);
+
+  const totalMonthSales = (salesMonth.data ?? []).reduce(
+    (acc, r) => acc + Number(r.total || 0),
+    0
+  );
+  const countMonthSales = salesMonth.data?.length ?? 0;
+
+  const trend = (curr: number, prev: number): { pct: number; up: boolean } | null => {
+    if (prev <= 0) return null;
+    const pct = Math.round(((curr - prev) / prev) * 100);
+    return { pct, up: pct >= 0 };
+  };
+  const todayTrend = trend(totalToday, yesterdayBucket.total);
+  const weekTrend = trend(totalWeek, totalPrevWeek);
+
+  // 8. Segregação de Produção por Andar: Nível 01 (Térreo) vs Nível 02 (Mezanino)
+  const deliveredOSs = osDeliveredMonth.data ?? [];
+  let terreoOSCount = 0;
+  let terreoLaborRevenue = 0;
+  let mezaninoOSCount = 0;
+  let mezaninoLaborRevenue = 0;
+  let mezaninoScreensCount = 0;
+  let mezaninoGpusCount = 0;
+
+  for (const os of deliveredOSs) {
+    const type = (os.equipment_type || '').toLowerCase();
+    const defect = (os.reported_defect || '').toLowerCase();
+    const labor = Number(os.labor_cost || 0);
+
+    const isMezaninoItem =
+      /celular|smartphone|iphone|tablet|display|tela|vidro|oca|bga|gpu|placa de v[íi]deo|reballing/.test(
+        `${type} ${defect}`
+      );
+
+    if (isMezaninoItem) {
+      mezaninoOSCount += 1;
+      mezaninoLaborRevenue += labor;
+      if (/tela|display|vidro|oca/.test(`${type} ${defect}`)) mezaninoScreensCount += 1;
+      if (/gpu|placa de v[íi]deo|bga|reballing/.test(`${type} ${defect}`)) mezaninoGpusCount += 1;
+    } else {
+      terreoOSCount += 1;
+      terreoLaborRevenue += labor;
+    }
+  }
+
+  const terreoStats = {
+    osCount: terreoOSCount,
+    laborRevenue: terreoLaborRevenue,
+    pdvSalesCount: countMonthSales,
+    pdvRevenue: totalMonthSales,
+  };
+
+  const mezaninoStats = {
+    osCount: mezaninoOSCount,
+    laborRevenue: mezaninoLaborRevenue,
+    screensCount: mezaninoScreensCount,
+    gpusCount: mezaninoGpusCount,
+  };
+
+  // 9. Cálculo de Comissões por Técnico (Ciclo Semanal Sexta-Feira)
+  let iagoCommissionTotal = 0;
+  let iagoLaborTotal = 0;
+  let iagoOSCount = 0;
+
+  let jeffersonCommissionTotal = 0;
+  let jeffersonLaborTotal = 0;
+  let jeffersonOSCount = 0;
+
+  const ledgerRows = commissionLedgerMonth.data ?? [];
+  if (ledgerRows.length > 0) {
+    for (const row of ledgerRows) {
+      const name = (row.technician_name || '').toLowerCase();
+      const comm = Number(row.commission_amount || 0);
+      const labor = Number(row.labor_amount || 0);
+
+      if (name.includes('iago')) {
+        iagoCommissionTotal += comm;
+        iagoLaborTotal += labor;
+        iagoOSCount += 1;
+      } else if (name.includes('jefferson')) {
+        jeffersonCommissionTotal += comm;
+        jeffersonLaborTotal += labor;
+        jeffersonOSCount += 1;
+      }
+    }
+  } else {
+    // Fallback matemático se a tabela commission_ledger estiver vazia no período
+    for (const os of deliveredOSs) {
+      const type = (os.equipment_type || '').toLowerCase();
+      const defect = (os.reported_defect || '').toLowerCase();
+      const labor = Number(os.labor_cost || 0);
+      const isMezanino = /celular|smartphone|iphone|tablet|tela|vidro|bga|gpu/.test(`${type} ${defect}`);
+
+      if (isMezanino) {
+        jeffersonLaborTotal += labor;
+        jeffersonCommissionTotal += labor * 0.50;
+        jeffersonOSCount += 1;
+      } else {
+        iagoLaborTotal += labor;
+        iagoCommissionTotal += labor * 0.30;
+        iagoOSCount += 1;
+      }
+    }
+  }
+
+  const totalCommissions = iagoCommissionTotal + jeffersonCommissionTotal;
+  const totalLaborRevenueMonth = terreoLaborRevenue + mezaninoLaborRevenue;
+  // Lucro retido da loja = Mão de Obra Total - Comissões pagas aos técnicos
+  const storeRetainedProfit = Math.max(0, totalLaborRevenueMonth - totalCommissions);
+
+  // 10. Normalização de Alertas de Atenção Imediata
   const nowMs = Date.now();
-  const daysAgo = (dateStr: string) =>
-    Math.max(0, Math.floor((nowMs - new Date(dateStr).getTime()) / 86400000));
+  const daysAgo = (dateStr: string) => Math.max(0, Math.floor((nowMs - new Date(dateStr).getTime()) / 86400000));
 
-  // Selects com join via string (não a sintaxe de query builder tipado)
-  // fazem o supabase-js inferir a cardinalidade errada (array em vez de
-  // 1:1) — cast pro formato real, mesmo padrão já usado alhures no ERP
-  // pra esse mesmo tipo de select.
-  type ReadyRow = { id: string; short_id: string | null; os_number: string | null; customer: { name: string } | null; updated_at: string };
-  type UnpaidRow = { id: string; short_id: string | null; os_number: string | null; customer: { name: string } | null; delivered_at: string | null; labor_cost: number; estimated_value: number | null };
-  type PartWaitingRow = { id: string; part_description: string; created_at: string; supplier: { name: string } | null };
+  type CustomerRel = { name: string } | null;
+  type ReadyRow = { id: string; short_id: string | null; os_number: string | null; customer: CustomerRel; updated_at: string; equipment_type?: string };
+  type UnpaidRow = { id: string; short_id: string | null; os_number: string | null; customer: CustomerRel; delivered_at: string | null; labor_cost: number; estimated_value: number | null };
 
   const readyItems = ((readyList.data ?? []) as unknown as ReadyRow[]).map((o) => ({
-    ...o,
-    customer_name: o.customer?.name ?? '(cliente removido)',
+    id: o.id,
+    short_id: o.short_id,
+    os_number: o.os_number,
+    customer_name: o.customer?.name ?? '(cliente)',
     daysReady: daysAgo(o.updated_at),
+    equipment: o.equipment_type,
   }));
-  const unpaidItems = ((unpaidList.data ?? []) as unknown as UnpaidRow[]).map((o) => ({
-    ...o,
-    customer_name: o.customer?.name ?? '(cliente removido)',
-    daysUnpaid: o.delivered_at ? daysAgo(o.delivered_at) : 0,
-  }));
-  const partsWaitingItems = ((partsWaitingList.data ?? []) as unknown as PartWaitingRow[]).map((p) => ({
-    ...p,
-    supplier_name: p.supplier?.name ?? '(fornecedor removido)',
-    daysWaiting: daysAgo(p.created_at),
-  }));
-  const staleItems = staleList.data ?? [];
 
-  const attentionCount =
-    staleItems.length + readyItems.length + unpaidItems.length + partsWaitingItems.length;
+  const unpaidItems = ((unpaidList.data ?? []) as unknown as UnpaidRow[]).map((o) => ({
+    id: o.id,
+    short_id: o.short_id,
+    os_number: o.os_number,
+    customer_name: o.customer?.name ?? '(cliente)',
+    daysUnpaid: o.delivered_at ? daysAgo(o.delivered_at) : 0,
+    amount: (o.estimated_value || 0) + (o.labor_cost || 0),
+  }));
+
+  const staleItems = (staleList.data ?? []).map((o) => ({
+    id: o.id,
+    short_id: o.short_id,
+    os_number: o.os_number,
+    customer_name: o.customer_name ?? '(cliente)',
+    days_since_update: o.days_since_update ?? 3,
+    equipment: o.equipment_type,
+  }));
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      {/* 1. Cabeçalho CIS-01 com Identificação do Usuário e Metrologia */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 border-b-2 border-zinc-800 gap-3 font-mono">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-sm text-slate-500">
-            Resumo rapido do movimento da loja.
-          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+              CYBER INSTRUMENTATION SYSTEM // ERP COCKPIT
+            </span>
+            <span className="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 font-bold uppercase">
+              {userCtx.name} ({userCtx.effectiveRole})
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Painel de Controle Operacional.
+          </h1>
         </div>
-        <PixQRButton
-          buttonLabel="PIX avulso"
-          description="Pagamento avulso Cyber Informatica"
-          buttonClassName="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        />
+
+        <div className="flex items-center gap-2">
+          <PixQRButton
+            buttonLabel="⚡ PIX AVULSO"
+            description="Pagamento avulso Cyber Informática"
+            buttonClassName="inline-flex items-center gap-2 bg-white hover:bg-zinc-200 text-black px-3.5 py-2 text-xs font-mono font-bold uppercase transition"
+          />
+        </div>
       </div>
 
-      {/* Painel "hoje" — o que precisa de atenção, não só contador. Os
-          cards de números abaixo já existiam; isso junta o que dá pra
-          fazer alguma coisa a respeito agora, num lugar só. */}
-      {attentionCount > 0 && (
-        <section className="rounded-lg border-2 border-orange-200 bg-orange-50/60 p-4 sm:p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-orange-800">
-            ⚠️ Precisa de atenção hoje
-          </h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            {staleItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  OS parada
-                </p>
-                <ul className="mt-1.5 space-y-1">
-                  {staleItems.map((o) => (
-                    <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
-                        <span className="truncate">
-                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
-                          {' '}{o.customer_name}
-                        </span>
-                        <span className="shrink-0 text-xs text-orange-700">{o.days_since_update}d</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+      {/* 2. Barramento Tático de Ações Rápidas & Seletor de Simulação Dev */}
+      <DashboardTacticalBar userCtx={userCtx} vpsConnected={vpsConnected} />
+
+      {/* 3. Radar de Atenção Imediata (Gargalos do Dia) */}
+      <AttentionRadar
+        userCtx={userCtx}
+        staleOSs={staleItems}
+        readyOSs={readyItems}
+        unpaidOSs={unpaidItems}
+        lowStockItems={lowStockItems}
+      />
+
+      {/* 4. Resumo de Faturamento Consolidado (Exclusivo Dono / Desenvolvedor) */}
+      {userCtx.canViewStoreFinancials && (
+        <section className="border border-zinc-800 bg-[#111114] p-4 sm:p-5 text-white font-mono space-y-4">
+          <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <div>
+              <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">
+                CONSOLIDAÇÃO FINANCEIRA // LOJA FÍSICA
+              </span>
+              <h2 className="text-xs sm:text-sm font-bold uppercase text-white">
+                Faturamento & Indicadores de Vendas
+              </h2>
+            </div>
+            <span className="text-[10px] text-emerald-400 font-bold uppercase">
+              VISÃO GERENCIAL FELIPE
+            </span>
+          </div>
+
+          {/* Cards de Métricas Principais */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="border border-zinc-800 bg-zinc-950 p-4">
+              <span className="text-[10px] text-zinc-400 uppercase block mb-1">VENDAS PDV (HOJE)</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-white block">
+                {fmtBRL(totalToday)}
+              </span>
+              <div className="mt-1 text-[11px] text-zinc-400 flex items-center gap-2">
+                <span>{countToday} vendas</span>
+                {todayTrend && (
+                  <span className={`font-bold ${todayTrend.up ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {todayTrend.up ? '▲ +' : '▼ '}{Math.abs(todayTrend.pct)}% vs ontem
+                  </span>
+                )}
               </div>
-            )}
-            {readyItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Pronta, sem retirada
-                </p>
-                <ul className="mt-1.5 space-y-1">
-                  {readyItems.map((o) => (
-                    <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
-                        <span className="truncate">
-                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
-                          {' '}{o.customer_name}
-                        </span>
-                        <span className="shrink-0 text-xs text-orange-700">{o.daysReady}d</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+            </div>
+
+            <div className="border border-zinc-800 bg-zinc-950 p-4">
+              <span className="text-[10px] text-zinc-400 uppercase block mb-1">ÚLTIMOS 7 DIAS</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-white block">
+                {fmtBRL(totalWeek)}
+              </span>
+              <div className="mt-1 text-[11px] text-zinc-400 flex items-center gap-2">
+                <span>{countWeek} vendas</span>
+                {weekTrend && (
+                  <span className={`font-bold ${weekTrend.up ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {weekTrend.up ? '▲ +' : '▼ '}{Math.abs(weekTrend.pct)}% vs sem. ant.
+                  </span>
+                )}
               </div>
-            )}
-            {unpaidItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Entregue, não pago
-                </p>
-                <ul className="mt-1.5 space-y-1">
-                  {unpaidItems.map((o) => (
-                    <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
-                        <span className="truncate">
-                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
-                          {' '}{o.customer_name}
-                        </span>
-                        <span className="shrink-0 text-xs text-orange-700">{o.daysUnpaid}d</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {partsWaitingItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Peça pedida, sem chegar
-                </p>
-                <ul className="mt-1.5 space-y-1">
-                  {partsWaitingItems.map((p) => (
-                    <li key={p.id}>
-                      <Link href={`/admin/pecas/${p.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-blue-700">
-                        <span className="truncate">
-                          {p.part_description} <span className="text-slate-500">· {p.supplier_name}</span>
-                        </span>
-                        <span className="shrink-0 text-xs text-orange-700">{p.daysWaiting}d</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            </div>
+
+            <div className="border border-zinc-800 bg-zinc-950 p-4">
+              <span className="text-[10px] text-zinc-400 uppercase block mb-1">FATURAMENTO PDV (MÊS)</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-white block">
+                {fmtBRL(totalMonthSales)}
+              </span>
+              <span className="mt-1 text-[11px] text-zinc-400 block">{countMonthSales} vendas no mês</span>
+            </div>
+
+            <div className="border border-emerald-500/30 bg-emerald-950/20 p-4">
+              <span className="text-[10px] text-emerald-400 uppercase block mb-1">MÃO DE OBRA TOTAL (MÊS)</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-emerald-300 block">
+                {fmtBRL(totalLaborRevenueMonth)}
+              </span>
+              <span className="mt-1 text-[11px] text-zinc-400 block">{deliveredOSs.length} máquinas entregues</span>
+            </div>
+          </div>
+
+          {/* Gráfico de Vendas 14 Dias */}
+          <div className="border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase text-zinc-300">
+                Histórico Diário de Vendas (Últimos 14 Dias)
+              </span>
+              <span className="text-[10px] text-zinc-400">BRT FUSO HORÁRIO</span>
+            </div>
+            <SalesChart data={dayBuckets} showValues={true} />
           </div>
         </section>
       )}
 
-      {/* Numeros da bancada (OS) */}
-      <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Bancada
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Link
-            href="/admin/os"
-            className="block rounded-lg border-2 border-slate-200 bg-white p-4 transition hover:shadow-md"
-          >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Abertas</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{osOpenCount}</p>
-          </Link>
-          <Link
-            href="/admin/os?status=all"
-            className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${
-              osStaleCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white'
-            }`}
-          >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Paradas (≥ 3 dias)
-            </p>
-            <p className={`mt-1 text-2xl font-bold ${osStaleCount > 0 ? 'text-orange-700' : 'text-slate-900'}`}>
-              {osStaleCount}
-            </p>
-          </Link>
-          <Link
-            href="/admin/os?status=ready"
-            className="block rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4 transition hover:shadow-md"
-          >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Prontas p/ retirada
-            </p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">{osReadyCount}</p>
-          </Link>
-          <div className="block rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Mão de obra (mês)
-            </p>
-            <p className="mt-1 text-2xl font-bold text-blue-700">{fmtBRL(laborRevenueMonth)}</p>
-          </div>
-        </div>
-      </section>
+      {/* 5. Telemetria dos Dois Andares: Térreo vs Mezanino */}
+      <FacilityLevelSplit
+        userCtx={userCtx}
+        terreoStats={terreoStats}
+        mezaninoStats={mezaninoStats}
+      />
 
-      {/* Vendas: gráfico primeiro (visão geral da tendência), cards de
-          totais depois (números exatos + comparação vs período anterior).
-          Todos os 3 cards usam a mesma cor — são a mesma métrica em 3
-          janelas de tempo diferentes, não categorias diferentes; variar a
-          cor aqui só criava a impressão de que eram coisas distintas. */}
-      <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Vendas (PDV)
-        </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-          <p className="mb-2 text-xs font-medium text-slate-500">Últimos {CHART_DAYS} dias</p>
-          <SalesChart data={chartData} />
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <Card
-            title="Hoje"
-            total={totalToday}
-            count={countToday}
-            trend={todayTrend}
-            trendLabel="vs. ontem"
-            href={`/admin/vendas?from=${todayStart.toISOString().slice(0, 10)}&to=${todayStart.toISOString().slice(0, 10)}`}
-          />
-          <Card
-            title="Últimos 7 dias"
-            total={totalWeek}
-            count={countWeek}
-            trend={weekTrend}
-            trendLabel="vs. 7 dias anteriores"
-            href={`/admin/vendas?from=${dayBuckets[CHART_DAYS - 7].start.toISOString().slice(0, 10)}`}
-          />
-          <Card
-            title="Este mês"
-            total={totalMonth}
-            count={countMonth}
-            href={`/admin/vendas?from=${monthStart.toISOString().slice(0, 10)}`}
-          />
-        </div>
-      </section>
+      {/* 6. Livro-Razão de Comissões & Lucro Retido da Loja */}
+      <CommissionsSummary
+        userCtx={userCtx}
+        cycleLabel={fridayCycle.label}
+        totalPendingPayout={totalCommissions}
+        storeRetainedProfit={storeRetainedProfit}
+        iagoStats={{
+          laborTotal: iagoLaborTotal,
+          commissionTotal: iagoCommissionTotal,
+          osCount: iagoOSCount,
+          status: 'pending',
+        }}
+        jeffersonStats={{
+          laborTotal: jeffersonLaborTotal,
+          commissionTotal: jeffersonCommissionTotal,
+          osCount: jeffersonOSCount,
+          status: 'pending',
+        }}
+      />
 
-      {/* Peças de fornecedores — SEPARADO de Vendas (PDV) de propósito.
-          Isso não é receita nem é venda: é o que a loja encomendou de
-          fornecedor pra consertar OS de cliente. O que disso vira venda
-          o dono calcula à parte, por fora daqui. */}
-      <section>
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Peças de fornecedores
-          </h2>
-          <Link
-            href="/admin/pecas"
-            className="text-xs text-blue-600 hover:text-blue-700"
-          >
-            Ver todos →
-          </Link>
-        </div>
-        <p className="mt-1 text-xs text-slate-500">
-          Fluxo de encomendas a fornecedores — não é venda. O que vira venda pro cliente, o dono calcula à parte.
-        </p>
-        <div className="mt-2 grid gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border-2 border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Pedido (mês)
-            </p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{fmtBRL(partsOrderedTotal)}</p>
-            <p className="mt-1 text-xs text-slate-600">
-              {partsOrderedCount} pedido{partsOrderedCount === 1 ? '' : 's'}
-            </p>
-          </div>
-          <div className="rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Aplicado (mês)
-            </p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">{fmtBRL(partsAppliedTotal)}</p>
-            <p className="mt-1 text-xs text-slate-600">
-              {partsAppliedCount} peça{partsAppliedCount === 1 ? '' : 's'} usada{partsAppliedCount === 1 ? '' : 's'}
-            </p>
-          </div>
-          <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Devolvido (mês)
-            </p>
-            <p className="mt-1 text-2xl font-bold text-slate-700">{fmtBRL(partsReturnedTotal)}</p>
-            <p className="mt-1 text-xs text-slate-600">
-              {partsReturnedCount} devolução{partsReturnedCount === 1 ? '' : 's'}
-            </p>
-          </div>
-          <Link
-            href="/admin/pecas"
-            className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${
-              partsOpenCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white'
-            }`}
-          >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Em aberto agora
-            </p>
-            <p className={`mt-1 text-2xl font-bold ${partsOpenCount > 0 ? 'text-orange-700' : 'text-slate-900'}`}>
-              {fmtBRL(partsOpenTotal)}
-            </p>
-            <p className="mt-1 text-xs text-slate-600">
-              {partsOpenCount} pedido{partsOpenCount === 1 ? '' : 's'} não resolvido{partsOpenCount === 1 ? '' : 's'}
-            </p>
-          </Link>
-        </div>
+      {/* 7. Giro de Estoque do Eduardo & Mais Vendidos no Balcão */}
+      <StockAndSalesGiro
+        userCtx={userCtx}
+        stockStats={stockStats}
+        topItems={topItemsSorted}
+      />
 
-        {supplierTotalsSorted.length > 0 && (
-          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Pedido no mês, por fornecedor
-            </h3>
-            <ul className="mt-2 divide-y divide-slate-200">
-              {supplierTotalsSorted.map((s) => (
-                <li key={s.name} className="flex items-center justify-between gap-3 py-1.5 text-sm">
-                  <span className="text-slate-900">{s.name}</span>
-                  <span className="flex items-center gap-3 text-xs">
-                    <span className="text-slate-500">
-                      {s.count} pedido{s.count === 1 ? '' : 's'}
-                    </span>
-                    <span className="font-mono font-medium text-slate-900">{fmtBRL(s.total)}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
+      {/* 8. Feed em Tempo Real das Últimas Vendas */}
+      <section className="border border-zinc-800 bg-[#111114] p-4 sm:p-5 text-white font-mono space-y-3">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <div>
+            <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">
+              REGISTRO DE OPERAÇÕES // BALCÃO
+            </span>
+            <h2 className="text-xs sm:text-sm font-bold uppercase text-white">
+              Últimas Vendas no PDV
+            </h2>
           </div>
-        )}
-      </section>
-
-      {/* Top itens vendidos no mes */}
-      <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Top 5 itens vendidos (este mês)
-          </h2>
-          <span className="text-xs text-slate-500">
-            {topItemsSorted.length} {topItemsSorted.length === 1 ? 'item' : 'itens'}
-          </span>
-        </div>
-        {topItemsSorted.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">
-            Nenhuma venda no mes ainda.
-          </p>
-        ) : (
-          <ol className="mt-3 space-y-2">
-            {topItemsSorted.map((item, i) => (
-              <li
-                key={item.name}
-                className="flex items-center justify-between gap-3 text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
-                    {i + 1}
-                  </span>
-                  <span className="font-medium text-slate-900">{item.name}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="text-slate-500">{item.qty} un</span>
-                  <span className="font-mono font-medium text-slate-900">
-                    {fmtBRL(item.total)}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      {/* Últimas vendas */}
-      <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Últimas vendas
-          </h2>
           <Link
             href="/admin/vendas"
-            className="text-xs text-blue-600 hover:text-blue-700"
+            className="text-xs text-zinc-400 hover:text-white underline"
           >
-            Ver todas →
+            Ver Todas as Vendas →
           </Link>
         </div>
+
         {(lastSales.data ?? []).length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">Nenhuma venda ainda.</p>
+          <p className="text-xs text-zinc-400 py-3">Nenhuma venda registrada ainda no período.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-200">
+          <div className="divide-y divide-zinc-900 text-xs">
             {(lastSales.data ?? []).map((s) => {
               const payMeta = PAYMENT_METHODS.find((m) => m.value === s.payment_method);
+              const authorName = Array.isArray(s.author)
+                ? (s.author[0] as { full_name?: string })?.full_name
+                : (s.author as { full_name?: string } | null)?.full_name;
               return (
-                <li key={s.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-                  <div className="flex-1">
+                <div key={s.id} className="py-2.5 flex items-center justify-between gap-3">
+                  <div>
                     <Link
                       href={`/admin/vendas/${s.id}`}
-                      className="font-mono font-medium text-slate-900 hover:text-blue-700"
+                      className="font-bold text-white hover:underline block"
                     >
                       {s.sale_number}
                     </Link>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-[11px] text-zinc-400">
                       {formatDateTimeBR(s.created_at)} ·{' '}
-                      {s.author?.full_name ?? '—'} · {payMeta?.label ?? s.payment_method}
+                      {authorName || 'Balcão'} · {payMeta?.label ?? s.payment_method}
                       {s.customer_name && ` · ${s.customer_name}`}
                     </p>
                   </div>
-                  <span className="font-mono font-medium text-slate-900">
-                    {fmtBRL(s.total)}
-                  </span>
-                </li>
+                  {userCtx.canViewSalesFinancials && (
+                    <strong className="text-sm font-bold text-white">
+                      {fmtBRL(s.total)}
+                    </strong>
+                  )}
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
       </section>
     </div>
-  );
-}
-
-function Card({
-  title,
-  total,
-  count,
-  trend,
-  trendLabel,
-  href,
-}: {
-  title: string;
-  total: number;
-  count: number;
-  /** null = sem período anterior pra comparar (não mostra nada) */
-  trend?: { pct: number; up: boolean } | null;
-  trendLabel?: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="block rounded-lg border-2 border-blue-200 bg-blue-50 p-4 transition hover:shadow-md"
-    >
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-        {title}
-      </p>
-      <p className="mt-1 text-2xl font-bold text-slate-900">{fmtBRL(total)}</p>
-      <p className="mt-1 text-xs text-slate-600">
-        {count} venda{count === 1 ? '' : 's'}
-        {trend && (
-          <span className={`ml-2 font-medium ${trend.up ? 'text-emerald-700' : 'text-red-600'}`}>
-            {trend.up ? '▲' : '▼'} {Math.abs(trend.pct)}% {trendLabel}
-          </span>
-        )}
-      </p>
-    </Link>
   );
 }

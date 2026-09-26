@@ -1,21 +1,15 @@
-// Gráfico de barras das vendas diárias — SVG puro, sem lib nenhuma (mesmo
-// espírito do QR code do PIX: gerado localmente em vez de depender de
-// pacote externo). Renderiza no servidor, zero JS enviado pro navegador;
-// o hover com valor exato vem de <title> nativo do SVG (funciona sem
-// JavaScript nenhum) e o dia de hoje é rotulado direto no gráfico (não dá
-// pra rotular os 14 valores sem virar poluição visual, então só o mais
-// importante fica escrito; o resto é lido pela altura da barra + hover).
-//
-// Uma cor só (azul, a mesma dos botões primários do resto do ERP) — isso
-// é UMA série (vendas por dia), não categorias diferentes, então não há
-// porque variar a cor por barra.
+'use client';
 
-type DayPoint = {
+// Gráfico de barras das vendas diárias — Padrão CIS-01 Stealth Industrial
+// SVG puro, renderizado em alta definição sem dependências externas pesadas.
+
+export type DayPoint = {
   /** "seg", "ter"... já no fuso de Brasília */
   weekday: string;
   /** "05/08" pra tooltip/tabela */
   dateLabel: string;
   total: number;
+  count: number;
   isToday: boolean;
 };
 
@@ -31,16 +25,15 @@ function fmtBRLShort(n: number): string {
   });
 }
 
-export function SalesChart({ data }: { data: DayPoint[] }) {
-  const W = 560;
-  const H = 130;
-  const PAD = 16; // margem horizontal — sem isso o rótulo de "hoje" estoura a borda direita
+export function SalesChart({ data, showValues = true }: { data: DayPoint[]; showValues?: boolean }) {
+  const W = 600;
+  const H = 140;
+  const PAD = 16;
   const n = data.length;
-  const slot = (W - PAD * 2) / n;
-  const barW = Math.max(6, slot * 0.6);
+  const slot = (W - PAD * 2) / Math.max(n, 1);
+  const barW = Math.max(8, slot * 0.55);
   const max = Math.max(...data.map((d) => d.total), 1);
-  // Headroom pra caber o rótulo de hoje acima da barra sem cortar.
-  const usableH = H - 22;
+  const usableH = H - 28;
 
   const totalPeriod = data.reduce((acc, d) => acc + d.total, 0);
   const ariaLabel = `Vendas dos últimos ${n} dias, total de ${fmtBRL(totalPeriod)}. Hoje: ${fmtBRL(
@@ -48,54 +41,69 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
   )}.`;
 
   return (
-    <div>
+    <div className="w-full">
       <svg
-        viewBox={`0 0 ${W} ${H + 24}`}
-        className="w-full"
+        viewBox={`0 0 ${W} ${H + 28}`}
+        className="w-full h-auto overflow-visible select-none"
         role="img"
         aria-label={ariaLabel}
         preserveAspectRatio="xMidYMax meet"
       >
-        {/* Linha de base */}
-        <line x1={PAD} y1={H} x2={W - PAD} y2={H} stroke="#e2e8f0" strokeWidth={1} />
+        {/* Linha de base da grade */}
+        <line x1={PAD} y1={H} x2={W - PAD} y2={H} stroke="#27272a" strokeWidth={1} />
 
         {data.map((d, i) => {
           const barH = (d.total / max) * usableH;
           const x = PAD + i * slot + (slot - barW) / 2;
           const y = H - barH;
           const showWeekdayLabel = i % 2 === (n - 1) % 2;
+
           return (
-            <g key={i}>
+            <g key={i} className="group cursor-pointer">
               <title>
-                {d.dateLabel} ({d.weekday}) — {fmtBRL(d.total)}
+                {d.dateLabel} ({d.weekday}) — {showValues ? fmtBRL(d.total) : `${d.count} vendas`} ({d.count} vendas)
               </title>
+
+              {/* Barra */}
               <rect
                 x={x}
                 y={d.total > 0 ? y : H - 2}
                 width={barW}
-                height={d.total > 0 ? Math.max(2, barH) : 2}
-                rx={3}
-                fill={d.isToday ? '#1d4ed8' : '#93c5fd'}
+                height={d.total > 0 ? Math.max(3, barH) : 2}
+                className={`transition-colors ${
+                  d.isToday
+                    ? 'fill-white'
+                    : d.total > 0
+                    ? 'fill-zinc-600 hover:fill-zinc-400'
+                    : 'fill-zinc-800'
+                }`}
               />
-              {d.isToday && (
+
+              {/* Rótulo numérico de Hoje */}
+              {d.isToday && showValues && d.total > 0 && (
                 <text
                   x={x + barW / 2}
-                  y={Math.max(10, y - 6)}
+                  y={Math.max(12, y - 8)}
                   textAnchor="middle"
-                  fontSize={12}
-                  fontWeight={700}
-                  fill="#1d4ed8"
+                  fontSize={11}
+                  fontWeight={800}
+                  className="fill-white font-mono"
                 >
                   {fmtBRLShort(d.total)}
                 </text>
               )}
+
+              {/* Rótulo do dia da semana */}
               {showWeekdayLabel && (
                 <text
                   x={x + barW / 2}
-                  y={H + 14}
+                  y={H + 18}
                   textAnchor="middle"
                   fontSize={10}
-                  fill="#94a3b8"
+                  fontWeight={d.isToday ? 700 : 500}
+                  className={`font-mono uppercase tracking-wider ${
+                    d.isToday ? 'fill-white' : 'fill-zinc-400'
+                  }`}
                 >
                   {d.weekday}
                 </text>
@@ -104,30 +112,6 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
           );
         })}
       </svg>
-
-      <details className="mt-1">
-        <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600">
-          Ver como tabela
-        </summary>
-        <table className="mt-2 w-full text-xs">
-          <thead>
-            <tr className="text-left text-slate-500">
-              <th className="pb-1 font-medium">Dia</th>
-              <th className="pb-1 text-right font-medium">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {data.map((d, i) => (
-              <tr key={i}>
-                <td className="py-0.5 text-slate-700">
-                  {d.dateLabel} ({d.weekday}){d.isToday ? ' · hoje' : ''}
-                </td>
-                <td className="py-0.5 text-right font-mono text-slate-900">{fmtBRL(d.total)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
+import { resolveUserContext } from '@/app/admin/lib/rbac';
 import { DesktopNav } from '@/app/admin/components/DesktopNav';
 import { MobileNav } from '@/app/admin/components/MobileNav';
 
@@ -53,6 +54,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return <>{children}</>;
   }
 
+  const userCtx = resolveUserContext(user, profile);
+  const roleLabel =
+    userCtx.effectiveRole === 'owner'
+      ? 'Dono'
+      : userCtx.effectiveRole === 'mezanino_specialist'
+      ? 'Mezanino OCA'
+      : userCtx.effectiveRole === 'stock_intern'
+      ? 'Estoque'
+      : 'Técnico Hardware';
+
   return (
     <div className="min-h-dvh bg-[#FAFAFA] text-slate-900 antialiased">
       <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
@@ -65,13 +76,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
 
           <DesktopNav
-            userName={profile?.full_name ?? '—'}
-            roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            userName={userCtx.name}
+            roleLabel={roleLabel}
+            role={userCtx.effectiveRole}
           />
 
           <MobileNav
-            userName={profile?.full_name ?? '—'}
-            roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            userName={userCtx.name}
+            roleLabel={roleLabel}
+            role={userCtx.effectiveRole}
           />
         </div>
       </header>

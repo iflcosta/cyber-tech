@@ -26,16 +26,28 @@ function initials(name: string) {
 export function DesktopNav({
   userName,
   roleLabel,
+  role,
 }: {
   userName: string;
   roleLabel: string;
+  role?: string;
 }) {
   const pathname = usePathname();
+
+  const visibleLinks = LINKS.filter((link) => {
+    if (role === 'stock_intern') {
+      return !['/admin/comissoes', '/admin/fornecedores', '/admin/pecas'].includes(link.href);
+    }
+    if (role === 'mezanino_specialist') {
+      return !['/admin/fornecedores'].includes(link.href);
+    }
+    return true;
+  });
 
   return (
     <div className="hidden items-center gap-6 lg:flex">
       <nav className="flex items-center gap-1">
-        {LINKS.map((link) => {
+        {visibleLinks.map((link) => {
           const active = pathname === link.href || pathname.startsWith(link.href + '/');
           return (
             <Link

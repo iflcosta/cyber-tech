@@ -20,9 +20,11 @@ const LINKS = [
 export function MobileNav({
   userName,
   roleLabel,
+  role,
 }: {
   userName: string;
   roleLabel: string;
+  role?: string;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -93,7 +95,15 @@ export function MobileNav({
               + Pedido Peça
             </Link>
 
-            {LINKS.map((link) => (
+            {LINKS.filter((link) => {
+              if (role === 'stock_intern') {
+                return !['/admin/comissoes', '/admin/fornecedores', '/admin/pecas'].includes(link.href);
+              }
+              if (role === 'mezanino_specialist') {
+                return !['/admin/fornecedores'].includes(link.href);
+              }
+              return true;
+            }).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
