@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -327,6 +327,23 @@ export function NewOSForm({
         to_value: 'awaiting_approval',
         author_id: currentUserId,
       });
+
+      // 4. Disparo automático via VPS WhatsApp no check-in
+      if (customer.phone) {
+        fetch('/api/whatsapp/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerPhone: customer.phone,
+            customerName: customer.name,
+            osNumber: newOS.os_number,
+            osId: newOS.id,
+            status: 'created',
+            equipmentBrand: equipment.brand,
+            equipmentModel: equipment.model,
+          }),
+        }).catch((err) => console.warn('Erro ao notificar entrada via VPS:', err));
+      }
 
       if (redirectToLabel) {
         router.push(`/admin/os/${newOS.id}/label`);

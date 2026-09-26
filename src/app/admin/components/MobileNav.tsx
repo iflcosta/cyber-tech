@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/admin/estoque', label: 'Estoque' },
   { href: '/admin/vendas', label: 'Vendas' },
   { href: '/admin/comissoes', label: 'Comissões' },
+  { href: '/admin/whatsapp', label: 'WhatsApp VPS' },
   { href: '/admin/pecas', label: 'Peças' },
   { href: '/admin/fornecedores', label: 'Fornecedores' },
 ];

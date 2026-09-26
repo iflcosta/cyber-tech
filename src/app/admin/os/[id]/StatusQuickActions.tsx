@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useId, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -126,6 +126,22 @@ export function StatusQuickActions({
         } já passou pelos testes finais e está *pronto para retirada*! 🎉\n\nVocê pode conferir o resumo, fotos e garantia em tempo real aqui:\n${trackUrl}`;
         const link = toWhatsAppLink(customerPhone, msg);
         if (link) window.open(link, '_blank');
+      }
+
+      // Disparo automático não-bloqueante via VPS WhatsApp
+      if (customerPhone) {
+        fetch('/api/whatsapp/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerPhone,
+            customerName,
+            osNumber: osLabel ?? osId,
+            osId,
+            status: newStatus,
+            amount: currentEstimatedValue,
+          }),
+        }).catch((err) => console.warn('Erro ao notificar via VPS:', err));
       }
 
       startTransition(() => router.refresh());
