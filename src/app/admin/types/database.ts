@@ -21,6 +21,7 @@ export type Database = {
           role: 'owner' | 'technician';
           active: boolean;
           can_delete: boolean;
+          commission_rate: number;
           created_at: string;
         };
         Insert: {
@@ -30,6 +31,7 @@ export type Database = {
           role: 'owner' | 'technician';
           active?: boolean;
           can_delete?: boolean;
+          commission_rate?: number;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
@@ -62,7 +64,7 @@ export type Database = {
           os_number: string | null;
           short_id: string;
           customer_id: string;
-          equipment_type: 'computador' | 'notebook' | 'celular' | 'tablet' | 'outro' | (string & {});
+          equipment_type: 'computador' | 'notebook' | 'celular' | 'tablet' | 'outro';
           equipment_brand: string | null;
           equipment_model: string | null;
           equipment_color: string | null;
@@ -82,6 +84,8 @@ export type Database = {
             | 'cancelled';
           blocking_reason: string | null;
           estimated_value: number | null;
+          labor_cost: number | null;
+          technician_id: string | null;
           estimated_ready_at: string | null;
           payment_status: 'pending' | 'partial' | 'paid';
           payment_method: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
@@ -101,8 +105,7 @@ export type Database = {
             | 'notebook'
             | 'celular'
             | 'tablet'
-            | 'outro'
-            | (string & {});
+            | 'outro';
           equipment_brand?: string | null;
           equipment_model?: string | null;
           equipment_color?: string | null;
@@ -122,6 +125,8 @@ export type Database = {
             | 'cancelled';
           blocking_reason?: string | null;
           estimated_value?: number | null;
+          labor_cost?: number | null;
+          technician_id?: string | null;
           estimated_ready_at?: string | null;
           payment_status?: 'pending' | 'partial' | 'paid';
           payment_method?: 'cash' | 'pix' | 'card' | 'transfer' | 'other' | null;
@@ -195,6 +200,8 @@ export type Database = {
         Row: {
           id: string;
           ean13: string | null;
+          internal_sku: string | null;
+          shelf_location: string | null;
           name: string;
           category: string | null;
           brand: string | null;
@@ -202,6 +209,7 @@ export type Database = {
           unit_cost: number | null;
           unit_price: number;
           current_stock: number;
+          reserved_stock: number;
           min_stock: number;
           active: boolean;
           notes: string | null;
@@ -211,6 +219,8 @@ export type Database = {
         Insert: {
           id?: string;
           ean13?: string | null;
+          internal_sku?: string | null;
+          shelf_location?: string | null;
           name: string;
           category?: string | null;
           brand?: string | null;
@@ -218,6 +228,7 @@ export type Database = {
           unit_cost?: number | null;
           unit_price: number;
           current_stock?: number;
+          reserved_stock?: number;
           min_stock?: number;
           active?: boolean;
           notes?: string | null;
@@ -432,12 +443,91 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['part_order_events']['Insert']>;
       };
+      commission_ledger: {
+        Row: {
+          id: string;
+          service_order_id: string;
+          technician_id: string;
+          technician_name: string;
+          labor_amount: number;
+          commission_rate: number;
+          commission_amount: number;
+          os_payment_status: string;
+          status: 'pending' | 'paid_out';
+          payout_date: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          service_order_id: string;
+          technician_id: string;
+          technician_name: string;
+          labor_amount?: number;
+          commission_rate?: number;
+          commission_amount?: number;
+          os_payment_status?: string;
+          status?: 'pending' | 'paid_out';
+          payout_date?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['commission_ledger']['Insert']>;
+      };
+      camera_sync_sessions: {
+        Row: {
+          session_token: string;
+          photos: string[];
+          status: 'active' | 'completed' | 'expired';
+          created_at: string;
+          updated_at: string;
+          expires_at: string;
+        };
+        Insert: {
+          session_token: string;
+          photos?: string[];
+          status?: 'active' | 'completed' | 'expired';
+          created_at?: string;
+          updated_at?: string;
+          expires_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['camera_sync_sessions']['Insert']>;
+      };
+      it_support_leads: {
+        Row: {
+          phone_e164: string;
+          name: string;
+          segment: string;
+          niche: string;
+          status: string;
+          notes: string | null;
+          last_contacted_at: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          phone_e164: string;
+          name: string;
+          segment?: string;
+          niche?: string;
+          status?: string;
+          notes?: string | null;
+          last_contacted_at?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['it_support_leads']['Insert']>;
+      };
     };
     Views: {
       service_orders_with_stale: {
         Row: Database['public']['Tables']['service_orders']['Row'] & {
           customer_name: string;
           customer_phone: string | null;
+          technician_name: string | null;
+          technician_commission_rate: number | null;
           days_since_update: number;
         };
       };
@@ -476,6 +566,7 @@ export type Supplier = Database['public']['Tables']['suppliers']['Row'];
 export type PartOrder = Database['public']['Tables']['part_orders']['Row'];
 export type PartOrderEvent = Database['public']['Tables']['part_order_events']['Row'];
 export type PartOrderPendingReturn = Database['public']['Views']['part_orders_pending_return']['Row'];
+export type CameraSyncSession = Database['public']['Tables']['camera_sync_sessions']['Row'];
 
 /* ---------- Constantes de UI ---------- */
 
@@ -516,22 +607,19 @@ export const EQUIPMENT_TYPES = [
 
 export type EquipmentTypeValue = (typeof EQUIPMENT_TYPES)[number]['value'];
 
-/**
- * Retorna o rótulo legível do tipo de aparelho:
- * - Se for um dos tipos padrão ('computador', 'notebook', etc.), retorna o label ('Computador', 'Notebook', etc.).
- * - Se o usuário especificou um tipo customizado ao escolher "Outro" (ex: "GPS", "Monitor", "Videogame"),
- *   retorna o próprio texto informado.
- */
-export function getEquipmentTypeLabel(type: string | null | undefined): string {
-  if (!type) return 'Outro';
-  const found = EQUIPMENT_TYPES.find((t) => t.value === type);
-  return found ? found.label : type;
+export function getEquipmentTypeLabel(value: string | null | undefined): string {
+  if (!value) return 'Outro';
+  const found = EQUIPMENT_TYPES.find((t) => t.value === value);
+  return found ? found.label : value;
 }
 
 export const ENTRY_CHECKLIST_FIELDS = [
   { key: 'liga', label: 'Liga' },
   { key: 'tela_ok', label: 'Tela OK' },
   { key: 'carrega', label: 'Carrega' },
+  { key: 'carregador', label: 'Acompanha carregador/fonte' },
+  { key: 'riscos', label: 'Riscos/avarias no chassi' },
+  { key: 'pecas_faltantes', label: 'Peças faltantes/aberto' },
   { key: 'molhou', label: 'Teve contato com líquido' },
   { key: 'queda', label: 'Sofreu queda' },
   { key: 'senha_conhecida', label: 'Senha conhecida' },
@@ -547,6 +635,7 @@ export const STOCK_MOVEMENT_TYPES = [
 export type StockMovementTypeValue = (typeof STOCK_MOVEMENT_TYPES)[number]['value'];
 
 export const STOCK_CATEGORY_SUGGESTIONS = [
+  'PC Pronta-Entrega',
   'Cabos',
   'Fontes',
   'Memórias',

@@ -232,12 +232,21 @@ export default async function StockItemDetailPage({
               />
             </div>
             <dl className="mt-2 space-y-1.5 text-sm">
+              {item.internal_sku && (
+                <Row label="SKU Interno" value={<span className="font-mono font-semibold text-sky-700">{item.internal_sku}</span>} />
+              )}
               {item.ean13 && (
                 <Row label="EAN-13" value={<span className="font-mono">{item.ean13}</span>} />
               )}
               {item.category && <Row label="Categoria" value={item.category} />}
+              {item.shelf_location && (
+                <Row label="Localização" value={<span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">📍 {item.shelf_location}</span>} />
+              )}
               {item.brand && <Row label="Marca" value={item.brand} />}
               {item.model && <Row label="Modelo" value={item.model} />}
+              {typeof item.reserved_stock === 'number' && item.reserved_stock > 0 && (
+                <Row label="Reservado em OS" value={`${item.reserved_stock} un`} />
+              )}
               <Row
                 label="Preço"
                 value={item.unit_price.toLocaleString('pt-BR', {

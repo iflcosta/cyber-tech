@@ -1,321 +1,358 @@
-import { Monitor, Smartphone, Laptop, Sparkles, Wrench, MessageCircle, ArrowRight, Building2 } from "lucide-react";
 import Link from "next/link";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import ShowroomSection from "@/components/ShowroomSection";
+import PCBuilderSection from "@/components/PCBuilderSection";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import TrackedWhatsAppLink from "@/components/TrackedWhatsAppLink";
-import { Reveal, RevealGroup } from "@/components/Reveal";
 import { brand } from "@/lib/brand";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ service?: string; persona?: string; utm_source?: string; utm_campaign?: string }> }) {
-  const params = await searchParams;
-  const serviceParam = params?.service ?? null;
-  // persona=lojista (via URL) OU utm_campaign contendo 'b2b' OU utm_source=google + utm_campaign=lojistas
-  const isB2BFromUtm = params?.utm_campaign?.toLowerCase().includes('b2b') || params?.utm_campaign?.toLowerCase().includes('lojista') || params?.utm_campaign?.toLowerCase().includes('parceiro');
-  const personaParam = (params?.persona === 'lojista' || isB2BFromUtm) ? 'lojista' : null;
+const TELAS_URL = "https://telas.cyberinformatica.tech";
 
-  const whatsappCuradoriaMessage = "Olá! Vim pelo site da Cyber e gostaria de falar com a curadoria técnica.";
-  const whatsappB2BMessage = "Olá! Sou lojista/assistência técnica. Vim pelo site da Cyber e gostaria de falar sobre parceria (indicação técnica, suporte ao parceiro e pós-venda estendido).";
-
+export default function Home() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
-        {/* Hero agora renderiza direto (sem Suspense) pra evitar tela preta vazia */}
-        <Hero serviceParam={serviceParam} personaParam={personaParam} />
+      <main className="min-h-screen bg-white text-zinc-950 font-sans antialiased">
+        {/* ========================================================================= */}
+        {/* HERO — PROPOSTA DIRETA + CONSULTA DE OS + ÍNDICE RÁPIDO                   */}
+        {/* ========================================================================= */}
+        <Hero />
 
-        {/* Seção 2 — Categorias de produto com cards visuais */}
-        <section id="catalogo" className="section bg-[var(--bg-secondary)]">
-          <div className="container-narrow">
-            <Reveal>
-              <div className="text-center mb-12">
-                <span className="kicker">Catálogo</span>
-                <h2 className="display mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark)]">
-                  PC, notebook e celular — com a <span className="gradient-text">mesma curadoria técnica</span>.
-                </h2>
-              </div>
-            </Reveal>
-            <RevealGroup as="div" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" stagger={0.12}>
-              {[
-                {
-                  icon: Monitor,
-                  title: "PC sob medida",
-                  copy: "Montamos seu PC com curadoria técnica — peças escolhidas pra durar, sem fanatismo por marca.",
-                  cta: "Montar meu PC",
-                  href: whatsappCuradoriaMessage,
-                  source: "page_card_pc",
-                  accent: "rgba(0,102,255,.4)",
-                  emoji: "🖥️",
-                },
-                {
-                  icon: Laptop,
-                  title: "Notebook",
-                  copy: "Notebook pra estudo, trabalho ou jogo. Orientamos na escolha e entregamos pronto pra usar.",
-                  cta: "Ver notebooks",
-                  href: whatsappCuradoriaMessage,
-                  source: "page_card_notebook",
-                  accent: "rgba(0,255,136,.3)",
-                  emoji: "💻",
-                },
-                {
-                  icon: Smartphone,
-                  title: "Celular",
-                  copy: "Celular novo, com indicação técnica de acessórios e pós-venda estendido.",
-                  cta: "Ver celulares",
-                  href: whatsappCuradoriaMessage,
-                  source: "page_card_celular",
-                  accent: "rgba(0,102,255,.5)",
-                  emoji: "📱",
-                },
-              ].map((card) => (
-                <Reveal as="article" key={card.title}>
-                  <article className="relative card overflow-hidden p-0 group">
-                    {/* Imagem placeholder com gradient — substituir por foto real depois */}
-                    <div
-                      className="aspect-[16/10] flex items-center justify-center text-6xl relative overflow-hidden"
-                      style={{
-                        background: `radial-gradient(circle at 30% 30%, ${card.accent}, transparent 60%), linear-gradient(135deg, var(--bg-elevated), #0a1929)`,
-                      }}
-                    >
-                      <div className="absolute inset-0 opacity-20" style={{
-                        backgroundImage: "linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)",
-                        backgroundSize: "20px 20px",
-                      }} />
-                      <span className="relative z-10 transition-transform group-hover:scale-110 duration-500">{card.emoji}</span>
-                    </div>
-                    <div className="p-6">
-                      <card.icon size={28} className="text-[var(--color-cyber-blue)] mb-4" />
-                      <h3 className="display text-xl font-bold mb-2 text-[var(--color-text-on-dark)]">
-                        {card.title}
-                      </h3>
-                      <p className="text-sm text-[var(--color-text-on-dark-muted)] mb-6 leading-relaxed">
-                        {card.copy}
-                      </p>
-                      <TrackedWhatsAppLink
-                        phone={brand.whatsapp}
-                        message={card.href}
-                        source={card.source}
-                        className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-circuit-green)] hover:gap-2 transition-all group/link"
-                        ariaLabel={card.cta}
-                      >
-                        {card.cta}
-                        <ArrowRight size={14} className="transition-transform group-hover/link:translate-x-1" />
-                      </TrackedWhatsAppLink>
-                    </div>
-                  </article>
-                </Reveal>
-              ))}
-            </RevealGroup>
+        {/* ========================================================================= */}
+        {/* SEÇÃO 01 — SHOWROOM DIGITAL DE COMPUTADORES À PRONTA-ENTREGA              */}
+        {/* ========================================================================= */}
+        <ShowroomSection />
 
-            {/* Sub-CTA B2B */}
-            <Reveal delay={0.2}>
-              <div className="mt-10 text-center">
-                <p className="text-sm text-[var(--color-text-on-dark-muted)] mb-3">
-                  É lojista ou assistência? A gente atende parceiro com indicação técnica e suporte direto.
-                </p>
-                <Link
-                  href="#parceiros"
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-circuit-green)] hover:opacity-80 transition-opacity"
-                >
-                  <Building2 size={14} />
-                  Ver como funciona a parceria
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-            </Reveal>
-          </div>
-        </section>
+        {/* ========================================================================= */}
+        {/* SEÇÃO 02 — PC BUILDER EM CONSOLE DE 4 ABAS COMPACTAS                      */}
+        {/* ========================================================================= */}
+        <PCBuilderSection />
 
-        {/* Seção 3 — Curadoria técnica */}
-        <section id="curadoria" className="section">
-          <div className="container-narrow">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <Reveal>
-                <span className="kicker">Diferencial</span>
-                <h2 className="display mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark)] mb-6">
-                  Curadoria técnica: a gente te ajuda a escolher — <span className="gradient-text">sem empurrar</span>.
-                </h2>
-                <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] leading-relaxed mb-6">
-                  Antes de vender, a gente pergunta. Pra quê vai usar, qual orçamento, o que não pode faltar. Aí indicamos a peça certa — não a peça mais cara. Se a gente acha que o que você quer não faz sentido, a gente fala.
-                </p>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-circuit-green)]/10 text-[var(--color-circuit-green)] text-xs font-semibold uppercase tracking-wider">
-                  <Sparkles size={14} />
-                  Atendimento humano, sem chatbot.
+        {/* ========================================================================= */}
+        {/* SEÇÃO 03 UNIFICADA — SERVIÇOS, EQUIPE & OPERAÇÃO FÍSICA EM 2 ANDARES      */}
+        {/* ========================================================================= */}
+        <section id="servicos" className="py-12 sm:py-20 bg-zinc-100 border-b border-zinc-300">
+          <div id="estrutura" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 sm:pb-8 border-b-2 border-zinc-950 mb-6 sm:mb-8">
+              <div>
+                <div className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1.5 sm:mb-2">
+                  03 // ESTRUTURA FÍSICA DE 2 ANDARES & SERVIÇOS ESPECIALIZADOS
                 </div>
-              </Reveal>
-              <Reveal delay={0.15}>
-                <div className="card relative overflow-hidden" style={{ padding: "2rem" }}>
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--color-circuit-green)] to-transparent" />
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-cyber-blue)] to-[var(--color-circuit-green)] flex items-center justify-center flex-shrink-0">
-                      <MessageCircle size={20} className="text-white" />
+                <h2 className="text-2xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
+                  Dois Pisos de Operação. Um Canal Direto para Cada Demanda.
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-zinc-600 max-w-md leading-relaxed">
+                Cada andar da nossa loja no Centro de Bragança Paulista conta com bancada própria e especialistas residentes:
+              </p>
+            </div>
+
+            {/* Grid Arquitetônico de 2 Colunas: 1º Andar (Térreo) vs. 2º Andar (Mezanino) */}
+            <div id="orcamento" className="grid grid-cols-1 lg:grid-cols-2 border-2 border-zinc-950 divide-y-2 lg:divide-y-0 lg:divide-x-2 divide-zinc-950 bg-white">
+              {/* COLUNA 01: 1º ANDAR (TÉRREO) */}
+              <div className="p-4 sm:p-8 flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] sm:text-xs pb-3.5 mb-4 border-b border-zinc-200">
+                    <span className="font-bold text-zinc-950 bg-zinc-200 px-2.5 py-1">
+                      1º ANDAR // TÉRREO
+                    </span>
+                    <span className="text-zinc-500 font-bold uppercase">
+                      FELIPE · IAGO · EDUARDO
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-zinc-950 mb-2">
+                    Manutenção Rápida, Upgrades & Varejo de Peças
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed mb-5">
+                    Atendimento rápido de balcão com check-in em 60 segundos, bancada de 6 metros com computadores expostos à pronta-entrega e estoque físico catalogado.
+                  </p>
+
+                  <div className="divide-y divide-zinc-200 border-y border-zinc-200 mb-5">
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
+                          01. Upgrades de SSD NVMe, RAM & Formatação
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
+                          No Mesmo Dia
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-600 block leading-relaxed">
+                        Deixe seu PC ou notebook até 10x mais rápido preservando seus arquivos, com limpeza térmica profissional.
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--color-text-on-dark)] mb-1">
-                        Felipe, Iago ou Jefferson vão te atender
-                      </p>
-                      <p className="text-sm text-[var(--color-text-on-dark-muted)] leading-relaxed">
-                        Time técnico real, na loja. Fala direto com quem entende — sem intermediário, sem script.
-                      </p>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
+                          02. Cabos, Fontes, SSDs & Periféricos na Hora
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
+                          Estoque Físico
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-600 block leading-relaxed">
+                        Cabos DisplayPort/HDMI 2.1, fontes ATX certificadas, coolers, pastas térmicas, mouses e teclados para retirada imediata.
+                      </span>
+                    </div>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
+                          03. Suporte Ágil para Empresas & Escritórios
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
+                          B2B & PME
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-600 block leading-relaxed">
+                        Prioridade de bancada, máquinas prontas para trabalho, recibo detalhado e garantia legal de 90 dias.
+                      </span>
                     </div>
                   </div>
                 </div>
-              </Reveal>
+
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <TrackedWhatsAppLink
+                    phone={brand.whatsapp}
+                    message="Olá! Vim pelo site da Cyber Informática e gostaria de orçar um upgrade / manutenção de computador ou notebook."
+                    source="terreo_manutencao_btn"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
+                  >
+                    <span>Orçar Manutenção / Upgrade</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </TrackedWhatsAppLink>
+
+                  <TrackedWhatsAppLink
+                    phone={brand.whatsapp}
+                    message="Olá! Vim pelo site da Cyber Informática e gostaria de consultar uma peça, cabo ou periférico no estoque."
+                    source="terreo_pecas_btn"
+                    className="inline-flex items-center justify-center gap-1.5 border border-zinc-900 bg-white hover:bg-zinc-100 text-zinc-950 font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
+                  >
+                    <span>Consultar Peça</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                  </TrackedWhatsAppLink>
+                </div>
+              </div>
+
+              {/* COLUNA 02: 2º ANDAR (MEZANINO — LABORATÓRIO) */}
+              <div className="p-4 sm:p-8 bg-[#09090b] text-white flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] sm:text-xs pb-3.5 mb-4 border-b border-zinc-800">
+                    <span className="font-bold text-black bg-white px-2.5 py-1">
+                      2º ANDAR // MEZANINO
+                    </span>
+                    <span className="text-zinc-400 font-bold uppercase">
+                      ESP. JEFFERSON · B2C & B2B
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-2">
+                    Laboratório de Placas de Vídeo (GPUs) & Troca só do Vidro
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-5">
+                    Laboratório isolado no segundo andar com microscópio trinocular, estação de retrabalho eletrônico e câmara industrial a vácuo. Sem terceirização.
+                  </p>
+
+                  <div className="divide-y divide-zinc-800 border-y border-zinc-800 mb-5">
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-white">
+                          01. Reparo Eletrônico de Placas de Vídeo (GPUs)
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-900 border border-zinc-700 px-2 py-0.5 text-zinc-300 shrink-0">
+                          Lab Próprio
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-400 block leading-relaxed">
+                        Diagnóstico de curto em linhas 12V/VCore/VRAM, troca de componentes e recuperação de placas NVIDIA RTX e AMD Radeon.
+                      </span>
+                    </div>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-white">
+                          02. Troca só do Vidro (Salve sua Tela Original)
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-white text-black px-2 py-0.5 shrink-0">
+                          Tela Original
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-400 block leading-relaxed">
+                        A imagem e o toque funcionam? Trocamos apenas o vidro externo trincado a vácuo, mantendo sua tela original com até 70% de economia.
+                      </span>
+                    </div>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-white">
+                          03. Parceria B2B para Lojistas da Região
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-900 border border-zinc-700 px-2 py-0.5 text-zinc-300 shrink-0">
+                          Atacado B2B
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-400 block leading-relaxed">
+                        Tabela de atacado e prioridade de lote para lojistas de Bragança Paulista, Atibaia, Itatiba, Socorro e Extrema.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <TrackedWhatsAppLink
+                    phone={brand.whatsapp}
+                    message="Olá! Vim pelo site da Cyber Informática e gostaria de falar com o laboratório do 2º andar sobre reparo de Placa de Vídeo (GPU) ou troca só do vidro."
+                    source="mezanino_lab_btn"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
+                  >
+                    <span>Falar com o Lab (GPU / Vidro)</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </TrackedWhatsAppLink>
+
+                  <a
+                    href={TELAS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
+                  >
+                    <span>Site de Telas</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Seção 4 — Monte seu PC */}
-        <section id="monte-seu-pc" className="section bg-[var(--bg-secondary)]">
-          <div className="container-narrow text-center">
-            <Reveal>
-              <span className="kicker">PC Builder</span>
-              <h2 className="display mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark)] mb-6 max-w-3xl mx-auto">
-                Monte seu PC com a gente — ou peça um <span className="gradient-text">projeto sob medida</span>.
-              </h2>
-              <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                Use nosso builder online pra simular a configuração. Quer assessoria técnica? A gente monta pra você, com peças curadas e teste de stress antes da entrega.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                <TrackedWhatsAppLink
-                  phone={brand.whatsapp}
-                  message="Olá! Quero montar um PC sob medida com a curadoria técnica da Cyber."
-                  source="page_pc_builder_primary"
-                  className="btn-primary w-full sm:w-auto text-base px-7 py-4"
-                  ariaLabel="Simular montagem de PC com especialista"
-                >
-                  <Wrench size={18} />
-                  Montar PC com especialista
-                </TrackedWhatsAppLink>
-                <TrackedWhatsAppLink
-                  phone={brand.whatsapp}
-                  message={whatsappCuradoriaMessage}
-                  source="page_pc_builder"
-                  className="btn-ghost w-full sm:w-auto text-base px-7 py-4"
-                  ariaLabel="Pedir projeto sob medida"
-                >
-                  <MessageCircle size={18} />
-                  Pedir projeto sob medida
-                </TrackedWhatsAppLink>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* Seção 5 — Para lojistas e assistências parceiras (B2B) */}
-        <section id="parceiros" className="section">
-          <div className="container-narrow">
-            <Reveal>
-              <div className="card card-b2b relative overflow-hidden" style={{ padding: "2rem" }}>
-                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[var(--color-circuit-green)] to-transparent" />
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
-                  <div className="flex-1">
-                    <span className="badge badge-b2b mb-4">Atende lojistas</span>
-                    <h2 className="display mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark)] mb-4">
-                      Pra lojista e assistência que quer <span className="gradient-text">indicação técnica</span> no WhatsApp.
-                    </h2>
-                    <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] leading-relaxed mb-6">
-                      Cliente te perguntou qual peça comprar e você não tem certeza? Manda mensagem. A gente orienta a peça certa pro caso — e você vende sem dor de cabeça. Suporte direto, sem espera, sem atravessador.
-                    </p>
-                    <TrackedWhatsAppLink
-                      phone={brand.whatsapp}
-                      message={whatsappB2BMessage}
-                      source="page_parceiros"
-                      className="btn-b2b text-base px-7 py-4"
-                      ariaLabel="Falar com o time de parcerias"
-                    >
-                      <Building2 size={18} />
-                      Falar com o time de parcerias
-                    </TrackedWhatsAppLink>
-                    <p className="text-xs text-[var(--color-text-on-dark-muted)] mt-3">
-                      Bragança Paulista · Atibaia · Socorro · Amparo · região
-                    </p>
-                  </div>
-                  <RevealGroup as="div" className="flex-1 grid gap-4 sm:grid-cols-2" stagger={0.1} delayChildren={0.2}>
-                    {[
-                      {
-                        title: "Indicação técnica no WhatsApp",
-                        copy: "Manda o caso do seu cliente. A gente indica a peça certa, com justificativa técnica — em minutos."
-                      },
-                      {
-                        title: "Suporte ao parceiro",
-                        copy: "Atendimento direto com Felipe, Iago ou Jefferson. Sem fila, sem chatbot, sem call center."
-                      },
-                      {
-                        title: "Pós-venda estendido",
-                        copy: "Garantia ampliada pra quem revende. Cliente volta pra você, não pra assistência da marca."
-                      },
-                      {
-                        title: "Atendimento regional",
-                        copy: "Bragança Paulista, Atibaia, Socorro, Amparo, Jundiaí, Extrema e região."
-                      },
-                    ].map((benefit) => (
-                      <div key={benefit.title} className="card relative overflow-hidden" style={{ padding: "1.25rem" }}>
-                        <div className="absolute top-0 left-0 w-[2px] h-full bg-[var(--color-circuit-green)]" />
-                        <h3 className="text-sm font-bold mb-1 text-[var(--color-text-on-dark)]">
-                          {benefit.title}
-                        </h3>
-                        <p className="text-xs text-[var(--color-text-on-dark-muted)] leading-relaxed">
-                          {benefit.copy}
-                        </p>
-                      </div>
-                    ))}
-                  </RevealGroup>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* Seção 6 — Contato */}
-        <section className="section bg-[var(--bg-secondary)]">
-          <div className="container-narrow text-center">
-            <Reveal>
-              <span className="kicker">Venha nos visitar</span>
-              <h2 className="display mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-text-on-dark)] mb-6">
-                Loja física em <span className="gradient-text">Bragança Paulista</span>.
-              </h2>
-              <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] max-w-2xl mx-auto mb-10 leading-relaxed">
-                Estamos na loja, prontos pra te atender com café e peça na mão. Sem agendamento, sem fila de call center. Quer orçamento ou dúvida técnica? Manda mensagem.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10">
-                <Link href="/contato" className="btn-primary w-full sm:w-auto text-base px-7 py-4">
-                  <Wrench size={18} />
-                  Mandar mensagem
-                </Link>
-                <TrackedWhatsAppLink
-                  phone={brand.whatsapp}
-                  message={whatsappCuradoriaMessage}
-                  source="page_contato_cta"
-                  className="btn-ghost w-full sm:w-auto text-base px-7 py-4"
-                  ariaLabel="Prefere WhatsApp"
-                >
-                  <MessageCircle size={18} />
-                  Prefere WhatsApp
-                </TrackedWhatsAppLink>
-              </div>
-              <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 card text-sm relative overflow-hidden" style={{ padding: "1.25rem 1.5rem", textAlign: "left" }}>
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--color-cyber-blue)] to-transparent" />
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[var(--color-text-on-dark)]">Endereço:</span>
-                  <span className="text-[var(--color-text-on-dark-muted)]">
-                    {brand.address.street}, {brand.address.number}
+        {/* ========================================================================= */}
+        {/* SEÇÃO 04 — GARANTIA DE BANCADA & ENDEREÇO NO CENTRO DE BRAGANÇA           */}
+        {/* ========================================================================= */}
+        <section id="localizacao" className="py-12 sm:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="border-2 border-zinc-950 bg-white">
+              {/* Faixa Superior Compacta de Garantias (3 Pilares) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-zinc-300 border-b-2 border-zinc-950 bg-zinc-50">
+                <div className="p-4 sm:p-5 flex items-start gap-3">
+                  <span className="font-mono text-xs font-bold bg-zinc-950 text-white px-2 py-0.5 shrink-0">
+                    01
                   </span>
+                  <div>
+                    <strong className="text-xs sm:text-sm font-extrabold text-zinc-950 block">
+                      Check-in em 60s com Fotos
+                    </strong>
+                    <span className="text-xs text-zinc-600 block mt-0.5">
+                      Etiqueta térmica colada no chassi e vistoria fotográfica na entrada.
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[var(--color-text-on-dark)]">Horário:</span>
-                  <span className="text-[var(--color-text-on-dark-muted)]">{brand.openingHours}</span>
+
+                <div className="p-4 sm:p-5 flex items-start gap-3">
+                  <span className="font-mono text-xs font-bold bg-zinc-950 text-white px-2 py-0.5 shrink-0">
+                    02
+                  </span>
+                  <div>
+                    <strong className="text-xs sm:text-sm font-extrabold text-zinc-950 block">
+                      Rastreio Online em Tempo Real
+                    </strong>
+                    <span className="text-xs text-zinc-600 block mt-0.5">
+                      Acompanhe cada etapa pelo celular em{" "}
+                      <Link href="/status" className="underline font-semibold text-zinc-950">
+                        /status
+                      </Link>{" "}
+                      com peças e mão de obra separadas.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-5 flex items-start gap-3">
+                  <span className="font-mono text-xs font-bold bg-zinc-950 text-white px-2 py-0.5 shrink-0">
+                    03
+                  </span>
+                  <div>
+                    <strong className="text-xs sm:text-sm font-extrabold text-zinc-950 block">
+                      Garantia Legal CDC de 90 Dias
+                    </strong>
+                    <span className="text-xs text-zinc-600 block mt-0.5">
+                      Certificado oficial emitido na entrega com suporte direto na nossa loja física.
+                    </span>
+                  </div>
                 </div>
               </div>
-            </Reveal>
+
+              {/* Bloco de Endereço e Horário */}
+              <div className="p-4 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
+                <div className="lg:col-span-7 space-y-3">
+                  <div className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500">
+                    04 // LOJA FÍSICA HÁ 10 ANOS NO CENTRO DE BRAGANÇA PAULISTA
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
+                    Rua Coronel Teófilo Leme, 967 — Centro
+                  </h2>
+                  <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed max-w-2xl">
+                    Estacionamento fácil na região central. Venha testar os computadores do Showroom pessoalmente ou traga seu equipamento para avaliação direta no balcão.
+                  </p>
+
+                  <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2 text-xs font-mono">
+                    <div className="border border-zinc-300 bg-zinc-50 p-3.5">
+                      <strong className="text-zinc-950 uppercase block mb-1">
+                        HORÁRIO DE FUNCIONAMENTO
+                      </strong>
+                      <span className="text-zinc-600 block">SEG A SEX: 09H00 ÀS 18H00</span>
+                      <span className="text-zinc-600 block">SÁBADO: 09H00 ÀS 13H00</span>
+                    </div>
+
+                    <div className="border border-zinc-300 bg-zinc-50 p-3.5">
+                      <strong className="text-zinc-950 uppercase block mb-1">
+                        ATENDIMENTO & PORTAL OS
+                      </strong>
+                      <span className="text-zinc-600 block">WHATSAPP: (11) 95436-9269</span>
+                      <Link
+                        href="/status"
+                        className="text-zinc-950 font-bold underline underline-offset-4 inline-flex items-center gap-1 mt-1"
+                      >
+                        <span>CONSULTAR ORDEM DE SERVIÇO</span>
+                        <ArrowRight className="w-3 h-3 shrink-0" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-5 flex flex-col gap-2.5 sm:gap-3">
+                  <TrackedWhatsAppLink
+                    phone={brand.whatsapp}
+                    message="Olá! Vim pelo site da Cyber Informática e gostaria de falar com o atendimento."
+                    source="location_section"
+                    className="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-4 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
+                  >
+                    <span>Chamar no WhatsApp Agora</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </TrackedWhatsAppLink>
+
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      "Rua Coronel Teófilo Leme 967 Bragança Paulista SP"
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full border border-zinc-900 bg-white hover:bg-zinc-100 text-zinc-950 font-mono font-bold uppercase tracking-wider py-4 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
+                  >
+                    <span>Abrir Rota no Google Maps</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
-
-        <Footer />
-        <WhatsAppButton />
       </main>
+      <Footer />
+      <WhatsAppButton />
     </>
   );
 }

@@ -37,37 +37,37 @@ export function StockFilter() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar por nome, marca, modelo, EAN…"
-        aria-label="Buscar por nome, marca, modelo, EAN"
-        className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+        placeholder="Buscar no catálogo: nome, código de barras (EAN-13), SKU interno, prateleira, marca…"
+        aria-label="Buscar no catálogo: nome, código de barras, SKU interno, marca"
+        className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
       />
       <button
         type="submit"
-        className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+        className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700 transition shadow-xs"
       >
         Buscar
       </button>
       <button
         type="button"
         onClick={() => apply({ low: lowActive ? null : '1' })}
-        className={`rounded-md px-3 py-2 text-sm font-medium ${
+        className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
           lowActive
-            ? 'bg-orange-600 text-white hover:bg-orange-700'
-            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            ? 'bg-amber-600 text-white border border-amber-600 shadow-xs'
+            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
         }`}
       >
-        {lowActive ? '✓ Estoque baixo' : 'Estoque baixo'}
+        {lowActive ? '✓ Só Estoque Baixo' : 'Estoque Baixo'}
       </button>
       <button
         type="button"
         onClick={() => apply({ inactive: inactiveActive ? null : '1' })}
-        className={`rounded-md px-3 py-2 text-sm font-medium ${
+        className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
           inactiveActive
-            ? 'bg-slate-600 text-white hover:bg-slate-700'
-            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            ? 'bg-slate-800 text-white border border-slate-800'
+            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
         }`}
       >
-        {inactiveActive ? '✓ Inativos' : 'Mostrar inativos'}
+        {inactiveActive ? '✓ Mostrando Inativos' : 'Ver Inativos'}
       </button>
     </form>
   );

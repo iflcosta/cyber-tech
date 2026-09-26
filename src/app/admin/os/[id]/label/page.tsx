@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { LabelPrintButton } from './LabelPrintButton';
 import { EscPosLabelButton } from './EscPosLabelButton';
@@ -7,39 +8,8 @@ import { formatDateBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
-// Impressora alvo: Bematech MPT-II (termica fiscal) via Bluetooth COM9.
-// Outras opcoes compativeis: qualquer termica 58mm (Elgin i9, Daruma, GENXP).
-//
-// IMPORTANTE: driver Generic / Text Only NAO renderiza HTML/CSS.
-// Ele so' imprime texto puro (chars ASCII). O navegador ignora
-// margins/padding/borders quando imprime em impressora de texto.
-//
-// Estrategia: gerar a etiqueta como TEXTO PURO com quebras de linha
-// explicitas (\n) e colunas alinhadas manualmente com espacos.
-// Largura util de 32 chars (bobina 58mm com fonte 12cpi).
-//
-// Formato:
-//   <linha em branco>           <- margem de rasgo
-//   <linha em branco>
-//   <linha em branco>
-//   <linha em branco>
-//   CYBER INFORMATICA   DD/MM/YYYY
-//   ====================================
-//   OS-0001  (OS-2026-0001)
-//   CLIENTE
-//   Joao Silva
-//   Tel: (11) 99999-9999
-//   APARELHO
-//   Notebook - Dell Inspiron Cinza
-//   ------------------------------------
-//   Formatação / defeito relatado
-//   <espaço extra pra puxar>
-//
-// Total: ~20 linhas de 32 chars = ~62mm de altura.
+const WIDTH = 32; // Chars por linha (bobina 58mm MPT-II)
 
-const WIDTH = 32; // chars por linha (58mm @ 12cpi)
-
-// Esquerda (usado só por padBoth abaixo pra fazer o preenchimento de sobra)
 function ljust(text: string, width: number = WIDTH): string {
   const t = text.slice(0, width);
   return t + ' '.repeat(Math.max(0, width - t.length));
@@ -51,7 +21,6 @@ function padBoth(left: string, right: string): string {
   return left + ' '.repeat(space) + right;
 }
 
-// Normaliza pra ASCII (sem acento, sem emoji)
 const norm = (s: string) => (s ?? '')
   .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   .replace(/[^\x20-\x7E]/g, '?')
@@ -79,123 +48,135 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     .filter(Boolean).join(' ');
   const equipNorm = norm(equipRaw);
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
-  const typeLabel = norm(typeMeta?.label ?? so.equipment_type ?? '');
-  const shortId = norm(so.short_id ?? '');
+  const typeLabel = norm(typeMeta?.label ?? '');
+  const shortId = norm(so.short_id ?? `OS-${so.os_number}`);
+  const osNumberStr = String(so.os_number ?? shortId);
   const created = formatDateBR(so.created_at);
   const defectNorm = norm(so.reported_defect ?? '');
 
-  // Monta o texto da etiqueta como TEXTO PURO com \n
+  // Texto puro 32 colunas para MPT-II (Generic / Text Only ou ESC/POS)
   const lineSep = '='.repeat(WIDTH);
   const dashSep = '-'.repeat(WIDTH);
-
   const lines: string[] = [];
-
-  // MARGEM DE RASGO: 2 linhas com '.' pra forcar avanco do papel
-  lines.push('.', '.');
-
-  // Header
   lines.push(padBoth('CYBER INFORMATICA', created));
   lines.push(lineSep);
-
-  // OS em destaque (sem duplicacao - so o short_id "OS-0626004")
-  lines.push(shortId);
-
-  // Cliente
+  lines.push(`OS: ${shortId} (#${osNumberStr})`);
+  lines.push(lineSep);
   lines.push('[CLIENTE]');
-  lines.push(customerName);
+  lines.push(customerName.slice(0, WIDTH));
   if (customerPhone) lines.push('Tel: ' + customerPhone);
-  // Espaco maior entre secoes (~6mm, igual margem de rasgo)
-  lines.push('', '', '');
-
-  // Aparelho
-  if (typeLabel || equipNorm) {
-    lines.push('[APARELHO]');
-    const equipLine = typeLabel + (equipNorm ? ' - ' + equipNorm : '');
-    // Quebra em linhas se muito longo
-    if (equipLine.length <= WIDTH) {
-      lines.push(equipLine);
-    } else {
-      // Quebra por palavras
-      const words = equipLine.split(' ');
-      let cur = '';
-      for (const w of words) {
-        if ((cur + ' ' + w).trim().length > WIDTH) {
-          lines.push(cur.trim());
-          cur = w;
-        } else {
-          cur = (cur + ' ' + w).trim();
-        }
-      }
-      if (cur) lines.push(cur.trim());
-    }
-    // Espaco maior entre secoes
-    lines.push('', '', '');
-  }
-
-  // Defeito
-  if (defectNorm) {
-    lines.push('[DEFEITO]');
-    // Quebra em linhas de ate WIDTH chars
-    const words = defectNorm.split(' ');
-    let cur = '';
-    for (const w of words) {
-      if ((cur + ' ' + w).trim().length > WIDTH) {
-        lines.push(cur.trim());
-        cur = w;
-      } else {
-        cur = (cur + ' ' + w).trim();
-      }
-    }
-    if (cur) lines.push(cur.trim());
-  }
-
-  // Linha final + 3 pontos no fim (margem anti-corte)
   lines.push(dashSep);
-
-  const plainText = lines.join('\n') + '\n.\n.\n.'; // 3 pontos no fim
+  if (typeLabel || equipNorm) {
+    lines.push('[EQUIPAMENTO]');
+    lines.push(`${typeLabel} ${equipNorm}`.trim().slice(0, WIDTH));
+    if (so.equipment_serial) lines.push(`S/N: ${norm(so.equipment_serial)}`.slice(0, WIDTH));
+    lines.push(dashSep);
+  }
+  if (defectNorm) {
+    lines.push('[SERVICO / DEFEITO]');
+    lines.push(defectNorm.slice(0, WIDTH * 3));
+    lines.push(dashSep);
+  }
+  lines.push('RASTREIO: cyberinformatica.tech');
+  lines.push(`DIGITE O CODIGO: ${osNumberStr}`);
+  lines.push(lineSep);
+  const plainText = lines.join('\n') + '\n.\n.\n.';
 
   return (
     <>
-      <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-lg border border-zinc-300 bg-zinc-50 p-4">
-        <p className="text-sm text-zinc-900">
-          <strong>Etiqueta texto puro 58mm</strong> — otimizada pra impressora termica via
-          driver Generic / Text Only (MPT-II Bluetooth, Elgin i9, etc).
+      {/* Controles de Impressão na Barra Superior (Ocultos na Impressão) */}
+      <div className="print:hidden mx-auto mb-6 max-w-xl border-2 border-zinc-950 bg-white p-5">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
+              MPT-II 58mm
+            </span>
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
+              Etiqueta de Chassi (Texto Puro / Sem QR)
+            </span>
+          </div>
+          <Link
+            href={`/admin/os/${so.id}`}
+            className="font-mono text-xs font-bold text-zinc-950 underline underline-offset-4"
+          >
+            ← Voltar para OS
+          </Link>
+        </div>
+
+        <p className="mt-3 font-mono text-xs text-zinc-600">
+          Layout otimizado em <strong>32 colunas (58mm)</strong> para a sua <strong>MPT-II</strong>: sem depender de QR Code gráfico, com o número da OS em destaque para colar no gabinete/notebook.
         </p>
-        <p className="mt-1 text-xs text-zinc-600">
-          Conteudo em ASCII com quebras de linha explicitas. Margem de rasgo no topo.
-          Cola no notebook com fita adesiva.
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <LabelPrintButton />
           <EscPosLabelButton
             createdStr={created}
             shortId={shortId}
+            osNumber={osNumberStr}
             customerName={customerName}
             customerPhone={customerPhone || undefined}
             equipmentLine={typeLabel || equipNorm ? `${typeLabel}${equipNorm ? ' - ' + equipNorm : ''}` : undefined}
             defect={defectNorm || undefined}
           />
         </div>
-        <p className="mt-2 text-xs text-zinc-600">
-          O botão verde manda comandos reais (negrito, corte) via agente de impressão local —
-          precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
-        </p>
       </div>
 
-      {/* ============ ETIQUETA ============ */}
-      {/* Preview visual: pre-formatted text */}
-      <pre
-        className="label whitespace-pre-wrap rounded border border-slate-300 bg-white p-3 font-mono text-xs text-slate-900 shadow print:border-0 print:bg-white print:p-0 print:shadow-none"
-        style={{
-          width: '58mm',
-          margin: '0',
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-          fontSize: '10pt',
-          lineHeight: '1.3',
-        }}
-      >
-{plainText}
-      </pre>
+      {/* ============ ETIQUETA TÉRMICA 58MM (MPT-II TEXTO PURO) ============ */}
+      <div className="flex justify-center print:block print:m-0">
+        <div
+          className="label-thermal border-2 border-zinc-950 bg-white text-black font-mono print:border-0"
+          style={{
+            width: '58mm',
+            padding: '2mm 3mm',
+            margin: '0 auto',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div className="text-center text-[10px] tracking-widest font-bold border-b border-black pb-1 mb-1">
+            CYBER INFORMATICA · {created}
+          </div>
+
+          {/* Destaque Gigante da OS em Texto (Legível a distância na bancada) */}
+          <div className="text-center py-1.5 border-b-2 border-black my-1">
+            <div className="text-xl font-black tracking-tight leading-none">{shortId}</div>
+            <div className="text-xs font-bold mt-0.5">CODIGO OS: #{osNumberStr}</div>
+          </div>
+
+          {/* Dados do Cliente */}
+          <div className="border-b border-dashed border-black py-1 my-1 text-[11px] leading-tight">
+            <div className="font-bold uppercase text-[9px]">[CLIENTE]</div>
+            <div className="font-bold truncate">{customerName}</div>
+            {customerPhone && <div className="text-[10px]">Tel: {customerPhone}</div>}
+          </div>
+
+          {/* Dados do Aparelho */}
+          <div className="border-b border-dashed border-black py-1 my-1 text-[11px] leading-tight">
+            <div className="font-bold uppercase text-[9px]">[EQUIPAMENTO]</div>
+            <div className="font-bold break-words">
+              {typeLabel} {equipNorm}
+            </div>
+            {so.equipment_serial && (
+              <div className="text-[10px]">S/N: {so.equipment_serial}</div>
+            )}
+          </div>
+
+          {/* Defeito Relatado */}
+          {defectNorm && (
+            <div className="border-b border-dashed border-black py-1 my-1 text-[10px] leading-tight">
+              <div className="font-bold uppercase text-[9px]">[SERVICO / DEFEITO]</div>
+              <div className="break-words">{defectNorm}</div>
+            </div>
+          )}
+
+          {/* Rastreio em Texto Puro (Sem QR Code) */}
+          <div className="pt-1 text-center text-[9px] leading-tight font-bold uppercase">
+            <div>RASTREIO: cyberinformatica.tech</div>
+            <div className="text-[10px] font-black mt-0.5">DIGITE A OS: {osNumberStr}</div>
+          </div>
+
+          <pre className="sr-only">{plainText}</pre>
+        </div>
+      </div>
 
       <style>{`
         @page {
@@ -204,24 +185,28 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
         }
         @media print {
           html, body {
-            margin: 0;
-            padding: 0;
-            background: white;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            color: black !important;
           }
-          body * { visibility: hidden; }
-          .label, .label * { visibility: visible; }
-          .label {
+          body * {
+            visibility: hidden;
+          }
+          .label-thermal, .label-thermal * {
+            visibility: visible;
+          }
+          .label-thermal {
             position: absolute;
             top: 0;
             left: 0;
             margin: 0 !important;
-            padding: 2mm 3mm;
-            background: white;
-            border: 0 !important;
+            padding: 2mm 2mm !important;
+            background: white !important;
+            color: black !important;
+            width: 58mm !important;
             box-shadow: none !important;
-            width: 58mm;
-            font-size: 10pt;
-            line-height: 1.3;
+            border: 0 !important;
           }
         }
       `}</style>

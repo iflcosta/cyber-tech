@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Instagram, Facebook, MessageCircle, MapPin, Clock, Phone } from "lucide-react";
+import { Instagram, Facebook, ArrowUpRight } from "lucide-react";
 
 import { brand } from "@/lib/brand";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
@@ -7,132 +7,149 @@ import CyberLogo from "./CyberLogo";
 
 const TELAS_URL = "https://telas.cyberinformatica.tech";
 
+/**
+ * Footer — Cyber Informática (Monocromático Preto, Cinza e Branco & Google Ads Safe)
+ */
 export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[var(--bg-secondary)] border-t border-[var(--color-border-on-dark)] py-16 mt-auto">
-      <div className="container-narrow">
-        <div className="grid gap-8 md:grid-cols-4 mb-10">
-          {/* Brand + tagline */}
+    <footer className="bg-[#09090b] border-t border-zinc-800 pt-12 pb-28 md:py-16 mt-auto text-zinc-400 font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-10 md:grid-cols-4 pb-12 border-b border-zinc-800">
+          {/* Brand + Resumo */}
           <div className="md:col-span-1">
-            <div className="mb-3">
-              <Link href="/" className="inline-block">
-                <CyberLogo height={32} />
-              </Link>
-            </div>
-            <p className="text-sm text-[var(--color-text-on-dark-muted)] leading-relaxed">
-              Loja técnica de PC, notebook e celular. Atendemos cliente final com curadoria e montagem — e lojistas e assistências parceiras com indicação técnica e pós-venda estendido.
+            <Link href="/" className="inline-block mb-4">
+              <CyberLogo height={32} variant="dark" />
+            </Link>
+            <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+              Há 10 anos no Centro de Bragança Paulista. Computadores montados à pronta-entrega, manutenção e upgrades no térreo e laboratório próprio de placas de vídeo e troca só do vidro mantendo sua tela original no 2º andar.
             </p>
+            <div className="inline-block font-mono text-[11px] font-bold uppercase tracking-wider text-white border border-zinc-700 bg-zinc-900 px-3 py-1">
+              GARANTIA LEGAL CDC 90 DIAS
+            </div>
           </div>
 
-          {/* Contato */}
+          {/* Contato e Localização */}
           <div>
-            <h3 className="display text-sm font-bold mb-3 text-[var(--color-text-on-dark)]">
-              Contato
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white mb-4">
+              ENDEREÇO & HORÁRIO
             </h3>
-            <ul className="space-y-2 text-sm text-[var(--color-text-on-dark-muted)]">
-              <li className="flex items-start gap-2">
-                <MapPin size={16} className="mt-0.5 flex-shrink-0 text-[var(--color-cyber-blue)]" />
-                <span>{brand.address.street}, {brand.address.number}<br />{brand.address.city} / SP</span>
+            <ul className="space-y-2.5 text-xs text-zinc-300 font-mono">
+              <li>
+                {brand.address.street}, {brand.address.number} — Centro
+                <br />
+                {brand.address.city} / SP
               </li>
-              <li className="flex items-center gap-2">
-                <Clock size={16} className="flex-shrink-0 text-[var(--color-cyber-blue)]" />
-                <span>{brand.openingHours}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <MessageCircle size={16} className="flex-shrink-0 text-[var(--color-cyber-blue)]" />
+              <li className="text-zinc-400">{brand.openingHours}</li>
+              <li>
                 <TrackedWhatsAppLink
                   phone={brand.whatsapp}
-                  message="Olá! Vim pelo site da Cyber."
+                  message="Olá! Vim pelo site da Cyber Informática."
                   source="footer"
-                  className="hover:text-[var(--color-text-on-dark)] transition-colors"
+                  className="text-white hover:text-zinc-300 underline underline-offset-4 font-bold transition-colors"
                   ariaLabel="Abrir WhatsApp da Cyber Informática"
                 >
-                  WhatsApp
+                  WhatsApp: (11) 95436-9269
                 </TrackedWhatsAppLink>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone size={16} className="flex-shrink-0 text-[var(--color-cyber-blue)]" />
-                <a
-                  href={`tel:+${brand.phone}`}
-                  className="hover:text-[var(--color-text-on-dark)] transition-colors"
-                  aria-label="Ligar para a Cyber Informática"
-                >
-                  (11) 95436-9269
-                </a>
               </li>
             </ul>
           </div>
 
-          {/* Links úteis */}
+          {/* Links Rápidos */}
           <div>
-            <h3 className="display text-sm font-bold mb-3 text-[var(--color-text-on-dark)]">
-              Links
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white mb-4">
+              NAVEGAÇÃO
             </h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/#catalogo" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Catálogo</Link></li>
-              <li><Link href="/#curadoria" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Curadoria</Link></li>
-              <li><Link href="/#monte-seu-pc" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Monte seu PC</Link></li>
-              <li><Link href="/suporte-ti" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Suporte em TI (Empresas & Home Office)</Link></li>
-              <li><Link href="/#parceiros" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Para parceiros</Link></li>
+            <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/politica-privacidade" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">
+                <Link href="/#showroom" className="text-zinc-300 hover:text-white transition-colors">
+                  Showroom de PCs à Pronta-Entrega
+                </Link>
+              </li>
+              <li>
+                <Link href="/#pc-builder" className="text-zinc-300 hover:text-white transition-colors">
+                  PC Builder (Montar Sob Medida)
+                </Link>
+              </li>
+              <li>
+                <Link href="/#servicos" className="text-zinc-300 hover:text-white transition-colors">
+                  Bancada Técnica & Serviços
+                </Link>
+              </li>
+              <li>
+                <Link href="/#estrutura" className="text-zinc-300 hover:text-white transition-colors">
+                  Estrutura Física (2 Andares)
+                </Link>
+              </li>
+              <li>
+                <Link href="/status" className="text-white font-mono font-bold uppercase hover:underline transition-colors">
+                  Consultar Ordem de Serviço &rarr;
+                </Link>
+              </li>
+              <li>
+                <Link href="/politica-privacidade" className="text-zinc-500 hover:text-zinc-300 transition-colors">
                   Política de Privacidade
                 </Link>
               </li>
               <li>
-                <Link href="/termos-de-uso" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">
+                <Link href="/termos-de-uso" className="text-zinc-500 hover:text-zinc-300 transition-colors">
                   Termos de Uso
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Unidade de laminação OCA (cross-link) */}
+          {/* Laboratório 2º Andar & B2B */}
           <div>
-            <h3 className="display text-sm font-bold mb-3 text-[var(--color-text-on-dark)]">
-              Unidade Industrial
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white mb-4">
+              2º ANDAR // TROCA DE VIDRO & GPUS
             </h3>
-            <p className="text-xs text-[var(--color-text-on-dark-muted)] mb-3 leading-relaxed">
-              Centro de Remanufatura e Laminação OCA Industrial de Displays — B2B e pessoa física.
+            <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+              Trincou só o vidro do celular mas a imagem e o toque funcionam? Trocamos apenas o vidro externo preservando sua tela original de fábrica, além de reparo eletrônico de Placas de Vídeo (GPUs).
             </p>
             <a
               href={TELAS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-cyber-blue)] hover:text-[var(--color-cyber-blue-hover)] transition-colors"
+              className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-black bg-white hover:bg-zinc-200 transition-colors px-4 py-2.5 uppercase tracking-wider"
             >
-              telas.cyberinformatica.tech
-              <span aria-hidden className="text-xs">↗</span>
+              <span>Ver Troca de Vidro (Tela Original)</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
 
-        {/* Linha final */}
-        <div className="pt-8 border-t border-[var(--color-border-on-dark)] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[var(--color-text-on-dark-muted)]">
-            © {year} {brand.name} — Bragança Paulista
+        {/* Disclaimer Legal & Google Ads Compliance */}
+        <div className="pt-8 text-[11px] text-zinc-500 leading-relaxed space-y-4">
+          <p>
+            <strong className="text-zinc-400">Conformidade Legal & Marcas Registradas:</strong> A Cyber Informática é um comércio varejista de equipamentos de informática e laboratório técnico independente com sede física em Bragança Paulista/SP. Todas as marcas e modelos citados pertencem aos seus respectivos fabricantes e são mencionados exclusivamente para referência de compatibilidade. Nossos serviços contam com garantia legal de 90 dias nos termos do Artigo 26 do Código de Defesa do Consumidor (Lei Federal nº 8.078/1990).
           </p>
-          <div className="flex items-center gap-3 text-[var(--color-text-on-dark-muted)]">
-            <a
-              href={brand.social.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              className="hover:text-[var(--color-text-on-dark)] transition-colors"
-            >
-              <Instagram size={20} />
-            </a>
-            <a
-              href={brand.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook"
-              className="hover:text-[var(--color-text-on-dark)] transition-colors"
-            >
-              <Facebook size={20} />
-            </a>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-900 font-mono">
+            <p className="text-zinc-500">
+              © {year} {brand.name} — RUA CORONEL TEÓFILO LEME, 967, CENTRO, BRAGANÇA PAULISTA - SP.
+            </p>
+            <div className="flex items-center gap-4 text-zinc-400">
+              <a
+                href={brand.social.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="hover:text-white transition-colors"
+              >
+                <Instagram size={18} />
+              </a>
+              <a
+                href={brand.social.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="hover:text-white transition-colors"
+              >
+                <Facebook size={18} />
+              </a>
+            </div>
           </div>
         </div>
       </div>

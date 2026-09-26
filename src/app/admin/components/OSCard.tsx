@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { StatusBadge } from './StatusBadge';
 import { StaleBadge } from './StaleBadge';
-import { getEquipmentTypeLabel, type ServiceOrderWithStale } from '../types/database';
+import { EQUIPMENT_TYPES, type ServiceOrderWithStale } from '../types/database';
 
 const TYPE_ICONS: Record<string, string> = {
   computador: '🖥️',
@@ -25,13 +25,13 @@ function timeAgo(dateStr: string): string {
 }
 
 export function OSCard({ so }: { so: ServiceOrderWithStale }) {
-  const typeLabel = getEquipmentTypeLabel(so.equipment_type);
+  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === so.equipment_type);
   const equip = [so.equipment_brand, so.equipment_model, so.equipment_color].filter(Boolean).join(' ');
 
   return (
     <Link
       href={`/admin/os/${so.id}`}
-      className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow active:scale-[0.99] sm:p-5"
+      className="block rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-sky-300 hover:shadow-md active:scale-[0.99] sm:p-5"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -39,37 +39,27 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
             <span className="font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg">
               {so.short_id}
             </span>
-            <span className="font-mono text-[10px] font-medium text-slate-500">
-              {so.os_number}
+            <span className="font-mono text-xs font-medium text-slate-400">
+              #{so.os_number}
             </span>
             <StatusBadge status={so.status} />
+            {so.days_since_update > 2 && <StaleBadge days={so.days_since_update} />}
           </div>
-          <h3 className="mt-1 truncate text-base font-semibold text-slate-900">{so.customer_name}</h3>
-          <p className="mt-0.5 text-sm text-slate-600">
-            <span className="mr-1">{TYPE_ICONS[so.equipment_type] ?? '📦'}</span>
-            {typeLabel}
+          <h3 className="mt-1.5 truncate text-base font-bold text-slate-900">{so.customer_name}</h3>
+          <p className="mt-0.5 text-xs text-slate-600">
+            <span className="mr-1.5">{TYPE_ICONS[so.equipment_type]}</span>
+            {typeMeta?.label}
             {equip ? ` · ${equip}` : ''}
           </p>
           {so.reported_defect && (
-            <p className="mt-1 line-clamp-2 text-sm text-slate-500">{so.reported_defect}</p>
+            <p className="mt-2 line-clamp-2 text-xs text-slate-500 border-l-2 border-slate-200 pl-2">
+              {so.reported_defect}
+            </p>
           )}
         </div>
         <div className="flex flex-col items-end gap-1 text-right">
-          <span className="text-xs text-slate-500">{timeAgo(so.updated_at)}</span>
+          <span className="font-mono text-[11px] text-slate-400">{timeAgo(so.updated_at)}</span>
         </div>
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <StaleBadge days={so.days_since_update} />
-        {so.blocking_reason && (
-          <span className="inline-flex items-center rounded-md bg-orange-50 px-2 py-0.5 text-xs text-orange-800 ring-1 ring-inset ring-orange-200">
-            Falta: {so.blocking_reason}
-          </span>
-        )}
-        {so.status === 'delivered' && so.payment_status && so.payment_status !== 'paid' && (
-          <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200">
-            💰 {so.payment_status === 'partial' ? 'Pagamento parcial' : 'Não pago'}
-          </span>
-        )}
       </div>
     </Link>
   );

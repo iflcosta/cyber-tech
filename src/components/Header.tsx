@@ -1,46 +1,35 @@
 "use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Menu, X, MessageCircle } from "lucide-react";
 
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Menu, X, ArrowUpRight, Search } from "lucide-react";
 import { brand } from "@/lib/brand";
-import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
 import CyberLogo from "./CyberLogo";
+import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
 
 const TELAS_URL = "https://telas.cyberinformatica.tech";
 
-// Fora do componente porque é estático (não depende de props/state) — se
-// ficasse dentro, seria um array NOVO a cada render, e o scrollspy abaixo
-// teria que recriar o IntersectionObserver toda vez que activeSection
-// mudasse (que é toda vez que ele dispara), virando um loop.
 const NAV_ITEMS = [
-  { href: "/#catalogo", label: "Catálogo", sectionId: "catalogo" },
-  { href: "/#curadoria", label: "Curadoria", sectionId: "curadoria" },
-  { href: "/#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
+  { href: "/#showroom", label: "Showroom Pronta-Entrega", sectionId: "showroom" },
+  { href: "/#pc-builder", label: "PC Builder", sectionId: "pc-builder" },
   { href: "/suporte-ti", label: "Suporte em TI", sectionId: "suporte-ti" },
-  { href: "/#parceiros", label: "Parceiros", sectionId: "parceiros" },
-  { href: "/contato", label: "Contato", sectionId: "contato" },
+  { href: "/#servicos", label: "Serviços & 2 Andares", sectionId: "servicos" },
+  { href: "/#localizacao", label: "Endereço & Garantia", sectionId: "localizacao" },
 ];
 
-/**
- * Header — Cyber Informática
- */
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
-  const nav = NAV_ITEMS;
 
-  const headerMessage = "Olá! Vim pelo site da Cyber.";
+  const headerWhatsappMessage =
+    "Olá! Vim pelo site da Cyber Informática e gostaria de falar com a equipe.";
 
-  // Scrollspy: detecta qual seção está visível e marca o nav correspondente
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (typeof IntersectionObserver === "undefined") return;
+    if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") return;
 
-    const sections = nav
-      .filter((item) => item.href.includes("#"))
-      .map((item) => document.getElementById(item.sectionId))
-      .filter((el): el is HTMLElement => el !== null);
+    const sections = NAV_ITEMS.map((item) => document.getElementById(item.sectionId)).filter(
+      (el): el is HTMLElement => el !== null
+    );
 
     if (sections.length === 0) return;
 
@@ -53,130 +42,160 @@ export default function Header() {
           setActiveSection(visible[0].target.id);
         }
       },
-      { rootMargin: "-30% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+      { rootMargin: "-25% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
 
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
-  }, [nav]);
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--color-cyber-navy-mid)]/95 backdrop-blur-md border-b border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-      <div className="container-narrow">
-        <div className="flex items-center justify-between h-[72px]">
-          {/* Logo / Brand */}
-          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-            <CyberLogo height={36} className="transition-transform group-hover:scale-[1.02]" />
+    <header className="sticky top-0 z-50 bg-[#09090b]/95 backdrop-blur-md border-b border-zinc-800 text-white">
+      {/* Faixa Superior Monocromática (Balanceada em 360px Mobile & Desktop) */}
+      <div className="bg-black border-b border-zinc-900 py-1.5 px-4 sm:px-6 lg:px-8 text-[10px] sm:text-[11px] font-mono text-zinc-400">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-3 truncate">
+            <span className="text-white font-bold uppercase tracking-wider">
+              CYBER INFORMÁTICA — 10 ANOS
+            </span>
+            <span className="hidden md:inline text-zinc-700">/</span>
+            <span className="hidden md:inline text-zinc-400">
+              Rua Coronel Teófilo Leme, 967 — Centro, Bragança Paulista
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4 shrink-0">
+            <span className="sm:hidden text-zinc-300 font-semibold">
+              CENTRO · BRAGANÇA
+            </span>
+            <span className="hidden sm:inline text-zinc-400">
+              SEG–SEX 09H–18H · SÁB 09H–13H
+            </span>
+            <span className="hidden lg:inline text-zinc-700">/</span>
+            <span className="hidden lg:inline text-zinc-200 font-semibold">
+              GARANTIA LEGAL CDC 90 DIAS
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Barra Principal */}
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-15 sm:h-18 gap-2">
+          <Link href="/" className="flex items-center focus:outline-none shrink-0">
+            <CyberLogo height={30} variant="dark" />
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {nav.map((item) => {
+          {/* Navegação Editorial Desktop */}
+          <nav className="hidden xl:flex items-center gap-1 text-xs font-medium">
+            {NAV_ITEMS.map((item) => {
               const isActive = activeSection === item.sectionId;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative px-3 py-2 text-sm font-medium transition-colors rounded-md group ${
+                  className={`px-3 py-2 transition-colors ${
                     isActive
-                      ? "text-[var(--color-circuit-green)]"
-                      : "text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)]"
+                      ? "text-white font-bold underline underline-offset-8 decoration-2 decoration-white"
+                      : "text-zinc-400 hover:text-white"
                   }`}
-                  aria-current={isActive ? "true" : undefined}
                 >
                   {item.label}
-                  <span
-                    className={`absolute bottom-0.5 left-3 right-3 h-0.5 bg-[var(--color-circuit-green)] rounded-full transition-transform origin-left ${
-                      isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                    }`}
-                  />
                 </Link>
               );
             })}
-            {/* Cross-link para unidade de laminação OCA */}
+
             <a
               href={TELAS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 text-sm font-medium text-[var(--color-circuit-green)]/80 hover:text-[var(--color-circuit-green)] transition-colors rounded-md inline-flex items-center gap-1.5 ml-1 border-l border-white/[0.08] pl-4"
-              aria-label="Centro de Laminação OCA — site dedicado"
+              className="inline-flex items-center gap-1 text-zinc-300 hover:text-white border-l border-zinc-800 pl-3 ml-2 py-1 font-medium transition-colors"
             >
-              <span className="w-1.5 h-1.5 bg-[var(--color-circuit-green)] rounded-full animate-pulse" />
-              Laminação OCA
-              <span aria-hidden className="text-[10px]">↗</span>
+              <span>Troca só do Vidro (Tela Original)</span>
+              <ArrowUpRight size={13} className="text-zinc-500" />
             </a>
           </nav>
 
-          {/* Desktop right side */}
-          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          {/* Ações à Direita (Dimensionadas para 360px sem aperto) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <Link
+              href="/status"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-colors min-h-[38px]"
+            >
+              <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="hidden sm:inline">Consultar OS</span>
+              <span className="sm:hidden">OS</span>
+            </Link>
+
             <TrackedWhatsAppLink
               phone={brand.whatsapp}
-              message={headerMessage}
-              source="header"
-              className="btn-primary inline-flex items-center gap-2"
-              ariaLabel="Chamar no WhatsApp da Cyber Informática"
+              message={headerWhatsappMessage}
+              source="header_btn"
+              className="inline-flex items-center gap-1 bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-2 px-2.5 sm:px-4 text-[11px] sm:text-xs transition-colors min-h-[38px]"
+              ariaLabel="Falar com a Loja no WhatsApp"
             >
-              <MessageCircle size={18} />
-              <span>Chamar no WhatsApp</span>
+              <span>WhatsApp</span>
+              <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
             </TrackedWhatsAppLink>
+
+            <button
+              onClick={() => setOpen(!open)}
+              className="xl:hidden w-10 h-10 flex items-center justify-center text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 focus:outline-none transition-colors cursor-pointer shrink-0"
+              aria-label={open ? "Fechar Menu" : "Abrir Menu"}
+              aria-expanded={open}
+            >
+              {open ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Menu Mobile */}
+      {open && (
+        <div className="xl:hidden bg-[#09090b] border-t border-zinc-800 px-4 py-5 text-xs">
+          <div className="flex flex-col divide-y divide-zinc-800 border-y border-zinc-800 mb-5">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between font-bold text-zinc-200 hover:text-white py-3.5 transition-colors"
+              >
+                <span>{item.label}</span>
+                <span className="font-mono text-zinc-500">&rarr;</span>
+              </Link>
+            ))}
+            <a
+              href={TELAS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between font-bold text-zinc-300 hover:text-white py-3.5 transition-colors"
+            >
+              <span>Troca só do Vidro — Salve sua Tela Original (2º Andar)</span>
+              <ArrowUpRight className="w-4 h-4 text-zinc-500 shrink-0" />
+            </a>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setOpen(!open)}
-            className="md:hidden p-2 text-[var(--color-text-on-dark)] hover:bg-white/5 rounded-md transition-colors"
-            aria-label={open ? "Fechar menu" : "Abrir menu"}
-          >
-            {open ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href="/status"
+              onClick={() => setOpen(false)}
+              className="border border-zinc-700 bg-zinc-900 py-3 px-3 text-center font-mono font-bold uppercase tracking-wider text-white"
+            >
+              Consultar OS
+            </Link>
+            <TrackedWhatsAppLink
+              phone={brand.whatsapp}
+              message={headerWhatsappMessage}
+              source="header_drawer"
+              className="bg-white text-black py-3 px-3 text-center font-mono font-bold uppercase tracking-wider"
+            >
+              WhatsApp Loja
+            </TrackedWhatsAppLink>
+          </div>
         </div>
-
-        {/* Mobile nav */}
-        {open && (
-          <nav className="md:hidden py-4 border-t border-white/[0.06] bg-[var(--color-cyber-navy-mid)]">
-            <div className="flex flex-col gap-1">
-              {nav.map((item) => {
-                const isActive = activeSection === item.sectionId;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
-                      isActive
-                        ? "text-[var(--color-circuit-green)] bg-[var(--color-circuit-green)]/10"
-                        : "text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] hover:bg-white/5"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-              {/* Cross-link mobile */}
-              <a
-                href={TELAS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2.5 text-sm font-medium text-[var(--color-circuit-green)] hover:bg-[var(--color-circuit-green)]/10 rounded-md inline-flex items-center gap-2"
-              >
-                <span className="w-1.5 h-1.5 bg-[var(--color-circuit-green)] rounded-full animate-pulse" />
-                Laminação OCA
-                <span aria-hidden className="text-[10px]">↗</span>
-              </a>
-              <TrackedWhatsAppLink
-                phone={brand.whatsapp}
-                message={headerMessage}
-                source="header_mobile"
-                className="btn-primary mt-3 w-full inline-flex items-center justify-center gap-2"
-                ariaLabel="Abrir WhatsApp da Cyber Informática"
-              >
-                <MessageCircle size={18} />
-                WhatsApp
-              </TrackedWhatsAppLink>
-            </div>
-          </nav>
-        )}
-      </div>
+      )}
     </header>
   );
 }

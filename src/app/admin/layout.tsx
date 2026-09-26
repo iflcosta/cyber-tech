@@ -50,15 +50,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // barra de topo por cima, senão dobra o espaço vertical e empurra
   // o formulário pra baixo (bug visto no celular).
   if (!user) {
-    return <div className="admin-scope">{children}</div>;
+    return <>{children}</>;
   }
 
   return (
-    <div className="admin-scope min-h-dvh bg-zinc-50 text-zinc-900">
-      <header className="print:hidden sticky top-0 z-10 border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/admin/os" className="text-lg font-bold tracking-tight text-zinc-900">
-            Cyber <span className="font-extrabold text-black">ERP</span>
+    <div className="min-h-dvh bg-[#FAFAFA] text-slate-900 antialiased">
+      <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <Link href="/admin/os" className="flex items-center gap-2 text-base font-bold tracking-tight text-zinc-950 group">
+            <span className="font-extrabold uppercase tracking-wider text-zinc-950">CYBER</span>
+            <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
+              ERP
+            </span>
           </Link>
 
           <DesktopNav
@@ -72,7 +75,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           />
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">{children}</main>
     </div>
   );
 }
