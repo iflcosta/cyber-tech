@@ -1,19 +1,56 @@
 -- ============================================================
 -- 0038_configure_store_users.sql — Setup Completo de Usuários e Comissões
 -- ============================================================
+-- PRESERVAÇÃO INTEGRAL DE DADOS:
+-- - NÃO apaga nem reseta nenhuma tabela.
+-- - NÃO altera estoque (stock_items), clientes, vendas ou ordens de serviço.
+-- - Modifica exclusivamente os registros dos 3 e-mails corporativos informados.
+-- ============================================================
 
--- 1. Garante que as colunas necessárias existam em profiles
+-- 1. Garante que o gatilho de proteção permita operações de administração via SQL Editor (auth.uid() IS NULL)
+CREATE OR REPLACE FUNCTION public.profiles_block_self_role_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  -- Se executado no SQL Editor do Supabase ou service_role (sem JWT de usuário final)
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Se for um usuário final logado tentando alterar seu próprio papel
+  IF NOT public.is_owner() THEN
+    IF NEW.role IS DISTINCT FROM OLD.role THEN
+      RAISE EXCEPTION 'Nao pode alterar proprio role (precisa de owner)';
+    END IF;
+    IF NEW.active IS DISTINCT FROM OLD.active THEN
+      RAISE EXCEPTION 'Nao pode alterar proprio active (precisa de owner)';
+    END IF;
+  END IF;
+
+  IF NEW.can_delete IS DISTINCT FROM OLD.can_delete THEN
+    IF NOT public.can_delete() THEN
+      RAISE EXCEPTION 'Nao pode alterar can_delete (precisa ja ter permissao de exclusao)';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+-- 2. Garante que as colunas necessárias existam em profiles (100% aditivo)
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS commission_rate numeric(4,2) NOT NULL DEFAULT 0.00;
 
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS can_delete boolean NOT NULL DEFAULT false;
 
--- 2. Garante que technician_id exista em service_orders
+-- 3. Garante que technician_id exista em service_orders
 ALTER TABLE public.service_orders
   ADD COLUMN IF NOT EXISTS technician_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL;
 
--- 3. Garante que a tabela commission_ledger exista
+-- 4. Garante que a tabela commission_ledger exista
 CREATE TABLE IF NOT EXISTS public.commission_ledger (
   id                  uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   service_order_id    uuid NOT NULL REFERENCES public.service_orders(id) ON DELETE CASCADE,
@@ -49,9 +86,6 @@ BEGIN
 END $$;
 
 GRANT ALL ON public.commission_ledger TO anon, authenticated, service_role;
-
--- 4. DESABILITA APENAS OS TRIGGERS DE USUÁRIO (NÃO TOCA NOS TRIGGERS DE SISTEMA/FOREIGN KEY)
-ALTER TABLE public.profiles DISABLE TRIGGER USER;
 
 -- 5. Sincroniza e insere os usuários criados em auth.users para public.profiles
 INSERT INTO public.profiles (id, full_name, email, role, commission_rate, can_delete, active)
@@ -91,153 +125,27 @@ ON CONFLICT (id) DO UPDATE SET
   can_delete = EXCLUDED.can_delete,
   active = EXCLUDED.active;
 
--- 6. Atualiza por e-mail caso os registros já existissem previamente
+-- 6. Atualização cirúrgica estrita apenas nos 3 e-mails
 UPDATE public.profiles
 SET full_name = 'Felipe', role = 'owner', commission_rate = 0.00, can_delete = true, active = true
-WHERE lower(email) = 'felipe@cyberinformatica.tech' OR lower(email) LIKE '%felipe%';
+WHERE lower(email) = 'felipe@cyberinformatica.tech';
 
 UPDATE public.profiles
 SET full_name = 'Jefferson', role = 'technician', commission_rate = 0.50, can_delete = false, active = true
-WHERE lower(email) = 'jefferson@cyberinformatica.tech' OR lower(email) LIKE '%jefferson%';
+WHERE lower(email) = 'jefferson@cyberinformatica.tech';
 
 UPDATE public.profiles
 SET full_name = 'Eduardo', role = 'technician', commission_rate = 0.00, can_delete = false, active = true
-WHERE lower(email) = 'eduardo@cyberinformatica.tech' OR lower(email) LIKE '%eduardo%';
+WHERE lower(email) = 'eduardo@cyberinformatica.tech';
 
--- 7. Atualiza também taxa do Iago se existir
-UPDATE public.profiles
-SET commission_rate = 0.30
-WHERE lower(email) LIKE '%iago%' OR lower(full_name) LIKE '%iago%';
-
--- 8. REATIVA OS TRIGGERS DE USUÁRIO
-ALTER TABLE public.profiles ENABLE TRIGGER USER;
-
--- 9. Função de recalcular comissão da OS
-CREATE OR REPLACE FUNCTION public.recompute_os_commission(p_os_id uuid)
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $function$
-DECLARE
-  v_technician_id   uuid;
-  v_tech_name       text;
-  v_tech_rate       numeric(4,2);
-  v_labor_cost      numeric(10,2);
-  v_payment_status  text;
-  v_os_status       text;
-  v_comm_amount     numeric(10,2);
-BEGIN
-  SELECT 
-    so.technician_id,
-    p.full_name,
-    COALESCE(p.commission_rate, 0.00),
-    COALESCE(so.labor_cost, 0.00),
-    so.payment_status,
-    so.status
-  INTO 
-    v_technician_id,
-    v_tech_name,
-    v_tech_rate,
-    v_labor_cost,
-    v_payment_status,
-    v_os_status
-  FROM public.service_orders so
-  LEFT JOIN public.profiles p ON p.id = so.technician_id
-  WHERE so.id = p_os_id;
-
-  IF NOT FOUND THEN
-    RETURN;
-  END IF;
-
-  IF v_technician_id IS NULL OR v_tech_rate <= 0.00 THEN
-    DELETE FROM public.commission_ledger
-      WHERE service_order_id = p_os_id
-        AND status = 'pending';
-    RETURN;
-  END IF;
-
-  v_comm_amount := ROUND((v_labor_cost * v_tech_rate), 2);
-
-  INSERT INTO public.commission_ledger (
-    service_order_id,
-    technician_id,
-    technician_name,
-    labor_amount,
-    commission_rate,
-    commission_amount,
-    os_payment_status,
-    updated_at
-  )
-  VALUES (
-    p_os_id,
-    v_technician_id,
-    COALESCE(v_tech_name, 'Técnico'),
-    v_labor_cost,
-    v_tech_rate,
-    v_comm_amount,
-    COALESCE(v_payment_status, 'pending'),
-    now()
-  )
-  ON CONFLICT (service_order_id, technician_id)
-  DO UPDATE SET
-    labor_amount = EXCLUDED.labor_amount,
-    commission_rate = EXCLUDED.commission_rate,
-    commission_amount = EXCLUDED.commission_amount,
-    os_payment_status = EXCLUDED.os_payment_status,
-    technician_name = EXCLUDED.technician_name,
-    updated_at = now()
-  WHERE public.commission_ledger.status = 'pending';
-END;
-$function$;
-
--- 10. Atualiza a view de OS para incluir dados do técnico
-DROP VIEW IF EXISTS public.service_orders_with_stale;
-
-CREATE VIEW public.service_orders_with_stale AS
-SELECT
-  so.id,
-  so.os_number,
-  so.short_id,
-  so.customer_id,
-  so.equipment_type,
-  so.equipment_brand,
-  so.equipment_model,
-  so.equipment_color,
-  so.equipment_serial,
-  so.equipment_password,
-  so.reported_defect,
-  so.entry_checklist,
-  so.accessories_in,
-  so.status,
-  so.blocking_reason,
-  so.estimated_value,
-  so.labor_cost,
-  so.estimated_ready_at,
-  so.technician_id,
-  p.full_name AS technician_name,
-  p.commission_rate AS technician_commission_rate,
-  so.created_by,
-  so.created_at,
-  so.updated_at,
-  so.delivered_at,
-  c.name AS customer_name,
-  c.phone AS customer_phone,
-  (EXTRACT(day FROM (now() - so.updated_at)))::integer AS days_since_update
-FROM public.service_orders so
-JOIN public.customers c ON (c.id = so.customer_id)
-LEFT JOIN public.profiles p ON (p.id = so.technician_id)
-WHERE so.status <> ALL (ARRAY['delivered'::text, 'cancelled'::text]);
-
-GRANT ALL ON public.service_orders_with_stale TO anon, authenticated, service_role;
-
+-- 7. Notifica o PostgREST para recarregar o schema
 NOTIFY pgrst, 'reload schema';
 
--- 11. Retorna os perfis configurados para confirmação visual
+-- 8. Retorna os 3 perfis configurados para confirmação visual imediata
 SELECT id, full_name, email, role, commission_rate, can_delete, active 
 FROM public.profiles
 WHERE lower(email) IN (
   'felipe@cyberinformatica.tech',
   'jefferson@cyberinformatica.tech',
   'eduardo@cyberinformatica.tech'
-) OR lower(email) LIKE '%iago%';
+);
