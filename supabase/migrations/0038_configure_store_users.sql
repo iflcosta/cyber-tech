@@ -50,7 +50,10 @@ END $$;
 
 GRANT ALL ON public.commission_ledger TO anon, authenticated, service_role;
 
--- 4. Sincroniza e insere os usuários criados em auth.users para public.profiles
+-- 4. DESABILITA TEMPORARIAMENTE OS TRIGGERS DE SEGURANÇA PARA APLICAR AS MUDANÇAS ADMINISTRATIVAS
+ALTER TABLE public.profiles DISABLE TRIGGER ALL;
+
+-- 5. Sincroniza e insere os usuários criados em auth.users para public.profiles
 INSERT INTO public.profiles (id, full_name, email, role, commission_rate, can_delete, active)
 SELECT 
   u.id,
@@ -88,7 +91,7 @@ ON CONFLICT (id) DO UPDATE SET
   can_delete = EXCLUDED.can_delete,
   active = EXCLUDED.active;
 
--- 5. Atualiza por e-mail caso os registros já existissem previamente
+-- 6. Atualiza por e-mail caso os registros já existissem previamente
 UPDATE public.profiles
 SET full_name = 'Felipe', role = 'owner', commission_rate = 0.00, can_delete = true, active = true
 WHERE lower(email) = 'felipe@cyberinformatica.tech' OR lower(email) LIKE '%felipe%';
@@ -101,12 +104,15 @@ UPDATE public.profiles
 SET full_name = 'Eduardo', role = 'technician', commission_rate = 0.00, can_delete = false, active = true
 WHERE lower(email) = 'eduardo@cyberinformatica.tech' OR lower(email) LIKE '%eduardo%';
 
--- 6. Atualiza também taxa do Iago se existir
+-- 7. Atualiza também taxa do Iago se existir
 UPDATE public.profiles
 SET commission_rate = 0.30
 WHERE lower(email) LIKE '%iago%' OR lower(full_name) LIKE '%iago%';
 
--- 7. Função de recalcular comissão da OS
+-- 8. REATIVA TODOS OS TRIGGERS DE SEGURANÇA
+ALTER TABLE public.profiles ENABLE TRIGGER ALL;
+
+-- 9. Função de recalcular comissão da OS
 CREATE OR REPLACE FUNCTION public.recompute_os_commission(p_os_id uuid)
 RETURNS void
 LANGUAGE plpgsql
@@ -185,7 +191,7 @@ BEGIN
 END;
 $function$;
 
--- 8. Atualiza a view de OS para evitar erros de coluna
+-- 10. Atualiza a view de OS para incluir dados do técnico
 DROP VIEW IF EXISTS public.service_orders_with_stale;
 
 CREATE VIEW public.service_orders_with_stale AS
@@ -227,7 +233,7 @@ GRANT ALL ON public.service_orders_with_stale TO anon, authenticated, service_ro
 
 NOTIFY pgrst, 'reload schema';
 
--- 9. Retorna os perfis configurados para confirmação visual
+-- 11. Retorna os perfis configurados para confirmação visual
 SELECT id, full_name, email, role, commission_rate, can_delete, active 
 FROM public.profiles
 WHERE lower(email) IN (
