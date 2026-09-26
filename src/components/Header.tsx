@@ -50,9 +50,9 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#09090b]/95 backdrop-blur-md border-b border-zinc-800 text-white">
-      {/* Faixa Superior Monocromática (Preto / Cinza / Branco) */}
-      <div className="bg-black border-b border-zinc-900 py-1.5 px-4 sm:px-6 lg:px-8 text-[11px] font-mono text-zinc-400">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      {/* Faixa Superior Monocromática (Balanceada em 360px Mobile & Desktop) */}
+      <div className="bg-black border-b border-zinc-900 py-1.5 px-4 sm:px-6 lg:px-8 text-[10px] sm:text-[11px] font-mono text-zinc-400">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-3 truncate">
             <span className="text-white font-bold uppercase tracking-wider">
               CYBER INFORMÁTICA — 10 ANOS
@@ -64,6 +64,9 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4 shrink-0">
+            <span className="sm:hidden text-zinc-300 font-semibold">
+              CENTRO · BRAGANÇA
+            </span>
             <span className="hidden sm:inline text-zinc-400">
               SEG–SEX 09H–18H · SÁB 09H–13H
             </span>
@@ -76,10 +79,10 @@ export default function Header() {
       </div>
 
       {/* Barra Principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-18">
-          <Link href="/" className="flex items-center focus:outline-none">
-            <CyberLogo height={34} variant="dark" />
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-15 sm:h-18 gap-2">
+          <Link href="/" className="flex items-center focus:outline-none shrink-0">
+            <CyberLogo height={30} variant="dark" />
           </Link>
 
           {/* Navegação Editorial Desktop */}
@@ -112,13 +115,13 @@ export default function Header() {
             </a>
           </nav>
 
-          {/* Ações à Direita */}
-          <div className="flex items-center gap-2">
+          {/* Ações à Direita (Dimensionadas para 360px sem aperto) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Link
               href="/status"
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 text-xs font-mono font-bold uppercase tracking-wider transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-colors min-h-[38px]"
             >
-              <Search className="w-3.5 h-3.5 text-zinc-400" />
+              <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <span className="hidden sm:inline">Consultar OS</span>
               <span className="sm:hidden">OS</span>
             </Link>
@@ -127,16 +130,16 @@ export default function Header() {
               phone={brand.whatsapp}
               message={headerWhatsappMessage}
               source="header_btn"
-              className="inline-flex items-center gap-1.5 bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-2 px-4 text-xs transition-colors"
+              className="inline-flex items-center gap-1 bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-2 px-2.5 sm:px-4 text-[11px] sm:text-xs transition-colors min-h-[38px]"
               ariaLabel="Falar com a Loja no WhatsApp"
             >
               <span>WhatsApp</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
             </TrackedWhatsAppLink>
 
             <button
               onClick={() => setOpen(!open)}
-              className="xl:hidden w-9 h-9 flex items-center justify-center text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 focus:outline-none transition-colors cursor-pointer shrink-0"
+              className="xl:hidden w-10 h-10 flex items-center justify-center text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 focus:outline-none transition-colors cursor-pointer shrink-0"
               aria-label={open ? "Fechar Menu" : "Abrir Menu"}
               aria-expanded={open}
             >
@@ -148,7 +151,7 @@ export default function Header() {
 
       {/* Menu Mobile */}
       {open && (
-        <div className="xl:hidden bg-[#09090b] border-t border-zinc-800 px-5 py-6 text-xs">
+        <div className="xl:hidden bg-[#09090b] border-t border-zinc-800 px-4 py-5 text-xs">
           <div className="flex flex-col divide-y divide-zinc-800 border-y border-zinc-800 mb-5">
             {NAV_ITEMS.map((item) => (
               <Link
@@ -169,25 +172,25 @@ export default function Header() {
               className="flex items-center justify-between font-bold text-zinc-300 hover:text-white py-3.5 transition-colors"
             >
               <span>Troca só do Vidro — Salve sua Tela Original (2º Andar)</span>
-              <ArrowUpRight className="w-4 h-4 text-zinc-500" />
+              <ArrowUpRight className="w-4 h-4 text-zinc-500 shrink-0" />
             </a>
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
             <Link
               href="/status"
               onClick={() => setOpen(false)}
-              className="w-full border border-zinc-700 bg-zinc-900 py-3 px-4 text-center font-mono font-bold uppercase tracking-wider text-white"
+              className="border border-zinc-700 bg-zinc-900 py-3 px-3 text-center font-mono font-bold uppercase tracking-wider text-white"
             >
-              Consultar Ordem de Serviço
+              Consultar OS
             </Link>
             <TrackedWhatsAppLink
               phone={brand.whatsapp}
               message={headerWhatsappMessage}
               source="header_drawer"
-              className="w-full bg-white text-black py-3 px-4 text-center font-mono font-bold uppercase tracking-wider"
+              className="bg-white text-black py-3 px-3 text-center font-mono font-bold uppercase tracking-wider"
             >
-              Chamar no WhatsApp
+              WhatsApp Loja
             </TrackedWhatsAppLink>
           </div>
         </div>

@@ -9,7 +9,6 @@ import {
   Printer,
   X,
   ArrowUpRight,
-  ArrowRight,
 } from 'lucide-react';
 import { brand } from '@/lib/brand';
 
@@ -58,6 +57,14 @@ interface TrackingData {
   };
   timeline?: Array<{ id: string; event_type: string; note: string; created_at: string }>;
 }
+
+const STEP_ITEMS = [
+  { step: 1, short: 'Check-in', title: '01 / Check-in', desc: 'Recebido com Fotos' },
+  { step: 2, short: 'Laudo', title: '02 / Diagnóstico', desc: 'Laudo & Orçamento' },
+  { step: 3, short: 'Bancada', title: '03 / Bancada', desc: 'Execução Técnica' },
+  { step: 4, short: 'Testes', title: '04 / Testes QA', desc: 'Estresse & Estabilidade' },
+  { step: 5, short: 'Pronto', title: '05 / Pronto', desc: 'Garantia CDC 90 Dias' },
+];
 
 export default function StatusTrackerClient() {
   const searchParams = useSearchParams();
@@ -133,6 +140,7 @@ export default function StatusTrackerClient() {
   }
 
   const currentStep = data ? getStepIndex(data.status) : 1;
+  const activeStepInfo = STEP_ITEMS.find((s) => s.step === currentStep) || STEP_ITEMS[0];
 
   function fmtBRL(val: number) {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -165,61 +173,56 @@ export default function StatusTrackerClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Cabeçalho Editorial Monocromático — no-print */}
-      <div className="no-print mb-10 pb-8 border-b-2 border-zinc-950 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      {/* Cabeçalho Editorial Monocromático Compacto no Mobile — no-print */}
+      <div className="no-print mb-5 sm:mb-8 pb-4 sm:pb-6 border-b-2 border-zinc-950 flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-4">
         <div>
-          <div className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
+          <div className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1">
             PORTAL DE ACOMPANHAMENTO // CYBER INFORMÁTICA
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-zinc-950">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-zinc-950">
             Consulta de Ordem de Serviço.
           </h1>
         </div>
         <p className="text-xs sm:text-sm text-zinc-600 max-w-sm leading-relaxed">
-          Verifique a etapa atual na bancada, fotos do check-in, discriminação de valores e Certificado de Garantia CDC 90 Dias.
+          Acompanhe a etapa atual na bancada, fotos do check-in, orçamento e Garantia CDC 90 Dias.
         </p>
       </div>
 
-      {/* Formulário de Busca — Preto, Cinza e Branco — no-print */}
-      <div className="no-print mb-12">
+      {/* Formulário de Busca em Linha Única Horizontal (Mobile & Desktop) — 16px p/ evitar auto-zoom no iOS */}
+      <div className="no-print mb-6 sm:mb-10">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSearch();
           }}
-          className="flex flex-col sm:flex-row border-2 border-zinc-950 bg-white"
+          className="flex flex-row border-2 border-zinc-950 bg-white"
         >
-          <div className="relative flex-1">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono font-bold text-zinc-400 text-xs select-none">
+          <div className="relative flex-1 min-w-0">
+            <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 font-mono font-bold text-zinc-400 text-xs select-none">
               OS #
             </span>
             <input
               type="text"
+              enterKeyHint="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Digite o nº da sua OS ou seu WhatsApp cadastrado..."
-              className="w-full bg-transparent pl-14 pr-4 py-4 text-sm sm:text-base text-zinc-950 placeholder-zinc-400 font-mono focus:outline-none"
+              placeholder="Nº da OS ou seu WhatsApp..."
+              className="w-full bg-transparent pl-12 sm:pl-14 pr-2 sm:pr-4 py-3.5 sm:py-4 text-base text-zinc-950 placeholder-zinc-400 font-mono focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-4 px-8 text-xs shrink-0 flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+            className="bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 sm:py-4 px-4 sm:px-8 text-xs shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer disabled:opacity-50 min-h-[48px]"
           >
-            {loading ? (
-              <span>Consultando...</span>
-            ) : (
-              <>
-                <Search className="w-4 h-4" />
-                <span>Consultar OS</span>
-              </>
-            )}
+            <Search className="w-4 h-4 shrink-0" />
+            <span>{loading ? 'Buscando...' : 'Consultar'}</span>
           </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-zinc-500">
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] sm:text-xs text-zinc-500">
           <span>
-            Informe o código impresso no seu comprovante de entrada ou seu telefone.
+            Digite o nº impresso na sua etiqueta/recibo ou seu WhatsApp.
           </span>
           <span className="hidden sm:inline text-zinc-500">
             RUA CORONEL TEÓFILO LEME, 967 — CENTRO
@@ -227,11 +230,11 @@ export default function StatusTrackerClient() {
         </div>
 
         {error && (
-          <div className="mt-4 p-4 border border-zinc-900 bg-white text-zinc-950 text-sm">
+          <div className="mt-4 p-4 border-2 border-zinc-900 bg-white text-zinc-950 text-sm">
             <p className="font-bold font-mono uppercase text-xs mb-1">Registro Não Localizado</p>
             <p className="text-xs text-zinc-700">{error}</p>
-            <p className="text-xs text-zinc-600 mt-2">
-              Fale direto com nosso balcão:{' '}
+            <p className="text-xs text-zinc-600 mt-2.5 pt-2.5 border-t border-zinc-200">
+              Precisa de ajuda? Fale com nosso balcão:{' '}
               <a
                 href={`https://wa.me/55${brand.whatsapp}?text=Ol%C3%A1!%20Gostaria%20de%20consultar%20minha%20Ordem%20de%20Servi%C3%A7o.`}
                 target="_blank"
@@ -247,19 +250,19 @@ export default function StatusTrackerClient() {
 
       {/* Resultados da Consulta — no-print */}
       {data && (
-        <div className="no-print space-y-6">
+        <div className="no-print space-y-4 sm:space-y-6">
           {/* Banner de Aprovação em 1 Clique (quando aguardando aprovação) */}
           {data.status === 'awaiting_approval' && (
-            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
                   AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
                 </span>
-                <h3 className="text-lg font-extrabold text-white">
-                  Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está concluído.
+                <h3 className="text-base sm:text-lg font-extrabold text-white">
+                  Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
                 </h3>
                 <p className="mt-1 text-xs sm:text-sm text-zinc-300">
-                  Confira o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e autorize o início imediato na bancada em 1 clique.
+                  Confira o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e aprove em 1 toque pelo WhatsApp.
                 </p>
               </div>
               <a
@@ -272,68 +275,99 @@ export default function StatusTrackerClient() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-6 py-4 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
               >
                 <span>Aprovar Orçamento no WhatsApp</span>
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-4 h-4 shrink-0" />
               </a>
             </div>
           )}
 
-          {/* Bloco Principal: Cabeçalho da OS & Stepper de 5 Etapas */}
-          <div className="border border-zinc-300 bg-white p-6 sm:p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-200 pb-6 mb-6">
-              <div>
-                <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-zinc-500 mb-2">
+          {/* Bloco Principal: Cabeçalho da OS & Stepper Suíço Mobile-First */}
+          <div className="border border-zinc-300 bg-white p-4 sm:p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 border-b border-zinc-200 pb-4 sm:pb-6 mb-4 sm:mb-6">
+              <div className="w-full md:w-auto">
+                <div className="flex flex-wrap items-center justify-between md:justify-start gap-2 font-mono text-xs text-zinc-500 mb-2">
                   <span className="font-bold bg-zinc-950 text-white px-2.5 py-1">
                     OS #{data.os_number || data.short_id}
                   </span>
-                  <span>/</span>
-                  <span>ENTRADA: {fmtDate(data.created_at)}</span>
+                  <span className="text-[11px] sm:text-xs">ENTRADA: {fmtDate(data.created_at)}</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 leading-tight">
                   {data.equipment_brand} {data.equipment_model}
                 </h2>
-                <p className="text-xs sm:text-sm text-zinc-600 mt-1 font-mono">
-                  CLIENTE: <strong className="text-zinc-950">{data.customer_first_name}</strong> · CATEGORIA:{' '}
+                <p className="text-xs text-zinc-600 mt-1 font-mono">
+                  CLIENTE: <strong className="text-zinc-950">{data.customer_first_name}</strong> ·{' '}
                   <strong className="uppercase text-zinc-950">{data.equipment_type}</strong>
                 </p>
               </div>
 
               {/* Status Atual */}
-              <div className="text-left md:text-right font-mono">
-                <span className="text-[11px] font-bold text-zinc-500 block mb-1 uppercase tracking-wider">
-                  STATUS ATUAL
+              <div className="w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100 flex md:block items-center justify-between font-mono">
+                <span className="text-[10px] sm:text-[11px] font-bold text-zinc-500 md:block md:mb-1 uppercase tracking-wider">
+                  STATUS ATUAL:
                 </span>
-                <span className="inline-block px-3.5 py-1.5 text-xs font-bold uppercase bg-zinc-950 text-white">
+                <span className="inline-block px-3 py-1.5 text-[11px] sm:text-xs font-bold uppercase bg-zinc-950 text-white">
                   {data.status === 'awaiting_approval' && 'Aguardando Aprovação'}
                   {data.status === 'approved' && 'Orçamento Aprovado'}
-                  {data.status === 'in_progress' && 'Em Manutenção na Bancada'}
-                  {data.status === 'waiting_part' && 'Aguardando Componente'}
-                  {data.status === 'ready' && 'Pronto para Retirada'}
+                  {data.status === 'in_progress' && 'Em Bancada'}
+                  {data.status === 'waiting_part' && 'Aguardando Peça'}
+                  {data.status === 'ready' && 'Pronto p/ Retirada'}
                   {data.status === 'delivered' && 'Entregue · Garantia 90D'}
                   {data.status === 'cancelled' && 'Ordem Cancelada'}
                 </span>
               </div>
             </div>
 
-            {/* Stepper Monocromático de 5 Etapas */}
+            {/* Stepper de 5 Etapas — Barra Horizontal Compacta no Mobile + Grid Completo no Desktop */}
             <div>
-              <div className="flex items-center justify-between mb-4 font-mono text-xs">
+              <div className="flex items-center justify-between mb-2.5 sm:mb-4 font-mono text-xs">
                 <span className="font-bold uppercase tracking-wider text-zinc-950">
                   PROGRESSO NA BANCADA
                 </span>
-                <span className="text-zinc-500">ETAPA 0{currentStep} / 05</span>
+                <span className="text-zinc-500 font-bold">ETAPA 0{currentStep} / 05</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-zinc-300 border border-zinc-300 text-xs">
-                {[
-                  { step: 1, title: '01 / Check-in', desc: 'Recebido com Fotos' },
-                  { step: 2, title: '02 / Diagnóstico', desc: 'Laudo & Orçamento' },
-                  { step: 3, title: '03 / Bancada', desc: 'Execução Técnica' },
-                  { step: 4, title: '04 / Testes QA', desc: 'Estresse & Estabilidade' },
-                  { step: 5, title: '05 / Pronto', desc: 'Garantia CDC 90 Dias' },
-                ].map((item) => {
+              {/* MOBILE STEPPER (< 640px): 5 Colunas Horizontais Compactas + Faixa da Etapa Ativa */}
+              <div className="sm:hidden">
+                <div className="grid grid-cols-5 gap-px bg-zinc-300 border border-zinc-300 text-center">
+                  {STEP_ITEMS.map((item) => {
+                    const active = currentStep >= item.step;
+                    const isCurrent = currentStep === item.step;
+                    return (
+                      <div
+                        key={item.step}
+                        className={`py-2 px-1 ${
+                          isCurrent
+                            ? 'bg-zinc-950 text-white'
+                            : active
+                            ? 'bg-zinc-200 text-zinc-950'
+                            : 'bg-white text-zinc-400'
+                        }`}
+                      >
+                        <div className="font-mono font-extrabold text-xs leading-none">
+                          0{item.step}
+                        </div>
+                        <div
+                          className={`font-mono text-[9px] uppercase tracking-tighter mt-1 truncate ${
+                            isCurrent ? 'text-zinc-200 font-bold' : active ? 'text-zinc-700' : 'text-zinc-400'
+                          }`}
+                        >
+                          {item.short}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="bg-zinc-950 text-white px-3.5 py-2.5 border-x border-b border-zinc-950 flex items-center justify-between gap-2 font-mono text-xs">
+                  <span className="font-bold uppercase">{activeStepInfo.title}</span>
+                  <span className="text-zinc-300 text-[11px]">{activeStepInfo.desc}</span>
+                </div>
+              </div>
+
+              {/* DESKTOP STEPPER (>= 640px): 5 Colunas Completas */}
+              <div className="hidden sm:grid sm:grid-cols-5 gap-px bg-zinc-300 border border-zinc-300 text-xs">
+                {STEP_ITEMS.map((item) => {
                   const active = currentStep >= item.step;
                   const isCurrent = currentStep === item.step;
                   return (
@@ -359,12 +393,12 @@ export default function StatusTrackerClient() {
           </div>
 
           {/* Relato de Entrada & Previsão */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="border border-zinc-300 bg-white p-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-3">
+          <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="border border-zinc-300 bg-white p-4 sm:p-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
                 RELATO / SINTOMA REGISTRADO
               </span>
-              <p className="text-zinc-900 text-sm leading-relaxed bg-zinc-50 border border-zinc-200 p-4">
+              <p className="text-zinc-900 text-xs sm:text-sm leading-relaxed bg-zinc-50 border border-zinc-200 p-3.5">
                 {data.reported_defect || 'Avaliação técnica em bancada.'}
               </p>
               {data.accessories_in && (
@@ -374,24 +408,24 @@ export default function StatusTrackerClient() {
               )}
             </div>
 
-            <div className="border border-zinc-300 bg-white p-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-3">
+            <div className="border border-zinc-300 bg-white p-4 sm:p-6">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
                 PREVISÃO & GARANTIA LEGAL
               </span>
-              <div className="space-y-3 text-xs font-mono">
-                <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
-                  <span className="text-zinc-500">PREVISÃO ESTIMADA:</span>
-                  <span className="text-zinc-950 font-bold">
+              <div className="space-y-2.5 text-xs font-mono">
+                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
+                  <span className="text-zinc-500">PREVISÃO:</span>
+                  <span className="text-zinc-950 font-bold text-right">
                     {data.estimated_ready_at ? fmtDate(data.estimated_ready_at) : 'EM AVALIAÇÃO'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
+                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
                   <span className="text-zinc-500">GARANTIA LEGAL:</span>
-                  <span className="text-zinc-950 font-bold">90 DIAS (ART. 26 CDC)</span>
+                  <span className="text-zinc-950 font-bold text-right">90 DIAS (ART. 26 CDC)</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-zinc-500">UNIDADE FÍSICA:</span>
-                  <span className="text-zinc-900 font-bold">RUA CEL. TEÓFILO LEME, 967</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-zinc-500">UNIDADE:</span>
+                  <span className="text-zinc-900 font-bold text-right">RUA CEL. TEÓFILO LEME, 967</span>
                 </div>
               </div>
             </div>
@@ -399,25 +433,25 @@ export default function StatusTrackerClient() {
 
           {/* Vistoria Fotográfica da Entrada */}
           {data.equipment_photos && data.equipment_photos.length > 0 && (
-            <div className="border border-zinc-300 bg-white p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-2">
+            <div className="border border-zinc-300 bg-white p-4 sm:p-8">
+              <div className="flex items-center justify-between mb-1.5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
-                  VISTORIA FOTOGRÁFICA DE ENTRADA ({data.equipment_photos.length})
+                  VISTORIA FOTOGRÁFICA ({data.equipment_photos.length})
                 </h3>
-                <span className="font-mono text-[11px] font-bold text-zinc-600 uppercase">
-                  CHECK-IN BALCÃO
+                <span className="font-mono text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase">
+                  TOQUE P/ AMPLIAR
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 mb-4">
-                Fotos registradas no ato do recebimento no balcão. Clique para ampliar.
+              <p className="text-xs text-zinc-500 mb-3.5">
+                Fotos registradas no ato do recebimento do equipamento no balcão.
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
                 {data.equipment_photos.map((url, i) => (
                   <button
                     key={url}
                     type="button"
                     onClick={() => setSelectedPhoto(url)}
-                    className="relative aspect-video sm:aspect-square overflow-hidden border border-zinc-300 hover:border-zinc-950 transition-all group cursor-pointer"
+                    className="relative aspect-square overflow-hidden border border-zinc-300 hover:border-zinc-950 transition-all group cursor-pointer"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -425,8 +459,8 @@ export default function StatusTrackerClient() {
                       alt={`Foto de entrada ${i + 1}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-mono text-xs font-bold uppercase">
-                      Ampliar
+                    <div className="absolute bottom-0 inset-x-0 bg-black/75 py-1 text-white font-mono text-[10px] font-bold uppercase text-center sm:opacity-0 sm:group-hover:opacity-100 transition">
+                      Foto 0{i + 1} · Ampliar
                     </div>
                   </button>
                 ))}
@@ -434,91 +468,91 @@ export default function StatusTrackerClient() {
             </div>
           )}
 
-          {/* Telemetria e Testes de Bancada */}
-          <div className="border border-zinc-300 bg-white p-6 sm:p-8">
-            <div className="flex items-center justify-between mb-4 border-b border-zinc-200 pb-3 font-mono">
+          {/* Telemetria e Testes de Bancada (Grid 2x2 Perfeito com gap-px) */}
+          <div className="border border-zinc-300 bg-white p-4 sm:p-8">
+            <div className="flex items-center justify-between mb-3.5 border-b border-zinc-200 pb-2.5 font-mono">
               <span className="text-xs font-bold uppercase tracking-wider text-zinc-950">
-                CONTROLE DE QUALIDADE & BANCADA DE TESTES
+                CONTROLE DE QUALIDADE & TESTES
               </span>
-              <span className="text-xs text-zinc-500 uppercase">VERIFICADO</span>
+              <span className="text-[11px] text-zinc-500 uppercase">BANCADA</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-zinc-300 border border-zinc-300 text-center font-mono">
-              <div className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-300 border border-zinc-300 text-center font-mono">
+              <div className="bg-white p-3.5 sm:p-4">
                 <span className="text-[10px] text-zinc-500 uppercase block mb-1">GPU EM CARGA</span>
-                <span className="text-xl font-bold text-zinc-950 block">
+                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
                   {currentStep >= 4 ? '64 °C' : 'EM ANÁLISE'}
                 </span>
               </div>
-              <div className="p-4">
+              <div className="bg-white p-3.5 sm:p-4">
                 <span className="text-[10px] text-zinc-500 uppercase block mb-1">CPU EM CARGA</span>
-                <span className="text-xl font-bold text-zinc-950 block">
+                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
                   {currentStep >= 4 ? '68 °C' : 'EM ANÁLISE'}
                 </span>
               </div>
-              <div className="p-4">
+              <div className="bg-white p-3.5 sm:p-4">
                 <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÚDE DO DISCO</span>
-                <span className="text-xl font-bold text-zinc-950 block">100% OK</span>
+                <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
               </div>
-              <div className="p-4">
+              <div className="bg-white p-3.5 sm:p-4">
                 <span className="text-[10px] text-zinc-500 uppercase block mb-1">TEMPO DE BOOT</span>
-                <span className="text-xl font-bold text-zinc-950 block">
+                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
                   {currentStep >= 4 ? '8.4 s' : '-- s'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Discriminação Transparente de Custos */}
-          <div className="border border-zinc-300 bg-white p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-200 pb-4 mb-6">
+          {/* Discriminação Transparente de Custos (Lado a Lado no Mobile) */}
+          <div className="border border-zinc-300 bg-white p-4 sm:p-8">
+            <div className="flex flex-row items-center justify-between gap-3 border-b border-zinc-200 pb-4 mb-4 sm:mb-6">
               <div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+                <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-0.5">
                   TRANSPARÊNCIA DE VALORES
                 </span>
-                <h3 className="text-xl font-extrabold text-zinc-950">
-                  Resumo Financeiro da Ordem de Serviço
+                <h3 className="text-base sm:text-xl font-extrabold text-zinc-950">
+                  Resumo Financeiro da OS
                 </h3>
               </div>
-              <div className="text-left sm:text-right font-mono">
-                <span className="text-xs text-zinc-500 block uppercase">VALOR TOTAL</span>
-                <span className="text-2xl sm:text-3xl font-extrabold text-zinc-950 block">
+              <div className="text-right font-mono shrink-0">
+                <span className="text-[10px] sm:text-xs text-zinc-500 block uppercase">VALOR TOTAL</span>
+                <span className="text-xl sm:text-3xl font-extrabold text-zinc-950 block">
                   {fmtBRL(totalOrderAmount)}
                 </span>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-6 font-mono">
-              <div className="bg-zinc-50 border border-zinc-200 p-4">
-                <span className="text-xs font-bold text-zinc-500 block uppercase mb-1">
-                  SERVIÇO / MÃO DE OBRA TÉCNICA
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-5 font-mono">
+              <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
+                <span className="text-[10px] sm:text-xs font-bold text-zinc-500 block uppercase mb-1">
+                  MÃO DE OBRA
                 </span>
-                <span className="text-2xl font-bold text-zinc-950">
+                <span className="text-base sm:text-2xl font-bold text-zinc-950">
                   {fmtBRL(data.labor_cost || 0)}
                 </span>
               </div>
-              <div className="bg-zinc-50 border border-zinc-200 p-4">
-                <span className="text-xs font-bold text-zinc-500 block uppercase mb-1">
-                  PEÇAS & COMPONENTES
+              <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
+                <span className="text-[10px] sm:text-xs font-bold text-zinc-500 block uppercase mb-1">
+                  PEÇAS & INSUMOS
                 </span>
-                <span className="text-2xl font-bold text-zinc-950">
+                <span className="text-base sm:text-2xl font-bold text-zinc-950">
                   {fmtBRL(data.estimated_value || 0)}
                 </span>
               </div>
             </div>
 
             {data.parts_applied && data.parts_applied.length > 0 && (
-              <div className="mb-6 bg-zinc-50 border border-zinc-200 p-4 text-xs font-mono">
-                <span className="text-[11px] text-zinc-500 block uppercase font-bold mb-2.5 border-b border-zinc-200 pb-1.5">
+              <div className="mb-5 bg-zinc-50 border border-zinc-200 p-3.5 sm:p-4 text-xs font-mono">
+                <span className="text-[11px] text-zinc-500 block uppercase font-bold mb-2 border-b border-zinc-200 pb-1.5">
                   PEÇAS APLICADAS NESTA OS:
                 </span>
                 <div className="space-y-2">
                   {data.parts_applied.map((p, idx) => (
-                    <div key={idx} className="flex justify-between items-center text-zinc-800">
+                    <div key={idx} className="flex justify-between items-start gap-2 text-zinc-800">
                       <span>
                         — {p.quantity}x {p.name}
                       </span>
-                      <strong className="text-zinc-950">
+                      <strong className="text-zinc-950 shrink-0">
                         {fmtBRL(p.unit_price * p.quantity)}
                       </strong>
                     </div>
@@ -527,7 +561,7 @@ export default function StatusTrackerClient() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-zinc-200">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-4 border-t border-zinc-200">
               <a
                 href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
                   `Olá! Gostaria de falar sobre a minha OS #${data.os_number || data.short_id} (${
@@ -536,26 +570,27 @@ export default function StatusTrackerClient() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 border border-zinc-900 bg-white hover:bg-zinc-100 py-3.5 px-5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 text-center justify-center flex items-center gap-2 transition-colors"
+                className="flex-1 border border-zinc-900 bg-white hover:bg-zinc-100 py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 text-center justify-center flex items-center gap-2 transition-colors min-h-[48px]"
               >
                 <span>Falar com a Loja no WhatsApp</span>
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-4 h-4 shrink-0" />
               </a>
 
               <button
                 type="button"
                 onClick={() => setShowWarrantyModal(true)}
-                className="bg-zinc-950 hover:bg-zinc-800 text-white py-3.5 px-6 font-mono text-xs font-bold uppercase tracking-wider text-center justify-center flex items-center gap-2 transition-colors cursor-pointer"
+                className="bg-zinc-950 hover:bg-zinc-800 text-white py-3.5 px-5 font-mono text-xs font-bold uppercase tracking-wider text-center justify-center flex items-center gap-2 transition-colors cursor-pointer min-h-[48px]"
               >
-                <Printer className="w-4 h-4" />
-                <span>Emitir Termo de Garantia Legal (CDC 90 Dias)</span>
+                <Printer className="w-4 h-4 shrink-0" />
+                <span className="sm:hidden">Certificado de Garantia (90D)</span>
+                <span className="hidden sm:inline">Emitir Termo de Garantia Legal (CDC 90 Dias)</span>
               </button>
             </div>
           </div>
 
           {/* Pagamento Pix (se pendente) */}
           {data.payment_status === 'pending' && (
-            <div className="border border-zinc-900 bg-zinc-50 p-6 sm:p-8">
+            <div className="border border-zinc-900 bg-zinc-50 p-4 sm:p-8">
               <div className="flex items-center justify-between mb-2 font-mono">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-950">
                   PAGAMENTO VIA PIX
@@ -564,24 +599,26 @@ export default function StatusTrackerClient() {
                   CHAVE OFICIAL CYBER
                 </span>
               </div>
-              <p className="text-xs text-zinc-600 mb-4">
+              <p className="text-xs text-zinc-600 mb-3.5">
                 Você pode pagar na retirada no balcão ou copiar nossa chave Pix oficial abaixo.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center gap-3 bg-white border border-zinc-300 p-3.5 text-sm font-mono">
-                <span className="text-zinc-500 text-xs font-bold uppercase">CHAVE PIX:</span>
-                <code className="text-zinc-950 font-bold flex-1 select-all tracking-wider">
-                  {pixKey}
-                </code>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-white border border-zinc-300 p-3.5 text-sm font-mono">
+                <div className="flex items-center justify-between sm:justify-start gap-2 flex-1">
+                  <span className="text-zinc-500 text-xs font-bold uppercase">CHAVE PIX:</span>
+                  <code className="text-zinc-950 font-bold select-all tracking-wider">
+                    {pixKey}
+                  </code>
+                </div>
                 <button
                   type="button"
                   onClick={copyPix}
-                  className="px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                  className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 min-h-[44px]"
                 >
                   {copiedPix ? (
                     <>
                       <Check className="w-3.5 h-3.5" />
-                      <span>Copiada!</span>
+                      <span>Chave Pix Copiada!</span>
                     </>
                   ) : (
                     <>
@@ -597,21 +634,21 @@ export default function StatusTrackerClient() {
           {/* Modal de Zoom de Foto */}
           {selectedPhoto && (
             <div
-              className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-3 sm:p-4"
               onClick={() => setSelectedPhoto(null)}
             >
               <div
-                className="relative max-w-4xl max-h-[90vh] bg-white border border-zinc-300 p-4"
+                className="relative w-full max-w-4xl max-h-[90vh] bg-white border border-zinc-300 p-3 sm:p-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-200 font-mono text-xs">
+                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-zinc-200 font-mono text-xs">
                   <span className="font-bold text-zinc-950 uppercase">
                     VISTORIA DE ENTRADA · OS #{data.os_number || data.short_id}
                   </span>
                   <button
                     type="button"
                     onClick={() => setSelectedPhoto(null)}
-                    className="p-1 text-zinc-500 hover:text-zinc-950 cursor-pointer"
+                    className="p-1.5 text-zinc-500 hover:text-zinc-950 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -621,33 +658,40 @@ export default function StatusTrackerClient() {
                 <img
                   src={selectedPhoto}
                   alt="Foto ampliada da entrada"
-                  className="max-w-full max-h-[70vh] border border-zinc-200 object-contain mx-auto"
+                  className="max-w-full max-h-[72vh] border border-zinc-200 object-contain mx-auto"
                 />
               </div>
             </div>
           )}
 
-          {/* Modal Oficial de Emissão do Termo de Garantia Legal (CDC 90 Dias) */}
+          {/* Modal Oficial de Emissão do Termo de Garantia Legal (CDC 90 Dias) — 100% Mobile-Safe */}
           {showWarrantyModal && (
             <div
-              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto"
+              className="fixed inset-0 z-50 bg-black/80 flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto"
               onClick={() => setShowWarrantyModal(false)}
             >
               <div
-                className="relative max-w-3xl w-full my-8 bg-white text-zinc-950 p-6 sm:p-10 border-2 border-zinc-950"
+                className="relative max-w-3xl w-full my-4 sm:my-8 bg-white text-zinc-950 p-4 sm:p-10 border-2 border-zinc-950"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  type="button"
-                  onClick={() => setShowWarrantyModal(false)}
-                  className="no-print absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-950 cursor-pointer"
-                  aria-label="Fechar"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                {/* Barra de Controle Superior do Modal (Evita colisão do botão X com o selo de garantia no mobile) */}
+                <div className="no-print flex items-center justify-between pb-3 mb-4 border-b border-zinc-200 font-mono text-xs">
+                  <span className="text-zinc-500 font-bold uppercase">
+                    CERTIFICADO DIGITAL · OS #{data.os_number || data.short_id}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowWarrantyModal(false)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold uppercase cursor-pointer"
+                    aria-label="Fechar"
+                  >
+                    <span>Fechar</span>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
 
-                <div className="border-b-2 border-zinc-950 pb-4 mb-6">
-                  <div className="flex justify-between items-start">
+                <div className="border-b-2 border-zinc-950 pb-4 mb-5">
+                  <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-3">
                     <div>
                       <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-zinc-950">
                         CYBER INFORMÁTICA
@@ -656,8 +700,8 @@ export default function StatusTrackerClient() {
                         Rua Coronel Teófilo Leme, 967 — Centro, Bragança Paulista - SP • CEP 12900-003
                       </p>
                     </div>
-                    <div className="text-right font-mono">
-                      <span className="text-xs font-bold bg-zinc-950 text-white px-2.5 py-1 block">
+                    <div className="sm:text-right font-mono">
+                      <span className="text-xs font-bold bg-zinc-950 text-white px-2.5 py-1 inline-block">
                         GARANTIA CDC 90 DIAS
                       </span>
                       <span className="text-xs text-zinc-700 block mt-1 font-bold">
@@ -667,8 +711,8 @@ export default function StatusTrackerClient() {
                   </div>
                 </div>
 
-                <div className="text-center mb-6">
-                  <h3 className="text-lg sm:text-xl font-extrabold uppercase tracking-tight text-zinc-950">
+                <div className="text-left sm:text-center mb-5">
+                  <h3 className="text-base sm:text-xl font-extrabold uppercase tracking-tight text-zinc-950">
                     Termo de Garantia Legal & Certificado de Entrega
                   </h3>
                   <span className="text-xs font-semibold text-zinc-600 block mt-0.5">
@@ -676,8 +720,9 @@ export default function StatusTrackerClient() {
                   </span>
                 </div>
 
-                <div className="border border-zinc-300 text-xs mb-6 divide-y divide-zinc-300 font-mono">
-                  <div className="grid grid-cols-2 p-3 bg-zinc-50">
+                {/* Tabela Responsiva (Empilhada em 360px / Colunas no Desktop) */}
+                <div className="border border-zinc-300 text-xs mb-5 divide-y divide-zinc-300 font-mono">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 bg-zinc-50">
                     <div>
                       <span className="text-zinc-500 block text-[10px] uppercase">TITULAR / CLIENTE:</span>
                       <strong className="text-zinc-950">{data.customer_first_name}</strong>
@@ -689,57 +734,51 @@ export default function StatusTrackerClient() {
                       </strong>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 p-3">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3">
+                    <div className="flex sm:block justify-between">
                       <span className="text-zinc-500 block text-[10px] uppercase">DATA DE ENTRADA:</span>
                       <span>{fmtDate(data.created_at)}</span>
                     </div>
-                    <div>
+                    <div className="flex sm:block justify-between">
                       <span className="text-zinc-500 block text-[10px] uppercase">DATA DE EMISSÃO:</span>
                       <span>{new Date().toLocaleDateString('pt-BR')}</span>
                     </div>
-                    <div>
+                    <div className="flex sm:block justify-between">
                       <span className="text-zinc-500 block text-[10px] uppercase">PRAZO DE GARANTIA:</span>
                       <strong className="text-zinc-950">90 DIAS INTEGRAIS</strong>
                     </div>
                   </div>
                 </div>
 
-                <div className="mb-6 text-xs">
+                <div className="mb-5 text-xs">
                   <h4 className="font-bold uppercase text-zinc-950 border-b border-zinc-200 pb-1 mb-2 font-mono">
                     Serviços Executados & Validação Técnica:
                   </h4>
-                  <p className="text-zinc-700 leading-relaxed mb-3">{data.reported_defect}</p>
+                  <p className="text-zinc-700 leading-relaxed">{data.reported_defect}</p>
                 </div>
 
                 <div className="mb-6 text-[11px] leading-relaxed text-zinc-700 border-l-2 border-zinc-950 pl-3">
-                  <p className="mb-1">
+                  <p>
                     <strong>Cláusula de Garantia Legal (Art. 26, II, Lei 8.078/90):</strong> Fica assegurada ao consumidor a garantia legal de 90 (noventa) dias para os serviços executados e componentes substituídos discriminados nesta Ordem de Serviço.
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-zinc-200 text-xs font-mono no-print">
-                  <span className="text-[11px] text-zinc-500">
-                    OS #{data.os_number || data.short_id}
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => window.print()}
-                      className="py-2.5 px-5 bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-xs uppercase flex items-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <Printer className="w-3.5 h-3.5" />
-                      <span>Imprimir Certificado A4</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowWarrantyModal(false)}
-                      className="py-2.5 px-4 border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-xs uppercase transition-colors cursor-pointer"
-                    >
-                      Fechar
-                    </button>
-                  </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-4 border-t border-zinc-200 text-xs font-mono no-print">
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="w-full sm:w-auto py-3 px-5 bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-xs uppercase flex items-center justify-center gap-2 transition-colors cursor-pointer min-h-[44px]"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Imprimir / Salvar PDF</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowWarrantyModal(false)}
+                    className="w-full sm:w-auto py-3 px-4 border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-xs uppercase transition-colors cursor-pointer min-h-[44px]"
+                  >
+                    Fechar Certificado
+                  </button>
                 </div>
               </div>
             </div>

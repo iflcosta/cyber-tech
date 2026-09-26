@@ -14,7 +14,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#09090b] border-t border-zinc-800 py-16 mt-auto text-zinc-400 font-sans">
+    <footer className="bg-[#09090b] border-t border-zinc-800 pt-12 pb-28 md:py-16 mt-auto text-zinc-400 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-4 pb-12 border-b border-zinc-800">
           {/* Brand + Resumo */}

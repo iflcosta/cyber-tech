@@ -83,10 +83,10 @@ const CABINETS = [
 ];
 
 const STEPS = [
-  { id: 1, title: "1. Objetivo" },
-  { id: 2, title: "2. CPU & Vídeo" },
-  { id: 3, title: "3. RAM & SSD" },
-  { id: 4, title: "4. Gabinete" },
+  { id: 1, short: "1. Perfil", title: "1. Objetivo" },
+  { id: 2, short: "2. CPU/GPU", title: "2. CPU & Vídeo" },
+  { id: 3, short: "3. RAM/SSD", title: "3. RAM & SSD" },
+  { id: 4, short: "4. Gabinete", title: "4. Gabinete" },
 ];
 
 export default function PCBuilderSection() {
@@ -143,20 +143,20 @@ export default function PCBuilderSection() {
   const waUrl = `https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <section id="pc-builder" className="py-14 sm:py-20 bg-[#09090b] text-white border-b border-zinc-800">
+    <section id="pc-builder" className="py-12 sm:py-20 bg-[#09090b] text-white border-b border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Cabeçalho Enxuto */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-8 border-b border-zinc-800">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 sm:gap-4 pb-6 sm:pb-8 border-b border-zinc-800">
           <div>
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">
+            <div className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 mb-1.5 sm:mb-2">
               02 // PC BUILDER SOB MEDIDA
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
               Monte Seu PC e Peça Orçamento em 1 Clique.
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-zinc-400 max-w-md">
-            Escolha o perfil no Passo 1 para carregar nossa configuração recomendada na hora — ou navegue pelas abas para personalizar cada peça.
+            Escolha o perfil na Aba 1 para carregar nossa recomendação na hora — ou navegue pelas 4 abas para personalizar cada peça.
           </p>
         </div>
 
@@ -165,8 +165,8 @@ export default function PCBuilderSection() {
           {/* Coluna Esquerda (8 cols): Navegação por 4 Abas */}
           <div className="lg:col-span-8 flex flex-col justify-between">
             <div>
-              {/* Barra de Abas Stepper */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-zinc-800 divide-x divide-y sm:divide-y-0 divide-zinc-800 bg-zinc-950">
+              {/* Barra de 4 Abas em 1 Única Linha Horizontal no Mobile & Desktop */}
+              <div className="grid grid-cols-4 gap-px bg-zinc-800 border-b border-zinc-800">
                 {STEPS.map((st) => {
                   const isCurrent = activeStep === st.id;
                   return (
@@ -174,23 +174,46 @@ export default function PCBuilderSection() {
                       key={st.id}
                       type="button"
                       onClick={() => setActiveStep(st.id)}
-                      className={`py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider text-left transition-colors cursor-pointer ${
+                      className={`py-3 px-1.5 sm:py-3.5 sm:px-4 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-tight sm:tracking-wider text-center sm:text-left transition-colors cursor-pointer ${
                         isCurrent
                           ? "bg-white text-black"
                           : "bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900"
                       }`}
                     >
-                      {st.title}
+                      <span className="sm:hidden">{st.short}</span>
+                      <span className="hidden sm:inline">{st.title}</span>
                     </button>
                   );
                 })}
               </div>
 
+              {/* Faixa "Sua Máquina Ao Vivo" no Topo Mobile (Permite ver a config e pedir orçamento sem rolar até o fim!) */}
+              <div className="lg:hidden bg-zinc-900/90 border-b border-zinc-800 px-3.5 py-2.5 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-zinc-400 block">
+                    CONFIGURAÇÃO SELECIONADA:
+                  </span>
+                  <strong className="font-mono text-[11px] font-bold text-white block truncate">
+                    {selectedCpu.label} · {selectedGpu.label} · {selectedRam.id.toUpperCase()} · {selectedSsd.id.toUpperCase()}
+                  </strong>
+                </div>
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackWhatsAppClick("pc_builder_mobile_top")}
+                  className="bg-white text-black font-mono text-[10px] font-bold uppercase px-2.5 py-2 shrink-0 flex items-center gap-1"
+                >
+                  <span>Orçar</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
+              </div>
+
               {/* Conteúdo da Aba Ativa */}
-              <div className="p-6 sm:p-8">
+              <div className="p-4 sm:p-8">
                 {activeStep === 1 && (
                   <div>
-                    <div className="flex items-center justify-between gap-2 mb-4">
+                    <div className="flex items-center justify-between gap-2 mb-3.5 sm:mb-4">
                       <span className="font-mono text-xs font-bold uppercase text-zinc-300">
                         QUAL O OBJETIVO PRINCIPAL DA MÁQUINA?
                       </span>
@@ -198,7 +221,7 @@ export default function PCBuilderSection() {
                         PREENCHE AS PEÇAS AUTOMATICAMENTE
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                       {PURPOSES.map((item) => {
                         const active = purpose === item.id;
                         return (
@@ -206,17 +229,17 @@ export default function PCBuilderSection() {
                             key={item.id}
                             type="button"
                             onClick={() => handlePresetPurpose(item.id)}
-                            className={`p-4 text-left border transition-colors cursor-pointer ${
+                            className={`p-3.5 sm:p-4 text-left border transition-colors cursor-pointer ${
                               active
                                 ? "bg-white text-black border-white"
                                 : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
                             }`}
                           >
-                            <strong className="text-sm font-extrabold block mb-1">
+                            <strong className="text-xs sm:text-sm font-extrabold block mb-0.5 sm:mb-1">
                               {item.label}
                             </strong>
                             <span
-                              className={`text-xs block leading-snug ${
+                              className={`text-[11px] sm:text-xs block leading-snug ${
                                 active ? "text-zinc-700" : "text-zinc-400"
                               }`}
                             >
@@ -230,20 +253,23 @@ export default function PCBuilderSection() {
                 )}
 
                 {activeStep === 2 && (
-                  <div className="space-y-6">
+                  <div className="space-y-5">
                     <div>
-                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-2.5">
                         PROCESSADOR (AMD RYZEN OU INTEL CORE)
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        {CPUS.map((item) => {
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {CPUS.map((item, idx) => {
                           const active = cpu === item.id;
+                          const isLast = idx === CPUS.length - 1;
                           return (
                             <button
                               key={item.id}
                               type="button"
                               onClick={() => setCpu(item.id)}
-                              className={`p-3 text-left border transition-colors cursor-pointer ${
+                              className={`p-2.5 sm:p-3 text-left border transition-colors cursor-pointer ${
+                                isLast ? "col-span-2 sm:col-span-1" : ""
+                              } ${
                                 active
                                   ? "bg-white text-black border-white"
                                   : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
@@ -253,7 +279,7 @@ export default function PCBuilderSection() {
                                 {item.label}
                               </strong>
                               <span
-                                className={`text-[11px] block leading-tight ${
+                                className={`text-[10px] sm:text-[11px] block leading-tight ${
                                   active ? "text-zinc-700" : "text-zinc-400"
                                 }`}
                               >
@@ -266,18 +292,21 @@ export default function PCBuilderSection() {
                     </div>
 
                     <div>
-                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-2.5">
                         PLACA DE VÍDEO (GPU)
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        {GPUS.map((item) => {
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {GPUS.map((item, idx) => {
                           const active = gpu === item.id;
+                          const isLast = idx === GPUS.length - 1;
                           return (
                             <button
                               key={item.id}
                               type="button"
                               onClick={() => setGpu(item.id)}
-                              className={`p-3 text-left border transition-colors cursor-pointer ${
+                              className={`p-2.5 sm:p-3 text-left border transition-colors cursor-pointer ${
+                                isLast ? "col-span-2 sm:col-span-1" : ""
+                              } ${
                                 active
                                   ? "bg-white text-black border-white"
                                   : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
@@ -287,7 +316,7 @@ export default function PCBuilderSection() {
                                 {item.label}
                               </strong>
                               <span
-                                className={`text-[11px] block leading-tight ${
+                                className={`text-[10px] sm:text-[11px] block leading-tight ${
                                   active ? "text-zinc-700" : "text-zinc-400"
                                 }`}
                               >
@@ -302,12 +331,12 @@ export default function PCBuilderSection() {
                 )}
 
                 {activeStep === 3 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-2.5">
                         MEMÓRIA RAM
                       </div>
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         {RAMS.map((item) => {
                           const active = ram === item.id;
                           return (
@@ -315,7 +344,7 @@ export default function PCBuilderSection() {
                               key={item.id}
                               type="button"
                               onClick={() => setRam(item.id)}
-                              className={`w-full p-3.5 text-left border transition-colors cursor-pointer ${
+                              className={`w-full p-3 text-left border transition-colors cursor-pointer ${
                                 active
                                   ? "bg-white text-black border-white"
                                   : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
@@ -338,10 +367,10 @@ export default function PCBuilderSection() {
                     </div>
 
                     <div>
-                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-2.5">
                         ARMAZENAMENTO SSD NVME
                       </div>
-                      <div className="space-y-2.5">
+                      <div className="space-y-2">
                         {SSDS.map((item) => {
                           const active = ssd === item.id;
                           return (
@@ -349,7 +378,7 @@ export default function PCBuilderSection() {
                               key={item.id}
                               type="button"
                               onClick={() => setSsd(item.id)}
-                              className={`w-full p-3.5 text-left border transition-colors cursor-pointer ${
+                              className={`w-full p-3 text-left border transition-colors cursor-pointer ${
                                 active
                                   ? "bg-white text-black border-white"
                                   : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
@@ -374,12 +403,12 @@ export default function PCBuilderSection() {
                 )}
 
                 {activeStep === 4 && (
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     <div>
-                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-3">
+                      <div className="font-mono text-xs font-bold uppercase text-zinc-300 mb-2.5">
                         ESTÉTICA DO GABINETE & REFRIGERAÇÃO
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                         {CABINETS.map((item) => {
                           const active = cabinet === item.id;
                           return (
@@ -387,13 +416,13 @@ export default function PCBuilderSection() {
                               key={item.id}
                               type="button"
                               onClick={() => setCabinet(item.id)}
-                              className={`p-3.5 text-left border transition-colors cursor-pointer ${
+                              className={`p-3 text-left border transition-colors cursor-pointer ${
                                 active
                                   ? "bg-white text-black border-white"
                                   : "bg-zinc-900/60 text-zinc-200 border-zinc-800 hover:border-zinc-600"
                               }`}
                             >
-                              <strong className="text-xs font-extrabold block mb-1">
+                              <strong className="text-xs font-extrabold block mb-0.5">
                                 {item.label}
                               </strong>
                               <span
@@ -409,16 +438,16 @@ export default function PCBuilderSection() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                       <div>
-                        <label className="block font-mono text-[11px] uppercase text-zinc-400 mb-2">
+                        <label className="block font-mono text-[11px] uppercase text-zinc-400 mb-1.5">
                           PRECISA DE MONITOR E KIT?
                         </label>
                         <div className="grid grid-cols-2 border border-zinc-700">
                           <button
                             type="button"
                             onClick={() => setPeripherals("somente_pc")}
-                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer ${
+                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer min-h-[42px] ${
                               peripherals === "somente_pc"
                                 ? "bg-white text-black"
                                 : "bg-zinc-900 text-zinc-400 hover:text-white"
@@ -429,7 +458,7 @@ export default function PCBuilderSection() {
                           <button
                             type="button"
                             onClick={() => setPeripherals("completo")}
-                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer ${
+                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer min-h-[42px] ${
                               peripherals === "completo"
                                 ? "bg-white text-black"
                                 : "bg-zinc-900 text-zinc-400 hover:text-white"
@@ -443,7 +472,7 @@ export default function PCBuilderSection() {
                       <div>
                         <label
                           htmlFor="pc-builder-notes"
-                          className="block font-mono text-[11px] uppercase text-zinc-400 mb-2"
+                          className="block font-mono text-[11px] uppercase text-zinc-400 mb-1.5"
                         >
                           ORÇAMENTO ALVO OU USADO NA TROCA (OPCIONAL)
                         </label>
@@ -453,7 +482,7 @@ export default function PCBuilderSection() {
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                           placeholder="Ex: Até R$ 4.500 / Tenho notebook p/ troca"
-                          className="w-full bg-zinc-900 border border-zinc-700 px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white"
+                          className="w-full bg-zinc-900 border border-zinc-700 px-3.5 py-2.5 text-base sm:text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white min-h-[42px]"
                         />
                       </div>
                     </div>
@@ -463,19 +492,20 @@ export default function PCBuilderSection() {
             </div>
 
             {/* Rodapé de Navegação entre Abas */}
-            <div className="px-6 py-4 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between gap-4">
+            <div className="px-4 sm:px-6 py-3.5 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between gap-3">
               {activeStep > 1 ? (
                 <button
                   type="button"
                   onClick={() => setActiveStep(activeStep - 1)}
-                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-zinc-400 hover:text-white cursor-pointer"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase text-zinc-300 hover:text-white cursor-pointer py-1"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Etapa Anterior</span>
+                  <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+                  <span>Anterior</span>
                 </button>
               ) : (
-                <span className="font-mono text-[11px] text-zinc-500">
-                  Peças recomendadas já selecionadas ao lado →
+                <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400">
+                  <span className="sm:hidden">Recomendação pronta ↓</span>
+                  <span className="hidden sm:inline">Peças recomendadas já selecionadas ao lado →</span>
                 </span>
               )}
 
@@ -483,21 +513,21 @@ export default function PCBuilderSection() {
                 <button
                   type="button"
                   onClick={() => setActiveStep(activeStep + 1)}
-                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white cursor-pointer"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase px-3.5 sm:px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white cursor-pointer"
                 >
-                  <span>Personalizar Peças ({STEPS[activeStep].title})</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Ajustar {STEPS[activeStep].short}</span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                 </button>
               ) : (
                 <span className="font-mono text-xs font-bold text-white uppercase">
-                  Configuração Pronta →
+                  Configuração Pronta ✓
                 </span>
               )}
             </div>
           </div>
 
           {/* Coluna Direita (4 cols): Ficha Compacta + CTA Direto */}
-          <div className="lg:col-span-4 p-6 sm:p-8 bg-zinc-950 flex flex-col justify-between border-t lg:border-t-0 border-zinc-800">
+          <div className="lg:col-span-4 p-4 sm:p-8 bg-zinc-950 flex flex-col justify-between border-t lg:border-t-0 border-zinc-800">
             <div>
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
                 <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
@@ -513,46 +543,46 @@ export default function PCBuilderSection() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 mb-5 text-xs">
-                <div className="p-2.5 bg-zinc-900 border border-zinc-800 col-span-2">
+              <div className="grid grid-cols-2 gap-2 mb-4 sm:mb-5 text-xs">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 col-span-2 min-w-0">
                   <span className="font-mono text-[10px] uppercase text-zinc-500 block">OBJETIVO</span>
-                  <strong className="text-white font-bold block truncate">{selectedPurpose.label}</strong>
+                  <strong className="text-white font-bold block leading-snug">{selectedPurpose.label}</strong>
                 </div>
-                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 min-w-0">
                   <span className="font-mono text-[10px] uppercase text-zinc-500 block">PROCESSADOR</span>
-                  <strong className="text-white font-bold block truncate">{selectedCpu.label}</strong>
+                  <strong className="text-white font-bold block leading-snug">{selectedCpu.label}</strong>
                 </div>
-                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 min-w-0">
                   <span className="font-mono text-[10px] uppercase text-zinc-500 block">PLACA DE VÍDEO</span>
-                  <strong className="text-white font-bold block truncate">{selectedGpu.label}</strong>
+                  <strong className="text-white font-bold block leading-snug">{selectedGpu.label}</strong>
                 </div>
-                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 min-w-0">
                   <span className="font-mono text-[10px] uppercase text-zinc-500 block">MEMÓRIA RAM</span>
-                  <strong className="text-white font-bold block truncate">{selectedRam.label}</strong>
+                  <strong className="text-white font-bold block leading-snug">{selectedRam.label}</strong>
                 </div>
-                <div className="p-2.5 bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 min-w-0">
                   <span className="font-mono text-[10px] uppercase text-zinc-500 block">SSD NVME</span>
-                  <strong className="text-white font-bold block truncate">{selectedSsd.label}</strong>
+                  <strong className="text-white font-bold block leading-snug">{selectedSsd.label}</strong>
                 </div>
-                <div className="p-2.5 bg-zinc-900 border border-zinc-800 col-span-2">
+                <div className="p-2.5 bg-zinc-900 border border-zinc-800 col-span-2 min-w-0">
                   <span className="font-mono text-[10px] uppercase text-zinc-500 block">GABINETE & EXTRAS</span>
-                  <strong className="text-zinc-200 font-bold block truncate">
+                  <strong className="text-zinc-200 font-bold block leading-snug">
                     {selectedCabinet.label} · {peripherals === "completo" ? "Com Monitor/Kit" : "Só o Gabinete"}
                   </strong>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               <a
                 href={waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackWhatsAppClick("pc_builder_submit")}
-                className="w-full bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-4 px-5 text-xs flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-4 px-5 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
               >
                 <span>Pedir Orçamento no WhatsApp</span>
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-4 h-4 shrink-0" />
               </a>
               <p className="text-[11px] font-mono text-zinc-500 text-center">
                 Enviamos o valor à vista e em 12x no seu WhatsApp.

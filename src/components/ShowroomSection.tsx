@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowUpRight, ArrowDown, Check } from "lucide-react";
+import { ArrowUpRight, Check } from "lucide-react";
 import { brand } from "@/lib/brand";
 import { trackWhatsAppClick } from "@/lib/gtag";
 import type { ShowroomPC } from "@/app/api/showroom/route";
@@ -9,7 +9,7 @@ import type { ShowroomPC } from "@/app/api/showroom/route";
 function ChassisBlueprint({ tier }: { tier: "gamer" | "workstation" | "office" }) {
   if (tier === "office") {
     return (
-      <svg viewBox="0 0 120 88" className="w-20 h-16 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <svg viewBox="0 0 120 88" className="w-18 sm:w-20 h-14 sm:h-16 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="28" y="8" width="44" height="72" stroke="white" />
         <line x1="36" y1="18" x2="64" y2="18" />
         <line x1="36" y1="24" x2="54" y2="24" />
@@ -20,7 +20,7 @@ function ChassisBlueprint({ tier }: { tier: "gamer" | "workstation" | "office" }
   }
   if (tier === "workstation") {
     return (
-      <svg viewBox="0 0 120 88" className="w-20 h-16 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <svg viewBox="0 0 120 88" className="w-18 sm:w-20 h-14 sm:h-16 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="18" y="6" width="62" height="76" stroke="white" />
         <rect x="24" y="12" width="38" height="10" />
         <rect x="24" y="28" width="24" height="22" />
@@ -32,7 +32,7 @@ function ChassisBlueprint({ tier }: { tier: "gamer" | "workstation" | "office" }
     );
   }
   return (
-    <svg viewBox="0 0 120 88" className="w-20 h-16 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg viewBox="0 0 120 88" className="w-18 sm:w-20 h-14 sm:h-16 text-zinc-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
       <rect x="16" y="6" width="64" height="76" stroke="white" />
       <rect x="22" y="12" width="52" height="50" />
       <circle cx="38" cy="28" r="8" stroke="white" />
@@ -74,38 +74,38 @@ export default function ShowroomSection() {
     val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
-    <section id="showroom" className="py-14 sm:py-20 bg-white border-b border-zinc-300">
+    <section id="showroom" className="py-12 sm:py-20 bg-white border-b border-zinc-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Cabeçalho Enxuto */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-8 border-b-2 border-zinc-950">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 sm:pb-8 border-b-2 border-zinc-950">
           <div>
-            <div className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
+            <div className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1.5 sm:mb-2">
               01 // SHOWROOM TÉRREO · PRONTA-ENTREGA
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-zinc-950 tracking-tight">
               Computadores Montados na Loja.
             </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-mono text-zinc-700">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs font-mono text-zinc-700">
             <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-zinc-950" />
+              <Check className="w-3.5 h-3.5 text-zinc-950 shrink-0" />
               <strong>Aceitamos seu usado na troca</strong>
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-zinc-950" />
-              <strong>Upgrade de RAM/SSD na hora</strong>
+              <Check className="w-3.5 h-3.5 text-zinc-950 shrink-0" />
+              <strong>Upgrade na hora</strong>
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-zinc-950" />
-              <strong>PIX ou até 12x no cartão</strong>
+              <Check className="w-3.5 h-3.5 text-zinc-950 shrink-0" />
+              <strong>PIX ou até 12x</strong>
             </span>
           </div>
         </div>
 
-        {/* Filtros de Linha (somente quando há máquinas no ERP) */}
+        {/* Filtros de Linha (Matriz 2x2 no Mobile / Flex no Desktop) */}
         {pcs.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-b border-zinc-300">
-            <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-zinc-300">
+            <div className="grid grid-cols-2 sm:flex gap-1.5 w-full sm:w-auto">
               {[
                 { id: "all", label: "TODAS" },
                 { id: "gamer", label: "PC GAMER" },
@@ -118,7 +118,7 @@ export default function ShowroomSection() {
                     key={tab.id}
                     type="button"
                     onClick={() => setFilter(tab.id as typeof filter)}
-                    className={`px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider border transition-colors cursor-pointer ${
+                    className={`px-3.5 py-2 sm:py-1.5 font-mono text-xs font-bold uppercase tracking-wider border transition-colors cursor-pointer text-center ${
                       isActive
                         ? "bg-zinc-950 text-white border-zinc-950"
                         : "bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-100"
@@ -132,7 +132,7 @@ export default function ShowroomSection() {
 
             <a
               href="#pc-builder"
-              className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline underline-offset-4 hover:text-zinc-600"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline underline-offset-4 hover:text-zinc-600 text-center sm:text-right"
             >
               Ou monte sob medida abaixo ↓
             </a>
@@ -143,8 +143,8 @@ export default function ShowroomSection() {
         {loading ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-zinc-300 border-x border-b border-zinc-300">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="p-6 space-y-3 animate-pulse">
-                <div className="h-28 w-full bg-zinc-200" />
+              <div key={n} className="p-5 sm:p-6 space-y-3 animate-pulse">
+                <div className="h-24 w-full bg-zinc-200" />
                 <div className="h-6 w-48 bg-zinc-200" />
                 <div className="h-20 w-full bg-zinc-100" />
                 <div className="h-10 w-full bg-zinc-200" />
@@ -186,37 +186,45 @@ export default function ShowroomSection() {
                       </div>
                     )}
 
-                    <div className="p-5 sm:p-6 pb-0">
-                      <h3 className="text-xl font-extrabold text-zinc-950 tracking-tight mb-1">
+                    <div className="p-4 sm:p-6 pb-0">
+                      <h3 className="text-lg sm:text-xl font-extrabold text-zinc-950 tracking-tight mb-1">
                         {pc.name}
                       </h3>
-                      <p className="text-xs text-zinc-600 line-clamp-2 mb-4">
+                      <p className="text-xs text-zinc-600 line-clamp-2 mb-3.5">
                         {pc.subtitle}
                       </p>
 
-                      {/* Grid Técnico 2x2 Compacto (Sem parede de texto) */}
-                      <div className="grid grid-cols-2 border border-zinc-300 divide-x divide-y divide-zinc-300 bg-zinc-50 text-xs mb-4">
-                        <div className="p-2.5">
-                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">CPU</span>
-                          <strong className="font-bold text-zinc-950 block truncate" title={pc.cpu}>
+                      {/* Grid Técnico com gap-px (Sem cortar CPU/GPU no Mobile!) */}
+                      <div className="grid grid-cols-2 gap-px bg-zinc-300 border border-zinc-300 text-xs mb-3.5">
+                        <div className="col-span-2 sm:col-span-1 bg-zinc-50 p-2.5 min-w-0">
+                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">
+                            PROCESSADOR (CPU)
+                          </span>
+                          <strong className="font-bold text-zinc-950 block leading-snug sm:truncate" title={pc.cpu}>
                             {pc.cpu}
                           </strong>
                         </div>
-                        <div className="p-2.5">
-                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">VÍDEO (GPU)</span>
-                          <strong className="font-bold text-zinc-950 block truncate" title={pc.gpu}>
+                        <div className="col-span-2 sm:col-span-1 bg-zinc-50 p-2.5 min-w-0">
+                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">
+                            PLACA DE VÍDEO (GPU)
+                          </span>
+                          <strong className="font-bold text-zinc-950 block leading-snug sm:truncate" title={pc.gpu}>
                             {pc.gpu}
                           </strong>
                         </div>
-                        <div className="p-2.5">
-                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">MEMÓRIA</span>
-                          <strong className="font-bold text-zinc-900 block truncate" title={pc.ram}>
+                        <div className="col-span-1 bg-zinc-50 p-2.5 min-w-0">
+                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">
+                            MEMÓRIA RAM
+                          </span>
+                          <strong className="font-bold text-zinc-900 block leading-snug sm:truncate" title={pc.ram}>
                             {pc.ram}
                           </strong>
                         </div>
-                        <div className="p-2.5">
-                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">SSD NVME</span>
-                          <strong className="font-bold text-zinc-900 block truncate" title={pc.storage}>
+                        <div className="col-span-1 bg-zinc-50 p-2.5 min-w-0">
+                          <span className="font-mono text-[10px] uppercase text-zinc-500 block">
+                            SSD NVME
+                          </span>
+                          <strong className="font-bold text-zinc-900 block leading-snug sm:truncate" title={pc.storage}>
                             {pc.storage}
                           </strong>
                         </div>
@@ -237,7 +245,7 @@ export default function ShowroomSection() {
                     </div>
                   </div>
 
-                  <div className="p-5 sm:p-6 pt-0">
+                  <div className="p-4 sm:p-6 pt-0">
                     <div className="mb-3 pt-3 border-t border-zinc-200">
                       {pc.priceCash ? (
                         <div className="flex items-baseline justify-between gap-2">
@@ -265,7 +273,7 @@ export default function ShowroomSection() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackWhatsAppClick(`showroom_${pc.sku}`)}
-                      className="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3 px-4 text-xs flex items-center justify-center gap-2 transition-colors"
+                      className="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs flex items-center justify-center gap-2 transition-colors min-h-[46px]"
                     >
                       <span>Reservar / Ver Fotos no WhatsApp</span>
                       <ArrowUpRight className="w-4 h-4 shrink-0" />
@@ -305,7 +313,7 @@ export default function ShowroomSection() {
                   runs: ["AutoCAD", "Revit", "SketchUp", "Lumion"],
                 },
               ].map((line) => (
-                <div key={line.index} className="p-5 sm:p-6 flex flex-col justify-between">
+                <div key={line.index} className="p-4 sm:p-6 flex flex-col justify-between">
                   <div>
                     <div className="bg-zinc-950 text-white p-4 mb-4 flex items-center justify-between gap-3">
                       <div>
@@ -322,11 +330,11 @@ export default function ShowroomSection() {
                     <h3 className="text-lg font-extrabold text-zinc-950 mb-1">
                       {line.title}
                     </h3>
-                    <p className="font-mono text-xs font-bold text-zinc-700 mb-3">
+                    <p className="font-mono text-xs font-bold text-zinc-700 mb-3 leading-snug">
                       {line.spec}
                     </p>
 
-                    <div className="flex flex-wrap gap-1 mb-5">
+                    <div className="flex flex-wrap gap-1 mb-4 sm:mb-5">
                       {line.runs.map((r) => (
                         <span
                           key={r}
@@ -345,7 +353,7 @@ export default function ShowroomSection() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackWhatsAppClick(`showroom_line_${line.tier}`)}
-                    className="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3 px-4 text-xs flex items-center justify-center gap-2 transition-colors"
+                    className="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs flex items-center justify-center gap-2 transition-colors min-h-[46px]"
                   >
                     <span>Ver Disponíveis Hoje no WhatsApp</span>
                     <ArrowUpRight className="w-4 h-4 shrink-0" />

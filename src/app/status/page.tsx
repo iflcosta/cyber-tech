@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import WhatsAppButton from '@/components/WhatsAppButton';
 import StatusTrackerClient from './StatusTrackerClient';
 
 export const metadata = {
@@ -14,7 +15,7 @@ export default function StatusPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-zinc-100 text-zinc-950 pt-14 pb-20">
+      <main className="min-h-screen bg-zinc-100 text-zinc-950 pt-6 sm:pt-12 pb-24 sm:pb-20">
         <Suspense
           fallback={
             <div className="max-w-5xl mx-auto px-4 py-16 text-center">
@@ -29,6 +30,7 @@ export default function StatusPage() {
         </Suspense>
       </main>
       <Footer />
+      <WhatsAppButton />
     </>
   );
 }

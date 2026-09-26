@@ -28,11 +28,11 @@ export default function WhatsAppButton() {
         <ArrowUpRight className="w-4 h-4" />
       </a>
 
-      {/* Mobile Sticky Bottom Conversion Bar (0px radius, Preto/Cinza/Branco) */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#09090b]/95 backdrop-blur-md border-t border-zinc-800 p-2.5 grid grid-cols-2 gap-2 no-print">
+      {/* Mobile Sticky Bottom Conversion Bar (0px radius, safe-area aware) */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#09090b]/95 backdrop-blur-md border-t border-zinc-800 px-2.5 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] grid grid-cols-2 gap-2 no-print">
         <a
           href="/#showroom"
-          className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 font-mono text-[11px] font-bold uppercase tracking-wider py-3 px-3 flex items-center justify-center gap-1.5"
+          className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 font-mono text-[11px] font-bold uppercase tracking-wider py-3 px-3 flex items-center justify-center gap-1.5 min-h-[44px]"
         >
           <Cpu className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
           <span>Showroom PC</span>
@@ -42,7 +42,7 @@ export default function WhatsAppButton() {
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleClick}
-          className="bg-white hover:bg-zinc-200 text-black font-mono text-[11px] font-bold uppercase tracking-wider py-3 px-3 flex items-center justify-center gap-1"
+          className="bg-white hover:bg-zinc-200 text-black font-mono text-[11px] font-bold uppercase tracking-wider py-3 px-3 flex items-center justify-center gap-1 min-h-[44px]"
         >
           <span>WhatsApp Loja</span>
           <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
