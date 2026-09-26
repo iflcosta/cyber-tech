@@ -1,6 +1,6 @@
 export const brand = {
   name: "Cyber Informática",
-  slogan: "Loja técnica de PC, notebook e celular em Bragança Paulista",
+  slogan: "Computadores à Pronta-Entrega, Manutenção Rápida e Laboratório Próprio",
   whatsapp: "5511954369269",
   phone: "5511954369269",
   email: "contato@cyberinformatica.tech",
@@ -16,30 +16,30 @@ export const brand = {
     instagram: "https://instagram.com/cyberinfo.brag",
     facebook: "https://facebook.com/cyberinformatica"
   },
-  description: "Loja técnica em Bragança Paulista — PC, notebook e celular. Curadoria técnica, montagem profissional e atendimento humano. Atendemos cliente final e lojistas parceiros com indicação técnica e pós-venda estendido.",
+  description: "Há 10 anos no Centro de Bragança Paulista (R. Cel. Teófilo Leme, 967). Computadores Gamer, Workstations e Office à pronta-entrega, montagem sob medida, upgrades de SSD/RAM, reparo de placas de vídeo e troca só do vidro mantendo sua tela original.",
 
   seo: {
     keywords: [
       "Loja de Informática Bragança Paulista",
-      "Loja técnica Bragança Paulista",
+      "Computadores à Pronta Entrega Bragança Paulista",
       "PC Gamer Bragança Paulista",
       "Montagem de PC Bragança Paulista",
-      "Notebook Bragança Paulista",
-      "Celular Bragança Paulista",
-      "Curadoria técnica hardware",
-      "Lojista de informática parceiro",
-      "Componentes de PC",
+      "Manutenção de Computador e Notebook Bragança Paulista",
+      "Troca de Vidro de Celular Tela Original Bragança Paulista",
+      "Reparo de Placa de Vídeo GPU Bragança Paulista",
+      "Upgrade SSD NVMe Memória RAM",
+      "Cabos e Periféricos Bragança Paulista",
       "Workstation sob medida"
     ]
   },
 
-  // Paleta alinhada ao Brand Book (Cyber Blue + Circuit Green + Cyber Navy)
+  // Paleta Monocromática (Preto, Cinza e Branco)
   colors: {
-    cyberNavy: "#0a1929",
-    cyberNavyMid: "#112240",
-    cyberBlue: "#0066ff",
-    cyberBlueHover: "#0052cc",
-    circuitGreen: "#00ff88",
-    cyberIce: "#f5f8ff",
+    cyberNavy: "#09090b",
+    cyberNavyMid: "#18181b",
+    cyberBlue: "#ffffff",
+    cyberBlueHover: "#e4e4e7",
+    circuitGreen: "#ffffff",
+    cyberIce: "#fafafa",
   }
 };

@@ -41,10 +41,10 @@ export function DesktopNav({
               key={link.href}
               href={link.href}
               aria-current={active ? 'page' : undefined}
-              className={`rounded-md px-2.5 py-1.5 text-xs font-mono font-medium transition ${
+              className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition ${
                 active
-                  ? 'bg-zinc-800 text-white border border-zinc-700'
-                  : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-white'
+                  ? 'bg-zinc-950 text-white'
+                  : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
               }`}
             >
               {link.label}
@@ -56,34 +56,34 @@ export function DesktopNav({
       <div className="flex items-center gap-2">
         <Link
           href="/admin/os/new"
-          className="whitespace-nowrap rounded-md bg-white px-3 py-1.5 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition"
+          className="whitespace-nowrap bg-zinc-950 px-3 py-1.5 text-xs font-mono font-bold uppercase text-white hover:bg-zinc-800 transition"
         >
           + Nova OS
         </Link>
         <Link
           href="/admin/vender"
-          className="whitespace-nowrap rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-mono font-bold text-white hover:bg-emerald-500 transition"
+          className="whitespace-nowrap border border-zinc-950 bg-white px-3 py-1.5 text-xs font-mono font-bold uppercase text-zinc-950 hover:bg-zinc-100 transition"
         >
           + Vender
         </Link>
         <Link
           href="/admin/pecas/new"
-          className="whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-mono font-medium text-zinc-300 hover:bg-zinc-800 transition"
+          className="whitespace-nowrap border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-200 transition"
         >
           + Pedido Peça
         </Link>
       </div>
 
-      <div className="flex items-center gap-2 border-l border-zinc-800 pl-4">
+      <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700 text-xs font-mono font-semibold text-zinc-200"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700"
           aria-hidden="true"
         >
           {initials(userName)}
         </div>
         <div className="hidden text-right sm:block">
-          <p className="text-xs font-semibold leading-tight text-white">{userName}</p>
-          <p className="text-[10px] font-mono leading-tight text-zinc-400">{roleLabel}</p>
+          <p className="text-xs font-semibold leading-tight text-slate-900">{userName}</p>
+          <p className="text-[10px] font-medium leading-tight text-slate-500">{roleLabel}</p>
         </div>
         <LogoutButton />
       </div>

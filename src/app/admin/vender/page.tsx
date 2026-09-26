@@ -17,7 +17,7 @@ export default async function VenderPage({
   // Em loja pequena (~centenas de itens) isso cabe num bundle so.
   const { data: items } = await supabase
     .from('stock_items')
-    .select('id, ean13, name, brand, model, unit_price, current_stock, min_stock')
+    .select('id, ean13, internal_sku, shelf_location, name, brand, model, unit_price, current_stock, min_stock')
     .eq('active', true)
     .order('name');
 

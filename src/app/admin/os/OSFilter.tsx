@@ -32,11 +32,11 @@ export function OSFilter() {
           defaultValue={urlQ}
           placeholder="Buscar por nome, OS (#1042), telefone, IMEI, modelo…"
           aria-label="Buscar por nome, OS, telefone, IMEI, modelo"
-          className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
+          className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
         />
         <button
           type="submit"
-          className="rounded-lg bg-white px-4 py-2.5 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition shadow"
+          className="rounded-lg bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-sky-700 transition shadow-xs"
         >
           Buscar
         </button>
@@ -74,10 +74,10 @@ function FilterChip({ label, active, onClick }: { label: string; value: string; 
     <button
       type="button"
       onClick={onClick}
-      className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-mono font-medium transition ${
+      className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
         active
-          ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
-          : 'bg-zinc-900/60 text-zinc-400 border border-zinc-800/80 hover:bg-zinc-800 hover:text-zinc-200'
+          ? 'bg-sky-600 text-white border border-sky-600 shadow-xs'
+          : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
       }`}
     >
       {label}

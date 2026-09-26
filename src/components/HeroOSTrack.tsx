@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ShieldCheck, ArrowRight, Zap } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 
 interface HeroOSTrackProps {
   className?: string;
@@ -26,59 +26,56 @@ export default function HeroOSTrack({ className = '', defaultVal = '' }: HeroOST
   }
 
   return (
-    <div className={`p-4 sm:p-5 bg-[#0f0f13] border border-[#242429] rounded-sm max-w-2xl ${className}`}>
-      {/* Header do Painel Milled Chassis */}
-      <div className="flex items-center justify-between mb-3 font-mono text-[11px]">
-        <span className="text-zinc-300 font-bold uppercase flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>CONSULTA DE PROTOCOLO PERICIAL</span>
+    <div
+      className={`p-5 bg-zinc-900/90 border border-zinc-800 max-w-2xl ${className}`}
+    >
+      <div className="flex items-center justify-between mb-3 text-xs font-mono">
+        <span className="text-zinc-200 font-bold uppercase tracking-wider">
+          Rastreio de Ordem de Serviço
         </span>
-        <span className="text-zinc-400 text-[10px] hidden xs:inline">
-          SN-OS-2026 // LGPD SAFE
+        <span className="text-zinc-400 text-[11px] hidden sm:inline">
+          FOTOS DE ENTRADA · ORÇAMENTO · GARANTIA 90D
         </span>
       </div>
 
-      {/* Formulário de Busca */}
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-0 border border-zinc-700 bg-black">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-zinc-400 text-xs select-none">
-            OS-
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-bold text-zinc-500 text-xs select-none">
+            OS #
           </span>
           <input
             type="text"
             value={term}
             onChange={(e) => setTerm(e.target.value)}
-            placeholder="Digite o nº da OS (ex: 1042) ou celular..."
-            className="w-full bg-[#15151a] border border-[#2e2e36] pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-400 font-mono focus:outline-none focus:border-white transition-colors rounded-sm"
+            placeholder="Nº da OS (ex: 1042) ou seu WhatsApp..."
+            className="w-full bg-transparent pl-12 pr-3.5 py-3.5 text-xs sm:text-sm text-white placeholder-zinc-500 font-mono focus:outline-none"
           />
         </div>
         <button
           type="submit"
-          className="btn-tactile-primary !py-2.5 !px-5 text-xs shrink-0 flex items-center justify-center gap-1.5"
+          className="bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-3.5 px-6 text-xs shrink-0 flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <Search className="w-3.5 h-3.5" />
-          <span>INSPECIONAR OS</span>
+          <span>Consultar OS</span>
         </button>
       </form>
 
-      {/* Micro-Chips de Atalho e Telemetria */}
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-zinc-400 border-t border-[#1a1a20] pt-2.5">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-zinc-400">
         <div className="flex items-center gap-2">
-          <span>Demonstração:</span>
+          <span>Demonstração do portal:</span>
           <button
             type="button"
             onClick={() => handleQuickSample('1042')}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#17171f] hover:bg-zinc-800 text-zinc-300 hover:text-white border border-[#2a2a35] hover:border-zinc-500 rounded-sm cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1 text-white hover:text-zinc-300 underline underline-offset-4 cursor-pointer font-bold transition-colors"
           >
-            <Zap className="w-2.5 h-2.5 text-emerald-400" />
-            <span className="font-bold">Testar OS #1042</span>
+            <span>Ver OS #1042</span>
+            <ArrowRight className="w-3 h-3" />
           </button>
         </div>
 
-        <div className="flex items-center gap-1 text-emerald-400 font-bold ml-auto">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>TEMPO REAL 24/7</span>
-        </div>
+        <span className="text-zinc-500 hidden sm:inline">
+          CONSULTA 24H PELO CELULAR
+        </span>
       </div>
     </div>
   );

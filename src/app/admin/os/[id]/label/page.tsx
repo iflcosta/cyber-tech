@@ -1,16 +1,14 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import QRCode from 'qrcode';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { LabelPrintButton } from './LabelPrintButton';
 import { EscPosLabelButton } from './EscPosLabelButton';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
 import { formatDateBR } from '@/app/admin/lib/datetime';
-import { brand } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 
-const WIDTH = 32; // Chars por linha (bobina 58mm)
+const WIDTH = 32; // Chars por linha (bobina 58mm MPT-II)
 
 function ljust(text: string, width: number = WIDTH): string {
   const t = text.slice(0, width);
@@ -52,63 +50,61 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
   const typeLabel = norm(typeMeta?.label ?? '');
   const shortId = norm(so.short_id ?? `OS-${so.os_number}`);
+  const osNumberStr = String(so.os_number ?? shortId);
   const created = formatDateBR(so.created_at);
   const defectNorm = norm(so.reported_defect ?? '');
 
-  // Gera o QR Code com a URL do portal público de rastreio pericial
-  const trackingQuery = so.short_id || so.os_number || so.id;
-  const trackingUrl = `${brand.url}/status?q=${encodeURIComponent(trackingQuery)}`;
-  const qrDataUrl = await QRCode.toDataURL(trackingUrl, {
-    width: 130,
-    margin: 1,
-    errorCorrectionLevel: 'M',
-  });
-
-  // Linhas para o modo texto ESC/POS
+  // Texto puro 32 colunas para MPT-II (Generic / Text Only ou ESC/POS)
   const lineSep = '='.repeat(WIDTH);
   const dashSep = '-'.repeat(WIDTH);
   const lines: string[] = [];
-  lines.push('.', '.');
   lines.push(padBoth('CYBER INFORMATICA', created));
   lines.push(lineSep);
-  lines.push(shortId);
+  lines.push(`OS: ${shortId} (#${osNumberStr})`);
+  lines.push(lineSep);
   lines.push('[CLIENTE]');
-  lines.push(customerName);
+  lines.push(customerName.slice(0, WIDTH));
   if (customerPhone) lines.push('Tel: ' + customerPhone);
-  lines.push('', '');
+  lines.push(dashSep);
   if (typeLabel || equipNorm) {
-    lines.push('[APARELHO]');
+    lines.push('[EQUIPAMENTO]');
     lines.push(`${typeLabel} ${equipNorm}`.trim().slice(0, WIDTH));
-    lines.push('', '');
+    if (so.equipment_serial) lines.push(`S/N: ${norm(so.equipment_serial)}`.slice(0, WIDTH));
+    lines.push(dashSep);
   }
   if (defectNorm) {
-    lines.push('[DEFEITO]');
-    lines.push(defectNorm.slice(0, WIDTH * 2));
+    lines.push('[SERVICO / DEFEITO]');
+    lines.push(defectNorm.slice(0, WIDTH * 3));
+    lines.push(dashSep);
   }
-  lines.push(dashSep);
+  lines.push('RASTREIO: cyberinformatica.tech');
+  lines.push(`DIGITE O CODIGO: ${osNumberStr}`);
+  lines.push(lineSep);
   const plainText = lines.join('\n') + '\n.\n.\n.';
 
   return (
     <>
       {/* Controles de Impressão na Barra Superior (Ocultos na Impressão) */}
-      <div className="print:hidden mx-auto mb-6 max-w-xl rounded-xl border border-zinc-800 bg-[#111114]/90 p-5 shadow-2xl backdrop-blur-md">
-        <div className="flex items-center justify-between">
+      <div className="print:hidden mx-auto mb-6 max-w-xl border-2 border-zinc-950 bg-white p-5">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-              Etiqueta Térmica 58mm Chassi
+            <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
+              MPT-II 58mm
+            </span>
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
+              Etiqueta de Chassi (Texto Puro / Sem QR)
             </span>
           </div>
           <Link
             href={`/admin/os/${so.id}`}
-            className="text-xs font-mono text-zinc-400 hover:text-white transition"
+            className="font-mono text-xs font-bold text-zinc-950 underline underline-offset-4"
           >
             ← Voltar para OS
           </Link>
         </div>
 
-        <p className="mt-2 text-sm text-zinc-300">
-          Etiqueta de chassi com <strong>QR Code pericial</strong> para rastreamento instantâneo da bancada e balcão.
+        <p className="mt-3 font-mono text-xs text-zinc-600">
+          Layout otimizado em <strong>32 colunas (58mm)</strong> para a sua <strong>MPT-II</strong>: sem depender de QR Code gráfico, com o número da OS em destaque para colar no gabinete/notebook.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -116,6 +112,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           <EscPosLabelButton
             createdStr={created}
             shortId={shortId}
+            osNumber={osNumberStr}
             customerName={customerName}
             customerPhone={customerPhone || undefined}
             equipmentLine={typeLabel || equipNorm ? `${typeLabel}${equipNorm ? ' - ' + equipNorm : ''}` : undefined}
@@ -124,73 +121,60 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* ============ ETIQUETA TÉRMICA 58MM COM QR CODE ============ */}
+      {/* ============ ETIQUETA TÉRMICA 58MM (MPT-II TEXTO PURO) ============ */}
       <div className="flex justify-center print:block print:m-0">
         <div
-          className="label-thermal bg-white text-black font-mono shadow-2xl print:shadow-none"
+          className="label-thermal border-2 border-zinc-950 bg-white text-black font-mono print:border-0"
           style={{
             width: '58mm',
-            minHeight: '65mm',
             padding: '2mm 3mm',
             margin: '0 auto',
             boxSizing: 'border-box',
           }}
         >
-          {/* Margem de corte/rasgo */}
-          <div className="text-center text-[9px] tracking-widest text-zinc-500 font-bold border-b border-dashed border-zinc-400 pb-1 mb-1">
-            CYBER INFORMÁTICA · {created}
+          <div className="text-center text-[10px] tracking-widest font-bold border-b border-black pb-1 mb-1">
+            CYBER INFORMATICA · {created}
           </div>
 
-          {/* Destaque da OS */}
-          <div className="text-center my-1">
-            <div className="text-base font-black tracking-tight">{shortId}</div>
-            <div className="text-[10px] text-zinc-600 font-bold">OS: {so.os_number}</div>
-          </div>
-
-          {/* QR Code de Rastreio */}
-          <div className="flex flex-col items-center justify-center my-1.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={qrDataUrl}
-              alt="QR Code da OS"
-              className="w-24 h-24 object-contain"
-              style={{ imageRendering: 'pixelated' }}
-            />
-            <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-700 mt-0.5">
-              Escaneie p/ Rastrear
-            </span>
-          </div>
-
-          {/* Dados do Aparelho */}
-          <div className="border-t border-b border-black py-1 my-1 text-[11px] leading-tight">
-            <div className="font-bold uppercase text-[9px] text-zinc-700">Aparelho:</div>
-            <div className="font-bold truncate">
-              {typeLabel} {equipNorm}
-            </div>
-            {so.equipment_serial && (
-              <div className="text-[10px] text-zinc-800">S/N: {so.equipment_serial}</div>
-            )}
+          {/* Destaque Gigante da OS em Texto (Legível a distância na bancada) */}
+          <div className="text-center py-1.5 border-b-2 border-black my-1">
+            <div className="text-xl font-black tracking-tight leading-none">{shortId}</div>
+            <div className="text-xs font-bold mt-0.5">CODIGO OS: #{osNumberStr}</div>
           </div>
 
           {/* Dados do Cliente */}
-          <div className="text-[11px] leading-tight my-1">
-            <div className="font-bold uppercase text-[9px] text-zinc-700">Cliente:</div>
+          <div className="border-b border-dashed border-black py-1 my-1 text-[11px] leading-tight">
+            <div className="font-bold uppercase text-[9px]">[CLIENTE]</div>
             <div className="font-bold truncate">{customerName}</div>
-            {customerPhone && <div className="text-[10px] text-zinc-800">Tel: {customerPhone}</div>}
+            {customerPhone && <div className="text-[10px]">Tel: {customerPhone}</div>}
+          </div>
+
+          {/* Dados do Aparelho */}
+          <div className="border-b border-dashed border-black py-1 my-1 text-[11px] leading-tight">
+            <div className="font-bold uppercase text-[9px]">[EQUIPAMENTO]</div>
+            <div className="font-bold break-words">
+              {typeLabel} {equipNorm}
+            </div>
+            {so.equipment_serial && (
+              <div className="text-[10px]">S/N: {so.equipment_serial}</div>
+            )}
           </div>
 
           {/* Defeito Relatado */}
           {defectNorm && (
-            <div className="border-t border-dashed border-zinc-400 pt-1 mt-1 text-[10px] leading-tight">
-              <span className="font-bold uppercase text-[9px] text-zinc-700">Defeito: </span>
-              <span className="break-words">{defectNorm}</span>
+            <div className="border-b border-dashed border-black py-1 my-1 text-[10px] leading-tight">
+              <div className="font-bold uppercase text-[9px]">[SERVICO / DEFEITO]</div>
+              <div className="break-words">{defectNorm}</div>
             </div>
           )}
 
-          {/* Rodapé / Picote */}
-          <div className="mt-2 pt-1 border-t border-black text-center text-[8px] text-zinc-600 font-bold uppercase tracking-widest">
-            Bancada & Balcão Cyber
+          {/* Rastreio em Texto Puro (Sem QR Code) */}
+          <div className="pt-1 text-center text-[9px] leading-tight font-bold uppercase">
+            <div>RASTREIO: cyberinformatica.tech</div>
+            <div className="text-[10px] font-black mt-0.5">DIGITE A OS: {osNumberStr}</div>
           </div>
+
+          <pre className="sr-only">{plainText}</pre>
         </div>
       </div>
 
@@ -217,7 +201,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
             top: 0;
             left: 0;
             margin: 0 !important;
-            padding: 2mm 3mm !important;
+            padding: 2mm 2mm !important;
             background: white !important;
             color: black !important;
             width: 58mm !important;

@@ -114,12 +114,16 @@ export function StatusQuickActions({
       });
 
       // Notifica o cliente automaticamente quando fica pronto pra retirada —
-      // abre o WhatsApp já com a mensagem pronta, sem precisar navegar até
-      // o botão manual. Só dispara se tiver telefone cadastrado.
+      // abre o WhatsApp já com a mensagem pronta e link do portal /status
       if (newStatus === 'ready' && customerPhone) {
-        const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu aparelho${
+        const cleanOsCode = (osLabel ?? '').replace(/^OS-?/i, '').replace(/^#/, '');
+        const trackUrl =
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/status?q=${encodeURIComponent(cleanOsCode || osId)}`
+            : `https://cyberinformatica.tech/status?q=${encodeURIComponent(cleanOsCode || osId)}`;
+        const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu equipamento${
           osLabel ? ` (OS ${osLabel})` : ''
-        } já está pronto para retirada. 🙂`;
+        } já passou pelos testes finais e está *pronto para retirada*! 🎉\n\nVocê pode conferir o resumo, fotos e garantia em tempo real aqui:\n${trackUrl}`;
         const link = toWhatsAppLink(customerPhone, msg);
         if (link) window.open(link, '_blank');
       }
@@ -152,17 +156,37 @@ export function StatusQuickActions({
     await changeTo('approved', note);
   }
 
+  function sendPortalTrackingWhatsApp() {
+    if (!customerPhone) return;
+    const cleanOsCode = (osLabel ?? '').replace(/^OS-?/i, '').replace(/^#/, '');
+    const trackUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/status?q=${encodeURIComponent(cleanOsCode || osId)}`
+        : `https://cyberinformatica.tech/status?q=${encodeURIComponent(cleanOsCode || osId)}`;
+
+    const statusText =
+      currentStatus === 'awaiting_approval' && currentEstimatedValue != null
+        ? `O diagnóstico e orçamento (${fmtBRL(currentEstimatedValue)}) da sua OS ${osLabel ?? ''} já estão disponíveis para sua conferência e aprovação.`
+        : `Acompanhe em tempo real o andamento, fotos de entrada e status da sua OS ${osLabel ?? ''}.`;
+
+    const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática (Centro de Bragança Paulista).\n\n${statusText}\n\n🔗 Acesse seu Portal de Acompanhamento:\n${trackUrl}`;
+    const link = toWhatsAppLink(customerPhone, msg);
+    if (link && typeof window !== 'undefined') {
+      window.open(link, '_blank');
+    }
+  }
+
   return (
-    <section className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-900">Mudar status</h2>
-      <p className="mt-1 text-xs text-blue-700">
+    <section className="rounded-xl border border-sky-200 bg-sky-50/70 p-4 shadow-xs">
+      <h2 className="text-xs font-bold uppercase tracking-wider text-sky-900">Fluxo de Bancada & Status</h2>
+      <p className="mt-1 text-xs text-sky-800">
         Status atual: <strong>{OS_STATUSES.find((s) => s.value === currentStatus)?.label ?? currentStatus}</strong>
       </p>
 
       <button
         onClick={handleNextClick}
         disabled={pending || activeStatus !== null}
-        className="mt-3 w-full rounded-md bg-blue-600 px-4 py-3 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-50"
+        className="mt-3 w-full rounded-lg bg-sky-600 px-4 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-sky-700 active:scale-95 disabled:opacity-50 cursor-pointer"
       >
         {activeStatus === next ? 'Salvando…' : `→ ${STATUS_QUICK_LABEL[next] ?? OS_STATUSES.find((s) => s.value === next)?.label}`}
       </button>
@@ -173,17 +197,27 @@ export function StatusQuickActions({
             key={s}
             onClick={() => changeTo(s)}
             disabled={pending || activeStatus !== null}
-            className="rounded-md border border-slate-300 bg-white px-2 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-50"
+            className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {activeStatus === s ? '…' : STATUS_QUICK_LABEL[s] ?? OS_STATUSES.find((x) => x.value === s)?.label}
           </button>
         ))}
       </div>
 
+      {customerPhone && (
+        <button
+          type="button"
+          onClick={sendPortalTrackingWhatsApp}
+          className="mt-2.5 w-full rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <span>📲 Enviar Link do Portal (/status) no WhatsApp</span>
+        </button>
+      )}
+
       {error && <p className="mt-2 rounded-md bg-red-50 p-2 text-xs text-red-700">{error}</p>}
 
       <p className="mt-2 text-[10px] leading-tight text-slate-500">
-        Quem mudou: <strong>{currentUserName}</strong>. A mudança aparece na timeline automaticamente.
+        Operador: <strong>{currentUserName}</strong>. A mudança fica registrada na linha do tempo.
       </p>
 
       <Modal open={approving} onClose={() => setApproving(false)} titleId={approvalTitleId}>

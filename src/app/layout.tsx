@@ -25,10 +25,11 @@ const spaceGrotesk = Space_Grotesk({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a1929",
+  themeColor: "#09090b",
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(brand.url),
   title: "Cyber Informática | " + brand.slogan,
   description: brand.description,
   keywords: brand.seo.keywords,
@@ -47,16 +48,16 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: brand.url },
   openGraph: {
-    title: "Cyber Informática | " + brand.slogan,
+    title: "Cyber Informática — Computadores à Pronta-Entrega & Laboratório em Bragança",
     description: brand.description,
     url: brand.url,
     siteName: "Cyber Informática",
     images: [
       {
-        url: `${brand.url}/og-image.png`,
+        url: `${brand.url}/opengraph-image?v=2026`,
         width: 1200,
         height: 630,
-        alt: "Cyber Informática — Loja técnica em Bragança Paulista. PC, notebook, celular com curadoria e montagem.",
+        alt: "Cyber Informática — Computadores à Pronta-Entrega, Manutenção Rápida e Laboratório Próprio em Bragança Paulista.",
         type: "image/png",
       },
     ],
@@ -65,9 +66,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cyber Informática | " + brand.slogan,
+    title: "Cyber Informática — Computadores à Pronta-Entrega & Laboratório em Bragança",
     description: brand.description,
-    images: [`${brand.url}/og-image.png`],
+    images: [`${brand.url}/opengraph-image?v=2026`],
   },
 };
 
@@ -87,7 +88,7 @@ export default function RootLayout({
         <UTMTracker />
 
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#0a1929" />
+        <meta name="theme-color" content="#09090b" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 

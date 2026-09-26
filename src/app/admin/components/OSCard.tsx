@@ -31,34 +31,34 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
   return (
     <Link
       href={`/admin/os/${so.id}`}
-      className="block rounded-xl border border-zinc-800 bg-[#111114]/80 p-4 shadow-lg backdrop-blur-md transition hover:border-zinc-700 hover:bg-[#18181b] active:scale-[0.99] sm:p-5"
+      className="block rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-sky-300 hover:shadow-md active:scale-[0.99] sm:p-5"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-base font-black tracking-tight text-white sm:text-lg">
+            <span className="font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg">
               {so.short_id}
             </span>
-            <span className="font-mono text-[10px] font-medium text-zinc-500">
+            <span className="font-mono text-xs font-medium text-slate-400">
               #{so.os_number}
             </span>
             <StatusBadge status={so.status} />
             {so.days_since_update > 2 && <StaleBadge days={so.days_since_update} />}
           </div>
-          <h3 className="mt-1.5 truncate text-base font-bold text-zinc-100">{so.customer_name}</h3>
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <h3 className="mt-1.5 truncate text-base font-bold text-slate-900">{so.customer_name}</h3>
+          <p className="mt-0.5 text-xs text-slate-600">
             <span className="mr-1.5">{TYPE_ICONS[so.equipment_type]}</span>
             {typeMeta?.label}
             {equip ? ` · ${equip}` : ''}
           </p>
           {so.reported_defect && (
-            <p className="mt-2 line-clamp-2 text-xs text-zinc-400 font-sans border-l-2 border-zinc-800 pl-2">
+            <p className="mt-2 line-clamp-2 text-xs text-slate-500 border-l-2 border-slate-200 pl-2">
               {so.reported_defect}
             </p>
           )}
         </div>
         <div className="flex flex-col items-end gap-1 text-right">
-          <span className="font-mono text-[11px] text-zinc-500">{timeAgo(so.updated_at)}</span>
+          <span className="font-mono text-[11px] text-slate-400">{timeAgo(so.updated_at)}</span>
         </div>
       </div>
     </Link>

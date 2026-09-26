@@ -1,24 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
-import { EQUIPMENT_TYPES, ENTRY_CHECKLIST_FIELDS, type EquipmentTypeValue } from '@/app/admin/types/database';
+import {
+  EQUIPMENT_TYPES,
+  ENTRY_CHECKLIST_FIELDS,
+  type EquipmentTypeValue,
+} from '@/app/admin/types/database';
+import { CameraSyncModal } from './CameraSyncModal';
 
-/**
- * Foto de defeito é tirada direto do celular do técnico — câmeras
- * modernas geram 3-12MB por arquivo (vários megapixels), muito além
- * do necessário pra uma foto de referência exibida como thumbnail na
- * OS. Sem compressão, isso ia direto pro Storage e voltava do
- * tamanho original toda vez que alguém abria a OS depois — parte do
- * porquê o sistema tava "lento" (auditoria de performance).
- *
- * Reduz no navegador antes do upload: redimensiona pro maior lado
- * não passar de 1600px e reencoda em JPEG a 80% — dá pra zoom
- * confortável na tela sem carregar o arquivo original inteiro.
- * Se der qualquer problema (arquivo não é imagem, Canvas falha),
- * cai pro arquivo original em vez de travar o upload.
- */
+const QUICK_SYMPTOM_CHIPS = [
+  'Formatação & Backup de Dados',
+  'Limpeza Preventiva + Pasta Térmica',
+  'Lento / Travando (Upgrade SSD/RAM)',
+  'Não Liga / Sem Sinal de Vídeo',
+  'Superaquecendo / Desligando em Jogo',
+  'Troca de Tela / Remanufatura Óptica OCA',
+  'Reparo de Placa de Vídeo (GPU / BGA)',
+] as const;
+
+const QUICK_ACCESSORY_CHIPS = [
+  'Carregador / Fonte Original',
+  'Cabo de Força Tripolar',
+  'Sem Acessórios (Só Aparelho)',
+  'Case / Mochila / Capa',
+] as const;
+
 async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Promise<File> {
   if (!file.type.startsWith('image/')) return file;
   try {
@@ -62,6 +70,7 @@ export function NewOSForm({
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cameraSyncOpen, setCameraSyncOpen] = useState(false);
 
   const [customer, setCustomer] = useState({
     name: '',
@@ -70,9 +79,13 @@ export function NewOSForm({
   });
   const [customerMatches, setCustomerMatches] = useState<CustomerMatch[]>([]);
   const [searchingCustomer, setSearchingCustomer] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(initialCustomer ?? null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerMatch | null>(
+    initialCustomer ?? null,
+  );
 
-  const [technicians, setTechnicians] = useState<Array<{ id: string; full_name: string; commission_rate: number }>>([]);
+  const [technicians, setTechnicians] = useState<
+    Array<{ id: string; full_name: string; commission_rate: number }>
+  >([]);
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(currentUserId);
 
   useEffect(() => {
@@ -81,10 +94,22 @@ export function NewOSForm({
         const supabase = createCRMBrowserClient();
         const { data } = await supabase
           .from('profiles')
-          .select('id, full_name, commission_rate')
+          .select('*')
           .eq('active', true);
         if (data && data.length > 0) {
-          setTechnicians(data);
+          setTechnicians(
+            data.map((p: { id: string; full_name: string; commission_rate?: number }) => ({
+              id: p.id,
+              full_name: p.full_name,
+              commission_rate:
+                p.commission_rate ??
+                (p.full_name?.toLowerCase().includes('iago')
+                  ? 0.3
+                  : p.full_name?.toLowerCase().includes('jefferson')
+                  ? 0.5
+                  : 0),
+            })),
+          );
         }
       } catch (err) {
         console.error('Erro ao carregar técnicos:', err);
@@ -93,10 +118,21 @@ export function NewOSForm({
     loadTechs();
   }, []);
 
-  // Busca cliente já cadastrado enquanto digita telefone ou nome —
-  // evita criar um customer novo pra quem já veio na loja antes.
+  // Atalho de teclado Alt+C para abrir o Cyber Camera Sync em qualquer etapa
   useEffect(() => {
-    if (selectedCustomer) return; // já escolheu, não busca mais
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        setCameraSyncOpen(true);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Busca cliente já cadastrado enquanto digita telefone ou nome
+  useEffect(() => {
+    if (selectedCustomer) return;
     const digits = customer.phone.replace(/\D/g, '');
     const nameQuery = customer.name.trim();
     if (digits.length < 4 && nameQuery.length < 3) {
@@ -111,9 +147,10 @@ export function NewOSForm({
           .from('customers')
           .select('id, name, phone, email')
           .limit(5);
-        query = digits.length >= 4
-          ? query.ilike('phone_search', `%${digits}%`)
-          : query.ilike('name', `%${nameQuery}%`);
+        query =
+          digits.length >= 4
+            ? query.ilike('phone_search', `%${digits}%`)
+            : query.ilike('name', `%${nameQuery}%`);
         const { data } = await query;
         const withCounts = await Promise.all(
           (data ?? []).map(async (c) => {
@@ -128,13 +165,17 @@ export function NewOSForm({
       } finally {
         setSearchingCustomer(false);
       }
-    }, 350);
+    }, 300);
     return () => clearTimeout(t);
   }, [customer.phone, customer.name, selectedCustomer]);
 
   function pickCustomer(match: CustomerMatch) {
     setSelectedCustomer(match);
-    setCustomer({ name: match.name, phone: match.phone ?? '', email: match.email ?? '' });
+    setCustomer({
+      name: match.name,
+      phone: match.phone ?? '',
+      email: match.email ?? '',
+    });
     setCustomerMatches([]);
   }
 
@@ -142,6 +183,7 @@ export function NewOSForm({
     setSelectedCustomer(null);
     setCustomer({ name: '', phone: '', email: '' });
   }
+
   const [equipment, setEquipment] = useState({
     type: 'notebook' as EquipmentTypeValue,
     brand: '',
@@ -161,13 +203,15 @@ export function NewOSForm({
   const [blocking, setBlocking] = useState('');
   const [estimatedReady, setEstimatedReady] = useState('');
 
+  const handleSyncedPhotos = useCallback((newPhotos: string[]) => {
+    setPhotos((prev) => Array.from(new Set([...prev, ...newPhotos])));
+  }, []);
+
   function next() {
     if (step === 1 && !customer.name.trim()) {
       setError('Nome do cliente é obrigatório.');
       return;
     }
-    // Computador (principalmente montado) não tem "modelo" de fábrica —
-    // só notebook/celular/tablet costumam ter um modelo real e conhecido.
     if (step === 2 && !equipment.model.trim() && !['outro', 'computador'].includes(equipment.type)) {
       setError('Modelo do aparelho é obrigatório.');
       return;
@@ -206,7 +250,13 @@ export function NewOSForm({
     setPhotos((prev) => prev.filter((p) => p !== url));
   }
 
-  async function submit() {
+  function appendChipText(current: string, chip: string): string {
+    if (!current.trim()) return chip;
+    if (current.toLowerCase().includes(chip.toLowerCase())) return current;
+    return `${current.trim()}; ${chip}`;
+  }
+
+  async function submit(redirectToLabel = false) {
     if (!defect.trim()) {
       setError('Defeito relatado é obrigatório.');
       return;
@@ -231,29 +281,44 @@ export function NewOSForm({
         customerId = newCustomer.id;
       }
 
-      // 2. OS
-      const { data: newOS, error: osErr } = await supabase
+      // 2. OS (com fallback caso a coluna technician_id da migration 0034 ainda não tenha sido aplicada)
+      const basePayload = {
+        customer_id: customerId,
+        equipment_type: equipment.type,
+        equipment_brand: equipment.brand.trim() || null,
+        equipment_model: equipment.model.trim() || null,
+        equipment_color: equipment.color.trim() || null,
+        equipment_serial: equipment.serial.trim() || null,
+        equipment_password: equipment.password.trim() || null,
+        reported_defect: defect.trim(),
+        entry_checklist: checklist,
+        accessories_in: accessories.trim() || null,
+        equipment_photos: photos,
+        blocking_reason: blocking.trim() || null,
+        estimated_ready_at: estimatedReady || null,
+        created_by: currentUserId,
+      };
+
+      let { data: newOS, error: osErr } = await supabase
         .from('service_orders')
         .insert({
-          customer_id: customerId,
-          equipment_type: equipment.type,
-          equipment_brand: equipment.brand.trim() || null,
-          equipment_model: equipment.model.trim() || null,
-          equipment_color: equipment.color.trim() || null,
-          equipment_serial: equipment.serial.trim() || null,
-          equipment_password: equipment.password.trim() || null,
-          reported_defect: defect.trim(),
-          entry_checklist: checklist,
-          accessories_in: accessories.trim() || null,
-          equipment_photos: photos,
-          blocking_reason: blocking.trim() || null,
-          estimated_ready_at: estimatedReady || null,
-          created_by: currentUserId,
+          ...basePayload,
           technician_id: selectedTechnicianId || null,
         })
         .select('id, os_number')
         .single();
-      if (osErr) throw osErr;
+
+      if (osErr && osErr.message?.includes('technician_id')) {
+        const retry = await supabase
+          .from('service_orders')
+          .insert(basePayload)
+          .select('id, os_number')
+          .single();
+        newOS = retry.data;
+        osErr = retry.error;
+      }
+
+      if (osErr || !newOS) throw osErr ?? new Error('Erro ao criar OS');
 
       // 3. evento inicial
       await supabase.from('service_order_events').insert({
@@ -263,7 +328,11 @@ export function NewOSForm({
         author_id: currentUserId,
       });
 
-      router.push(`/admin/os/${newOS.id}`);
+      if (redirectToLabel) {
+        router.push(`/admin/os/${newOS.id}/label`);
+      } else {
+        router.push(`/admin/os/${newOS.id}`);
+      }
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);
@@ -271,359 +340,507 @@ export function NewOSForm({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-[#111114]/90 p-4 shadow-2xl backdrop-blur-md text-zinc-100 sm:p-6">
-      <div className="mb-4 flex items-center gap-2">
-        {[1, 2, 3].map((n) => (
-          <div key={n} className="flex flex-1 items-center gap-2">
-            <div
-              className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${
-                n <= step ? 'bg-emerald-600 text-white font-mono font-bold' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
-              }`}
-            >
-              {n}
-            </div>
-            <div className={`text-sm font-medium ${n === step ? 'text-white font-bold' : 'text-zinc-500'}`}>
-              {n === 1 ? 'Cliente' : n === 2 ? 'Aparelho' : 'Serviço'}
-            </div>
-            {n < 3 && <div className="h-px flex-1 bg-zinc-800" />}
-          </div>
-        ))}
-      </div>
-
-      {step === 1 && (
-        <div className="space-y-3">
-          {selectedCustomer ? (
-            <div className="rounded-xl border border-emerald-800/60 bg-emerald-950/20 p-4">
-              <p className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-                Cliente já cadastrado
-              </p>
-              <p className="mt-1 font-bold text-white">{selectedCustomer.name}</p>
-              <p className="text-sm text-zinc-400">
-                {selectedCustomer.phone}
-                {selectedCustomer.osCount > 0 && (
-                  <span className="ml-2 rounded bg-emerald-950/80 px-2 py-0.5 text-xs font-mono font-bold text-emerald-300 border border-emerald-800/40">
-                    {selectedCustomer.osCount} OS anterior{selectedCustomer.osCount === 1 ? '' : 'es'}
-                  </span>
-                )}
-              </p>
+    <>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-slate-900 sm:p-6">
+        {/* Stepper Modern Retail Studio */}
+        <div className="mb-6 flex items-center gap-2">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="flex flex-1 items-center gap-2">
               <button
                 type="button"
-                onClick={clearCustomerSelection}
-                className="mt-2 text-xs font-medium text-zinc-400 underline hover:text-white"
+                onClick={() => {
+                  if (n < step) setStep(n);
+                }}
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                  n === step
+                    ? 'bg-sky-600 text-white shadow-xs'
+                    : n < step
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 text-slate-500 border border-slate-200'
+                }`}
               >
-                Não é esse cliente — trocar
+                {n < step ? '✓' : n}
               </button>
+              <div
+                className={`text-sm ${
+                  n === step
+                    ? 'font-bold text-slate-900'
+                    : n < step
+                      ? 'font-semibold text-emerald-700'
+                      : 'font-medium text-slate-400'
+                }`}
+              >
+                {n === 1 ? '1. Cliente' : n === 2 ? '2. Aparelho & Fotos' : '3. Sintoma & Etiqueta'}
+              </div>
+              {n < 3 && <div className="h-px flex-1 bg-slate-200" />}
             </div>
-          ) : (
-            <>
-              <Field label="Nome do cliente *">
-                <input
-                  autoFocus
-                  value={customer.name}
-                  onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                  className="form-input"
-                  placeholder="Ex: Maria Silva"
-                />
-              </Field>
-              <Field label="Telefone">
-                <input
-                  type="tel"
-                  value={customer.phone}
-                  onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                  className="form-input"
-                  placeholder="(11) 99999-9999"
-                />
-              </Field>
-
-              {searchingCustomer && (
-                <p className="text-xs text-zinc-400">Buscando cliente cadastrado…</p>
-              )}
-              {customerMatches.length > 0 && (
-                <div className="rounded-xl border border-blue-900/40 bg-blue-950/30 p-3">
-                  <p className="mb-2 text-xs font-mono font-bold text-blue-300 uppercase tracking-wider">
-                    Encontramos {customerMatches.length === 1 ? 'este cadastro' : 'estes cadastros'}:
-                  </p>
-                  <ul className="space-y-1.5">
-                    {customerMatches.map((m) => (
-                      <li key={m.id}>
-                        <button
-                          type="button"
-                          onClick={() => pickCustomer(m)}
-                          className="flex w-full items-center justify-between gap-2 rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-left text-sm text-zinc-200 hover:border-zinc-700 hover:bg-zinc-800"
-                        >
-                          <span>
-                            <span className="font-medium text-slate-900">{m.name}</span>
-                            <span className="ml-2 text-slate-500">{m.phone}</span>
-                          </span>
-                          {m.osCount > 0 && (
-                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-                              {m.osCount} OS
-                            </span>
-                          )}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <Field label="E-mail (opcional)">
-                <input
-                  type="email"
-                  value={customer.email}
-                  onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                  className="form-input"
-                />
-              </Field>
-            </>
-          )}
+          ))}
         </div>
-      )}
 
-      {step === 2 && (
-        <div className="space-y-3">
-          <Field label="Tipo de aparelho *">
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              {EQUIPMENT_TYPES.map((t) => (
+        {/* PASSO 1: CLIENTE */}
+        {step === 1 && (
+          <div className="space-y-4">
+            {selectedCustomer ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                    ✓ Cliente Recorrente Identificado
+                  </p>
+                  {selectedCustomer.osCount > 0 && (
+                    <span className="rounded-md bg-emerald-100 px-2 py-0.5 font-mono text-xs font-bold text-emerald-800 border border-emerald-200">
+                      {selectedCustomer.osCount} OS anterior{selectedCustomer.osCount === 1 ? '' : 'es'}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-base font-bold text-slate-900">{selectedCustomer.name}</p>
+                <p className="text-sm text-slate-600">{selectedCustomer.phone || 'Sem telefone'}</p>
                 <button
-                  key={t.value}
                   type="button"
-                  onClick={() => setEquipment({ ...equipment, type: t.value })}
-                  className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
-                    equipment.type === t.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
+                  onClick={clearCustomerSelection}
+                  className="mt-2 text-xs font-semibold text-sky-700 underline hover:text-sky-800"
                 >
-                  {t.label}
+                  Não é esse cliente — trocar
                 </button>
-              ))}
-            </div>
-          </Field>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Marca">
-              <input
-                value={equipment.brand}
-                onChange={(e) => setEquipment({ ...equipment, brand: e.target.value })}
-                className="form-input"
-                placeholder={
-                  equipment.type === 'computador'
-                    ? 'Ex: Dell/HP (se de marca) — vazio se for montado'
-                    : 'Ex: Samsung'
-                }
-              />
-            </Field>
-            <Field label={equipment.type === 'computador' ? 'Modelo (se souber)' : 'Modelo *'}>
-              <input
-                value={equipment.model}
-                onChange={(e) => setEquipment({ ...equipment, model: e.target.value })}
-                className="form-input"
-                placeholder={
-                  equipment.type === 'computador' ? 'Ex: OptiPlex 3020 (se tiver etiqueta)' : 'Ex: Galaxy S21'
-                }
-              />
-            </Field>
-            <Field label={equipment.type === 'computador' ? 'Cor / sinais distintivos' : 'Cor'}>
-              <input
-                value={equipment.color}
-                onChange={(e) => setEquipment({ ...equipment, color: e.target.value })}
-                className="form-input"
-                placeholder={
-                  equipment.type === 'computador'
-                    ? 'Ex: Preto, adesivo lateral, LED azul'
-                    : 'Preto'
-                }
-              />
-            </Field>
-            <Field label={equipment.type === 'computador' ? 'Nº de série (se tiver etiqueta)' : 'IMEI / Serial'}>
-              <input value={equipment.serial} onChange={(e) => setEquipment({ ...equipment, serial: e.target.value })} className="form-input" />
-            </Field>
-          </div>
-          {equipment.type === 'computador' && (
-            <p className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
-              💡 Processador, placa de vídeo, RAM etc não precisam ser perguntados aqui — o
-              cliente raramente sabe de cabeça, e não ajuda a identificar a máquina. Isso o
-              técnico levanta na bancada e registra em &quot;Anotações de reparo&quot; quando começar.
-              Pra identificar qual máquina é qual, a <strong>foto</strong> abaixo vale mais que
-              qualquer campo de texto — capriche.
-            </p>
-          )}
-          <Field label="Senha / padrão (se souber)">
-            <input
-              type="text"
-              value={equipment.password}
-              onChange={(e) => setEquipment({ ...equipment, password: e.target.value })}
-              className="form-input"
-              placeholder="Para teste do aparelho"
-            />
-          </Field>
-          <Field label="Checklist de entrada">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {ENTRY_CHECKLIST_FIELDS.map((f) => (
-                <label key={f.key} className="flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 hover:border-zinc-700 transition">
-                  <input
-                    type="checkbox"
-                    checked={checklist[f.key] ?? false}
-                    onChange={(e) => setChecklist({ ...checklist, [f.key]: e.target.checked })}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
-                  />
-                  <span className="text-zinc-200 font-medium">{f.label}</span>
-                </label>
-              ))}
-            </div>
-          </Field>
-          <Field label="Acessórios que entraram">
-            <input value={accessories} onChange={(e) => setAccessories(e.target.value)} className="form-input" placeholder="Ex: carregador + capa" />
-          </Field>
-          <Field label="Foto do aparelho (opcional, mas recomendado)">
-            <label className="flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-zinc-700 bg-zinc-950/80 px-3 py-4 text-sm font-mono text-zinc-300 hover:border-zinc-500 hover:bg-zinc-900 transition">
-              {uploadingPhotos ? 'Enviando…' : '📷 Tirar foto / escolher da galeria'}
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                multiple
-                onChange={(e) => uploadPhotos(e.target.files)}
-                disabled={uploadingPhotos}
-                className="hidden"
-              />
-            </label>
-            <p className="mt-1 text-xs text-slate-500">
-              Prova do estado em que o aparelho chegou (tela trincada, riscos, etc).
-            </p>
-            {photoError && <p className="mt-1 text-xs text-red-600">{photoError}</p>}
-            {photos.length > 0 && (
-              <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {photos.map((url) => (
-                  <div key={url} className="group relative aspect-square overflow-hidden rounded-md border border-slate-200">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="Foto do aparelho" className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(url)}
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
-                      aria-label="Remover foto"
-                    >
-                      ✕
-                    </button>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Telefone / WhatsApp (busca automática)">
+                    <input
+                      type="tel"
+                      value={customer.phone}
+                      onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                      className="form-input"
+                      placeholder="(11) 99999-9999"
+                    />
+                  </Field>
+                  <Field label="Nome do cliente *">
+                    <input
+                      autoFocus
+                      value={customer.name}
+                      onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                      className="form-input"
+                      placeholder="Ex: Maria Silva"
+                    />
+                  </Field>
+                </div>
+
+                {searchingCustomer && (
+                  <p className="text-xs text-slate-500">Buscando cliente cadastrado…</p>
+                )}
+                {customerMatches.length > 0 && (
+                  <div className="rounded-xl border border-sky-200 bg-sky-50/60 p-3">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-sky-800">
+                      Encontramos {customerMatches.length === 1 ? 'este cadastro' : 'estes cadastros'} (clique para preencher em 1s):
+                    </p>
+                    <ul className="space-y-1.5">
+                      {customerMatches.map((m) => (
+                        <li key={m.id}>
+                          <button
+                            type="button"
+                            onClick={() => pickCustomer(m)}
+                            className="flex w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-800 shadow-2xs hover:border-sky-300 hover:bg-sky-50/40 transition"
+                          >
+                            <span>
+                              <span className="font-semibold text-slate-900">{m.name}</span>
+                              {m.phone && <span className="ml-2 text-slate-500">{m.phone}</span>}
+                            </span>
+                            {m.osCount > 0 && (
+                              <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-600">
+                                {m.osCount} OS
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
+                )}
+
+                <Field label="E-mail (opcional)">
+                  <input
+                    type="email"
+                    value={customer.email}
+                    onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                    className="form-input"
+                    placeholder="cliente@email.com"
+                  />
+                </Field>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* PASSO 2: APARELHO, CHECKLIST & CYBER CAMERA SYNC */}
+        {step === 2 && (
+          <div className="space-y-4">
+            <Field label="Tipo de aparelho *">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {EQUIPMENT_TYPES.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => setEquipment({ ...equipment, type: t.value })}
+                    className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition ${
+                      equipment.type === t.value
+                        ? 'border-sky-600 bg-sky-50 text-sky-800 shadow-2xs'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
                 ))}
               </div>
-            )}
-          </Field>
-        </div>
-      )}
+            </Field>
 
-      {step === 3 && (
-        <div className="space-y-3">
-          <Field label="Defeito relatado pelo cliente *">
-            <textarea
-              autoFocus
-              value={defect}
-              onChange={(e) => setDefect(e.target.value)}
-              rows={3}
-              className="form-input"
-              placeholder="Ex: tela trincada após queda, não carrega"
-            />
-          </Field>
-          <Field label="Previsão (opcional)">
-            <input
-              type="date"
-              value={estimatedReady}
-              onChange={(e) => setEstimatedReady(e.target.value)}
-              className="form-input"
-            />
-          </Field>
-          <Field label="Já trava em algo? (opcional)">
-            <input
-              value={blocking}
-              onChange={(e) => setBlocking(e.target.value)}
-              className="form-input"
-              placeholder="Ex: aguardando cabo iPhone 4"
-            />
-          </Field>
-          <Field label="Técnico Responsável">
-            <select
-              value={selectedTechnicianId}
-              onChange={(e) => setSelectedTechnicianId(e.target.value)}
-              className="form-input"
-            >
-              <option value="">Sem técnico atribuído (Loja / Geral)</option>
-              {technicians.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.full_name} {t.commission_rate > 0 ? `(${Math.round(t.commission_rate * 100)}% comissão)` : '(Sem comissão)'}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-slate-500">
-              💡 Iago recebe 30% e Jefferson opera no modelo 50/50 sobre a mão de obra líquida.
-            </p>
-          </Field>
-        </div>
-      )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Marca">
+                <input
+                  value={equipment.brand}
+                  onChange={(e) => setEquipment({ ...equipment, brand: e.target.value })}
+                  className="form-input"
+                  placeholder={
+                    equipment.type === 'computador'
+                      ? 'Ex: Pichau / Custom / Dell'
+                      : 'Ex: Samsung / Apple / Acer'
+                  }
+                />
+              </Field>
+              <Field label={equipment.type === 'computador' ? 'Modelo / Gabinete (se souber)' : 'Modelo *'}>
+                <input
+                  value={equipment.model}
+                  onChange={(e) => setEquipment({ ...equipment, model: e.target.value })}
+                  className="form-input"
+                  placeholder={
+                    equipment.type === 'computador'
+                      ? 'Ex: Gabinete Aquário Branco / RTX 4060'
+                      : 'Ex: Nitro 5 / Galaxy S23'
+                  }
+                />
+              </Field>
+              <Field label={equipment.type === 'computador' ? 'Cor / sinais distintivos' : 'Cor'}>
+                <input
+                  value={equipment.color}
+                  onChange={(e) => setEquipment({ ...equipment, color: e.target.value })}
+                  className="form-input"
+                  placeholder={
+                    equipment.type === 'computador'
+                      ? 'Ex: Preto, lateral vidro temperado'
+                      : 'Ex: Grafite'
+                  }
+                />
+              </Field>
+              <Field label={equipment.type === 'computador' ? 'Nº de série (se tiver etiqueta)' : 'IMEI / Serial'}>
+                <input
+                  value={equipment.serial}
+                  onChange={(e) => setEquipment({ ...equipment, serial: e.target.value })}
+                  className="form-input font-mono"
+                  placeholder="Opcional"
+                />
+              </Field>
+            </div>
 
-      {error && (
-        <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{error}</p>
-      )}
+            <Field label="Senha / PIN de teste (se o cliente informar)">
+              <input
+                type="text"
+                value={equipment.password}
+                onChange={(e) => setEquipment({ ...equipment, password: e.target.value })}
+                className="form-input"
+                placeholder="Ex: 1234 / Sem senha"
+              />
+            </Field>
 
-      <div className="mt-5 flex justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setStep((s) => Math.max(1, s - 1))}
-          disabled={step === 1 || submitting}
-          className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-mono font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition disabled:opacity-30"
-        >
-          Voltar
-        </button>
-        {step < 3 ? (
-          <button
-            type="button"
-            onClick={next}
-            className="rounded-lg bg-white px-5 py-2 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition shadow"
-          >
-            Próximo →
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={submit}
-            disabled={submitting}
-            className="rounded-lg bg-emerald-600 px-5 py-2 text-xs font-mono font-bold text-white hover:bg-emerald-500 transition shadow-lg shadow-emerald-900/30 disabled:opacity-50"
-          >
-            {submitting ? 'Salvando…' : 'Criar OS'}
-          </button>
+            <Field label="Checklist de integridade na entrada">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {ENTRY_CHECKLIST_FIELDS.map((f) => {
+                  const checked = checklist[f.key] ?? false;
+                  return (
+                    <label
+                      key={f.key}
+                      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                        checked
+                          ? 'border-sky-300 bg-sky-50/70 text-sky-900 font-semibold'
+                          : 'border-slate-200 bg-slate-50/60 text-slate-700 hover:bg-slate-100/70'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => setChecklist({ ...checklist, [f.key]: e.target.checked })}
+                        className="h-4 w-4 rounded border-slate-300 text-sky-600"
+                      />
+                      <span>{f.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </Field>
+
+            <Field label="Acessórios deixados no balcão (digite livremente ou use os atalhos)">
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-medium text-slate-400 mr-1">
+                  Atalhos opcionais:
+                </span>
+                {QUICK_ACCESSORY_CHIPS.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => setAccessories((prev) => appendChipText(prev, chip))}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 transition"
+                  >
+                    + {chip}
+                  </button>
+                ))}
+                {accessories.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setAccessories('')}
+                    className="ml-auto text-[11px] font-medium text-slate-400 underline hover:text-slate-700"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+              <input
+                value={accessories}
+                onChange={(e) => setAccessories(e.target.value)}
+                className="form-input"
+                placeholder="Digite livremente qualquer acessório (ex: Fonte Dell 65W, mouse USB, mochila preta…)"
+              />
+            </Field>
+
+            {/* BLOCO DE FOTOS DA CARCAÇA COM CYBER CAMERA SYNC (OPÇÃO 1) */}
+            <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-800">
+                    📸 Fotos da Carcaça no Check-in ({photos.length})
+                  </span>
+                  <p className="text-xs text-slate-600">
+                    Tire fotos em 15 segundos com seu celular escaneando o QR Code na tela ou selecione arquivos.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCameraSyncOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition"
+                  >
+                    <span>📱 Cyber Camera Sync (QR Code)</span>
+                    <span className="rounded bg-sky-800/60 px-1.5 py-0.5 font-mono text-[10px]">
+                      Alt+C
+                    </span>
+                  </button>
+
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    <span>{uploadingPhotos ? 'Enviando…' : '💻 Upload do PC'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      multiple
+                      onChange={(e) => uploadPhotos(e.target.files)}
+                      disabled={uploadingPhotos}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {photoError && <p className="mt-2 text-xs text-red-600">{photoError}</p>}
+
+              {photos.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                  {photos.map((url, idx) => (
+                    <div
+                      key={`${idx}-${url.slice(0, 24)}`}
+                      className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xs"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="Foto do aparelho" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(url)}
+                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/75 text-xs text-white hover:bg-red-600"
+                        aria-label="Remover foto"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         )}
+
+        {/* PASSO 3: SINTOMA / DEFEITO & TÉCNICO */}
+        {step === 3 && (
+          <div className="space-y-4">
+            <Field label="Defeito / Serviço relatado pelo cliente * (digite livremente ou use os atalhos)">
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-medium text-slate-400 mr-1">
+                  Atalhos opcionais:
+                </span>
+                {QUICK_SYMPTOM_CHIPS.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => setDefect((prev) => appendChipText(prev, chip))}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 transition"
+                  >
+                    + {chip}
+                  </button>
+                ))}
+                {defect.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setDefect('')}
+                    className="ml-auto text-[11px] font-medium text-slate-400 underline hover:text-slate-700"
+                  >
+                    Limpar texto
+                  </button>
+                )}
+              </div>
+              <textarea
+                autoFocus
+                value={defect}
+                onChange={(e) => setDefect(e.target.value)}
+                rows={4}
+                className="form-input"
+                placeholder="Digite livremente qualquer defeito, sintoma ou pedido específico do cliente (ou clique nos atalhos acima para complementar)…"
+              />
+            </Field>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Técnico Responsável">
+                <select
+                  value={selectedTechnicianId}
+                  onChange={(e) => setSelectedTechnicianId(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">Sem técnico atribuído (Loja / Geral)</option>
+                  {technicians.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.full_name}{' '}
+                      {t.commission_rate > 0
+                        ? `(${Math.round(t.commission_rate * 100)}% comissão)`
+                        : '(Margem Loja)'}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Iago (30% balcão) · Jefferson (50/50 mezanino) · Felipe/Loja (100% retido).
+                </p>
+              </Field>
+
+              <Field label="Previsão de entrega / diagnóstico (opcional)">
+                <input
+                  type="date"
+                  value={estimatedReady}
+                  onChange={(e) => setEstimatedReady(e.target.value)}
+                  className="form-input"
+                />
+              </Field>
+            </div>
+
+            <Field label="Observação ou pendência imediata (opcional)">
+              <input
+                value={blocking}
+                onChange={(e) => setBlocking(e.target.value)}
+                className="form-input"
+                placeholder="Ex: Cliente pediu prioridade para hoje às 17h"
+              />
+            </Field>
+          </div>
+        )}
+
+        {error && (
+          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
+            disabled={step === 1 || submitting}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-30"
+          >
+            ← Voltar
+          </button>
+
+          {step < 3 ? (
+            <button
+              type="button"
+              onClick={next}
+              className="rounded-lg bg-sky-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition"
+            >
+              Próximo passo →
+            </button>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => submit(false)}
+                disabled={submitting}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
+              >
+                {submitting ? 'Salvando…' : 'Criar OS e Abrir Ficha'}
+              </button>
+              <button
+                type="button"
+                onClick={() => submit(true)}
+                disabled={submitting}
+                className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition disabled:opacity-50"
+              >
+                {submitting ? 'Salvando…' : '🖨️ Criar OS + Etiqueta 58mm'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <style jsx global>{`
+          .form-input {
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 1px solid rgb(203 213 225);
+            padding: 0.55rem 0.85rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: rgb(15 23 42);
+            background: white;
+            transition: border-color 0.15s ease;
+          }
+          .form-input:focus {
+            outline: none;
+            border-color: rgb(2 132 199);
+            box-shadow: 0 0 0 1px rgb(2 132 199);
+          }
+          .form-input::placeholder {
+            color: rgb(148 163 184);
+          }
+        `}</style>
       </div>
 
-      <style jsx global>{`
-  .form-input {
-    width: 100%;
-    border-radius: 0.5rem;
-    border: 1px solid #27272a;
-    padding: 0.55rem 0.85rem;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #f4f4f5;
-    background: #09090b;
-    transition: border-color 0.15s ease;
-  }
-  .form-input:focus {
-    outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 1px #10b981;
-  }
-  .form-input::placeholder {
-    color: #71717a;
-  }
-`}</style>
-    </div>
+      <CameraSyncModal
+        open={cameraSyncOpen}
+        onClose={() => setCameraSyncOpen(false)}
+        onPhotosSynced={handleSyncedPhotos}
+        existingPhotos={photos}
+      />
+    </>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">{label}</span>
+      <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+        {label}
+      </span>
       <div className="mt-1">{children}</div>
     </label>
   );

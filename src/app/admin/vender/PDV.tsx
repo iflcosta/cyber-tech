@@ -9,6 +9,7 @@ type Item = {
   id: string;
   ean13: string | null;
   internal_sku?: string | null;
+  shelf_location?: string | null;
   name: string;
   brand: string | null;
   model: string | null;
@@ -377,11 +378,11 @@ export function PDV({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white">PDV Rápido · Balcão Cyber</h1>
-          <p className="text-xs text-zinc-400">
-            Bipe o codigo de barras ou digite o nome. Operador: {currentUserName}.
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">PDV Rápido · Balcão Cyber</h1>
+          <p className="text-xs text-slate-500">
+            Bipe o código de barras/SKU ou digite o nome. Operador: <span className="font-semibold text-slate-700">{currentUserName}</span>.
           </p>
         </div>
       </div>
@@ -389,58 +390,58 @@ export function PDV({
       {/* Input de bipagem — SEMPRE com autofocus (leitor envia rapido) */}
       <form
         onSubmit={submitCode}
-        className="rounded-xl border border-emerald-900/40 bg-[#111114]/90 p-4 shadow-xl backdrop-blur-md"
+        className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
       >
         <label className="block">
-          <span className="block text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
-            Bipar / buscar
+          <span className="block text-xs font-mono font-bold uppercase tracking-wider text-sky-700">
+            Bipar / buscar (EAN-13 ou SKU Interno)
           </span>
           <input
             ref={inputRef}
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Bipe o codigo ou digite o nome do item…"
+            placeholder="Bipe o código ou digite o SKU/nome do item…"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-lg font-mono text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
+            className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-mono text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600/20"
           />
         </label>
         {flash && (
-          <p className="mt-2 text-sm font-medium text-emerald-700">{flash}</p>
+          <p className="mt-2 text-sm font-semibold text-emerald-700">{flash}</p>
         )}
       </form>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>
       )}
 
       {/* Busca manual (caso leitor nao funcione) */}
-      <div className="rounded-xl border border-zinc-800 bg-[#111114]/90 p-3 shadow-lg backdrop-blur-md">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Ou busque manualmente por nome/marca…"
+          placeholder="Ou busque manualmente por nome, marca ou SKU…"
           aria-label="Buscar item por nome ou marca"
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-600/20"
         />
         <button
           type="button"
           onClick={openAddPart}
-          className="mt-2 text-xs font-mono text-emerald-400 hover:text-emerald-300 transition"
+          className="mt-2 text-xs font-semibold text-sky-700 hover:text-sky-800 transition cursor-pointer"
         >
           ➕ Não achou? Cadastrar peça nova e vender
-          {search.trim() && <span className="text-zinc-500"> — &quot;{search.trim()}&quot;</span>}
+          {search.trim() && <span className="text-slate-500"> — &quot;{search.trim()}&quot;</span>}
         </button>
         {searchSuggestions.length > 0 && (
-          <ul className="mt-2 divide-y divide-zinc-800/80">
+          <ul className="mt-3 divide-y divide-slate-100 border-t border-slate-100 pt-2">
             {searchSuggestions.map((i) => (
               <li
                 key={i.id}
-                className="flex items-center justify-between gap-2 py-1.5 text-sm"
+                className="flex items-center justify-between gap-2 py-2 text-sm hover:bg-slate-50 px-2 rounded-lg transition"
               >
                 <button
                   type="button"
@@ -448,18 +449,30 @@ export function PDV({
                     addItem(i);
                     setSearch('');
                   }}
-                  className="flex-1 text-left hover:text-emerald-400 transition"
+                  className="flex-1 text-left hover:text-sky-700 transition cursor-pointer"
                 >
-                  <span className="font-bold text-zinc-100">{i.name}</span>
+                  <span className="font-bold text-slate-900">{i.name}</span>
                   {i.brand && (
                     <span className="ml-1 text-xs text-slate-500">· {i.brand}</span>
                   )}
-                  <span className="ml-2 font-mono text-xs text-slate-500">
-                    {i.ean13}
-                  </span>
+                  {i.internal_sku && (
+                    <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
+                      {i.internal_sku}
+                    </span>
+                  )}
+                  {i.shelf_location && (
+                    <span className="ml-1.5 rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-semibold text-sky-700 border border-sky-200">
+                      📍 {i.shelf_location}
+                    </span>
+                  )}
+                  {i.ean13 && (
+                    <span className="ml-2 font-mono text-xs text-slate-400">
+                      {i.ean13}
+                    </span>
+                  )}
                 </button>
-                <span className="text-xs text-slate-500">
-                  {i.current_stock} em estoque · {fmtBRL(i.unit_price)}
+                <span className="text-xs font-semibold text-slate-600">
+                  {i.current_stock} em estoque · <span className="font-mono text-emerald-700">{fmtBRL(i.unit_price)}</span>
                 </span>
               </li>
             ))}
@@ -468,23 +481,23 @@ export function PDV({
       </div>
 
       {/* Carrinho */}
-      <section className="rounded-xl border border-zinc-800 bg-[#111114]/90 shadow-2xl backdrop-blur-md">
-        <header className="border-b border-zinc-800 px-4 py-2.5 bg-zinc-900/50">
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
+      <section className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+        <header className="border-b border-slate-200 px-4 py-3 bg-slate-50">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600">
             Carrinho ({cart.length})
           </h2>
         </header>
         {cart.length === 0 ? (
-          <p className="p-8 text-center text-xs font-mono text-zinc-500">
-            Bipe um codigo ou adicione um item acima pra comecar.
+          <p className="p-8 text-center text-xs font-mono text-slate-500">
+            Bipe um código ou adicione um item acima para começar.
           </p>
         ) : (
           <>
-            <ul className="divide-y divide-zinc-800/60 font-mono text-xs text-zinc-200">
+            <ul className="divide-y divide-slate-200 font-mono text-xs text-slate-700">
               {cart.map((c) => (
-                <li key={c.stock_item_id} className="flex items-center gap-3 px-4 py-2">
+                <li key={c.stock_item_id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50/80">
                   <div className="flex-1">
-                    <p className="font-bold text-zinc-100">{c.name}</p>
+                    <p className="font-bold text-slate-900">{c.name}</p>
                     <p className="text-xs text-slate-500">
                       {fmtBRL(c.unit_price)} cada · {c.stock_available} em estoque
                     </p>
@@ -495,15 +508,15 @@ export function PDV({
                     max={c.stock_available}
                     value={c.quantity}
                     onChange={(e) => updateQty(c.stock_item_id, Number(e.target.value))}
-                    className="w-16 rounded-md border border-zinc-800 bg-zinc-950 px-2 py-1 text-center font-mono text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none"
+                    className="w-16 rounded-md border border-slate-300 bg-white px-2 py-1 text-center font-mono text-sm text-slate-900 focus:border-sky-600 focus:outline-none"
                   />
-                  <span className="w-24 text-right font-mono font-bold text-emerald-400">
+                  <span className="w-24 text-right font-mono font-bold text-emerald-700">
                     {fmtBRL(c.unit_price * c.quantity)}
                   </span>
                   <button
                     type="button"
                     onClick={() => removeItem(c.stock_item_id)}
-                    className="rounded-md p-1 text-zinc-500 hover:bg-red-950/40 hover:text-red-400"
+                    className="rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 cursor-pointer"
                     aria-label="Remover"
                   >
                     ✕
@@ -511,11 +524,11 @@ export function PDV({
                 </li>
               ))}
             </ul>
-            <footer className="border-t border-zinc-800 bg-zinc-900/60 px-4 py-3">
+            <footer className="border-t border-slate-200 bg-slate-50 px-4 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs text-slate-500">Subtotal</p>
-                  <p className="text-xl font-black font-mono text-emerald-400">
+                  <p className="text-xl font-black font-mono text-emerald-700">
                     {fmtBRL(subtotal)}
                   </p>
                 </div>
@@ -523,7 +536,7 @@ export function PDV({
                   type="button"
                   onClick={() => setFinalizing(true)}
                   disabled={cart.length === 0}
-                  className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-mono font-bold text-white shadow-lg shadow-emerald-900/40 hover:bg-emerald-500 transition disabled:opacity-30"
+                  className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-xs hover:bg-emerald-700 transition disabled:opacity-30 cursor-pointer"
                 >
                   Finalizar venda →
                 </button>

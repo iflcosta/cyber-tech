@@ -52,7 +52,7 @@ export function MobileNav({
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Fechar menu' : 'Abrir menu'}
         aria-expanded={open}
-        className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-800 text-zinc-300 hover:bg-zinc-800"
+        className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100"
       >
         {open ? (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -66,28 +66,28 @@ export function MobileNav({
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-full z-20 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-zinc-800 bg-[#111114] shadow-2xl">
-          <div className="flex flex-col gap-1 p-4 font-mono">
-            <div className="mb-2 rounded-md bg-zinc-900 border border-zinc-800 px-3 py-2.5">
-              <p className="text-sm font-semibold text-white">{userName}</p>
-              <p className="text-xs text-zinc-400">{roleLabel}</p>
+        <div className="absolute inset-x-0 top-full z-20 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-slate-200 bg-white shadow-xl">
+          <div className="flex flex-col gap-1 p-4">
+            <div className="mb-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2.5">
+              <p className="text-sm font-semibold text-slate-900">{userName}</p>
+              <p className="text-xs text-slate-500">{roleLabel}</p>
             </div>
 
             <Link
               href="/admin/os/new"
-              className="mb-1 rounded-md bg-white px-4 py-3 text-center text-sm font-bold text-zinc-950 hover:bg-zinc-200"
+              className="mb-1 rounded-lg bg-sky-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-sky-700"
             >
               + Nova OS
             </Link>
             <Link
               href="/admin/vender"
-              className="mb-1 rounded-md bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-emerald-500"
+              className="mb-1 rounded-lg bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-emerald-700"
             >
               + Vender
             </Link>
             <Link
               href="/admin/pecas/new"
-              className="mb-3 rounded-md border border-zinc-700 bg-zinc-900 px-4 py-3 text-center text-sm font-medium text-zinc-300 hover:bg-zinc-800"
+              className="mb-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               + Pedido Peça
             </Link>
@@ -96,21 +96,21 @@ export function MobileNav({
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-md px-4 py-2.5 text-sm font-medium transition ${
+                className={`rounded-lg px-4 py-2.5 text-sm font-medium transition ${
                   pathname === link.href || pathname.startsWith(link.href + '/')
-                    ? 'bg-zinc-800 text-white border border-zinc-700'
-                    : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-white'
+                    ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
 
-            <div className="mt-4 border-t border-zinc-800 pt-4">
+            <div className="mt-4 border-t border-slate-200 pt-4">
               <button
                 type="button"
                 onClick={logout}
-                className="w-full rounded-md border border-slate-300 px-4 py-3 text-center text-base font-medium text-slate-700 hover:bg-slate-50"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-center text-base font-medium text-slate-700 hover:bg-slate-50"
               >
                 Sair
               </button>

@@ -200,6 +200,8 @@ export type Database = {
         Row: {
           id: string;
           ean13: string | null;
+          internal_sku: string | null;
+          shelf_location: string | null;
           name: string;
           category: string | null;
           brand: string | null;
@@ -207,6 +209,7 @@ export type Database = {
           unit_cost: number | null;
           unit_price: number;
           current_stock: number;
+          reserved_stock: number;
           min_stock: number;
           active: boolean;
           notes: string | null;
@@ -216,6 +219,8 @@ export type Database = {
         Insert: {
           id?: string;
           ean13?: string | null;
+          internal_sku?: string | null;
+          shelf_location?: string | null;
           name: string;
           category?: string | null;
           brand?: string | null;
@@ -223,6 +228,7 @@ export type Database = {
           unit_cost?: number | null;
           unit_price: number;
           current_stock?: number;
+          reserved_stock?: number;
           min_stock?: number;
           active?: boolean;
           notes?: string | null;
@@ -470,6 +476,25 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['commission_ledger']['Insert']>;
       };
+      camera_sync_sessions: {
+        Row: {
+          session_token: string;
+          photos: string[];
+          status: 'active' | 'completed' | 'expired';
+          created_at: string;
+          updated_at: string;
+          expires_at: string;
+        };
+        Insert: {
+          session_token: string;
+          photos?: string[];
+          status?: 'active' | 'completed' | 'expired';
+          created_at?: string;
+          updated_at?: string;
+          expires_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['camera_sync_sessions']['Insert']>;
+      };
     };
     Views: {
       service_orders_with_stale: {
@@ -578,6 +603,7 @@ export const STOCK_MOVEMENT_TYPES = [
 export type StockMovementTypeValue = (typeof STOCK_MOVEMENT_TYPES)[number]['value'];
 
 export const STOCK_CATEGORY_SUGGESTIONS = [
+  'PC Pronta-Entrega',
   'Cabos',
   'Fontes',
   'Memórias',

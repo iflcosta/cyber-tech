@@ -97,16 +97,16 @@ export default async function ReciboPage({
   return (
     <>
       {/* Barra de Ações Superior (Oculta na Impressão) */}
-      <div className="print:hidden mx-auto mb-6 max-w-2xl rounded-xl border border-zinc-800 bg-[#111114]/90 p-4 shadow-xl backdrop-blur-md">
+      <div className="print:hidden mx-auto mb-6 max-w-2xl rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
                 Recibo Oficial do Cliente (80mm / A4)
               </span>
             </div>
-            <p className="mt-1 text-xs text-zinc-400">
+            <p className="mt-1 text-xs text-slate-500">
               Discriminação de mão de obra e peças com Termo de Garantia CDC.
             </p>
           </div>
@@ -114,7 +114,7 @@ export default async function ReciboPage({
           <div className="flex items-center gap-2">
             <Link
               href={`/admin/os/${so.id}/recibo${isA4 ? '' : '?format=a4'}`}
-              className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-mono font-medium text-zinc-200 hover:bg-zinc-700 transition"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
             >
               {isA4 ? 'Mudar p/ Bobina 80mm' : 'Mudar p/ Formato A4'}
             </Link>
@@ -123,13 +123,13 @@ export default async function ReciboPage({
               onClick={() => {
                 if (typeof window !== 'undefined') window.print();
               }}
-              className="rounded-md bg-white px-3 py-1.5 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition"
+              className="rounded-lg bg-sky-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-sky-700 transition shadow-2xs"
             >
               🖨️ Imprimir Recibo
             </button>
             <Link
               href={`/admin/os/${so.id}`}
-              className="rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-mono text-zinc-400 hover:text-white transition"
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
             >
               ← OS
             </Link>
@@ -138,7 +138,7 @@ export default async function ReciboPage({
       </div>
 
       {!isFinal && canConfirmDelivery && (
-        <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-xs text-amber-300">
+        <div className="print:hidden mx-auto mb-4 max-w-2xl rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
           ⚠️ <strong>OS ainda não entregue.</strong> Preencha quem retirou no rodapé para confirmar a entrega formal.
         </div>
       )}

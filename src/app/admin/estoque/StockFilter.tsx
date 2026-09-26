@@ -37,23 +37,23 @@ export function StockFilter() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar no catálogo: nome, código de barras (EAN-13), SKU interno, marca…"
+        placeholder="Buscar no catálogo: nome, código de barras (EAN-13), SKU interno, prateleira, marca…"
         aria-label="Buscar no catálogo: nome, código de barras, SKU interno, marca"
-        className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner"
+        className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
       />
       <button
         type="submit"
-        className="rounded-lg bg-white px-4 py-2 text-xs font-mono font-bold text-zinc-950 hover:bg-zinc-200 transition shadow"
+        className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700 transition shadow-xs"
       >
         Buscar
       </button>
       <button
         type="button"
         onClick={() => apply({ low: lowActive ? null : '1' })}
-        className={`rounded-lg px-3 py-2 text-xs font-mono font-medium transition ${
+        className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
           lowActive
-            ? 'bg-amber-600 text-white border border-amber-500 shadow-sm'
-            : 'border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+            ? 'bg-amber-600 text-white border border-amber-600 shadow-xs'
+            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
         }`}
       >
         {lowActive ? '✓ Só Estoque Baixo' : 'Estoque Baixo'}
@@ -61,10 +61,10 @@ export function StockFilter() {
       <button
         type="button"
         onClick={() => apply({ inactive: inactiveActive ? null : '1' })}
-        className={`rounded-lg px-3 py-2 text-xs font-mono font-medium transition ${
+        className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
           inactiveActive
-            ? 'bg-zinc-700 text-white border border-zinc-600'
-            : 'border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+            ? 'bg-slate-800 text-white border border-slate-800'
+            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
         }`}
       >
         {inactiveActive ? '✓ Mostrando Inativos' : 'Ver Inativos'}

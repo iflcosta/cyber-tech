@@ -75,6 +75,12 @@ export class EscPosBuilder {
     return this;
   }
 
+  /** GS ! n — fonte em dobro de largura e altura (0x11) para destacar o Nº da OS na MPT-II sem depender de gráfico/QR. */
+  doubleSize(on: boolean): this {
+    this.bytes.push(GS, 0x21, on ? 0x11 : 0x00);
+    return this;
+  }
+
   /** Texto cru, sem quebra de linha no final. */
   text(s: string): this {
     const ascii = normAscii(s);

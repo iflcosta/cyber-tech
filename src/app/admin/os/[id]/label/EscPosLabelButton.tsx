@@ -3,11 +3,12 @@
 import { EscPosBuilder, wrapText } from '@/lib/escpos';
 import { PrintAgentButton } from '@/app/admin/components/PrintAgentButton';
 
-const WIDTH = 32; // chars por linha (58mm @ 12cpi), mesma largura do fallback em texto puro
+const WIDTH = 32; // chars por linha (58mm @ 12cpi) na MPT-II
 
 export function EscPosLabelButton({
   createdStr,
   shortId,
+  osNumber,
   customerName,
   customerPhone,
   equipmentLine,
@@ -15,6 +16,7 @@ export function EscPosLabelButton({
 }: {
   createdStr: string;
   shortId: string;
+  osNumber?: string;
   customerName: string;
   customerPhone?: string;
   equipmentLine?: string;
@@ -23,40 +25,49 @@ export function EscPosLabelButton({
   function buildPayload(): Uint8Array {
     const b = new EscPosBuilder().init();
 
-    // Margem de rasgo
-    b.feed(3);
+    // Margem de rasgo inicial
+    b.feed(2);
 
     // Header: loja + data
-    b.align('left').bold(true).text('CYBER INFORMATICA');
-    b.align('right').text(createdStr).blank();
-    b.align('left').bold(false);
+    b.align('left').bold(true).line('CYBER INFORMATICA').bold(false);
+    b.line('DATA: ' + createdStr);
     b.divider('=', WIDTH);
 
-    // OS em destaque, grande
-    b.align('center').bold(true).line(shortId).bold(false);
-    b.blank();
+    // Número da OS em destaque (Fonte Dupla 2x nativa da MPT-II, sem precisar de QR Code)
+    b.align('center').bold(true).doubleSize(true).line(shortId).doubleSize(false);
+    if (osNumber && osNumber !== shortId) {
+      b.line('OS #' + osNumber);
+    }
+    b.bold(false).align('left');
+    b.divider('=', WIDTH);
 
     // Cliente
-    b.align('left').bold(true).line('[CLIENTE]').bold(false);
-    b.line(customerName);
+    b.bold(true).line('[CLIENTE]').bold(false);
+    b.line(customerName.slice(0, WIDTH));
     if (customerPhone) b.line('Tel: ' + customerPhone);
-    b.blank(2);
+    b.divider('-', WIDTH);
 
     // Aparelho
     if (equipmentLine) {
-      b.bold(true).line('[APARELHO]').bold(false);
+      b.bold(true).line('[EQUIPAMENTO]').bold(false);
       for (const l of wrapText(equipmentLine, WIDTH)) b.line(l);
-      b.blank(2);
+      b.divider('-', WIDTH);
     }
 
     // Defeito
     if (defect) {
-      b.bold(true).line('[DEFEITO]').bold(false);
+      b.bold(true).line('[SERVICO / DEFEITO]').bold(false);
       for (const l of wrapText(defect, WIDTH)) b.line(l);
+      b.divider('-', WIDTH);
     }
 
-    b.divider('-', WIDTH);
-    b.feed(3);
+    // Rodapé de rastreio em texto puro (compatível 100% com MPT-II sem QR)
+    b.align('center');
+    b.line('RASTREIO: cyberinformatica.tech');
+    b.bold(true).line('CODIGO: ' + (osNumber || shortId)).bold(false);
+    b.align('left');
+
+    b.feed(4);
     b.cut(true);
 
     return b.toBytes();
@@ -64,9 +75,9 @@ export function EscPosLabelButton({
 
   return (
     <PrintAgentButton
-      label="Imprimir na MPT-II (Bluetooth)"
+      label="Imprimir na MPT-II (58mm)"
       buildPayload={buildPayload}
-      className="mt-3 rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800"
+      className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
     />
   );
 }
