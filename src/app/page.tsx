@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ArrowUpRight, ArrowRight } from "lucide-react";
 
 import Header from "@/components/Header";
@@ -69,7 +69,7 @@ export default function Home() {
                     Manutenção Rápida, Upgrades & Varejo de Peças
                   </h3>
                   <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed mb-5">
-                    Atendimento rápido de balcão com check-in em 60 segundos, bancada de 6 metros com computadores expostos à pronta-entrega e estoque físico catalogado.
+                    Atendimento rápido de balcão com check-in em 60 segundos, computadores expostos à pronta-entrega e estoque físico catalogado.
                   </p>
 
                   <div className="divide-y divide-zinc-200 border-y border-zinc-200 mb-5">
@@ -90,21 +90,7 @@ export default function Home() {
                     <div className="py-3.5">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
-                          02. Cabos, Fontes, SSDs & Periféricos na Hora
-                        </strong>
-                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
-                          Estoque Físico
-                        </span>
-                      </div>
-                      <span className="text-xs text-zinc-600 block leading-relaxed">
-                        Cabos DisplayPort/HDMI 2.1, fontes ATX certificadas, coolers, pastas térmicas, mouses e teclados para retirada imediata.
-                      </span>
-                    </div>
-
-                    <div className="py-3.5">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
-                          04. Combos HD→SSD + Limpeza Térmica
+                          02. Combos HD→SSD + Limpeza Térmica
                         </strong>
                         <span className="font-mono text-[10px] font-bold uppercase bg-zinc-950 text-white px-2 py-0.5 shrink-0">
                           Mais Pedido
@@ -118,7 +104,21 @@ export default function Home() {
                     <div className="py-3.5">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
-                          03. Suporte Ágil para Empresas & Escritórios
+                          03. Cabos, Fontes, SSDs & Periféricos na Hora
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
+                          Estoque Físico
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-600 block leading-relaxed">
+                        Cabos DisplayPort/HDMI 2.1, fontes ATX certificadas, coolers, pastas térmicas, mouses e teclados para retirada imediata.
+                      </span>
+                    </div>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
+                          04. Suporte Ágil para Empresas & Escritórios
                         </strong>
                         <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
                           B2B & PME
@@ -167,24 +167,24 @@ export default function Home() {
                   </div>
 
                   <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-2">
-                    Laboratório de Placas de Vídeo (GPUs) & Troca só do Vidro
+                    Laboratório de Celulares, Troca só do Vidro & Placas de Vídeo (GPUs)
                   </h3>
                   <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-5">
-                    Laboratório isolado no segundo andar com microscópio trinocular, estação de retrabalho eletrônico e câmara industrial a vácuo. Sem terceirização.
+                    Laboratório próprio no segundo andar especializado em manutenção avançada de celulares, troca só do vidro a vácuo (preservando o display original) e reparo eletrônico de GPUs. Sem terceirização.
                   </p>
 
                   <div className="divide-y divide-zinc-800 border-y border-zinc-800 mb-5">
                     <div className="py-3.5">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <strong className="text-xs sm:text-sm font-extrabold text-white">
-                          01. Reparo Eletrônico de Placas de Vídeo (GPUs)
+                          01. Manutenção de Celulares & Smartphones
                         </strong>
                         <span className="font-mono text-[10px] font-bold uppercase bg-zinc-900 border border-zinc-700 px-2 py-0.5 text-zinc-300 shrink-0">
-                          Lab Próprio
+                          Bancada Própria
                         </span>
                       </div>
                       <span className="text-xs text-zinc-400 block leading-relaxed">
-                        Diagnóstico de curto em linhas 12V/VCore/VRAM, troca de componentes e recuperação de placas NVIDIA RTX e AMD Radeon.
+                        Troca de conectores de carga, baterias, microfones, reparos de placa e solução de falhas elétricas em iPhones e Androids.
                       </span>
                     </div>
 
@@ -198,21 +198,35 @@ export default function Home() {
                         </span>
                       </div>
                       <span className="text-xs text-zinc-400 block leading-relaxed">
-                        A imagem e o toque funcionam? Trocamos apenas o vidro externo trincado a vácuo, mantendo sua tela original com até 70% de economia.
+                        A imagem e o toque funcionam? Trocamos apenas o vidro externo trincado a vácuo em autoclave industrial, mantendo sua tela original com até 70% de economia.
                       </span>
                     </div>
 
                     <div className="py-3.5">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <strong className="text-xs sm:text-sm font-extrabold text-white">
-                          03. Parceria B2B para Lojistas da Região
+                          03. Reparo Eletrônico de Placas de Vídeo (GPUs)
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-900 border border-zinc-700 px-2 py-0.5 text-zinc-300 shrink-0">
+                          Microeletrônica
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-400 block leading-relaxed">
+                        Diagnóstico de curto em linhas 12V/VCore/VRAM, troca de componentes, reballing e recuperação de placas NVIDIA RTX e AMD Radeon.
+                      </span>
+                    </div>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-white">
+                          04. Parceria B2B para Lojistas da Região
                         </strong>
                         <span className="font-mono text-[10px] font-bold uppercase bg-zinc-900 border border-zinc-700 px-2 py-0.5 text-zinc-300 shrink-0">
                           Atacado B2B
                         </span>
                       </div>
                       <span className="text-xs text-zinc-400 block leading-relaxed">
-                        Tabela de atacado e prioridade de lote para lojistas de Bragança Paulista, Atibaia, Itatiba, Socorro e Extrema.
+                        Tabela de atacado e prioridade de lote para lojistas de Bragança Paulista, Atibaia, Itatiba, Socorro e Extrema em celulares, telas e GPUs.
                       </span>
                     </div>
                   </div>
@@ -221,11 +235,11 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <TrackedWhatsAppLink
                     phone={brand.whatsapp}
-                    message="Olá! Vim pelo site da Cyber Informática e gostaria de falar com o laboratório do 2º andar sobre reparo de Placa de Vídeo (GPU) ou troca só do vidro."
+                    message="Olá! Vim pelo site da Cyber Informática e gostaria de falar com o laboratório do 2º andar sobre manutenção de celular, troca só do vidro ou placa de vídeo (GPU)."
                     source="mezanino_lab_btn"
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
                   >
-                    <span>Falar com o Lab (GPU / Vidro)</span>
+                    <span>Falar com o Lab (Celular / Vidro / GPU)</span>
                     <ArrowUpRight className="w-4 h-4 shrink-0" />
                   </TrackedWhatsAppLink>
 

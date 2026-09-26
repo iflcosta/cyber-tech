@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import HeroOSTrack from "@/components/HeroOSTrack";
 import { brand } from "@/lib/brand";
@@ -131,10 +131,10 @@ export default function Hero() {
                   </span>
                   <div className="min-w-0">
                     <strong className="text-xs sm:text-sm font-bold text-white block truncate">
-                      Placas de Vídeo & Troca só do Vidro
+                      Celulares, Telas & Placas de Vídeo
                     </strong>
                     <span className="text-[11px] sm:text-xs text-zinc-400 block truncate">
-                      Recuperação de GPUs e tela original · Jefferson
+                      Manutenção de celulares, troca de vidro e GPUs · Jefferson
                     </span>
                   </div>
                 </div>
