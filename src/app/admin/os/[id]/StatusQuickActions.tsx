@@ -156,7 +156,24 @@ export function StatusQuickActions({
     await changeTo('approved', note);
   }
 
-  function sendPortalTrackingWhatsApp() {
+    function sendReadyWhatsApp() {
+    if (!customerPhone) return;
+    const cleanOsCode = (osLabel ?? '').replace(/^OS-?/i, '').replace(/^#/, '');
+    const trackUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/status?q=${encodeURIComponent(cleanOsCode || osId)}`
+        : `https://cyberinformatica.tech/status?q=${encodeURIComponent(cleanOsCode || osId)}`;
+    const valorText = currentEstimatedValue != null ? `\n💰 *Valor Total:* ${fmtBRL(currentEstimatedValue)} (Pix ou Cartão)` : '';
+    const msg = `Olá ${customerName ?? ''}! Aqui é da *Cyber Informática* (Centro de Bragança Paulista).\n\nSeu equipamento${
+      osLabel ? ` *(OS ${osLabel})*` : ''
+    } já passou por todos os testes de bancada e está *PRONTO PARA RETIRADA*! 🎉${valorText}\n\n📍 *Endereço para retirada:*\nRua Coronel Teófilo Leme, 967 — Centro, Bragança Paulista\n\n🔗 *Conferir laudo pericial e garantia CDC 90 dias:*\n${trackUrl}`;
+    const link = toWhatsAppLink(customerPhone, msg);
+    if (link && typeof window !== 'undefined') {
+      window.open(link, '_blank');
+    }
+  }
+
+function sendPortalTrackingWhatsApp() {
     if (!customerPhone) return;
     const cleanOsCode = (osLabel ?? '').replace(/^OS-?/i, '').replace(/^#/, '');
     const trackUrl =

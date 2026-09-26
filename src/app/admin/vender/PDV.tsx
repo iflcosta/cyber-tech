@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { PAYMENT_METHODS, STOCK_CATEGORY_SUGGESTIONS, type PaymentMethodValue } from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
+import { BarcodeScannerModal } from '@/app/admin/components/BarcodeScannerModal';
 
 type Item = {
   id: string;
@@ -51,6 +52,7 @@ export function PDV({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [code, setCode] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -263,9 +265,8 @@ export function PDV({
   }
 
   // Processa codigo digitado/bipado (Enter submete)
-  function submitCode(e: React.FormEvent) {
-    e.preventDefault();
-    const c = code.trim();
+  function processBarcode(barcode: string) {
+    const c = barcode.trim();
     if (!c) return;
 
     // 1. Tenta por EAN-13 (fornecedor) ou SKU interno (Cyber)
@@ -288,6 +289,11 @@ export function PDV({
     }
     addItem(found, 1);
     setCode('');
+  }
+
+  function submitCode(e: React.FormEvent) {
+    e.preventDefault();
+    processBarcode(code);
   }
 
   function updateQty(stockItemId: string, qty: number) {
@@ -396,9 +402,18 @@ export function PDV({
         className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
       >
         <label className="block">
+          <div className="flex items-center justify-between mb-1">
           <span className="block text-xs font-mono font-bold uppercase tracking-wider text-sky-700">
             Bipar / buscar (EAN-13 ou SKU Interno)
           </span>
+          <button
+            type="button"
+            onClick={() => setScannerOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition cursor-pointer"
+          >
+            <span>📷 Escanear Câmera</span>
+          </button>
+        </div>
           <input
             ref={inputRef}
             type="text"
@@ -794,6 +809,15 @@ export function PDV({
           </button>
         </div>
       </Modal>
+      <BarcodeScannerModal
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScan={(scanned) => {
+          processBarcode(scanned);
+        }}
+        title="Scanner de Código de Barras PDV"
+        subtitle="Aponte a câmera para a embalagem do cabo, periférico ou peça"
+      />
     </div>
   );
 }

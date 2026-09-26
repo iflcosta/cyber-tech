@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { StatusBadge } from './StatusBadge';
 import { StaleBadge } from './StaleBadge';
@@ -28,10 +30,16 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
   const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === so.equipment_type);
   const equip = [so.equipment_brand, so.equipment_model, so.equipment_color].filter(Boolean).join(' ');
 
+  function openLabel(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(`/admin/os/${so.id}/label`, '_blank');
+  }
+
   return (
     <Link
       href={`/admin/os/${so.id}`}
-      className="block rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-sky-300 hover:shadow-md active:scale-[0.99] sm:p-5"
+      className="group block rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-sky-300 hover:shadow-md active:scale-[0.99] sm:p-5"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -57,8 +65,16 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
             </p>
           )}
         </div>
-        <div className="flex flex-col items-end gap-1 text-right">
+        <div className="flex flex-col items-end justify-between gap-2.5 text-right self-stretch">
           <span className="font-mono text-[11px] text-slate-400">{timeAgo(so.updated_at)}</span>
+          <button
+            type="button"
+            onClick={openLabel}
+            className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-mono font-semibold text-slate-700 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-700 transition cursor-pointer"
+            title="Imprimir etiqueta térmica 58mm rápida"
+          >
+            <span>🖨️ 58mm</span>
+          </button>
         </div>
       </div>
     </Link>
