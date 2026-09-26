@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowDown, Check } from "lucide-react";
 import { brand } from "@/lib/brand";
-import { trackWhatsAppClick } from "@/lib/tracking";
+import { trackWhatsAppClick } from "@/lib/gtag";
 import type { ShowroomPC } from "@/app/api/showroom/route";
 
 function ChassisBlueprint({ tier }: { tier: "gamer" | "workstation" | "office" }) {

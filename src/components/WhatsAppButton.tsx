@@ -1,7 +1,7 @@
 "use client";
 
 import { brand } from "@/lib/brand";
-import { trackWhatsAppClick } from "@/lib/tracking";
+import { trackWhatsAppClick } from "@/lib/gtag";
 import { ArrowUpRight, Cpu } from "lucide-react";
 
 export default function WhatsAppButton() {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowUpRight, RotateCcw, Check } from "lucide-react";
 import { brand } from "@/lib/brand";
-import { trackWhatsAppClick } from "@/lib/tracking";
+import { trackWhatsAppClick } from "@/lib/gtag";
 
 const PURPOSES = [
   {

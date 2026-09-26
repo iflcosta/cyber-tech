@@ -2,7 +2,7 @@
 
 import HeroOSTrack from "@/components/HeroOSTrack";
 import { brand } from "@/lib/brand";
-import { trackWhatsAppClick } from "@/lib/tracking";
+import { trackWhatsAppClick } from "@/lib/gtag";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 
 export default function Hero() {
