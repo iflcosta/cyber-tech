@@ -9,6 +9,7 @@ const SITE_URL = brand.url;
 // /produtos, /showroom etc destruidos no reboot
 const PUBLIC_ROUTES = [
   { path: '/', priority: 1.0, changeFrequency: 'weekly' as const },
+  { path: '/suporte-ti', priority: 0.9, changeFrequency: 'weekly' as const },
   { path: '/contato', priority: 0.8, changeFrequency: 'monthly' as const },
   { path: '/politica-privacidade', priority: 0.3, changeFrequency: 'yearly' as const },
   { path: '/termos-de-uso', priority: 0.3, changeFrequency: 'yearly' as const },

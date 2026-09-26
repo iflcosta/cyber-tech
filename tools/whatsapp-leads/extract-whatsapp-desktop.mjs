@@ -17,8 +17,90 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const B2B_REGEX =
-  /\b(ltda|me\b|eireli|s\/a|comercio|comércio|servicos|serviços|loja|assistencia|assistência|informatica|informática|tech|cell|celulares|escritorio|escritório|clinica|clínica|radioclinica|radioclínica|unimagem|crb\b|laboratorio|laboratório|hospital|advocacia|advogado|advogada|contabilidade|contador|contadora|engenharia|engenheiro|arquitetura|arquiteto|consultoria|mercado|supermercado|auto\b|autoescola|oficina|mecanica|mecânica|studio|estúdio|escola|colegio|colégio|faculdade|imobiliaria|imobiliária|farmacia|farmácia|drogaria|ótica|otica|padaria|restaurante|pizzaria|lanchonete|hotel|pousada|transportes|transportadora|logistica|logística|odontologia|odonto|dentista|médico|medico|psicologa|psicóloga|fisioterapia|veterinaria|veterinária|pet\b|construtora|incorporadora|condominio|condomínio| sindico|síndico|distribuidora|atacado|industria|indústria| gráfica|grafica|marcenaria|serralheria|vidracaria|vidraçaria|academia| estética|estetica|salao|salão|barbearia|seguros|corretora|despachante)\b/i;
+// Ignorar robôs de grandes corporações nacionais / 0800 / apps de banco e varejo nacional
+const BOT_EXCLUDE_REGEX =
+  /\b(99 app|99pay|ifood|shopee|mercado livre|mercado pago|nubank|serasa experian|pagbank|pagaleve|infinitepay|enel\b|energisa|atendimento caixa|casas bahia|pernambucanas|lu do magalu|google ads|grupo netshoes|fmu\b|uninove|cruzeiro do sul|ung\b|gran cursos|gran ensino|descomplica|dio bootcamps|^dio$|^tim$|^vivoo?$|vivo comunica|jeitto|supersim|ibest|joom brasil|atendente virtual)\b/i;
+
+// Ignorar falsos positivos onde "Loja" ou "Escola" era apenas anotação interna para pessoa física
+const FALSE_POSITIVE_B2B_REGEX =
+  /\b(cliente loja|ednir loja|luis fernando loja|luiz cliente loja|marco pc loja|matheus loja|lu escola|marcia escola|rute escola|terezinha escola|vilma escola|aliciele escol)\b/i;
+
+const NICHE_RULES = [
+  {
+    niche: 'saude_clinicas',
+    label: 'Saúde, Clínicas & Consultórios',
+    regex:
+      /\b(clinica|clínica|radioclinica|radioclínica|centro médico|centro medico|unimagem|crb imagem|laboratorio|laboratório|unilab|ambulatorio|ambulatório|hospital|husf|odontologia|odonto|dentista|médico|medico|dr\b|dr\.|dra\b|dra\.|doutor|doutora|pediatria|psicologa|psicóloga|psicologia|fisioterapia|fisioterapeuta|nutricionista|nutrição|enfermagem|enfer\b|veterinaria|veterinária|medicina felina|pet\b|petsim|drogaria|farmacia|farmácia|vita pharma|saúde ocupacional)\b/i,
+  },
+  {
+    niche: 'escritorios_servicos',
+    label: 'Escritórios, Jurídico, Imobiliárias & Gestão',
+    regex:
+      /\b(advocacia|advogados|advogado|advogada|juridico|jurídico|jurídica|bureau juridico|cartorio|cartório|contabilidade|contador|contadora|escritorio|escritório|imobiliaria|imobiliária|imoveis|imóveis|imobmaxx|corretor|corretora|lotes|geoincorp|condominio|condomínio|condominiais|sindica|síndica|sindico|síndico|administradora|assessoria|consultoria|recursos humanos|adecco|departamento pessoal|adm pessoal|cia de talentos|financeiro|finanças|financeira|consórcio|consorcio|seguros|despachante|detetive)\b/i,
+  },
+  {
+    niche: 'agencias_graficas_tech',
+    label: 'Agências, Mídia, Gráficas & Tecnologia',
+    regex:
+      /\b(agência|agencia|ag\.\s*novo|agenzzia|marketing|v2bmkt|mídia|midia|digital|publicidade|lh content|gráfica|grafica|copiadora|print|editora|fotografia|fotografo|fotógrafo|foto acesso|web studio|studio pc3d|3d\b|design|designer|tecnologia|martech|systems|sistemas|isolution|marcomp|informatica|informática|tech|assistencia|assistência|conserta smart|cell|celulares|megacell|pointchip|telcabos|eletrônicos|eletronicos|eletrobidu)\b/i,
+  },
+  {
+    niche: 'comercio_gastronomia',
+    label: 'Comércio, Lojas & Gastronomia',
+    regex:
+      /\b(comercio|comércio|comercial|loja|store|shop\b|papelaria|embalagens|brindes|bazar|moda\b|modas|fashion|jeans|alianças|joias|ótica|otica|oculos|óculos|perfumes|móveis|moveis|decorações|decoração|paisagismo|utilidades|pechincha|kids|mercado|supermercado|pizzaria|pizza|pizzas|esfiharia|hamburgueria|burger|burguer|churrascaria|espeto|restaurante|lanchonete|lanches|confeitaria|bolos|bolo\b|doces|doce\b|salgados|milk shake|cioccolato|beer|comida caseira|castanhas|queijaria|açaí|açai)\b/i,
+  },
+  {
+    niche: 'auto_construcao_industria',
+    label: 'Automotivo, Construção, Indústria & Logística',
+    regex:
+      /\b(autoescola|auto escola|auto moto|auto center|direção certa|pneus|rodas|multimarcas|veículos|veiculos|motors|motos\b|moto elétrica|carros|caminhões|jet&car|oficina|mecanica|mecânica|engenheiro|engenharia|eng\b|construtora|construções|reformas|constru\b|arquitetura|arquiteto|vidros|vidro\b|vidraçaria|marcenaria|serralheria|ferramentas|wylie tools|módulos|containers|depósito|deposito|guaialajes|hidrofiber|energia solar|alesol|elétrica|eletric|manutenção|indústria|industria|maquinas|máquinas|distribuidora|transportes|transportadora|express|logistica|logística|logistics|delivery|ltda|eireli|prestadora de serviços|multiserviços|multiservice)\b/i,
+  },
+  {
+    niche: 'educacao_beleza_hotelaria',
+    label: 'Educação, Beleza, Fitness & Eventos',
+    regex:
+      /\b(escola|school|colégio|colegio|emei\b|curso|reforço escolar|capacitação|educacional|academy|academia|fitness|dmfitness|forma fit|athlos fit|cross\b|personal\b|pousada|hotel|chalés|recanto|turismo|tour\b|excursões|festas|eventos|ceremonial|robô de led|estética|estetica|beauty|spa\b|bronzeamento|epilacão|laser\b|espaçolaser|laserficando|studio|estúdio|barber|barbershop|barbearia|salão|salao|cabelos|tranças|sobrancelhas|nails|nail\b|tattoo|ateliê|atelie)\b/i,
+  },
+];
+
+function classifyContact(displayName, isBusinessFlag) {
+  if (!displayName) {
+    return {
+      isB2B: false,
+      segment: 'Cliente / Residencial',
+      niche: 'residencial_pf',
+      nicheLabel: 'Cliente / Home Office (PF)',
+    };
+  }
+  if (!FALSE_POSITIVE_B2B_REGEX.test(displayName)) {
+    for (const rule of NICHE_RULES) {
+      if (rule.regex.test(displayName)) {
+        return {
+          isB2B: true,
+          segment: 'Empresa / B2B',
+          niche: rule.niche,
+          nicheLabel: rule.label,
+        };
+      }
+    }
+  }
+  if (isBusinessFlag && !FALSE_POSITIVE_B2B_REGEX.test(displayName)) {
+    return {
+      isB2B: true,
+      segment: 'Empresa / B2B',
+      niche: 'comercio_gastronomia',
+      nicheLabel: 'Comércio, Lojas & Gastronomia',
+    };
+  }
+  return {
+    isB2B: false,
+    segment: 'Cliente / Residencial',
+    niche: 'residencial_pf',
+    nicheLabel: 'Cliente / Home Office (PF)',
+  };
+}
+
 
 function snappyUncompress(compressed) {
   let pos = 0;
@@ -350,6 +432,21 @@ function main() {
         if (pushIdx !== -1) {
           pushname = cleanDisplayName(readV8StringAfter(chunk, pushIdx + 10));
         }
+        if (!pushname) {
+          const notifyIdx = chunkLatin.indexOf('"\x0anotifyName');
+          if (notifyIdx !== -1) {
+            pushname = cleanDisplayName(readV8StringAfter(chunk, notifyIdx + 12));
+          }
+        }
+        if (!name) {
+          const fmtIdx = chunkLatin.indexOf('"\x0eformattedTitle');
+          if (fmtIdx !== -1) {
+            const candidate = cleanDisplayName(readV8StringAfter(chunk, fmtIdx + 16));
+            if (candidate && !/^\+?\d[\d\s()-]+$/.test(candidate)) {
+              name = candidate;
+            }
+          }
+        }
 
         let verifiedName = null;
         const verIdx = chunkLatin.indexOf('"\x0cverifiedName');
@@ -410,14 +507,20 @@ function main() {
     }
   }
 
-  // Filter out the store's own number (5511954369269) and normalize Brazilian numbers
+  // Filter out the store's own number (5511954369269), 0800s, and national chatbots
   const allFormatted = Array.from(contactsByPhone.values())
     .filter((c) => c.phone.startsWith('55') && c.phone.length >= 12 && c.phone.length <= 13)
+    .filter((c) => !c.phone.startsWith('55800') && !c.phone.startsWith('550800'))
     .filter((c) => c.phone !== '5511954369269')
+    .filter((c) => {
+      const displayName = c.savedName || c.verifiedName || c.pushName || '';
+      if (!displayName) return true;
+      return !BOT_EXCLUDE_REGEX.test(displayName);
+    })
     .map((c) => {
       const displayName = c.savedName || c.verifiedName || c.pushName || '';
       const ddd = c.phone.slice(2, 4);
-      const isB2B = c.isBusiness || B2B_REGEX.test(displayName);
+      const classification = classifyContact(displayName, c.isBusiness);
       return {
         name: displayName || `Contato WhatsApp ${formatPhoneBR(c.phone)}`,
         hasRealName: Boolean(displayName),
@@ -425,7 +528,9 @@ function main() {
         phoneFormatted: formatPhoneBR(c.phone),
         ddd,
         isRegional: ['11', '19', '12', '35'].includes(ddd),
-        segment: isB2B ? 'Empresa / B2B' : 'Cliente / Residencial',
+        segment: classification.segment,
+        niche: classification.niche,
+        nicheLabel: classification.nicheLabel,
         savedName: c.savedName,
         pushName: c.pushName,
         verifiedName: c.verifiedName,
@@ -449,7 +554,7 @@ function main() {
   const toCSV = (rows) =>
     '\uFEFF' +
     [
-      'Nome;Telefone_E164;Telefone_Formatado;DDD;Segmento;Salvo_Na_Agenda;Nome_Agenda;Nome_Perfil_WhatsApp',
+      'Nome;Telefone_E164;Telefone_Formatado;DDD;Segmento;Nicho_TI;Salvo_Na_Agenda;Nome_Agenda;Nome_Perfil_WhatsApp',
       ...rows.map((r) =>
         [
           esc(r.name),
@@ -457,6 +562,7 @@ function main() {
           esc(r.phoneFormatted),
           esc(r.ddd),
           esc(r.segment),
+          esc(r.nicheLabel),
           esc(r.isAddressBook ? 'Sim' : 'Não'),
           esc(r.savedName),
           esc(r.pushName),
@@ -473,16 +579,21 @@ function main() {
     'utf8',
   );
 
-  console.log(`\n✅ Extração do WhatsApp Desktop concluída com sucesso!`);
-  console.log(`   - Total de números únicos (Brasil):     ${allFormatted.length}`);
-  console.log(`   - Contatos com nome identificado:       ${namedLeads.length}`);
-  console.log(`   - Empresas / B2B identificadas:         ${b2bLeads.length}`);
-  console.log(`   - Contatos DDD 11/19/12/35 (Região):    ${namedLeads.filter((c) => c.isRegional).length}`);
-  console.log(`\n📁 Arquivos gerados em tools/whatsapp-leads/output/:`);
-  console.log(`   1. leads-whatsapp-empresas-b2b.csv (${b2bLeads.length} empresas/clínicas/escritórios/lojas)`);
-  console.log(`   2. leads-whatsapp-nomeados.csv     (${namedLeads.length} contatos com nome)`);
-  console.log(`   3. leads-whatsapp-completo.csv     (${allFormatted.length} todos os números do WhatsApp)`);
-  console.log(`   4. leads-whatsapp-nomeados.json    (pré-carregado no painel /admin/clientes/leads)`);
+  const byNiche = {};
+  for (const r of b2bLeads) {
+    byNiche[r.nicheLabel] = (byNiche[r.nicheLabel] || 0) + 1;
+  }
+
+  console.log(`\n✅ Extração e Segmentação Inteligente concluída com sucesso!`);
+  console.log(`   - Total de números únicos (Brasil, sem bots): ${allFormatted.length}`);
+  console.log(`   - Contatos com nome identificado:             ${namedLeads.length}`);
+  console.log(`   - Empresas / B2B identificadas (Total):       ${b2bLeads.length}`);
+  console.log(`   - Empresas / B2B na Região (DDD 11/19/12/35): ${b2bLeads.filter((c) => c.isRegional).length}`);
+  console.log(`   - Contatos DDD 11/19/12/35 (Região Total):    ${namedLeads.filter((c) => c.isRegional).length}`);
+  console.log(`\n📊 Distribuição de Leads B2B por Sub-Nicho de Suporte em TI:`);
+  for (const [k, v] of Object.entries(byNiche)) {
+    console.log(`   • ${k}: ${v} leads`);
+  }
 }
 
 main();

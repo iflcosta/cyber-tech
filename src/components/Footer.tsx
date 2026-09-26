@@ -74,6 +74,7 @@ export default function Footer() {
               <li><Link href="/#catalogo" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Catálogo</Link></li>
               <li><Link href="/#curadoria" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Curadoria</Link></li>
               <li><Link href="/#monte-seu-pc" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Monte seu PC</Link></li>
+              <li><Link href="/suporte-ti" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Suporte em TI (Empresas & Home Office)</Link></li>
               <li><Link href="/#parceiros" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">Para parceiros</Link></li>
               <li>
                 <Link href="/politica-privacidade" className="text-[var(--color-text-on-dark-muted)] hover:text-[var(--color-text-on-dark)] transition-colors">

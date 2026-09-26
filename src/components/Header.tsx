@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { href: "/#catalogo", label: "Catálogo", sectionId: "catalogo" },
   { href: "/#curadoria", label: "Curadoria", sectionId: "curadoria" },
   { href: "/#monte-seu-pc", label: "Monte seu PC", sectionId: "monte-seu-pc" },
+  { href: "/suporte-ti", label: "Suporte em TI", sectionId: "suporte-ti" },
   { href: "/#parceiros", label: "Parceiros", sectionId: "parceiros" },
   { href: "/contato", label: "Contato", sectionId: "contato" },
 ];
