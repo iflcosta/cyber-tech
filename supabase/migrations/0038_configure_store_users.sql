@@ -50,8 +50,8 @@ END $$;
 
 GRANT ALL ON public.commission_ledger TO anon, authenticated, service_role;
 
--- 4. DESABILITA TEMPORARIAMENTE OS TRIGGERS DE SEGURANÇA PARA APLICAR AS MUDANÇAS ADMINISTRATIVAS
-ALTER TABLE public.profiles DISABLE TRIGGER ALL;
+-- 4. DESABILITA APENAS OS TRIGGERS DE USUÁRIO (NÃO TOCA NOS TRIGGERS DE SISTEMA/FOREIGN KEY)
+ALTER TABLE public.profiles DISABLE TRIGGER USER;
 
 -- 5. Sincroniza e insere os usuários criados em auth.users para public.profiles
 INSERT INTO public.profiles (id, full_name, email, role, commission_rate, can_delete, active)
@@ -109,8 +109,8 @@ UPDATE public.profiles
 SET commission_rate = 0.30
 WHERE lower(email) LIKE '%iago%' OR lower(full_name) LIKE '%iago%';
 
--- 8. REATIVA TODOS OS TRIGGERS DE SEGURANÇA
-ALTER TABLE public.profiles ENABLE TRIGGER ALL;
+-- 8. REATIVA OS TRIGGERS DE USUÁRIO
+ALTER TABLE public.profiles ENABLE TRIGGER USER;
 
 -- 9. Função de recalcular comissão da OS
 CREATE OR REPLACE FUNCTION public.recompute_os_commission(p_os_id uuid)
