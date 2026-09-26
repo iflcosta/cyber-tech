@@ -57,7 +57,7 @@ export function FacilityLevelSplit({
               <span className="text-[10px] bg-zinc-200 text-zinc-800 px-1.5 py-0.5 font-bold uppercase">IAGO & FELIPE</span>
             </div>
             <p className="text-[11px] text-zinc-600 leading-relaxed mb-3">
-              Workstations sob medida, upgrades de hardware, formatação rápida e varejo de cabos da estante de 6m.
+              Workstations sob medida, upgrades de hardware, formatação rápida e componentes a pronta-entrega.
             </p>
 
             <div className="grid grid-cols-2 gap-2 text-xs border-t border-zinc-200 pt-3">

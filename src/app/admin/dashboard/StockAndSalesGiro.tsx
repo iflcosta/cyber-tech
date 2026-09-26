@@ -32,10 +32,10 @@ export function StockAndSalesGiro({
       <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
         <div>
           <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest block">
-            ALMOXARIFADO & VAREJO // ESTANTE DE 6M
+            ALMOXARIFADO & VAREJO // GESTÃO DE ESTOQUE
           </span>
           <h2 className="text-xs sm:text-sm font-black uppercase text-zinc-950">
-            Giro de Estoque do Eduardo & Mais Vendidos no Balcão
+            Giro de Estoque & Mais Vendidos no Balcão
           </h2>
         </div>
         <Link
@@ -80,9 +80,9 @@ export function StockAndSalesGiro({
           </div>
         ) : (
           <div className="border border-zinc-300 bg-zinc-50 p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">ESTANTE 6 METROS</span>
+            <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">CONTROLE DE ESTOQUE</span>
             <span className="text-sm font-black text-zinc-900 block">
-              Organizado por Eduardo
+              Catálogo Unificado
             </span>
             <span className="text-[10px] text-emerald-700 font-bold">Pronta-entrega no balcão</span>
           </div>

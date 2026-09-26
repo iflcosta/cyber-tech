@@ -57,7 +57,7 @@ export function AttentionRadar({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 font-mono text-xs">
-        {/* 1. Alerta de Estoque Mínimo do Eduardo (Estante 6m) */}
+        {/* 1. Alerta de Estoque Mínimo (Catálogo Geral) */}
         {lowStockItems.length > 0 && (
           <div className="border-2 border-amber-500 bg-amber-50/70 p-3.5 flex flex-col justify-between">
             <div>

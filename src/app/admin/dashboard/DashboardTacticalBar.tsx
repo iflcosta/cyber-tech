@@ -112,9 +112,9 @@ export function DashboardTacticalBar({ userCtx, vpsConnected }: DashboardTactica
           href="/admin/estoque"
           className="border-2 border-zinc-950 bg-white hover:bg-zinc-950 text-zinc-950 hover:text-white p-3 flex flex-col justify-between transition min-h-[58px] group shadow-xs"
         >
-          <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest">ESTANTE 6M</span>
+          <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 font-bold uppercase tracking-widest">ALMOXARIFADO</span>
           <span className="text-xs font-black flex items-center justify-between">
-            <span>Estoque Eduardo</span>
+            <span>Estoque Geral</span>
             <span className="text-zinc-400 group-hover:text-white font-bold">→</span>
           </span>
         </Link>

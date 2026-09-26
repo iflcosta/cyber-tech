@@ -91,7 +91,7 @@ export function StockFilter() {
           apply({}, scanned);
         }}
         title="Consultar Estoque por Código de Barras"
-        subtitle="Aponte a câmera para o EAN-13 ou SKU do item na estante"
+        subtitle="Aponte a câmera para o código de barras EAN-13 ou etiqueta de SKU"
       />
     </>
   );

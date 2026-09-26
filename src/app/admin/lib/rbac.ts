@@ -18,7 +18,7 @@
  *      e visualização de sua comissão pessoal (50/50). Não vê vendas gerais de balcão nem faturamento global.
  *
  * 4. EDUARDO (Estagiário de Estoque & Balcão):
- *    - Foco 100% físico e operacional: Gestão do catálogo da estante de 6m (stock_items),
+ *    - Foco 100% físico e operacional: Gestão do catálogo físico de estoque (stock_items),
  *      reposição de estoque mínimo, bipagem rápida no PDV e check-in básico de OS.
  *    - Zero dados financeiros: Não tem acesso a faturamento em R$, margens ou comissões.
  */

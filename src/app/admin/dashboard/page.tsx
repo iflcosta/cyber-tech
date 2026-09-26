@@ -125,7 +125,7 @@ export default async function DashboardPage({
       .is('sale.voided_at', null)
       .limit(500),
 
-    // Estoque do Eduardo (Catálogo da estante de 6m)
+    // Estoque Geral (Catálogo de peças, cabos e periféricos)
     supabase
       .from('stock_items')
       .select('id, name, current_stock, min_stock, unit_price, internal_sku, category')
@@ -556,7 +556,7 @@ export default async function DashboardPage({
         }}
       />
 
-      {/* 7. Giro de Estoque do Eduardo & Mais Vendidos no Balcão */}
+      {/* 7. Giro de Estoque & Mais Vendidos no Balcão */}
       <StockAndSalesGiro
         userCtx={userCtx}
         stockStats={stockStats}

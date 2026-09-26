@@ -46,7 +46,7 @@ describe('RBAC & Permissões do Dashboard — Cyber Informática V2', () => {
     expect(ctx.facilityFocus).toBe('mezanino');
   });
 
-  it('Eduardo (Estagiário de Estoque): ZERO dados financeiros ou comissões, foco total na estante 6m', () => {
+  it('Eduardo (Estagiário de Estoque): ZERO dados financeiros ou comissões, foco total no estoque físico', () => {
     const user = { id: 'user-eduardo', email: 'eduardo@cyberinformatica.tech' };
     const profile = { full_name: 'Eduardo Estoque', role: 'technician', can_delete: false };
 
