@@ -9,7 +9,7 @@ const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/os', label: 'OS' },
   { href: '/admin/clientes', label: 'Clientes' },
-  { href: '/admin/clientes/leads', label: 'Leads TI' },
+  { href: '/admin/clientes/leads', label: 'Leads TI', iagoOnly: true },
   { href: '/admin/estoque', label: 'Estoque' },
   { href: '/admin/vendas', label: 'Vendas' },
   { href: '/admin/comissoes', label: 'Comissões' },
@@ -20,13 +20,16 @@ const LINKS = [
 export function MobileNav({
   userName,
   roleLabel,
+  showLeadsTab = false,
 }: {
   userName: string;
   roleLabel: string;
+  showLeadsTab?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const visibleLinks = LINKS.filter((link) => !link.iagoOnly || showLeadsTab);
 
   // Fecha o menu sempre que a rota muda (clique num link). Ajuste de
   // estado durante o render em vez de useEffect — padrão recomendado
@@ -93,19 +96,25 @@ export function MobileNav({
               + Pedido Peça
             </Link>
 
-            {LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-                  pathname === link.href || pathname.startsWith(link.href + '/')
-                    ? 'bg-sky-50 text-sky-700 border border-sky-200'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {visibleLinks.map((link) => {
+              const active =
+                pathname === link.href ||
+                (pathname.startsWith(link.href + '/') &&
+                  !(link.href === '/admin/clientes' && pathname.startsWith('/admin/clientes/leads')));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+                    active
+                      ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
 
             <div className="mt-4 border-t border-slate-200 pt-4">
               <button

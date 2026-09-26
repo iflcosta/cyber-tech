@@ -8,7 +8,7 @@ const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/os', label: 'OS' },
   { href: '/admin/clientes', label: 'Clientes' },
-  { href: '/admin/clientes/leads', label: 'Leads TI' },
+  { href: '/admin/clientes/leads', label: 'Leads TI', iagoOnly: true },
   { href: '/admin/estoque', label: 'Estoque' },
   { href: '/admin/vendas', label: 'Vendas' },
   { href: '/admin/comissoes', label: 'Comissões' },
@@ -26,17 +26,23 @@ function initials(name: string) {
 export function DesktopNav({
   userName,
   roleLabel,
+  showLeadsTab = false,
 }: {
   userName: string;
   roleLabel: string;
+  showLeadsTab?: boolean;
 }) {
   const pathname = usePathname();
+  const visibleLinks = LINKS.filter((link) => !link.iagoOnly || showLeadsTab);
 
   return (
     <div className="hidden items-center gap-6 lg:flex">
       <nav className="flex items-center gap-1">
-        {LINKS.map((link) => {
-          const active = pathname === link.href || pathname.startsWith(link.href + '/');
+        {visibleLinks.map((link) => {
+          const active =
+            pathname === link.href ||
+            (pathname.startsWith(link.href + '/') &&
+              !(link.href === '/admin/clientes' && pathname.startsWith('/admin/clientes/leads')));
           return (
             <Link
               key={link.href}

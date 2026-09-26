@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getAuthedProfile } from '@/app/admin/lib/auth';
+import { getAuthedProfile, isIagoUser } from '@/app/admin/lib/auth';
 import { DesktopNav } from '@/app/admin/components/DesktopNav';
 import { MobileNav } from '@/app/admin/components/MobileNav';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  let user: { id: string } | null = null;
+  let user: { id: string; email?: string | null } | null = null;
   let profile: { full_name: string | null; role: string | null } | null = null;
   let configError: string | null = null;
 
@@ -53,6 +53,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return <>{children}</>;
   }
 
+  const showLeadsTab = isIagoUser(user, profile);
+
   return (
     <div className="min-h-dvh bg-[#FAFAFA] text-slate-900 antialiased">
       <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
@@ -67,11 +69,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <DesktopNav
             userName={profile?.full_name ?? '—'}
             roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            showLeadsTab={showLeadsTab}
           />
 
           <MobileNav
             userName={profile?.full_name ?? '—'}
             roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            showLeadsTab={showLeadsTab}
           />
         </div>
       </header>

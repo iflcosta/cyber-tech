@@ -54,6 +54,7 @@ type UnifiedLead = {
   ddd: string;
   isRegional: boolean;
   name: string;
+  hasRealName: boolean;
   email: string | null;
   segment: 'b2b' | 'b2c';
   niche: LeadNiche;
@@ -427,7 +428,7 @@ export function WhatsAppLeadsClient({
 
   // Filtros (inicia focado nos Leads Quentes / Clientes Já Atendidos)
   const [filterSegment, setFilterSegment] = useState<
-    'hot' | 'direct_chat' | 'b2b' | 'erp' | 'all'
+    'hot' | 'named' | 'direct_chat' | 'b2b' | 'erp' | 'all'
   >('hot');
   const [filterNiche, setFilterNiche] = useState<'all' | LeadNiche>('all');
   const [filterRegion, setFilterRegion] = useState<'regional' | 'all'>(
@@ -480,13 +481,19 @@ export function WhatsAppLeadsClient({
 
   const unifiedLeads = useMemo(() => {
     const map = new Map<string, UnifiedLead>();
+    const isGenericName = (n: string) =>
+      !n ||
+      n.startsWith('Cliente WhatsApp') ||
+      n.startsWith('Contato WhatsApp') ||
+      n === 'Cliente PDV';
 
     // 1. Carregar base do ERP (OS, PDV, Site)
     for (const item of initialLeads) {
       const p = normalizePhoneBR(item.phone);
-      if (!p) continue;
+      if (!p || p === '5511919691542' || p === '5511954369269') continue;
       const ddd = p.slice(2, 4);
-      const niche = inferNiche(item.name);
+      const cleanName = item.name.trim();
+      const niche = inferNiche(cleanName);
       const isB2B = item.origin === 'site_b2b' || niche !== 'residencial_pf';
       const existing = map.get(p);
 
@@ -496,7 +503,8 @@ export function WhatsAppLeadsClient({
           phoneFormatted: formatPhoneBR(p),
           ddd,
           isRegional: ['11', '19', '12', '35'].includes(ddd),
-          name: item.name.trim(),
+          name: cleanName,
+          hasRealName: !isGenericName(cleanName),
           email: item.email,
           segment: isB2B ? 'b2b' : 'b2c',
           niche,
@@ -521,6 +529,10 @@ export function WhatsAppLeadsClient({
           existing.inErp = true;
           existing.erpCustomerId = item.id;
         }
+        if (!isGenericName(cleanName) && isGenericName(existing.name)) {
+          existing.name = cleanName;
+          existing.hasRealName = true;
+        }
         existing.isHotLead = true;
         existing.osCount += item.osCount;
         existing.salesCount += item.salesCount;
@@ -534,10 +546,13 @@ export function WhatsAppLeadsClient({
 
     // 2. Mesclar com a base do WhatsApp Desktop / Supabase (it_support_leads)
     for (const wa of importedLeads) {
+      if (wa.isAddressBook) continue;
       const p = normalizePhoneBR(wa.phone);
-      if (!p) continue;
+      if (!p || p === '5511919691542' || p === '5511954369269') continue;
       const ddd = p.slice(2, 4);
-      const niche = inferNiche(wa.name, wa.niche);
+      const waName = wa.name?.trim() || `Cliente WhatsApp ${formatPhoneBR(p)}`;
+      const hasRealName = !isGenericName(waName);
+      const niche = inferNiche(hasRealName ? waName : '', wa.niche);
       const isB2B =
         wa.segment?.toLowerCase().includes('b2b') ||
         wa.segment?.toLowerCase().includes('empresa') ||
@@ -546,8 +561,7 @@ export function WhatsAppLeadsClient({
       const msgsReceived = Number(wa.msgsReceived || 0);
       const totalMessages = msgsSent + msgsReceived;
       const hasDirectChat = Boolean(wa.hasDirectChat || totalMessages > 0);
-      const isAddressBook = Boolean(wa.isAddressBook);
-      const isHotLead = Boolean(wa.isHotLead || hasDirectChat || isAddressBook);
+      const isHotLead = Boolean(wa.isHotLead || hasDirectChat);
 
       const existing = map.get(p);
       if (!existing) {
@@ -556,7 +570,8 @@ export function WhatsAppLeadsClient({
           phoneFormatted: formatPhoneBR(p),
           ddd,
           isRegional: ['11', '19', '12', '35'].includes(ddd),
-          name: wa.name?.trim() || `Contato WhatsApp ${formatPhoneBR(p)}`,
+          name: waName,
+          hasRealName,
           email: null,
           segment: isB2B ? 'b2b' : 'b2c',
           niche,
@@ -567,7 +582,7 @@ export function WhatsAppLeadsClient({
           fromWhatsApp: true,
           isHotLead,
           hasDirectChat,
-          isAddressBook,
+          isAddressBook: false,
           msgsSent,
           msgsReceived,
           totalMessages,
@@ -579,18 +594,16 @@ export function WhatsAppLeadsClient({
       } else {
         existing.fromWhatsApp = true;
         if (
-          wa.name &&
-          !wa.name.startsWith('Contato WhatsApp') &&
-          (existing.name === 'Cliente PDV' ||
-            wa.name.length > existing.name.length)
+          hasRealName &&
+          (isGenericName(existing.name) || waName.length > existing.name.length)
         ) {
-          existing.name = wa.name.trim();
+          existing.name = waName;
+          existing.hasRealName = true;
         }
         if (isB2B) existing.segment = 'b2b';
         if (niche !== 'residencial_pf') existing.niche = niche;
         if (isHotLead) existing.isHotLead = true;
         if (hasDirectChat) existing.hasDirectChat = true;
-        if (isAddressBook) existing.isAddressBook = true;
         if (msgsSent > existing.msgsSent) existing.msgsSent = msgsSent;
         if (msgsReceived > existing.msgsReceived) {
           existing.msgsReceived = msgsReceived;
@@ -618,6 +631,7 @@ export function WhatsAppLeadsClient({
     }
 
     return Array.from(map.values()).sort((a, b) => {
+      if (a.hasRealName !== b.hasRealName) return a.hasRealName ? -1 : 1;
       if (a.isHotLead !== b.isHotLead) return a.isHotLead ? -1 : 1;
       if (a.osCount + a.salesCount !== b.osCount + b.salesCount) {
         return b.osCount + b.salesCount - (a.osCount + a.salesCount);
@@ -636,7 +650,9 @@ export function WhatsAppLeadsClient({
 
   const stats = useMemo(() => {
     const total = unifiedLeads.length;
+    const named = unifiedLeads.filter((l) => l.hasRealName).length;
     const hot = unifiedLeads.filter((l) => l.isHotLead).length;
+    const hotNamed = unifiedLeads.filter((l) => l.isHotLead && l.hasRealName).length;
     const directChat = unifiedLeads.filter(
       (l) => l.hasDirectChat || l.osCount > 0 || l.salesCount > 0,
     ).length;
@@ -665,6 +681,7 @@ export function WhatsAppLeadsClient({
     for (const l of unifiedLeads) {
       if (filterRegion === 'regional' && !l.isRegional) continue;
       if (filterSegment === 'hot' && !l.isHotLead) continue;
+      if (filterSegment === 'named' && !l.hasRealName) continue;
       if (
         filterSegment === 'direct_chat' &&
         !l.hasDirectChat &&
@@ -682,7 +699,9 @@ export function WhatsAppLeadsClient({
 
     return {
       total,
+      named,
       hot,
+      hotNamed,
       directChat,
       erp,
       b2b,
@@ -697,6 +716,7 @@ export function WhatsAppLeadsClient({
     return unifiedLeads.filter((l) => {
       if (filterRegion === 'regional' && !l.isRegional) return false;
       if (filterSegment === 'hot' && !l.isHotLead) return false;
+      if (filterSegment === 'named' && !l.hasRealName) return false;
       if (
         filterSegment === 'direct_chat' &&
         !l.hasDirectChat &&
@@ -777,12 +797,16 @@ export function WhatsAppLeadsClient({
   }
 
   function buildWhatsAppUrl(lead: UnifiedLead) {
-    const firstName =
-      lead.name
-        .replace(/^Contato WhatsApp.*$/i, 'tudo bem')
-        .trim()
-        .split(/\s+/)[0] || 'tudo bem';
+    if (!lead.hasRealName) {
+      const msg = customMessage
+        .replace(/Olá,\s*\*\{primeiro_nome\}\*!/gi, 'Olá!')
+        .replace(/Olá,\s*\*\{nome\}\*!/gi, 'Olá!')
+        .replace(/\*?\{primeiro_nome\}\*?/gi, '')
+        .replace(/\*?\{nome\}\*?/gi, '');
+      return `https://wa.me/${lead.phoneE164}?text=${encodeURIComponent(msg)}`;
+    }
 
+    const firstName = lead.name.trim().split(/\s+/)[0] || lead.name;
     const msg = customMessage
       .replace(/\{primeiro_nome\}/gi, firstName)
       .replace(/\{nome\}/gi, lead.name);
@@ -907,7 +931,7 @@ export function WhatsAppLeadsClient({
 
   function exportFilteredCSV() {
     const header =
-      'Nome;Telefone_E164;Telefone_Formatado;DDD;Lead_Quente;Conversa_Direta_1a1;Msgs_Trocadas;Msgs_Enviadas_Loja;Msgs_Recebidas_Cliente;Ultima_Conversa;Salvo_Na_Agenda;Segmento;Nicho_TI;Status_Funil;Observacoes;Ja_Cliente_ERP;Qtd_OS;Qtd_Vendas';
+      'Nome;Telefone_E164;Telefone_Formatado;DDD;Lead_Quente;Conversa_Direta_1a1;Msgs_Trocadas;Msgs_Enviadas_Loja;Msgs_Recebidas_Cliente;Ultima_Conversa;Segmento;Nicho_TI;Status_Funil;Observacoes;Ja_Cliente_ERP;Qtd_OS;Qtd_Vendas';
     const esc = (v: string | number | null | undefined) =>
       `"${String(v ?? '').replace(/"/g, '""')}"`;
 
@@ -923,7 +947,6 @@ export function WhatsAppLeadsClient({
         l.msgsSent,
         l.msgsReceived,
         esc(l.lastChatDate),
-        esc(l.isAddressBook ? 'Sim' : 'Não'),
         esc(l.segment === 'b2b' ? 'Empresa / B2B' : 'Cliente / Residencial'),
         esc(NICHE_META[l.niche].label),
         esc(STATUS_META[l.status].label),
@@ -944,17 +967,45 @@ export function WhatsAppLeadsClient({
     a.remove();
   }
 
+  function exportNamedJSON() {
+    const cleanJson = unifiedLeads
+      .filter((l) => l.hasRealName)
+      .map((l) => ({
+        name: l.name,
+        phone: l.phoneE164,
+        phoneFormatted: l.phoneFormatted,
+        ddd: l.ddd,
+        segment: l.segment === 'b2b' ? 'Empresa / B2B' : 'Cliente / Residencial',
+        niche: l.niche,
+        nicheLabel: NICHE_META[l.niche].label,
+        hasDirectChat: l.hasDirectChat,
+        totalMessages: l.totalMessages,
+        msgsSent: l.msgsSent,
+        msgsReceived: l.msgsReceived,
+        lastChatDate: l.lastChatDate,
+      }));
+    const blob = new Blob([JSON.stringify(cleanJson, null, 2)], {
+      type: 'application/json;charset=utf-8;',
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `leads-somente-com-nome-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
   return (
     <div className="space-y-6">
       {/* KPIs da Central de Leads Quentes & Suporte em TI */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <div className="rounded-lg border-2 border-black bg-white p-4">
           <p className="text-xs font-bold uppercase tracking-wider text-zinc-900">
-            🔥 Leads Quentes (Atendidos)
+            🔥 Conversas 1-a-1 (Loja)
           </p>
           <p className="mt-1 text-2xl font-bold text-zinc-950">{stats.hot}</p>
           <p className="mt-0.5 text-xs text-zinc-600">
-            {stats.directChat} conversas 1-a-1 + agenda/ERP
+            {stats.hotNamed} com nome de perfil + {stats.hot - stats.hotNamed} números
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
@@ -1224,6 +1275,22 @@ export function WhatsAppLeadsClient({
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-3">
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={exportNamedJSON}
+                className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
+              >
+                📥 Baixar JSON Limpo (Leads + Nomes: {stats.named})
+              </button>
+
+              <button
+                type="button"
+                onClick={exportFilteredCSV}
+                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50"
+              >
+                Baixar Planilha CSV ({filteredLeads.length})
+              </button>
+
               <label className="cursor-pointer rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50">
                 Importar Arquivo (.json, .csv, .vcf)
                 <input
@@ -1233,14 +1300,6 @@ export function WhatsAppLeadsClient({
                   className="hidden"
                 />
               </label>
-
-              <button
-                type="button"
-                onClick={exportFilteredCSV}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50"
-              >
-                Baixar Planilha do Filtro ({filteredLeads.length})
-              </button>
 
               <button
                 type="button"
@@ -1307,11 +1366,11 @@ export function WhatsAppLeadsClient({
             {[
               {
                 id: 'hot',
-                label: `🔥 Leads Quentes / Já Atendidos (${stats.hot})`,
+                label: `🔥 Conversas 1-a-1 da Loja (${stats.hot})`,
               },
               {
-                id: 'direct_chat',
-                label: `💬 Conversas 1-a-1 Ativas (${stats.directChat})`,
+                id: 'named',
+                label: `✨ Com Nome de Perfil/Business (${stats.named})`,
               },
               { id: 'b2b', label: `🏢 Empresas / B2B (${stats.b2b})` },
               { id: 'erp', label: `🛠️ Já no ERP (${stats.erp})` },
@@ -1322,7 +1381,13 @@ export function WhatsAppLeadsClient({
                 type="button"
                 onClick={() =>
                   setFilterSegment(
-                    tab.id as 'hot' | 'direct_chat' | 'b2b' | 'erp' | 'all',
+                    tab.id as
+                      | 'hot'
+                      | 'named'
+                      | 'direct_chat'
+                      | 'b2b'
+                      | 'erp'
+                      | 'all',
                   )
                 }
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${

@@ -50,3 +50,20 @@ export const getAuthedProfile = cache(async () => {
     .maybeSingle();
   return { supabase, user, profile };
 });
+
+/**
+ * Restringe funcionalidades exclusivas de Desenvolvimento & Marketing (como a
+ * aba "Leads TI") apenas para o Iago, evitando poluir a interface operacional
+ * para o Felipe, o técnico (Jefferson) e o estagiário (Eduardo).
+ */
+export function isIagoUser(
+  user?: { id?: string; email?: string | null } | null,
+  profile?: { full_name?: string | null } | null,
+): boolean {
+  if (!user) return false;
+  if (user.id === 'e8bb8d42-2424-46b7-a345-c17ee204862d') return true;
+  if (user.email?.toLowerCase() === 'iago@cyberinformatica.tech') return true;
+  if (profile?.full_name?.trim().toLowerCase() === 'iago') return true;
+  return false;
+}
+

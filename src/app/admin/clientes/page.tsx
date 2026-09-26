@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getAuthedUser } from '@/app/admin/lib/auth';
+import { getAuthedProfile, isIagoUser } from '@/app/admin/lib/auth';
 import { sanitizeSearchTerm, customerSearchOr } from '@/app/admin/lib/search';
 
 export const dynamic = 'force-dynamic';
@@ -11,8 +11,9 @@ export default async function ClientesListPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const params = await searchParams;
-  const { supabase, user } = await getAuthedUser();
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) redirect('/admin/login');
+  const showLeadsButton = isIagoUser(user, profile);
 
   let query = supabase
     .from('customers')
@@ -56,12 +57,14 @@ export default async function ClientesListPage({
             {(customers ?? []).length} resultado{(customers ?? []).length === 1 ? '' : 's'}
           </p>
         </div>
-        <Link
-          href="/admin/clientes/leads"
-          className="rounded-md bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
-        >
-          📲 Central de Leads & WhatsApp (Suporte TI)
-        </Link>
+        {showLeadsButton && (
+          <Link
+            href="/admin/clientes/leads"
+            className="rounded-md bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
+          >
+            📲 Central de Leads & WhatsApp (Suporte TI)
+          </Link>
+        )}
       </div>
 
       <form className="rounded-lg border border-slate-200 bg-white p-3" method="get">
