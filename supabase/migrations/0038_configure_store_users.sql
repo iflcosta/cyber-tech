@@ -1,10 +1,22 @@
 -- ============================================================
 -- 0038_configure_store_users.sql — Setup Completo de Usuários e Comissões
 -- ============================================================
--- PRESERVAÇÃO INTEGRAL DE DADOS:
--- - NÃO apaga nem reseta nenhuma tabela.
--- - NÃO altera estoque (stock_items), clientes, vendas ou ordens de serviço.
--- - Modifica exclusivamente os registros dos 3 e-mails corporativos informados.
+-- Papéis e Regras de Negócio:
+-- 1. FELIPE (felipe@cyberinformatica.tech) — Dono / Administrador:
+--    - role: 'owner' | commission_rate: 0.00 | can_delete: true
+--    - Retém lucro da loja, acesso financeiro global.
+--
+-- 2. IAGO (iago@cyberinformatica.tech / iagopuma0) — Hardware Tech & Dev Master:
+--    - role: 'owner' | commission_rate: 0.30 | can_delete: true
+--    - 30% de comissão em hardware, autoridade técnica e dev master.
+--
+-- 3. JEFFERSON (jefferson@cyberinformatica.tech) — Técnico Mezanino:
+--    - role: 'technician' | commission_rate: 0.50 | can_delete: false
+--    - 50/50 em celulares, telas OCA e placas de vídeo.
+--
+-- 4. EDUARDO (eduardo@cyberinformatica.tech) — Estagiário de Balcão & Estoque:
+--    - role: 'technician' | commission_rate: 0.00 | can_delete: false
+--    - Mesmos acessos operacionais (OS, Estoque, Vendas, Peças), sem comissão.
 -- ============================================================
 
 -- 1. Garante que o gatilho de proteção permita operações de administração via SQL Editor (auth.uid() IS NULL)
@@ -87,19 +99,20 @@ END $$;
 
 GRANT ALL ON public.commission_ledger TO anon, authenticated, service_role;
 
--- 5. Sincroniza e insere os usuários criados em auth.users para public.profiles
+-- 5. Sincroniza e insere todos os 4 usuários de auth.users para public.profiles
 INSERT INTO public.profiles (id, full_name, email, role, commission_rate, can_delete, active)
 SELECT 
   u.id,
   CASE 
     WHEN lower(u.email) LIKE '%felipe%' THEN 'Felipe'
+    WHEN lower(u.email) LIKE '%iago%' THEN 'Iago'
     WHEN lower(u.email) LIKE '%jefferson%' THEN 'Jefferson'
     WHEN lower(u.email) LIKE '%eduardo%' THEN 'Eduardo'
     ELSE split_part(u.email, '@', 1)
   END AS full_name,
   u.email,
   CASE 
-    WHEN lower(u.email) LIKE '%felipe%' THEN 'owner'
+    WHEN lower(u.email) LIKE '%felipe%' OR lower(u.email) LIKE '%iago%' THEN 'owner'
     ELSE 'technician'
   END AS role,
   CASE 
@@ -108,16 +121,17 @@ SELECT
     ELSE 0.00
   END AS commission_rate,
   CASE 
-    WHEN lower(u.email) LIKE '%felipe%' THEN true
+    WHEN lower(u.email) LIKE '%felipe%' OR lower(u.email) LIKE '%iago%' THEN true
     ELSE false
   END AS can_delete,
   true AS active
 FROM auth.users u
 WHERE lower(u.email) IN (
   'felipe@cyberinformatica.tech',
+  'iago@cyberinformatica.tech',
   'jefferson@cyberinformatica.tech',
   'eduardo@cyberinformatica.tech'
-)
+) OR lower(u.email) LIKE '%iago%'
 ON CONFLICT (id) DO UPDATE SET
   full_name = EXCLUDED.full_name,
   role = EXCLUDED.role,
@@ -125,10 +139,14 @@ ON CONFLICT (id) DO UPDATE SET
   can_delete = EXCLUDED.can_delete,
   active = EXCLUDED.active;
 
--- 6. Atualização cirúrgica estrita apenas nos 3 e-mails
+-- 6. Atualização cirúrgica estrita para os 4 membros da equipe
 UPDATE public.profiles
 SET full_name = 'Felipe', role = 'owner', commission_rate = 0.00, can_delete = true, active = true
 WHERE lower(email) = 'felipe@cyberinformatica.tech';
+
+UPDATE public.profiles
+SET full_name = 'Iago', role = 'owner', commission_rate = 0.30, can_delete = true, active = true
+WHERE lower(email) = 'iago@cyberinformatica.tech' OR lower(email) LIKE '%iago%';
 
 UPDATE public.profiles
 SET full_name = 'Jefferson', role = 'technician', commission_rate = 0.50, can_delete = false, active = true
@@ -141,11 +159,12 @@ WHERE lower(email) = 'eduardo@cyberinformatica.tech';
 -- 7. Notifica o PostgREST para recarregar o schema
 NOTIFY pgrst, 'reload schema';
 
--- 8. Retorna os 3 perfis configurados para confirmação visual imediata
+-- 8. Retorna os 4 perfis configurados para confirmação visual imediata
 SELECT id, full_name, email, role, commission_rate, can_delete, active 
 FROM public.profiles
 WHERE lower(email) IN (
   'felipe@cyberinformatica.tech',
+  'iago@cyberinformatica.tech',
   'jefferson@cyberinformatica.tech',
   'eduardo@cyberinformatica.tech'
-);
+) OR lower(email) LIKE '%iago%';
