@@ -4,6 +4,8 @@
 -- Blindagem de Concorrência (Race Condition) no Estoque
 -- Aplica bloqueio de linha FOR UPDATE e mensagens de erro amigáveis
 -- para concorrência simultânea entre Balcão (PDV) e Bancada (OS).
+-- Drop na sobrecarga antiga com ordem anterior de argumentos para evitar PGRST203
+DROP FUNCTION IF EXISTS public.create_sale(jsonb, text, text, text, numeric, text, uuid);
 
 CREATE OR REPLACE FUNCTION public.create_sale(
   p_items jsonb,
@@ -106,3 +108,73 @@ BEGIN
   RETURN v_sale_id;
 END;
 $function$;
+
+-- Função auxiliar atômica para baixa de estoque via Bancada OS ou Baixa Rápida
+CREATE OR REPLACE FUNCTION public.decrement_stock_atomic(
+    p_stock_item_id UUID,
+    p_quantity INTEGER,
+    p_operation_ref TEXT DEFAULT 'PDV_VENDA'
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+    v_current_stock INTEGER;
+    v_item_name TEXT;
+    v_new_stock INTEGER;
+BEGIN
+    IF auth.uid() IS NULL THEN
+        RAISE EXCEPTION 'Autenticação necessária' USING ERRCODE = 'insufficient_privilege';
+    END IF;
+
+    IF p_quantity <= 0 THEN
+        RAISE EXCEPTION 'A quantidade a debitar deve ser maior que zero.';
+    END IF;
+
+    -- Trava pessimista na linha do item para serializar transações concorrentes
+    SELECT current_stock, name
+    INTO v_current_stock, v_item_name
+    FROM public.stock_items
+    WHERE id = p_stock_item_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'ITEM_NOT_FOUND',
+            'message', 'O item de estoque informado não existe.'
+        );
+    END IF;
+
+    IF v_current_stock < p_quantity THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'ESTOQUE_INSUFICIENTE',
+            'message', format('Estoque insuficiente para "%s". Saldo atual: %s, Solicitado: %s', v_item_name, v_current_stock, p_quantity),
+            'current_stock', v_current_stock
+        );
+    END IF;
+
+    v_new_stock := v_current_stock - p_quantity;
+
+    UPDATE public.stock_items
+    SET current_stock = v_new_stock,
+        updated_at = NOW()
+    WHERE id = p_stock_item_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'item_id', p_stock_item_id,
+        'item_name', v_item_name,
+        'previous_stock', v_current_stock,
+        'new_stock', v_new_stock,
+        'debited_quantity', p_quantity,
+        'reference', p_operation_ref
+    );
+END;
+$$;
+
+NOTIFY pgrst, 'reload schema';
+
