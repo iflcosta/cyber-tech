@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Search,
@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { brand } from '@/lib/brand';
+import { ClientUpsellSelector } from './ClientUpsellSelector';
 
 interface TrackingData {
   found: boolean;
@@ -170,6 +171,64 @@ export default function StatusTrackerClient() {
   }
 
   const totalOrderAmount = data ? (data.estimated_value || 0) + (data.labor_cost || 0) : 0;
+  const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
+
+  const availableUpsells = useMemo(() => {
+    if (!data) return [];
+    const t = (data.equipment_type || '').toLowerCase();
+    const list: Array<{ id: string; title: string; desc: string; price: number }> = [];
+
+    if (/celular|smartphone|tablet|iphone/.test(t)) {
+      list.push({
+        id: 'pelicula_3d',
+        title: '🛡️ Película 3D de Vidro Temperado',
+        desc: 'Proteção pericial contra quedas e trincas com aplicação sem bolhas',
+        price: 25,
+      });
+      list.push({
+        id: 'cabo_reforcado',
+        title: '⚡ Cabo Blindado em Malha Náutica Certificado',
+        desc: 'Cabo ultra resistente que não parte a fiação interna',
+        price: 25,
+      });
+    } else {
+      list.push({
+        id: 'limpeza_pasta',
+        title: '❄️ Limpeza Preventiva de Coolers & Pasta Térmica Nova',
+        desc: 'Reduz a temperatura em até 20°C e prolonga a vida útil do chip',
+        price: 60,
+      });
+      list.push({
+        id: 'cabo_forca',
+        title: '⚡ Cabo de Força Tripolar NBR 14136 Homologado',
+        desc: 'Elimina faíscas e superaquecimento na tomada da máquina',
+        price: 25,
+      });
+    }
+
+    list.push({
+      id: 'checkup_preventivo',
+      title: '📦 Revisão Preventiva Agendada (6 Meses)',
+      desc: 'Check-up completo de estabilidade, bateria e sistema',
+      price: 35,
+    });
+
+    return list;
+  }, [data]);
+
+  const upsellsTotal = useMemo(() => {
+    return availableUpsells
+      .filter((u) => selectedUpsells.includes(u.id))
+      .reduce((sum, u) => sum + u.price, 0);
+  }, [availableUpsells, selectedUpsells]);
+
+  const finalTotalAmount = totalOrderAmount + upsellsTotal;
+
+  function handleToggleUpsell(id: string) {
+    setSelectedUpsells((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -248,38 +307,72 @@ export default function StatusTrackerClient() {
         )}
       </div>
 
+      {/* Skeleton Loader Anti-CLS durante consulta */}
+      {loading && !data && (
+        <div className="no-print space-y-4 animate-pulse min-h-[380px]">
+          <div className="h-28 bg-zinc-200 border-2 border-zinc-300 p-6 flex flex-col justify-between">
+            <div className="h-4 bg-zinc-300 w-1/4" />
+            <div className="h-6 bg-zinc-300 w-1/2" />
+          </div>
+          <div className="h-64 bg-white border border-zinc-300 p-6 space-y-4">
+            <div className="h-5 bg-zinc-200 w-1/3" />
+            <div className="grid grid-cols-5 gap-2 h-16 bg-zinc-100" />
+            <div className="grid grid-cols-2 gap-4 h-24">
+              <div className="bg-zinc-100" />
+              <div className="bg-zinc-100" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Resultados da Consulta — no-print */}
       {data && (
         <div className="no-print space-y-4 sm:space-y-6">
           {/* Banner de Aprovação em 1 Clique (quando aguardando aprovação) */}
           {data.status === 'awaiting_approval' && (
-            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
-                  AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
-                </span>
-                <h3 className="text-base sm:text-lg font-extrabold text-white">
-                  Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
-                </h3>
-                <p className="mt-1 text-xs sm:text-sm text-zinc-300 hidden sm:block">
-                  Confira o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e aprove em 1 toque pelo WhatsApp.
-                </p>
+            <div className="space-y-4">
+              <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
+                    AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
+                  </span>
+                  <h3 className="text-base sm:text-lg font-extrabold text-white">
+                    Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
+                  </h3>
+                  <p className="mt-1 text-xs sm:text-sm text-zinc-300 hidden sm:block">
+                    Confira o detalhamento abaixo ({fmtBRL(finalTotalAmount)}) e aprove em 1 toque pelo WhatsApp.
+                  </p>
+                </div>
+                <a
+                  href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
+                    `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
+                      data.os_number || data.short_id
+                    } (${data.equipment_brand} ${data.equipment_model}) no valor de ${fmtBRL(
+                      finalTotalAmount
+                    )}${
+                      selectedUpsells.length > 0
+                        ? ` (incluindo adicionais: ${availableUpsells
+                            .filter((u) => selectedUpsells.includes(u.id))
+                            .map((u) => u.title.replace(/^[^a-zA-Z0-9À-ÿ]+/, '').trim())
+                            .join(' + ')})`
+                        : ''
+                    }. Podem iniciar o serviço!`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
+                >
+                  <span>Aprovar Orçamento no WhatsApp</span>
+                  <ArrowUpRight className="w-4 h-4 shrink-0" />
+                </a>
               </div>
-              <a
-                href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
-                  `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
-                    data.os_number || data.short_id
-                  } (${data.equipment_brand} ${data.equipment_model}) no valor de ${fmtBRL(
-                    totalOrderAmount
-                  )}. Podem iniciar o serviço!`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
-              >
-                <span>Aprovar Orçamento no WhatsApp</span>
-                <ArrowUpRight className="w-4 h-4 shrink-0" />
-              </a>
+
+              {/* Seletor de Upsells de 1 Clique */}
+              <ClientUpsellSelector
+                options={availableUpsells}
+                selectedIds={selectedUpsells}
+                onToggle={handleToggleUpsell}
+              />
             </div>
           )}
 

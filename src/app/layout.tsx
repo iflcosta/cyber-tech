@@ -148,7 +148,7 @@ export default function RootLayout({
             __html: JSON.stringify([
               {
                 "@context": "https://schema.org",
-                "@type": ["LocalBusiness", "ComputerStore", "Store"],
+                "@type": ["LocalBusiness", "ComputerStore", "ComputerRepairService", "Store"],
                 "@id": `${brand.url}/#business`,
                 "name": "Cyber Informática",
                 "alternateName": "Cyber Info Bragança",
@@ -188,6 +188,36 @@ export default function RootLayout({
                     "closes": "13:00"
                   }
                 ],
+                "hasOfferCatalog": {
+                  "@type": "OfferCatalog",
+                  "name": "Serviços Técnicos e Laboratório Cyber",
+                  "itemListElement": [
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Manutenção Pericial de Computadores e Notebooks",
+                        "description": "Diagnóstico rápido, upgrades de SSD NVMe, limpeza térmica profunda e reparo de hardware."
+                      }
+                    },
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Laboratório de Telas e Microeletrônica OCA",
+                        "description": "Restauração óptica em autoclave industrial e câmara de vácuo preservando o display original."
+                      }
+                    },
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Montagem de Workstations e PCs Gamers",
+                        "description": "Curadoria de hardware, cable management profissional e testes de estresse FurMark e AIDA64."
+                      }
+                    }
+                  ]
+                },
                 "sameAs": [
                   brand.social.instagram,
                   brand.social.facebook
