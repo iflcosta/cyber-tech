@@ -414,17 +414,17 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6">
       {/* 1. Cabeçalho CIS-01 com Identificação do Usuário e Metrologia */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 border-b-2 border-zinc-800 gap-3 font-mono">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-4 border-b-2 border-zinc-950 gap-3 font-mono">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500">
               CYBER INSTRUMENTATION SYSTEM // ERP COCKPIT
             </span>
-            <span className="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 font-bold uppercase">
+            <span className="text-[10px] bg-zinc-950 text-white px-2 py-0.5 font-bold uppercase">
               {userCtx.name} ({userCtx.effectiveRole})
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-zinc-950">
             Painel de Controle Operacional.
           </h1>
         </div>
@@ -433,7 +433,7 @@ export default async function DashboardPage({
           <PixQRButton
             buttonLabel="⚡ PIX AVULSO"
             description="Pagamento avulso Cyber Informática"
-            buttonClassName="inline-flex items-center gap-2 bg-white hover:bg-zinc-200 text-black px-3.5 py-2 text-xs font-mono font-bold uppercase transition"
+            buttonClassName="inline-flex items-center gap-2 border-2 border-zinc-950 bg-white hover:bg-zinc-950 text-zinc-950 hover:text-white px-3.5 py-2 text-xs font-mono font-bold uppercase transition shadow-xs"
           />
         </div>
       </div>
@@ -452,77 +452,77 @@ export default async function DashboardPage({
 
       {/* 4. Resumo de Faturamento Consolidado (Exclusivo Dono / Desenvolvedor) */}
       {userCtx.canViewStoreFinancials && (
-        <section className="border border-zinc-800 bg-[#111114] p-4 sm:p-5 text-white font-mono space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 text-zinc-950 font-mono space-y-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
             <div>
-              <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest block">
                 CONSOLIDAÇÃO FINANCEIRA // LOJA FÍSICA
               </span>
-              <h2 className="text-xs sm:text-sm font-bold uppercase text-white">
+              <h2 className="text-xs sm:text-sm font-black uppercase text-zinc-950">
                 Faturamento & Indicadores de Vendas
               </h2>
             </div>
-            <span className="text-[10px] text-emerald-400 font-bold uppercase">
+            <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 font-bold uppercase">
               VISÃO GERENCIAL FELIPE
             </span>
           </div>
 
           {/* Cards de Métricas Principais */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <span className="text-[10px] text-zinc-400 uppercase block mb-1">VENDAS PDV (HOJE)</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-white block">
+            <div className="border border-zinc-300 bg-zinc-50 p-4">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">VENDAS PDV (HOJE)</span>
+              <span className="text-xl sm:text-2xl font-black text-zinc-950 block">
                 {fmtBRL(totalToday)}
               </span>
-              <div className="mt-1 text-[11px] text-zinc-400 flex items-center gap-2">
+              <div className="mt-1 text-[11px] text-zinc-600 flex items-center gap-2">
                 <span>{countToday} vendas</span>
                 {todayTrend && (
-                  <span className={`font-bold ${todayTrend.up ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className={`font-bold px-1 py-0.2 border text-[10px] ${todayTrend.up ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-rose-800 bg-rose-50 border-rose-300'}`}>
                     {todayTrend.up ? '▲ +' : '▼ '}{Math.abs(todayTrend.pct)}% vs ontem
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <span className="text-[10px] text-zinc-400 uppercase block mb-1">ÚLTIMOS 7 DIAS</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-white block">
+            <div className="border border-zinc-300 bg-zinc-50 p-4">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">ÚLTIMOS 7 DIAS</span>
+              <span className="text-xl sm:text-2xl font-black text-zinc-950 block">
                 {fmtBRL(totalWeek)}
               </span>
-              <div className="mt-1 text-[11px] text-zinc-400 flex items-center gap-2">
+              <div className="mt-1 text-[11px] text-zinc-600 flex items-center gap-2">
                 <span>{countWeek} vendas</span>
                 {weekTrend && (
-                  <span className={`font-bold ${weekTrend.up ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className={`font-bold px-1 py-0.2 border text-[10px] ${weekTrend.up ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-rose-800 bg-rose-50 border-rose-300'}`}>
                     {weekTrend.up ? '▲ +' : '▼ '}{Math.abs(weekTrend.pct)}% vs sem. ant.
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <span className="text-[10px] text-zinc-400 uppercase block mb-1">FATURAMENTO PDV (MÊS)</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-white block">
+            <div className="border border-zinc-300 bg-zinc-50 p-4">
+              <span className="text-[10px] text-zinc-500 font-bold uppercase block mb-1">FATURAMENTO PDV (MÊS)</span>
+              <span className="text-xl sm:text-2xl font-black text-zinc-950 block">
                 {fmtBRL(totalMonthSales)}
               </span>
-              <span className="mt-1 text-[11px] text-zinc-400 block">{countMonthSales} vendas no mês</span>
+              <span className="mt-1 text-[11px] text-zinc-600 block">{countMonthSales} vendas no mês</span>
             </div>
 
-            <div className="border border-emerald-500/30 bg-emerald-950/20 p-4">
-              <span className="text-[10px] text-emerald-400 uppercase block mb-1">MÃO DE OBRA TOTAL (MÊS)</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-emerald-300 block">
+            <div className="border-2 border-emerald-600 bg-emerald-50/60 p-4">
+              <span className="text-[10px] text-emerald-800 font-black uppercase block mb-1">MÃO DE OBRA TOTAL (MÊS)</span>
+              <span className="text-xl sm:text-2xl font-black text-emerald-950 block">
                 {fmtBRL(totalLaborRevenueMonth)}
               </span>
-              <span className="mt-1 text-[11px] text-zinc-400 block">{deliveredOSs.length} máquinas entregues</span>
+              <span className="mt-1 text-[11px] text-emerald-700 font-medium block">{deliveredOSs.length} máquinas entregues</span>
             </div>
           </div>
 
           {/* Gráfico de Vendas 14 Dias */}
-          <div className="border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
+          <div className="border border-zinc-300 bg-zinc-50 p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase text-zinc-300">
+              <span className="text-xs font-black uppercase text-zinc-950">
                 Histórico Diário de Vendas (Últimos 14 Dias)
               </span>
-              <span className="text-[10px] text-zinc-400">BRT FUSO HORÁRIO</span>
+              <span className="text-[10px] font-bold text-zinc-500">BRT FUSO HORÁRIO</span>
             </div>
             <SalesChart data={dayBuckets} showValues={true} />
           </div>
@@ -564,28 +564,28 @@ export default async function DashboardPage({
       />
 
       {/* 8. Feed em Tempo Real das Últimas Vendas */}
-      <section className="border border-zinc-800 bg-[#111114] p-4 sm:p-5 text-white font-mono space-y-3">
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+      <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 text-zinc-950 font-mono space-y-3 shadow-xs">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
           <div>
-            <span className="text-[10px] text-zinc-400 uppercase tracking-widest block">
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest block">
               REGISTRO DE OPERAÇÕES // BALCÃO
             </span>
-            <h2 className="text-xs sm:text-sm font-bold uppercase text-white">
+            <h2 className="text-xs sm:text-sm font-black uppercase text-zinc-950">
               Últimas Vendas no PDV
             </h2>
           </div>
           <Link
             href="/admin/vendas"
-            className="text-xs text-zinc-400 hover:text-white underline"
+            className="text-xs text-zinc-600 hover:text-zinc-950 font-bold underline"
           >
             Ver Todas as Vendas →
           </Link>
         </div>
 
         {(lastSales.data ?? []).length === 0 ? (
-          <p className="text-xs text-zinc-400 py-3">Nenhuma venda registrada ainda no período.</p>
+          <p className="text-xs text-zinc-500 py-3">Nenhuma venda registrada ainda no período.</p>
         ) : (
-          <div className="divide-y divide-zinc-900 text-xs">
+          <div className="divide-y divide-zinc-200 text-xs">
             {(lastSales.data ?? []).map((s) => {
               const payMeta = PAYMENT_METHODS.find((m) => m.value === s.payment_method);
               const authorName = Array.isArray(s.author)
@@ -596,18 +596,18 @@ export default async function DashboardPage({
                   <div>
                     <Link
                       href={`/admin/vendas/${s.id}`}
-                      className="font-bold text-white hover:underline block"
+                      className="font-bold text-zinc-950 hover:underline block"
                     >
                       {s.sale_number}
                     </Link>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-600">
                       {formatDateTimeBR(s.created_at)} ·{' '}
                       {authorName || 'Balcão'} · {payMeta?.label ?? s.payment_method}
                       {s.customer_name && ` · ${s.customer_name}`}
                     </p>
                   </div>
                   {userCtx.canViewSalesFinancials && (
-                    <strong className="text-sm font-bold text-white">
+                    <strong className="text-sm font-black text-zinc-950">
                       {fmtBRL(s.total)}
                     </strong>
                   )}

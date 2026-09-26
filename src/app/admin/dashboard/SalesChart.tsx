@@ -50,7 +50,7 @@ export function SalesChart({ data, showValues = true }: { data: DayPoint[]; show
         preserveAspectRatio="xMidYMax meet"
       >
         {/* Linha de base da grade */}
-        <line x1={PAD} y1={H} x2={W - PAD} y2={H} stroke="#27272a" strokeWidth={1} />
+        <line x1={PAD} y1={H} x2={W - PAD} y2={H} stroke="#d4d4d8" strokeWidth={1} />
 
         {data.map((d, i) => {
           const barH = (d.total / max) * usableH;
@@ -72,10 +72,10 @@ export function SalesChart({ data, showValues = true }: { data: DayPoint[]; show
                 height={d.total > 0 ? Math.max(3, barH) : 2}
                 className={`transition-colors ${
                   d.isToday
-                    ? 'fill-white'
+                    ? 'fill-zinc-950'
                     : d.total > 0
-                    ? 'fill-zinc-600 hover:fill-zinc-400'
-                    : 'fill-zinc-800'
+                    ? 'fill-zinc-700 hover:fill-zinc-950'
+                    : 'fill-zinc-200'
                 }`}
               />
 
@@ -87,7 +87,7 @@ export function SalesChart({ data, showValues = true }: { data: DayPoint[]; show
                   textAnchor="middle"
                   fontSize={11}
                   fontWeight={800}
-                  className="fill-white font-mono"
+                  className="fill-zinc-950 font-mono"
                 >
                   {fmtBRLShort(d.total)}
                 </text>
@@ -100,9 +100,9 @@ export function SalesChart({ data, showValues = true }: { data: DayPoint[]; show
                   y={H + 18}
                   textAnchor="middle"
                   fontSize={10}
-                  fontWeight={d.isToday ? 700 : 500}
+                  fontWeight={d.isToday ? 800 : 600}
                   className={`font-mono uppercase tracking-wider ${
-                    d.isToday ? 'fill-white' : 'fill-zinc-400'
+                    d.isToday ? 'fill-zinc-950' : 'fill-zinc-600'
                   }`}
                 >
                   {d.weekday}
