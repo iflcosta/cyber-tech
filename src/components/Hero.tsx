@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import HeroOSTrack from "@/components/HeroOSTrack";
 import { brand } from "@/lib/brand";
@@ -36,34 +36,35 @@ export default function Hero() {
               </p>
             </div>
 
-            {/* CTAs Mobile-First: Principal 100% + 2 Secundários Lado a Lado no Celular */}
+            {/* CTAs Mobile-First: WhatsApp PRIMÁRIO full-width + 2 Secundários Lado a Lado */}
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
+              {/* PRIMÁRIO: WhatsApp -- resolve o cliente urgente */}
               <a
-                href="#showroom"
-                className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-3.5 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[46px]"
+                href={`https://wa.me/55${brand.whatsapp}?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Cyber%20Inform%C3%A1tica%20e%20gostaria%20de%20um%20or%C3%A7amento.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleWhatsAppClick}
+                className="w-full sm:w-auto bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-3.5 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[52px]"
               >
-                <span>Ver Showroom PC</span>
-                <ArrowDown className="w-4 h-4 shrink-0" />
+                <span>Solicitar Orçamento no WhatsApp</span>
+                <ArrowUpRight className="w-4 h-4 shrink-0" />
               </a>
 
+              {/* SECUNDÁRIOS: Showroom + Montar PC lado a lado no mobile */}
               <div className="grid grid-cols-2 sm:flex gap-2.5 sm:gap-3">
                 <a
-                  href="#pc-builder"
+                  href="#showroom"
                   className="border border-white bg-zinc-900 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-3 sm:px-6 text-xs flex items-center justify-center gap-1.5 sm:gap-2 transition-colors min-h-[46px]"
                 >
-                  <span>Montar PC</span>
+                  <span>Ver Showroom</span>
                   <ArrowDown className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
                 </a>
-
                 <a
-                  href={`https://wa.me/55${brand.whatsapp}?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20Cyber%20Inform%C3%A1tica%20e%20gostaria%20de%20um%20or%C3%A7amento.`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={handleWhatsAppClick}
+                  href="#pc-builder"
                   className="border border-zinc-700 bg-zinc-950 hover:bg-zinc-900 text-zinc-200 font-mono font-bold uppercase tracking-wider py-3.5 px-3 sm:px-5 text-xs flex items-center justify-center gap-1.5 sm:gap-2 transition-colors min-h-[46px]"
                 >
-                  <span>WhatsApp</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                  <span>Montar PC</span>
+                  <ArrowDown className="w-3.5 h-3.5 shrink-0" />
                 </a>
               </div>
             </div>

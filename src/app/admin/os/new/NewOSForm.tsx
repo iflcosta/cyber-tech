@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -408,6 +408,8 @@ export function NewOSForm({
                   <Field label="Telefone / WhatsApp (busca automática)">
                     <input
                       type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={customer.phone}
                       onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
                       className="form-input"
@@ -417,6 +419,7 @@ export function NewOSForm({
                   <Field label="Nome do cliente *">
                     <input
                       autoFocus
+                      autoComplete="name"
                       value={customer.name}
                       onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
                       className="form-input"
@@ -808,11 +811,16 @@ export function NewOSForm({
             border-radius: 0.5rem;
             border: 1px solid rgb(203 213 225);
             padding: 0.55rem 0.85rem;
-            font-size: 0.9rem;
+            font-size: 1rem; /* text-base em mobile — evita zoom iOS */
             line-height: 1.5;
             color: rgb(15 23 42);
             background: white;
             transition: border-color 0.15s ease;
+          }
+          @media (min-width: 640px) {
+            .form-input {
+              font-size: 0.9rem; /* sm:text-sm */
+            }
           }
           .form-input:focus {
             outline: none;

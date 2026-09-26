@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useId, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -191,13 +191,13 @@ export function StatusQuickActions({
         {activeStatus === next ? 'Salvando…' : `→ ${STATUS_QUICK_LABEL[next] ?? OS_STATUSES.find((s) => s.value === next)?.label}`}
       </button>
 
-      <div className="mt-2 grid grid-cols-3 gap-2">
+      <div className="mt-2 flex flex-col sm:flex-row gap-2">
         {secondary.map((s) => (
           <button
             key={s}
             onClick={() => changeTo(s)}
             disabled={pending || activeStatus !== null}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="flex-1 sm:flex-none min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {activeStatus === s ? '…' : STATUS_QUICK_LABEL[s] ?? OS_STATUSES.find((x) => x.value === s)?.label}
           </button>

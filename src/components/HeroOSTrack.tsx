@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -40,6 +40,8 @@ export default function HeroOSTrack({ className = '', defaultVal = '' }: HeroOST
           </span>
           <input
             type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             enterKeyHint="search"
             value={term}
             onChange={(e) => setTerm(e.target.value)}

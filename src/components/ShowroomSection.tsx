@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
@@ -102,6 +102,19 @@ export default function ShowroomSection() {
           </div>
         </div>
 
+        {/* Skeleton de 2 Cards -- exibido enquanto carrega e nenhum PC foi recebido ainda */}
+        {loading && pcs.length === 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-zinc-300">
+            {[0, 1].map(i => (
+              <div key={i} className="bg-white p-6 animate-pulse">
+                <div className="h-3 bg-zinc-200 w-1/3 mb-3 rounded" />
+                <div className="h-5 bg-zinc-200 w-2/3 mb-2 rounded" />
+                <div className="h-3 bg-zinc-100 w-full mb-1 rounded" />
+                <div className="h-3 bg-zinc-100 w-3/4 rounded" />
+              </div>
+            ))}
+          </div>
+        )}
         {/* Filtros de Linha (Matriz 2x2 no Mobile / Flex no Desktop) */}
         {pcs.length > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-zinc-300">

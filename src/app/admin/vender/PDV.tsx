@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
@@ -332,6 +332,9 @@ export function PDV({
         p_discount: discountNum,
         p_notes: notes.trim() || null,
       };
+      // TRANSAÇÃO ATÔMICA DE ESTOQUE: A Stored Procedure PostgreSQL create_sale garante
+      // atomicidade via transação ACID no Supabase, baixando o estoque de cada item
+      // e gerando o registro financeiro de forma segura contra concorrência balcão/bancada.
       const { data: saleId, error: rpcErr } = await supabase.rpc(
         'create_sale',
         payload as never,
@@ -409,6 +412,9 @@ export function PDV({
             className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-mono text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600/20"
           />
         </label>
+        <p className="mt-1.5 text-[11px] text-slate-500 font-mono">
+          💡 Leitor USB: posicione cursor aqui e escaneie · EAN13 ou SKU do produto
+        </p>
         {flash && (
           <p className="mt-2 text-sm font-semibold text-emerald-700">{flash}</p>
         )}

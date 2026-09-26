@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -96,7 +96,7 @@ export function MobileNav({
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+                className={`min-h-[44px] flex items-center rounded-lg px-4 py-2.5 text-sm font-medium transition ${
                   pathname === link.href || pathname.startsWith(link.href + '/')
                     ? 'bg-sky-50 text-sky-700 border border-sky-200'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'

@@ -14,6 +14,7 @@ import { EstimatedValueEditor } from './EstimatedValueEditor';
 import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
+import UpsellPromptPanel from './UpsellPromptPanel'
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
 import { formatDateOnlyBR } from '@/app/admin/lib/datetime';
 
@@ -336,6 +337,12 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               <OSTimeline events={events ?? []} authorNames={authorNames} />
             </div>
           </section>
+
+          <UpsellPromptPanel
+            defect={normalizedSo.reported_defect ?? ""}
+            equipmentType={normalizedSo.equipment_type ?? ""}
+            status={normalizedSo.status ?? ""}
+          />
         </div>
 
         <aside className="space-y-4">
@@ -446,3 +453,4 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
     </div>
   );
 }
+

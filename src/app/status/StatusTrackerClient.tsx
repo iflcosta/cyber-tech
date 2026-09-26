@@ -253,7 +253,7 @@ export default function StatusTrackerClient() {
         <div className="no-print space-y-4 sm:space-y-6">
           {/* Banner de Aprovação em 1 Clique (quando aguardando aprovação) */}
           {data.status === 'awaiting_approval' && (
-            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
                   AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
@@ -261,7 +261,7 @@ export default function StatusTrackerClient() {
                 <h3 className="text-base sm:text-lg font-extrabold text-white">
                   Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
                 </h3>
-                <p className="mt-1 text-xs sm:text-sm text-zinc-300">
+                <p className="mt-1 text-xs sm:text-sm text-zinc-300 hidden sm:block">
                   Confira o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e aprove em 1 toque pelo WhatsApp.
                 </p>
               </div>
@@ -457,6 +457,7 @@ export default function StatusTrackerClient() {
                     <img
                       src={url}
                       alt={`Foto de entrada ${i + 1}`}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-black/75 py-1 text-white font-mono text-[10px] font-bold uppercase text-center sm:opacity-0 sm:group-hover:opacity-100 transition">
@@ -658,6 +659,7 @@ export default function StatusTrackerClient() {
                 <img
                   src={selectedPhoto}
                   alt="Foto ampliada da entrada"
+                  loading="lazy"
                   className="max-w-full max-h-[72vh] border border-zinc-200 object-contain mx-auto"
                 />
               </div>
@@ -827,3 +829,5 @@ export default function StatusTrackerClient() {
     </div>
   );
 }
+
+

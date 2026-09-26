@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowUpRight, ArrowRight } from "lucide-react";
 
 import Header from "@/components/Header";
@@ -104,6 +104,20 @@ export default function Home() {
                     <div className="py-3.5">
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
+                          04. Combos HD→SSD + Limpeza Térmica
+                        </strong>
+                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-950 text-white px-2 py-0.5 shrink-0">
+                          Mais Pedido
+                        </span>
+                      </div>
+                      <span className="text-xs text-zinc-600 block leading-relaxed">
+                        Substitua o HD por SSD NVMe e faça limpeza térmica completa: PC até 10× mais rápido no mesmo dia. Combos a partir de R$&nbsp;180.
+                      </span>
+                    </div>
+
+                    <div className="py-3.5">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
                           03. Suporte Ágil para Empresas & Escritórios
                         </strong>
                         <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
@@ -132,7 +146,7 @@ export default function Home() {
                     phone={brand.whatsapp}
                     message="Olá! Vim pelo site da Cyber Informática e gostaria de consultar uma peça, cabo ou periférico no estoque."
                     source="terreo_pecas_btn"
-                    className="inline-flex items-center justify-center gap-1.5 border border-zinc-900 bg-white hover:bg-zinc-100 text-zinc-950 font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 border border-zinc-900 bg-white hover:bg-zinc-100 text-zinc-950 font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
                   >
                     <span>Consultar Peça</span>
                     <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
@@ -219,7 +233,7 @@ export default function Home() {
                     href={TELAS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-4 text-xs transition-colors min-h-[46px]"
                   >
                     <span>Site de Telas</span>
                     <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
@@ -324,6 +338,10 @@ export default function Home() {
                 </div>
 
                 <div className="lg:col-span-5 flex flex-col gap-2.5 sm:gap-3">
+                  {/* Banner de urgência exclusivo mobile */}
+                  <div className="sm:hidden mb-3 bg-zinc-950 text-white px-4 py-2.5 text-center font-mono text-[10px] font-bold uppercase tracking-widest">
+                    ⚡ RESPOSTA EM ATÉ 15 MIN NO WHATSAPP
+                  </div>
                   <TrackedWhatsAppLink
                     phone={brand.whatsapp}
                     message="Olá! Vim pelo site da Cyber Informática e gostaria de falar com o atendimento."
