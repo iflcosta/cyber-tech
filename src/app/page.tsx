@@ -114,20 +114,6 @@ export default function Home() {
                         Cabos DisplayPort/HDMI 2.1, fontes ATX certificadas, coolers, pastas térmicas, mouses e teclados para retirada imediata.
                       </span>
                     </div>
-
-                    <div className="py-3.5">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <strong className="text-xs sm:text-sm font-extrabold text-zinc-950">
-                          04. Suporte Ágil para Empresas & Escritórios
-                        </strong>
-                        <span className="font-mono text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-300 px-2 py-0.5 text-zinc-700 shrink-0">
-                          B2B & PME
-                        </span>
-                      </div>
-                      <span className="text-xs text-zinc-600 block leading-relaxed">
-                        Prioridade de bancada, máquinas prontas para trabalho, recibo detalhado e garantia legal de 90 dias.
-                      </span>
-                    </div>
                   </div>
                 </div>
 
