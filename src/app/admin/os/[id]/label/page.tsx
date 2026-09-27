@@ -35,13 +35,17 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
     .from('service_orders')
     .select(`
       *,
-      customer:customers(name, phone)
+      customer:customers(name, phone),
+      technician:profiles!service_orders_technician_id_fkey(id, full_name)
     `)
     .eq('id', id)
     .single();
   if (!so) notFound();
 
-  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const soWithCustomer = so as typeof so & {
+    customer: { name: string; phone: string | null } | null;
+    technician: { id: string; full_name: string } | null;
+  };
   const customerName = norm(soWithCustomer.customer?.name ?? '(cliente removido)');
   const customerPhone = norm(soWithCustomer.customer?.phone ?? '');
   const equipRaw = [so.equipment_brand, so.equipment_model, so.equipment_color]
@@ -54,6 +58,15 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   const created = formatDateBR(so.created_at);
   const defectNorm = norm(so.reported_defect ?? '');
 
+  const isMezanino =
+    so.equipment_type === 'celular' ||
+    so.equipment_type === 'tablet' ||
+    /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon/i.test(so.reported_defect ?? '');
+  const techName = soWithCustomer.technician?.full_name ? norm(soWithCustomer.technician.full_name) : null;
+  const destination = isMezanino
+    ? (techName?.toUpperCase().includes('JEFFERSON') ? 'MEZANINO (JEFFERSON)' : 'MEZANINO (2o ANDAR)')
+    : (techName ? `TERREO (${techName.toUpperCase()})` : 'TERREO (BANCADA LIVRE)');
+
   // Texto puro 32 colunas para MPT-II (Generic / Text Only ou ESC/POS)
   const lineSep = '='.repeat(WIDTH);
   const dashSep = '-'.repeat(WIDTH);
@@ -61,6 +74,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   lines.push(padBoth('CYBER INFORMATICA', created));
   lines.push(lineSep);
   lines.push(`OS: ${shortId} (#${osNumberStr})`);
+  lines.push(`DESTINO: ${destination}`);
   lines.push(lineSep);
   lines.push('[CLIENTE]');
   lines.push(customerName.slice(0, WIDTH));
@@ -140,6 +154,9 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
           <div className="text-center py-1.5 border-b-2 border-black my-1">
             <div className="text-xl font-black tracking-tight leading-none">{shortId}</div>
             <div className="text-xs font-bold mt-0.5">CODIGO OS: #{osNumberStr}</div>
+            <div className="text-[10px] font-mono font-extrabold uppercase mt-1 px-1 py-0.5 bg-black text-white inline-block">
+              {destination}
+            </div>
           </div>
 
           {/* Dados do Cliente */}

@@ -65,6 +65,37 @@ export function OSFilter() {
           onClick={() => update('status', 'warranty')}
         />
       </div>
+
+      {/* Filtro por Bancada / Técnico */}
+      <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-zinc-200">
+        <span className="font-mono text-[10px] uppercase font-bold text-zinc-400 mr-1">
+          Bancada:
+        </span>
+        <FilterChip
+          label="Todas"
+          value=""
+          active={!params.get('tech') || params.get('tech') === 'all'}
+          onClick={() => update('tech', null)}
+        />
+        <FilterChip
+          label="💻 Térreo (Iago)"
+          value="iago"
+          active={params.get('tech') === 'iago'}
+          onClick={() => update('tech', 'iago')}
+        />
+        <FilterChip
+          label="🔬 Mezanino (Jefferson)"
+          value="jefferson"
+          active={params.get('tech') === 'jefferson'}
+          onClick={() => update('tech', 'jefferson')}
+        />
+        <FilterChip
+          label="⚡ Sem Técnico (Livres)"
+          value="unassigned"
+          active={params.get('tech') === 'unassigned'}
+          onClick={() => update('tech', 'unassigned')}
+        />
+      </div>
     </div>
   );
 }

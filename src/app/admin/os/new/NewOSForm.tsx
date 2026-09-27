@@ -86,7 +86,30 @@ export function NewOSForm({
   const [technicians, setTechnicians] = useState<
     Array<{ id: string; full_name: string; commission_rate: number }>
   >([]);
-  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(currentUserId);
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>('');
+  const [techMode, setTechMode] = useState<'auto-jefferson' | 'auto-unassigned' | 'manual'>('auto-unassigned');
+
+  function checkAndAutoAssignTech(
+    type: EquipmentTypeValue,
+    defectText: string,
+    modelText: string,
+    techs: Array<{ id: string; full_name: string; commission_rate: number }>,
+    currentMode: 'auto-jefferson' | 'auto-unassigned' | 'manual',
+  ) {
+    if (currentMode === 'manual') return;
+    const isMezanino =
+      type === 'celular' ||
+      type === 'tablet' ||
+      /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon/i.test(`${defectText} ${modelText}`);
+    const jeff = techs.find((t) => t.full_name?.toLowerCase().includes('jefferson'));
+    if (isMezanino && jeff) {
+      setSelectedTechnicianId(jeff.id);
+      setTechMode('auto-jefferson');
+    } else if (currentMode === 'auto-jefferson') {
+      setSelectedTechnicianId('');
+      setTechMode('auto-unassigned');
+    }
+  }
 
   useEffect(() => {
     async function loadTechs() {
@@ -97,19 +120,28 @@ export function NewOSForm({
           .select('*')
           .eq('active', true);
         if (data && data.length > 0) {
-          setTechnicians(
-            data.map((p: { id: string; full_name: string; commission_rate?: number }) => ({
-              id: p.id,
-              full_name: p.full_name,
-              commission_rate:
-                p.commission_rate ??
-                (p.full_name?.toLowerCase().includes('iago')
-                  ? 0.3
-                  : p.full_name?.toLowerCase().includes('jefferson')
-                  ? 0.5
-                  : 0),
-            })),
-          );
+          const mapped = data.map((p: { id: string; full_name: string; commission_rate?: number }) => ({
+            id: p.id,
+            full_name: p.full_name,
+            commission_rate:
+              p.commission_rate ??
+              (p.full_name?.toLowerCase().includes('iago')
+                ? 0.3
+                : p.full_name?.toLowerCase().includes('jefferson')
+                ? 0.5
+                : 0),
+          }));
+          setTechnicians(mapped);
+          // Se o equipamento inicial for celular/gpu, atribui direto ao Jefferson
+          const isMezanino =
+            equipment.type === 'celular' ||
+            equipment.type === 'tablet' ||
+            /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon/i.test(`${defect} ${equipment.model}`);
+          const jeff = mapped.find((t: { full_name: string }) => t.full_name?.toLowerCase().includes('jefferson'));
+          if (isMezanino && jeff) {
+            setSelectedTechnicianId(jeff.id);
+            setTechMode('auto-jefferson');
+          }
         }
       } catch (err) {
         console.error('Erro ao carregar técnicos:', err);
@@ -500,7 +532,10 @@ export function NewOSForm({
                   <button
                     key={t.value}
                     type="button"
-                    onClick={() => setEquipment({ ...equipment, type: t.value })}
+                    onClick={() => {
+                      setEquipment({ ...equipment, type: t.value });
+                      checkAndAutoAssignTech(t.value, defect, equipment.model, technicians, techMode);
+                    }}
                     className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition ${
                       equipment.type === t.value
                         ? 'border-sky-600 bg-sky-50 text-sky-800 shadow-2xs'
@@ -529,7 +564,11 @@ export function NewOSForm({
               <Field label={equipment.type === 'computador' ? 'Modelo / Gabinete (se souber)' : 'Modelo *'}>
                 <input
                   value={equipment.model}
-                  onChange={(e) => setEquipment({ ...equipment, model: e.target.value })}
+                  onChange={(e) => {
+                    const model = e.target.value;
+                    setEquipment({ ...equipment, model });
+                    checkAndAutoAssignTech(equipment.type, defect, model, technicians, techMode);
+                  }}
                   className="form-input"
                   placeholder={
                     equipment.type === 'computador'
@@ -726,7 +765,11 @@ export function NewOSForm({
               <textarea
                 autoFocus
                 value={defect}
-                onChange={(e) => setDefect(e.target.value)}
+                onChange={(e) => {
+                  const d = e.target.value;
+                  setDefect(d);
+                  checkAndAutoAssignTech(equipment.type, d, equipment.model, technicians, techMode);
+                }}
                 rows={4}
                 className="form-input"
                 placeholder="Digite livremente qualquer defeito, sintoma ou pedido específico do cliente (ou clique nos atalhos acima para complementar)…"
@@ -737,22 +780,48 @@ export function NewOSForm({
               <Field label="Técnico Responsável">
                 <select
                   value={selectedTechnicianId}
-                  onChange={(e) => setSelectedTechnicianId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedTechnicianId(e.target.value);
+                    setTechMode('manual');
+                  }}
                   className="form-input"
                 >
-                  <option value="">Sem técnico atribuído (Loja / Geral)</option>
+                  <option value="">⚡ Sem técnico atribuído (Disponível na Bancada Térreo / Puxar por Etiqueta)</option>
                   {technicians.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.full_name}{' '}
-                      {t.commission_rate > 0
+                      {t.full_name?.toLowerCase().includes('jefferson')
+                        ? '— Mezanino (50% partilha)'
+                        : t.full_name?.toLowerCase().includes('iago')
+                        ? '— Bancada Térreo (30% comissão)'
+                        : t.commission_rate > 0
                         ? `(${Math.round(t.commission_rate * 100)}% comissão)`
                         : '(Margem Loja)'}
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-[11px] text-slate-500">
-                  Iago (30% balcão) · Jefferson (50/50 mezanino) · Felipe/Loja (100% retido).
-                </p>
+                {selectedTechnicianId && technicians.find((t) => t.id === selectedTechnicianId)?.full_name?.toLowerCase().includes('jefferson') ? (
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-purple-900 bg-purple-50 border border-purple-200 px-2.5 py-1.5 rounded">
+                    <span>🔬</span>
+                    <span>
+                      <strong>Direcionado ao Mezanino:</strong> Celular / Troca de vidro / Microeletrônica atribuído ao Jefferson.
+                    </span>
+                  </div>
+                ) : !selectedTechnicianId ? (
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded">
+                    <span>⚡</span>
+                    <span>
+                      <strong>Bancada Térreo (Livre):</strong> Sem técnico fixado no cadastro. O técnico (ex: Iago) assume a OS ao puxar pela etiqueta na bancada.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded">
+                    <span>💻</span>
+                    <span>
+                      <strong>Técnico definido:</strong> {technicians.find((t) => t.id === selectedTechnicianId)?.full_name}.
+                    </span>
+                  </div>
+                )}
               </Field>
 
               <Field label="Previsão de entrega / diagnóstico (opcional)">

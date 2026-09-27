@@ -64,6 +64,26 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
               {so.reported_defect}
             </p>
           )}
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {so.technician_name ? (
+              <span
+                className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                  so.technician_name.toLowerCase().includes('jefferson')
+                    ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                    : so.technician_name.toLowerCase().includes('iago')
+                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                    : 'bg-zinc-100 text-zinc-800 border border-zinc-200'
+                }`}
+              >
+                {so.technician_name.toLowerCase().includes('jefferson') ? '🔬 Mezanino · ' : so.technician_name.toLowerCase().includes('iago') ? '💻 Térreo · ' : '👤 '}
+                {so.technician_name}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded bg-amber-100 border border-amber-300 text-amber-950 px-2 py-0.5 font-mono text-[10px] font-extrabold uppercase tracking-wider">
+                ⚡ Bancada Livre (Puxar)
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex flex-col items-end justify-between gap-2.5 text-right self-stretch">
           <span className="font-mono text-[11px] text-slate-400">{timeAgo(so.updated_at)}</span>

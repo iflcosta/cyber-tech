@@ -14,7 +14,8 @@ import { EstimatedValueEditor } from './EstimatedValueEditor';
 import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
-import UpsellPromptPanel from './UpsellPromptPanel'
+import UpsellPromptPanel from './UpsellPromptPanel';
+import { TechnicianAssignment } from './TechnicianAssignment';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
 import { formatDateOnlyBR } from '@/app/admin/lib/datetime';
 
@@ -25,26 +26,38 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   const { supabase, user } = await getAuthedUser();
   if (!user) redirect('/admin/login');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, full_name, role, can_delete')
-    .eq('id', user.id)
-    .single();
+  const [profileRes, soRes, techProfilesRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, full_name, role, can_delete')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('service_orders')
+      .select(`
+        *,
+        customer:customers(name, phone),
+        technician:profiles!service_orders_technician_id_fkey(id, full_name)
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('id, full_name, commission_rate, role')
+      .eq('active', true)
+      .order('full_name'),
+  ]);
 
-  // Busca direto da tabela (nao da view) pra OSs finalizadas
-  // (delivered/cancelled) nao darem 404. A view filtra essas fora.
-  const { data: so } = await supabase
-    .from('service_orders')
-    .select(`
-      *,
-      customer:customers(name, phone)
-    `)
-    .eq('id', id)
-    .single();
+  const profile = profileRes.data;
+  const so = soRes.data;
+  const techProfiles = techProfilesRes.data ?? [];
   if (!so) notFound();
 
   // Normalizar campos que a view fornecia
-  const soWithCustomer = so as typeof so & { customer: { name: string; phone: string | null } | null };
+  const soWithCustomer = so as typeof so & {
+    customer: { name: string; phone: string | null } | null;
+    technician: { id: string; full_name: string } | null;
+  };
   const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
   const customerPhone = soWithCustomer.customer?.phone ?? null;
   // Server Component, lido uma vez por request — Date.now() aqui é
@@ -346,6 +359,22 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         <aside className="space-y-4">
+          {profile && !isFinal && (
+            <TechnicianAssignment
+              osId={normalizedSo.id}
+              osShortId={normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
+              currentTechnicianId={normalizedSo.technician_id}
+              currentTechnicianName={soWithCustomer.technician?.full_name ?? null}
+              currentUserId={profile.id}
+              currentUserName={profile.full_name}
+              currentUserRole={profile.role}
+              equipmentType={normalizedSo.equipment_type}
+              reportedDefect={normalizedSo.reported_defect ?? ''}
+              technicians={techProfiles}
+              canEdit={canEdit}
+            />
+          )}
+
           {profile && !isFinal && (
             <StatusQuickActions
               osId={normalizedSo.id}
