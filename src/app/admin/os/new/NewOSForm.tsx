@@ -87,27 +87,30 @@ export function NewOSForm({
     Array<{ id: string; full_name: string; commission_rate: number }>
   >([]);
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>('');
-  const [techMode, setTechMode] = useState<'auto-jefferson' | 'auto-unassigned' | 'manual'>('auto-unassigned');
+  const [techMode, setTechMode] = useState<'pre-assigned-jefferson' | 'unassigned' | 'manual'>('unassigned');
 
   function checkAndAutoAssignTech(
     type: EquipmentTypeValue,
     defectText: string,
     modelText: string,
+    customTypeText: string,
     techs: Array<{ id: string; full_name: string; commission_rate: number }>,
-    currentMode: 'auto-jefferson' | 'auto-unassigned' | 'manual',
+    currentMode: 'pre-assigned-jefferson' | 'unassigned' | 'manual',
   ) {
     if (currentMode === 'manual') return;
     const isMezanino =
       type === 'celular' ||
       type === 'tablet' ||
-      /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon/i.test(`${defectText} ${modelText}`);
+      /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon|smartphone|iphone/i.test(
+        `${defectText} ${modelText} ${customTypeText}`
+      );
     const jeff = techs.find((t) => t.full_name?.toLowerCase().includes('jefferson'));
     if (isMezanino && jeff) {
       setSelectedTechnicianId(jeff.id);
-      setTechMode('auto-jefferson');
-    } else if (currentMode === 'auto-jefferson') {
+      setTechMode('pre-assigned-jefferson');
+    } else if (currentMode === 'pre-assigned-jefferson') {
       setSelectedTechnicianId('');
-      setTechMode('auto-unassigned');
+      setTechMode('unassigned');
     }
   }
 
@@ -132,15 +135,17 @@ export function NewOSForm({
                 : 0),
           }));
           setTechnicians(mapped);
-          // Se o equipamento inicial for celular/gpu, atribui direto ao Jefferson
+          // Se o equipamento inicial for celular/gpu, pré-atribui ao Jefferson
           const isMezanino =
             equipment.type === 'celular' ||
             equipment.type === 'tablet' ||
-            /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon/i.test(`${defect} ${equipment.model}`);
+            /gpu|placa de v[ií]deo|placa de video|reballing|rtx|gtx|radeon|smartphone|iphone/i.test(
+              `${defect} ${equipment.model} ${equipment.customType}`
+            );
           const jeff = mapped.find((t: { full_name: string }) => t.full_name?.toLowerCase().includes('jefferson'));
           if (isMezanino && jeff) {
             setSelectedTechnicianId(jeff.id);
-            setTechMode('auto-jefferson');
+            setTechMode('pre-assigned-jefferson');
           }
         }
       } catch (err) {
@@ -218,6 +223,7 @@ export function NewOSForm({
 
   const [equipment, setEquipment] = useState({
     type: 'notebook' as EquipmentTypeValue,
+    customType: '',
     brand: '',
     model: '',
     color: '',
@@ -244,9 +250,15 @@ export function NewOSForm({
       setError('Nome do cliente é obrigatório.');
       return;
     }
-    if (step === 2 && !equipment.model.trim() && !['outro', 'computador'].includes(equipment.type)) {
-      setError('Modelo do aparelho é obrigatório.');
-      return;
+    if (step === 2) {
+      if (equipment.type === 'outro' && !equipment.customType.trim()) {
+        setError('Por favor, informe qual é o tipo de equipamento.');
+        return;
+      }
+      if (!equipment.model.trim() && !['outro', 'computador'].includes(equipment.type)) {
+        setError('Modelo do aparelho é obrigatório.');
+        return;
+      }
     }
     setError(null);
     setStep((s) => Math.min(3, s + 1));
@@ -313,11 +325,17 @@ export function NewOSForm({
         customerId = newCustomer.id;
       }
 
+      // Se for "outro", compõe a marca com o tipo digitado (ex: "Impressora · Epson" ou "PlayStation 5 · Sony")
+      const finalBrand =
+        equipment.type === 'outro'
+          ? [equipment.customType.trim(), equipment.brand.trim()].filter(Boolean).join(' · ') || null
+          : equipment.brand.trim() || null;
+
       // 2. OS (com fallback caso a coluna technician_id da migration 0034 ainda não tenha sido aplicada)
       const basePayload = {
         customer_id: customerId,
         equipment_type: equipment.type,
-        equipment_brand: equipment.brand.trim() || null,
+        equipment_brand: finalBrand,
         equipment_model: equipment.model.trim() || null,
         equipment_color: equipment.color.trim() || null,
         equipment_serial: equipment.serial.trim() || null,
@@ -534,7 +552,7 @@ export function NewOSForm({
                     type="button"
                     onClick={() => {
                       setEquipment({ ...equipment, type: t.value });
-                      checkAndAutoAssignTech(t.value, defect, equipment.model, technicians, techMode);
+                      checkAndAutoAssignTech(t.value, defect, equipment.model, equipment.customType, technicians, techMode);
                     }}
                     className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition ${
                       equipment.type === t.value
@@ -548,6 +566,27 @@ export function NewOSForm({
               </div>
             </Field>
 
+            {equipment.type === 'outro' && (
+              <div className="rounded-lg border-2 border-amber-300 bg-amber-50/70 p-3.5">
+                <Field label="Qual é o tipo de equipamento? * (obrigatório)">
+                  <input
+                    value={equipment.customType}
+                    onChange={(e) => {
+                      const custom = e.target.value;
+                      setEquipment({ ...equipment, customType: custom });
+                      checkAndAutoAssignTech(equipment.type, defect, equipment.model, custom, technicians, techMode);
+                    }}
+                    required
+                    className="form-input border-amber-300 bg-white font-medium text-slate-900 focus:border-amber-500 focus:ring-amber-500"
+                    placeholder="Ex: Impressora, PlayStation 5 / Console, Nobreak, Monitor, Caixa de Som…"
+                  />
+                  <p className="mt-1 text-[11px] text-amber-800">
+                    Como você selecionou <strong>Outro</strong>, informe qual é o tipo de equipamento para identificação na bancada e na etiqueta de 58mm.
+                  </p>
+                </Field>
+              </div>
+            )}
+
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Marca">
                 <input
@@ -557,22 +596,34 @@ export function NewOSForm({
                   placeholder={
                     equipment.type === 'computador'
                       ? 'Ex: Pichau / Custom / Dell'
+                      : equipment.type === 'outro'
+                      ? 'Ex: Epson / Sony / SMS'
                       : 'Ex: Samsung / Apple / Acer'
                   }
                 />
               </Field>
-              <Field label={equipment.type === 'computador' ? 'Modelo / Gabinete (se souber)' : 'Modelo *'}>
+              <Field
+                label={
+                  equipment.type === 'computador'
+                    ? 'Modelo / Gabinete (se souber)'
+                    : equipment.type === 'outro'
+                    ? 'Modelo / Versão (se souber)'
+                    : 'Modelo *'
+                }
+              >
                 <input
                   value={equipment.model}
                   onChange={(e) => {
                     const model = e.target.value;
                     setEquipment({ ...equipment, model });
-                    checkAndAutoAssignTech(equipment.type, defect, model, technicians, techMode);
+                    checkAndAutoAssignTech(equipment.type, defect, model, equipment.customType, technicians, techMode);
                   }}
                   className="form-input"
                   placeholder={
                     equipment.type === 'computador'
                       ? 'Ex: Gabinete Aquário Branco / RTX 4060'
+                      : equipment.type === 'outro'
+                      ? 'Ex: EcoTank L3250 / Slim 1TB'
                       : 'Ex: Nitro 5 / Galaxy S23'
                   }
                 />
@@ -768,7 +819,7 @@ export function NewOSForm({
                 onChange={(e) => {
                   const d = e.target.value;
                   setDefect(d);
-                  checkAndAutoAssignTech(equipment.type, d, equipment.model, technicians, techMode);
+                  checkAndAutoAssignTech(equipment.type, d, equipment.model, equipment.customType, technicians, techMode);
                 }}
                 rows={4}
                 className="form-input"
@@ -801,22 +852,22 @@ export function NewOSForm({
                   ))}
                 </select>
                 {selectedTechnicianId && technicians.find((t) => t.id === selectedTechnicianId)?.full_name?.toLowerCase().includes('jefferson') ? (
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-purple-900 bg-purple-50 border border-purple-200 px-2.5 py-1.5 rounded">
-                    <span>🔬</span>
+                  <div className="mt-1.5 flex items-start gap-1.5 text-xs text-purple-900 bg-purple-50 border border-purple-200 px-2.5 py-1.5 rounded">
+                    <span className="text-sm">🎯</span>
                     <span>
-                      <strong>Direcionado ao Mezanino:</strong> Celular / Troca de vidro / Microeletrônica atribuído ao Jefferson.
+                      <strong>{techMode === 'pre-assigned-jefferson' ? 'Pré-atribuído:' : 'Atribuído:'}</strong> Celular / Mezanino selecionado por padrão para <strong>Jefferson</strong>. Se desejar, você pode alterar aqui antes de salvar. Se ninguém alterar, vai para o Jefferson.
                     </span>
                   </div>
                 ) : !selectedTechnicianId ? (
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded">
-                    <span>⚡</span>
+                  <div className="mt-1.5 flex items-start gap-1.5 text-xs text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded">
+                    <span className="text-sm">⚡</span>
                     <span>
-                      <strong>Bancada Térreo (Livre):</strong> Sem técnico fixado no cadastro. O técnico (ex: Iago) assume a OS ao puxar pela etiqueta na bancada.
+                      <strong>Sem técnico atribuído:</strong> A OS entrará livre para ser puxada pela etiqueta na bancada física térreo (ex: Iago).
                     </span>
                   </div>
                 ) : (
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded">
-                    <span>💻</span>
+                  <div className="mt-1.5 flex items-start gap-1.5 text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded">
+                    <span className="text-sm">💻</span>
                     <span>
                       <strong>Técnico definido:</strong> {technicians.find((t) => t.id === selectedTechnicianId)?.full_name}.
                     </span>
