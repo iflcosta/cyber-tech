@@ -9,11 +9,13 @@ export function CameraSyncModal({
   onClose,
   onPhotosSynced,
   existingPhotos,
+  osId,
 }: {
   open: boolean;
   onClose: () => void;
   onPhotosSynced: (newPhotos: string[]) => void;
   existingPhotos: string[];
+  osId?: string;
 }) {
   // Token curto e limpo para manter o QR Code leve com blocos grandes
   const [sessionToken] = useState(
@@ -59,20 +61,21 @@ export function CameraSyncModal({
             token: sessionToken,
             action: 'init',
             auth_token: data?.session?.access_token || '',
+            os_id: osId || null,
           }),
         }).catch(() => {});
       }).catch(() => {
         fetch('/api/camera-sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: sessionToken, action: 'init' }),
+          body: JSON.stringify({ token: sessionToken, action: 'init', os_id: osId || null }),
         }).catch(() => {});
       });
     } catch {
       fetch('/api/camera-sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: sessionToken, action: 'init' }),
+        body: JSON.stringify({ token: sessionToken, action: 'init', os_id: osId || null }),
       }).catch(() => {});
     }
   }, [open, sessionToken]);
@@ -275,3 +278,4 @@ export function CameraSyncModal({
     </div>
   );
 }
+

@@ -61,12 +61,15 @@ export async function POST(request: NextRequest) {
     const photoUrl = pubData.publicUrl;
 
     // 3. Registrar na sessão do camera_sync_sessions
+    let sessionOsId: string | null = null;
     try {
       const { data: session } = await supabase
         .from('camera_sync_sessions')
         .select('*')
         .eq('session_token', token)
         .maybeSingle();
+
+      sessionOsId = session?.os_id ?? null;
 
       const existingPhotos: string[] = Array.isArray(session?.photos) ? session.photos : [];
       if (!existingPhotos.includes(photoUrl)) {
@@ -85,6 +88,58 @@ export async function POST(request: NextRequest) {
       );
     } catch (dbErr) {
       console.warn('Aviso: falha ao atualizar camera_sync_sessions:', dbErr);
+    }
+
+    // 4. Se a sessão está vinculada a uma OS, atualizar equipment_photos da OS
+    if (sessionOsId) {
+      try {
+        // Busca OS atual para obter equipment_photos e created_by
+        const { data: osData, error: osFetchErr } = await supabase
+          .from('service_orders')
+          .select('equipment_photos, created_by')
+          .eq('id', sessionOsId)
+          .maybeSingle();
+
+        if (osFetchErr) {
+          console.warn('[upload] Aviso: falha ao buscar OS para atualizar fotos:', osFetchErr.message);
+        } else if (osData) {
+          const currentOsPhotos: string[] = Array.isArray(osData.equipment_photos)
+            ? osData.equipment_photos
+            : [];
+          const createdBy: string | null = osData.created_by ?? null;
+
+          if (!currentOsPhotos.includes(photoUrl)) {
+            const newOsPhotos = [...currentOsPhotos, photoUrl];
+
+            // Atualiza equipment_photos
+            const { error: updateErr } = await supabase
+              .from('service_orders')
+              .update({ equipment_photos: newOsPhotos })
+              .eq('id', sessionOsId);
+
+            if (updateErr) {
+              console.warn('[upload] Aviso: falha ao atualizar equipment_photos da OS:', updateErr.message);
+            } else {
+              // Registra evento no histórico (só se tiver author_id)
+              if (createdBy) {
+                const { error: evtErr } = await supabase.from('service_order_events').insert({
+                  service_order_id: sessionOsId,
+                  event_type: 'note_added',
+                  note: 'Foto registrada via Cyber Camera Sync (celular)',
+                  author_id: createdBy,
+                });
+                if (evtErr) {
+                  console.warn('[upload] Aviso: falha ao inserir service_order_events:', evtErr.message);
+                }
+              } else {
+                console.warn('[upload] Aviso: OS sem created_by — evento de histórico pulado para OS', sessionOsId);
+              }
+            }
+          }
+        }
+      } catch (osErr) {
+        console.warn('[upload] Aviso: erro inesperado ao atualizar OS com foto do celular:', osErr);
+      }
     }
 
     return NextResponse.json({ success: true, photoUrl });

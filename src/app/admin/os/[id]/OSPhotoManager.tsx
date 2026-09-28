@@ -46,28 +46,20 @@ export function OSPhotoManager({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function persistPhotos(newPhotosList: string[], eventNote: string) {
+  async function persistPhotos(newPhotosList: string[]) {
     try {
-      const supabase = createCRMBrowserClient();
-      const { error: updateErr } = await supabase
-        .from('service_orders')
-        .update({ equipment_photos: newPhotosList })
-        .eq('id', osId);
-
-      if (updateErr) throw updateErr;
-
-      // Grava evento no histórico da OS
-      await supabase.from('service_order_events').insert({
-        service_order_id: osId,
-        event_type: 'photos_updated',
-        note: eventNote,
+      const res = await fetch('/api/admin/os/photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ osId, photos: newPhotosList, action: 'set' }),
       });
-
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Falha ao salvar fotos.');
       setPhotos(newPhotosList);
       router.refresh();
     } catch (err) {
       console.error('Erro ao salvar fotos da OS:', err);
-      setError((err as Error).message || 'Não foi possível atualizar as fotos.');
+      setError((err as Error).message || 'Nao foi possivel atualizar as fotos.');
     }
   }
 
@@ -99,10 +91,7 @@ export function OSPhotoManager({
 
       if (uploadedUrls.length > 0) {
         const merged = Array.from(new Set([...photos, ...uploadedUrls]));
-        await persistPhotos(
-          merged,
-          `${uploadedUrls.length} foto(s) anexada(s) à OS via upload de arquivo.`
-        );
+        await persistPhotos(merged);
       }
     } catch (err) {
       setError((err as Error).message || 'Erro no upload das imagens.');
@@ -115,23 +104,20 @@ export function OSPhotoManager({
   async function handleSyncedPhotos(newPhotos: string[]) {
     if (!newPhotos || newPhotos.length === 0) return;
     const merged = Array.from(new Set([...photos, ...newPhotos]));
-    await persistPhotos(
-      merged,
-      `${newPhotos.length} foto(s) sincronizada(s) via Cyber Camera Sync (QR Code).`
-    );
+    await persistPhotos(merged);
   }
 
   async function handleRemovePhoto(photoUrl: string) {
-    if (!confirm('Deseja remover esta foto da Ordem de Serviço?')) return;
+    if (!confirm('Deseja remover esta foto da Ordem de Servico?')) return;
     const updated = photos.filter((p) => p !== photoUrl);
-    await persistPhotos(updated, 'Foto removida da vistoria da OS.');
+    await persistPhotos(updated);
   }
 
   return (
     <div className="mt-3">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 font-mono">
-          Vistoria Fotográfica ({photos.length})
+          Vistoria Fotografica ({photos.length})
         </p>
 
         {canEdit && (
@@ -178,7 +164,7 @@ export function OSPhotoManager({
           <p className="mb-2 font-mono">Nenhuma foto registrada para este equipamento ainda.</p>
           {canEdit && (
             <p className="text-[11px] text-slate-400">
-              Use o botão <strong>Cyber Sync (Celular)</strong> para fotografar carcaça, tela e etiqueta de série sem login, ou <strong>Anexar PC</strong> para subir do computador.
+              Use o botao <strong>Cyber Sync (Celular)</strong> para fotografar carcaca, tela e etiqueta de serie sem login, ou <strong>Anexar PC</strong> para subir do computador.
             </p>
           )}
         </div>
@@ -230,6 +216,7 @@ export function OSPhotoManager({
           onClose={() => setCameraSyncOpen(false)}
           onPhotosSynced={handleSyncedPhotos}
           existingPhotos={photos}
+          osId={osId}
         />
       )}
 
@@ -244,7 +231,7 @@ export function OSPhotoManager({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center pb-2 mb-2 border-b border-slate-200 font-mono text-xs">
-              <span className="font-bold text-slate-800">Vistoria Fotográfica · OS</span>
+              <span className="font-bold text-slate-800">Vistoria Fotografica - OS</span>
               <button
                 type="button"
                 onClick={() => setSelectedPhoto(null)}

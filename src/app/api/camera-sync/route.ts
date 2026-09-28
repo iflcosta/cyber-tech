@@ -9,6 +9,7 @@ type SyncSessionState = {
   photos: string[];
   status: 'active' | 'completed' | 'expired';
   auth_token?: string;
+  os_id?: string | null;
   created_at: string;
   updated_at: string;
   expires_at: string;
@@ -59,6 +60,7 @@ export async function GET(request: NextRequest) {
           photos: Array.isArray(data.photos) ? data.photos : [],
           status: data.status ?? 'active',
           auth_token: mem?.auth_token,
+          os_id: data.os_id ?? null,
           created_at: data.created_at,
           updated_at: data.updated_at,
           expires_at: data.expires_at,
@@ -82,6 +84,7 @@ export async function GET(request: NextRequest) {
     session_token: token,
     photos: [],
     status: 'active',
+    os_id: null,
     created_at: now.toISOString(),
     updated_at: now.toISOString(),
     expires_at: expires.toISOString(),
@@ -111,6 +114,7 @@ export async function POST(request: NextRequest) {
       session_token: token,
       photos: [],
       status: 'active',
+      os_id: null,
       created_at: now.toISOString(),
       updated_at: now.toISOString(),
       expires_at: expires.toISOString(),
@@ -118,6 +122,11 @@ export async function POST(request: NextRequest) {
 
     if (typeof body.auth_token === 'string' && body.auth_token) {
       current.auth_token = body.auth_token;
+    }
+
+    // Salva os_id se fornecido no body
+    if (typeof body.os_id === 'string' || body.os_id === null) {
+      current.os_id = body.os_id || null;
     }
 
     const supabase = getSupabaseServiceOrAnon();
@@ -135,6 +144,7 @@ export async function POST(request: NextRequest) {
             photos: Array.isArray(data.photos) ? data.photos : [],
             status: data.status ?? 'active',
             auth_token: current.auth_token,
+            os_id: current.os_id ?? data.os_id ?? null,
             created_at: data.created_at,
             updated_at: data.updated_at,
             expires_at: data.expires_at,
@@ -168,6 +178,7 @@ export async function POST(request: NextRequest) {
             session_token: current.session_token,
             photos: current.photos,
             status: current.status,
+            os_id: current.os_id,
             updated_at: current.updated_at,
             expires_at: current.expires_at,
           },
