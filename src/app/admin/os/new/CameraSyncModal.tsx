@@ -24,22 +24,53 @@ export function CameraSyncModal({
   const [sessionStatus, setSessionStatus] = useState<'active' | 'completed'>('active');
   const seenRef = useRef<Set<string>>(new Set(existingPhotos));
 
-  // Inicializa sessão e gera QR Code quando o modal abre
+  // Inicializa sessão e gera QR Code quando o modal abre (incluindo auth token para o celular)
   useEffect(() => {
     if (!open) return;
 
     const origin =
       typeof window !== 'undefined' ? window.location.origin : 'https://cyberinformatica.tech';
-    const url = `${origin}/camera-sync/${sessionToken}`;
-    setMobileUrl(url);
 
-    QRCode.toDataURL(url, {
-      width: 220,
-      margin: 1,
-      errorCorrectionLevel: 'M',
-    })
-      .then(setQrDataUrl)
-      .catch(() => {});
+    try {
+      const supabase = createCRMBrowserClient();
+      supabase.auth.getSession().then(({ data }) => {
+        const accessToken = data?.session?.access_token;
+        const refreshToken = data?.session?.refresh_token;
+        const authParams = accessToken
+          ? `?auth=${encodeURIComponent(accessToken)}&refresh=${encodeURIComponent(refreshToken || '')}`
+          : '';
+        const url = `${origin}/camera-sync/${sessionToken}${authParams}`;
+        setMobileUrl(url);
+
+        QRCode.toDataURL(url, {
+          width: 220,
+          margin: 1,
+          errorCorrectionLevel: 'M',
+        })
+          .then(setQrDataUrl)
+          .catch(() => {});
+      }).catch(() => {
+        const url = `${origin}/camera-sync/${sessionToken}`;
+        setMobileUrl(url);
+        QRCode.toDataURL(url, {
+          width: 220,
+          margin: 1,
+          errorCorrectionLevel: 'M',
+        })
+          .then(setQrDataUrl)
+          .catch(() => {});
+      });
+    } catch {
+      const url = `${origin}/camera-sync/${sessionToken}`;
+      setMobileUrl(url);
+      QRCode.toDataURL(url, {
+        width: 220,
+        margin: 1,
+        errorCorrectionLevel: 'M',
+      })
+        .then(setQrDataUrl)
+        .catch(() => {});
+    }
 
     fetch('/api/camera-sync', {
       method: 'POST',
@@ -139,13 +170,13 @@ export function CameraSyncModal({
               Fotografar Carcaça pelo Celular
             </h2>
             <p className="text-xs text-slate-500">
-              Aponte a câmera do seu celular para o QR Code abaixo. Sem precisar fazer login.
+              Aponte a câmera do seu celular para o QR Code abaixo. Sem precisar digitar senha.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
             aria-label="Fechar modal"
           >
             ✕
@@ -187,8 +218,8 @@ export function CameraSyncModal({
             <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-3 text-sky-900">
               <p className="font-bold">Como funciona (15 segundos):</p>
               <ol className="mt-1.5 list-decimal space-y-1 pl-4">
-                <li>Escaneie o QR Code com o celular do bolso.</li>
-                <li>Bata as 3 fotos guiadas (Frente, Traseira/S/N e Laterais).</li>
+                <li>Escaneie o QR Code com o celular.</li>
+                <li>Bata as fotos guiadas (Frente, Traseira e Laterais).</li>
                 <li>As fotos aparecem aqui na tela do PC automaticamente!</li>
               </ol>
             </div>
@@ -231,8 +262,13 @@ export function CameraSyncModal({
         <div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
           <button
             type="button"
-            onClick={onClose}
-            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+            onClick={() => {
+              if (syncedPhotos.length > 0) {
+                onPhotosSynced(syncedPhotos);
+              }
+              onClose();
+            }}
+            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition cursor-pointer"
           >
             ✓ Concluir e Voltar para OS ({syncedPhotos.length} {syncedPhotos.length === 1 ? 'foto' : 'fotos'})
           </button>

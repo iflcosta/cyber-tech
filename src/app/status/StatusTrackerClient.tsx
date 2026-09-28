@@ -124,10 +124,10 @@ export default function StatusTrackerClient() {
     }
   }
 
-  function getStepIndex(status: string): number {
+  function getStepIndex(status: string, totalAmount: number): number {
     switch (status) {
       case 'awaiting_approval':
-        return 2;
+        return totalAmount > 0 ? 2 : 1;
       case 'approved':
       case 'waiting_part':
       case 'in_progress':
@@ -140,7 +140,8 @@ export default function StatusTrackerClient() {
     }
   }
 
-  const currentStep = data ? getStepIndex(data.status) : 1;
+  const totalOrderAmount = data ? (data.estimated_value || 0) + (data.labor_cost || 0) : 0;
+  const currentStep = data ? getStepIndex(data.status, totalOrderAmount) : 1;
   const activeStepInfo = STEP_ITEMS.find((s) => s.step === currentStep) || STEP_ITEMS[0];
 
   function fmtBRL(val: number) {
@@ -170,15 +171,33 @@ export default function StatusTrackerClient() {
     setTimeout(() => setCopiedPix(false), 2500);
   }
 
-  const totalOrderAmount = data ? (data.estimated_value || 0) + (data.labor_cost || 0) : 0;
   const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
 
   const availableUpsells = useMemo(() => {
-    if (!data) return [];
+    if (!data || totalOrderAmount <= 0) return [];
     const t = (data.equipment_type || '').toLowerCase();
     const list: Array<{ id: string; title: string; desc: string; price: number }> = [];
 
-    if (/celular|smartphone|tablet|iphone/.test(t)) {
+    if (/impressora|printer/.test(t)) {
+      list.push({
+        id: 'limpeza_cabecote',
+        title: '🧪 Desobstrução & Limpeza Ultrassônica de Cabeçote',
+        desc: 'Desentupimento profundo dos dutos para restaurar cores e nitidez originais',
+        price: 80,
+      });
+      list.push({
+        id: 'cabo_usb_blindado',
+        title: '⚡ Cabo USB Blindado 2.0 A/B Alta Velocidade',
+        desc: 'Elimina falhas de comunicação e travamento de fila na impressão',
+        price: 25,
+      });
+      list.push({
+        id: 'lubrificacao_roletes',
+        title: '⚙️ Lubrificação Técnica de Roletes & Tracionador',
+        desc: 'Previne atolamento frequente e puxada dupla de folhas de papel',
+        price: 45,
+      });
+    } else if (/celular|smartphone|tablet|iphone/.test(t)) {
       list.push({
         id: 'pelicula_3d',
         title: '🛡️ Película 3D de Vidro Temperado',
@@ -190,6 +209,25 @@ export default function StatusTrackerClient() {
         title: '⚡ Cabo Blindado em Malha Náutica Certificado',
         desc: 'Cabo ultra resistente que não parte a fiação interna',
         price: 25,
+      });
+      list.push({
+        id: 'bateria_check',
+        title: '🔋 Avaliação & Calibração da Bateria',
+        desc: 'Diagnóstico de ciclos e integridade de retenção de carga',
+        price: 35,
+      });
+    } else if (/console|videogame|playstation|xbox|nintendo/.test(t)) {
+      list.push({
+        id: 'limpeza_console',
+        title: '❄️ Limpeza Térmica de Exaustor & Pasta de Prata',
+        desc: 'Elimina superaquecimento e ruído excessivo de ventoinha',
+        price: 90,
+      });
+      list.push({
+        id: 'cabo_hdmi_21',
+        title: '⚡ Cabo HDMI 2.1 Ultra High Speed 48Gbps',
+        desc: 'Transmissão 4K 120Hz / HDR sem engasgos ou tela preta',
+        price: 45,
       });
     } else {
       list.push({
@@ -204,17 +242,16 @@ export default function StatusTrackerClient() {
         desc: 'Elimina faíscas e superaquecimento na tomada da máquina',
         price: 25,
       });
+      list.push({
+        id: 'checkup_preventivo',
+        title: '📦 Revisão Preventiva Agendada (6 Meses)',
+        desc: 'Check-up completo de estabilidade, estresse térmico e sistema',
+        price: 35,
+      });
     }
 
-    list.push({
-      id: 'checkup_preventivo',
-      title: '📦 Revisão Preventiva Agendada (6 Meses)',
-      desc: 'Check-up completo de estabilidade, bateria e sistema',
-      price: 35,
-    });
-
     return list;
-  }, [data]);
+  }, [data, totalOrderAmount]);
 
   const upsellsTotal = useMemo(() => {
     return availableUpsells
@@ -330,270 +367,192 @@ export default function StatusTrackerClient() {
         <div className="no-print space-y-4 sm:space-y-6">
           {/* Banner de Aprovação em 1 Clique (quando aguardando aprovação) */}
           {data.status === 'awaiting_approval' && (
-            <div className="space-y-4">
-              <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            totalOrderAmount <= 0 ? (
+              <div className="border-2 border-zinc-950 bg-zinc-50 text-zinc-950 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
-                    AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-500 block mb-1">
+                    STATUS DA BANCADA // EM TRIAGEM & DIAGNÓSTICO
                   </span>
-                  <h3 className="text-base sm:text-lg font-extrabold text-white">
-                    Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
+                  <h3 className="text-base sm:text-lg font-extrabold text-zinc-950">
+                    Olá, {data.customer_first_name}! Seu equipamento foi recebido com sucesso.
                   </h3>
-                  <p className="mt-1 text-xs sm:text-sm text-zinc-300 hidden sm:block">
-                    Confira o detalhamento abaixo ({fmtBRL(finalTotalAmount)}) e aprove em 1 toque pelo WhatsApp.
+                  <p className="mt-1 text-xs sm:text-sm text-zinc-600">
+                    Nossos técnicos estão realizando os testes de bancada e laudo inicial para elaborar seu orçamento personalizado.
                   </p>
                 </div>
                 <a
                   href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
-                    `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
+                    `Olá! Aqui é ${data.customer_first_name}. Gostaria de acompanhar a triagem da OS #${
                       data.os_number || data.short_id
-                    } (${data.equipment_brand} ${data.equipment_model}) no valor de ${fmtBRL(
-                      finalTotalAmount
-                    )}${
-                      selectedUpsells.length > 0
-                        ? ` (incluindo adicionais: ${availableUpsells
-                            .filter((u) => selectedUpsells.includes(u.id))
-                            .map((u) => u.title.replace(/^[^a-zA-Z0-9À-ÿ]+/, '').trim())
-                            .join(' + ')})`
-                        : ''
-                    }. Podem iniciar o serviço!`
+                    } (${data.equipment_brand} ${data.equipment_model}).`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
+                  className="w-full sm:w-auto shrink-0 border border-zinc-950 bg-white hover:bg-zinc-100 text-zinc-950 px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
                 >
-                  <span>Aprovar Orçamento no WhatsApp</span>
+                  <span>Tirar Dúvida no WhatsApp</span>
                   <ArrowUpRight className="w-4 h-4 shrink-0" />
                 </a>
               </div>
-
-              {/* Seletor de Upsells de 1 Clique */}
-              <ClientUpsellSelector
-                options={availableUpsells}
-                selectedIds={selectedUpsells}
-                onToggle={handleToggleUpsell}
-              />
-            </div>
-          )}
-
-          {/* Bloco Principal: Cabeçalho da OS & Stepper Suíço Mobile-First */}
-          <div className="border border-zinc-300 bg-white p-4 sm:p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 border-b border-zinc-200 pb-4 sm:pb-6 mb-4 sm:mb-6">
-              <div className="w-full md:w-auto">
-                <div className="flex flex-wrap items-center justify-between md:justify-start gap-2 font-mono text-xs text-zinc-500 mb-2">
-                  <span className="font-bold bg-zinc-950 text-white px-2.5 py-1">
-                    OS #{data.os_number || data.short_id}
-                  </span>
-                  <span className="text-[11px] sm:text-xs">ENTRADA: {fmtDate(data.created_at)}</span>
-                </div>
-                <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 leading-tight">
-                  {data.equipment_brand} {data.equipment_model}
-                </h2>
-                <p className="text-xs text-zinc-600 mt-1 font-mono">
-                  CLIENTE: <strong className="text-zinc-950">{data.customer_first_name}</strong> ·{' '}
-                  <strong className="uppercase text-zinc-950">{data.equipment_type}</strong>
-                </p>
-              </div>
-
-              {/* Status Atual */}
-              <div className="w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100 flex md:block items-center justify-between font-mono">
-                <span className="text-[10px] sm:text-[11px] font-bold text-zinc-500 md:block md:mb-1 uppercase tracking-wider">
-                  STATUS ATUAL:
-                </span>
-                <span className="inline-block px-3 py-1.5 text-[11px] sm:text-xs font-bold uppercase bg-zinc-950 text-white">
-                  {data.status === 'awaiting_approval' && 'Aguardando Aprovação'}
-                  {data.status === 'approved' && 'Orçamento Aprovado'}
-                  {data.status === 'in_progress' && 'Em Bancada'}
-                  {data.status === 'waiting_part' && 'Aguardando Peça'}
-                  {data.status === 'ready' && 'Pronto p/ Retirada'}
-                  {data.status === 'delivered' && 'Entregue · Garantia 90D'}
-                  {data.status === 'cancelled' && 'Ordem Cancelada'}
-                </span>
-              </div>
-            </div>
-
-            {/* Stepper de 5 Etapas — Barra Horizontal Compacta no Mobile + Grid Completo no Desktop */}
-            <div>
-              <div className="flex items-center justify-between mb-2.5 sm:mb-4 font-mono text-xs">
-                <span className="font-bold uppercase tracking-wider text-zinc-950">
-                  PROGRESSO NA BANCADA
-                </span>
-                <span className="text-zinc-500 font-bold">ETAPA 0{currentStep} / 05</span>
-              </div>
-
-              {/* MOBILE STEPPER (< 640px): 5 Colunas Horizontais Compactas + Faixa da Etapa Ativa */}
-              <div className="sm:hidden">
-                <div className="grid grid-cols-5 gap-px bg-zinc-300 border border-zinc-300 text-center">
-                  {STEP_ITEMS.map((item) => {
-                    const active = currentStep >= item.step;
-                    const isCurrent = currentStep === item.step;
-                    return (
-                      <div
-                        key={item.step}
-                        className={`py-2 px-1 ${
-                          isCurrent
-                            ? 'bg-zinc-950 text-white'
-                            : active
-                            ? 'bg-zinc-200 text-zinc-950'
-                            : 'bg-white text-zinc-400'
-                        }`}
-                      >
-                        <div className="font-mono font-extrabold text-xs leading-none">
-                          0{item.step}
-                        </div>
-                        <div
-                          className={`font-mono text-[9px] uppercase tracking-tighter mt-1 truncate ${
-                            isCurrent ? 'text-zinc-200 font-bold' : active ? 'text-zinc-700' : 'text-zinc-400'
-                          }`}
-                        >
-                          {item.short}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="bg-zinc-950 text-white px-3.5 py-2.5 border-x border-b border-zinc-950 flex items-center justify-between gap-2 font-mono text-xs">
-                  <span className="font-bold uppercase">{activeStepInfo.title}</span>
-                  <span className="text-zinc-300 text-[11px]">{activeStepInfo.desc}</span>
-                </div>
-              </div>
-
-              {/* DESKTOP STEPPER (>= 640px): 5 Colunas Completas */}
-              <div className="hidden sm:grid sm:grid-cols-5 gap-px bg-zinc-300 border border-zinc-300 text-xs">
-                {STEP_ITEMS.map((item) => {
-                  const active = currentStep >= item.step;
-                  const isCurrent = currentStep === item.step;
-                  return (
-                    <div
-                      key={item.step}
-                      className={`p-4 transition-colors ${
-                        isCurrent
-                          ? 'bg-zinc-950 text-white'
-                          : active
-                          ? 'bg-zinc-100 text-zinc-950'
-                          : 'bg-white text-zinc-400'
-                      }`}
-                    >
-                      <div className="font-mono font-bold text-xs mb-1">{item.title}</div>
-                      <div className={`text-[11px] ${isCurrent ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                        {item.desc}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Relato de Entrada & Previsão */}
-          <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="border border-zinc-300 bg-white p-4 sm:p-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
-                RELATO / SINTOMA REGISTRADO
-              </span>
-              <p className="text-zinc-900 text-xs sm:text-sm leading-relaxed bg-zinc-50 border border-zinc-200 p-3.5">
-                {data.reported_defect || 'Avaliação técnica em bancada.'}
-              </p>
-              {data.accessories_in && (
-                <p className="mt-3 text-xs text-zinc-600 font-mono">
-                  ACESSÓRIOS DEIXADOS: <strong className="text-zinc-950">{data.accessories_in}</strong>
-                </p>
-              )}
-            </div>
-
-            <div className="border border-zinc-300 bg-white p-4 sm:p-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
-                PREVISÃO & GARANTIA LEGAL
-              </span>
-              <div className="space-y-2.5 text-xs font-mono">
-                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
-                  <span className="text-zinc-500">PREVISÃO:</span>
-                  <span className="text-zinc-950 font-bold text-right">
-                    {data.estimated_ready_at ? fmtDate(data.estimated_ready_at) : 'EM AVALIAÇÃO'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
-                  <span className="text-zinc-500">GARANTIA LEGAL:</span>
-                  <span className="text-zinc-950 font-bold text-right">90 DIAS (ART. 26 CDC)</span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-zinc-500">UNIDADE:</span>
-                  <span className="text-zinc-900 font-bold text-right">RUA CEL. TEÓFILO LEME, 967</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Vistoria Fotográfica da Entrada */}
-          {data.equipment_photos && data.equipment_photos.length > 0 && (
-            <div className="border border-zinc-300 bg-white p-4 sm:p-8">
-              <div className="flex items-center justify-between mb-1.5">
-                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
-                  VISTORIA FOTOGRÁFICA ({data.equipment_photos.length})
-                </h3>
-                <span className="font-mono text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase">
-                  TOQUE P/ AMPLIAR
-                </span>
-              </div>
-              <p className="text-xs text-zinc-500 mb-3.5">
-                Fotos registradas no ato do recebimento do equipamento no balcão.
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                {data.equipment_photos.map((url, i) => (
-                  <button
-                    key={url}
-                    type="button"
-                    onClick={() => setSelectedPhoto(url)}
-                    className="relative aspect-square overflow-hidden border border-zinc-300 hover:border-zinc-950 transition-all group cursor-pointer"
+            ) : (
+              <div className="space-y-4">
+                <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
+                      AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
+                    </span>
+                    <h3 className="text-base sm:text-lg font-extrabold text-white">
+                      Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
+                    </h3>
+                    <p className="mt-1 text-xs sm:text-sm text-zinc-300 hidden sm:block">
+                      Confira o detalhamento abaixo ({fmtBRL(finalTotalAmount)}) e aprove em 1 toque pelo WhatsApp.
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
+                      `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
+                        data.os_number || data.short_id
+                      } (${data.equipment_brand} ${data.equipment_model}) no valor de ${fmtBRL(
+                        finalTotalAmount
+                      )}${
+                        selectedUpsells.length > 0
+                          ? ` (incluindo adicionais: ${availableUpsells
+                              .filter((u) => selectedUpsells.includes(u.id))
+                              .map((u) => u.title.replace(/^[^a-zA-Z0-9À-ÿ]+/, '').trim())
+                              .join(' + ')})`
+                          : ''
+                      }. Podem iniciar o serviço!`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={url}
-                      alt={`Foto de entrada ${i + 1}`}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                    />
-                    <div className="absolute bottom-0 inset-x-0 bg-black/75 py-1 text-white font-mono text-[10px] font-bold uppercase text-center sm:opacity-0 sm:group-hover:opacity-100 transition">
-                      Foto 0{i + 1} · Ampliar
-                    </div>
-                  </button>
-                ))}
+                    <span>Aprovar Orçamento no WhatsApp</span>
+                    <ArrowUpRight className="w-4 h-4 shrink-0" />
+                  </a>
+                </div>
+
+                {/* Seletor de Upsells de 1 Clique */}
+                <ClientUpsellSelector
+                  options={availableUpsells}
+                  selectedIds={selectedUpsells}
+                  onToggle={handleToggleUpsell}
+                />
               </div>
-            </div>
+            )
           )}
 
-          {/* Telemetria e Testes de Bancada (Grid 2x2 Perfeito com gap-px) */}
+          {/* Telemetria e Testes de Bancada Contextualizados por Tipo de Equipamento */}
           <div className="border border-zinc-300 bg-white p-4 sm:p-8">
             <div className="flex items-center justify-between mb-3.5 border-b border-zinc-200 pb-2.5 font-mono">
               <span className="text-xs font-bold uppercase tracking-wider text-zinc-950">
                 CONTROLE DE QUALIDADE & TESTES
               </span>
-              <span className="text-[11px] text-zinc-500 uppercase">BANCADA</span>
+              <span className="text-[11px] text-zinc-500 uppercase">
+                {/impressora/.test((data.equipment_type || '').toLowerCase())
+                  ? 'BANCADA // IMPRESSÃO'
+                  : /celular|smartphone|tablet/.test((data.equipment_type || '').toLowerCase())
+                  ? 'BANCADA // MOBILE'
+                  : 'BANCADA // HARDWARE'}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-300 border border-zinc-300 text-center font-mono">
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">GPU EM CARGA</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
-                  {currentStep >= 4 ? '64 °C' : 'EM ANÁLISE'}
-                </span>
-              </div>
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">CPU EM CARGA</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
-                  {currentStep >= 4 ? '68 °C' : 'EM ANÁLISE'}
-                </span>
-              </div>
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÚDE DO DISCO</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
-              </div>
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">TEMPO DE BOOT</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
-                  {currentStep >= 4 ? '8.4 s' : '-- s'}
-                </span>
-              </div>
+              {/impressora|printer/.test((data.equipment_type || '').toLowerCase()) ? (
+                <>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">ALINHAMENTO CABEÇA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? 'CALIBRADO' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">TRACIONADOR PAPEL</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? '100% OK' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">SENSOR DE MÍDIA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">FLUXO DE TINTA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? 'PURGADO' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                </>
+              ) : /celular|smartphone|tablet|iphone/.test((data.equipment_type || '').toLowerCase()) ? (
+                <>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÚDE BATERIA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? 'VERIFICADA' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">CONSUMO DA PLACA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">ESTÁVEL</span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">TOUCH & DISPLAY</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">VEDAÇÃO CHASSI</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">INSPECIONADO</span>
+                  </div>
+                </>
+              ) : /console|videogame|playstation|xbox/.test((data.equipment_type || '').toLowerCase()) ? (
+                <>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">APU EM CARGA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? '62 °C' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">EXAUSTOR / FAN</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? 'SILENCIOSO' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÚDE DO DISCO</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÍDA DE VÍDEO</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">4K 120Hz OK</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">GPU EM CARGA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? '64 °C' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">CPU EM CARGA</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? '68 °C' : 'EM ANÁLISE'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÚDE DO DISCO</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
+                  </div>
+                  <div className="bg-white p-3.5 sm:p-4">
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">TEMPO DE BOOT</span>
+                    <span className="text-base sm:text-xl font-bold text-zinc-950 block">
+                      {currentStep >= 4 ? '8.4 s' : '-- s'}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -611,7 +570,7 @@ export default function StatusTrackerClient() {
               <div className="text-right font-mono shrink-0">
                 <span className="text-[10px] sm:text-xs text-zinc-500 block uppercase">VALOR TOTAL</span>
                 <span className="text-xl sm:text-3xl font-extrabold text-zinc-950 block">
-                  {fmtBRL(totalOrderAmount)}
+                  {totalOrderAmount > 0 ? fmtBRL(totalOrderAmount) : 'SOB ANÁLISE'}
                 </span>
               </div>
             </div>
@@ -622,7 +581,7 @@ export default function StatusTrackerClient() {
                   MÃO DE OBRA
                 </span>
                 <span className="text-base sm:text-2xl font-bold text-zinc-950">
-                  {fmtBRL(data.labor_cost || 0)}
+                  {totalOrderAmount > 0 ? fmtBRL(data.labor_cost || 0) : 'Em diagnóstico'}
                 </span>
               </div>
               <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
@@ -630,7 +589,7 @@ export default function StatusTrackerClient() {
                   PEÇAS & INSUMOS
                 </span>
                 <span className="text-base sm:text-2xl font-bold text-zinc-950">
-                  {fmtBRL(data.estimated_value || 0)}
+                  {totalOrderAmount > 0 ? fmtBRL(data.estimated_value || 0) : 'Em diagnóstico'}
                 </span>
               </div>
             </div>

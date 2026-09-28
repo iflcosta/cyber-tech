@@ -16,6 +16,7 @@ import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadg
 import { UsePartForm } from './UsePartForm';
 import UpsellPromptPanel from './UpsellPromptPanel';
 import { TechnicianAssignment } from './TechnicianAssignment';
+import { OSPhotoManager } from './OSPhotoManager';
 import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
 import { formatDateOnlyBR } from '@/app/admin/lib/datetime';
 
@@ -323,25 +324,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 <strong>Acessórios:</strong> {normalizedSo.accessories_in}
               </p>
             )}
-            {normalizedSo.equipment_photos && normalizedSo.equipment_photos.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Foto na entrada ({normalizedSo.equipment_photos.length})
-                </p>
-                <div className="mt-1.5 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {normalizedSo.equipment_photos.map((url: string) => (
-                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt="Foto do aparelho na entrada"
-                        className="aspect-square w-full rounded-md border border-slate-200 object-cover hover:opacity-90"
-                      />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
+            <OSPhotoManager
+              osId={normalizedSo.id}
+              initialPhotos={normalizedSo.equipment_photos || []}
+              canEdit={canEdit}
+            />
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">

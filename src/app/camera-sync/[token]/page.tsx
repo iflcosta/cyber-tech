@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 
 const GUIDED_SLOTS = [
@@ -57,11 +58,30 @@ export default function MobileCameraSyncPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = use(params);
+  const searchParams = useSearchParams();
+  const auth = searchParams.get('auth');
+  const refresh = searchParams.get('refresh');
+
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
   const [status, setStatus] = useState<'active' | 'completed' | 'expired'>('active');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Se o QR Code transportou sessão autenticada do atendente, injeta no cliente do celular
+  useEffect(() => {
+    if (auth) {
+      try {
+        const supabase = createCRMBrowserClient();
+        supabase.auth.setSession({
+          access_token: auth,
+          refresh_token: refresh || '',
+        }).catch(() => {});
+      } catch {
+        // Continua
+      }
+    }
+  }, [auth, refresh]);
 
   useEffect(() => {
     async function fetchInitial() {
@@ -96,10 +116,28 @@ export default function MobileCameraSyncPage({
 
       for (const rawFile of Array.from(files)) {
         const { file, dataUrl } = await compressToBlobAndDataUrl(rawFile, 1280, 0.78);
-        let finalUrl = dataUrl;
+        let finalUrl = '';
 
-        // Tenta subir para o bucket público equipment-photos se disponível
-        if (supabase) {
+        // 1. Tenta upload via rota dedicada no servidor /api/camera-sync/upload
+        try {
+          const fd = new FormData();
+          fd.append('token', token);
+          fd.append('file', file);
+          const upRes = await fetch('/api/camera-sync/upload', {
+            method: 'POST',
+            body: fd,
+            headers: auth ? { Authorization: `Bearer ${auth}` } : undefined,
+          });
+          if (upRes.ok) {
+            const upJson = await upRes.json();
+            if (upJson.photoUrl) finalUrl = upJson.photoUrl;
+          }
+        } catch {
+          // Continua para fallback
+        }
+
+        // 2. Se a rota não retornou URL pública, tenta direto no Storage com autenticação
+        if (!finalUrl && supabase) {
           try {
             const path = `sync-${token}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`;
             const { error: upErr } = await supabase.storage
@@ -110,11 +148,15 @@ export default function MobileCameraSyncPage({
               if (pub?.publicUrl) finalUrl = pub.publicUrl;
             }
           } catch {
-            // Usa o dataUrl comprimido como fallback instantâneo
+            // Continua
           }
         }
 
-        // Sincroniza via API
+        if (!finalUrl) {
+          finalUrl = dataUrl;
+        }
+
+        // 3. Sincroniza via API
         const res = await fetch('/api/camera-sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -136,7 +178,7 @@ export default function MobileCameraSyncPage({
           setPhotos((prev) => [...prev, finalUrl]);
         }
 
-        // Dispara broadcast via Supabase Realtime se disponível
+        // 4. Dispara broadcast via Supabase Realtime se disponível
         if (supabase) {
           try {
             const channel = supabase.channel(`camera-sync:${token}`);
