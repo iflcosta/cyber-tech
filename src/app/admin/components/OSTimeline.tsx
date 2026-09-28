@@ -11,6 +11,21 @@ const EVENT_LABELS: Record<string, { label: string; color: string; icon: string 
   delivered: { label: 'Entregue', color: 'bg-emerald-100 text-emerald-800', icon: '📦' },
 };
 
+const STATUS_TRANSLATIONS: Record<string, string> = {
+  awaiting_approval: 'Aguardando aprovação',
+  approved: 'Aprovado',
+  in_progress: 'Em bancada',
+  waiting_part: 'Aguardando peça',
+  ready: 'Pronto para retirada',
+  delivered: 'Entregue',
+  cancelled: 'Cancelada',
+};
+
+function humanizeValue(val: string | null): string {
+  if (!val) return '';
+  return STATUS_TRANSLATIONS[val] ?? val;
+}
+
 const formatTime = formatDateTimeShortBR;
 
 export function OSTimeline({ events, authorNames }: {
@@ -39,7 +54,7 @@ export function OSTimeline({ events, authorNames }: {
                 <span className="text-sm font-medium text-slate-900">{meta.label}</span>
                 {ev.from_value && ev.to_value && (
                   <span className="text-xs text-slate-500">
-                    ({ev.from_value} → <strong>{ev.to_value}</strong>)
+                    ({humanizeValue(ev.from_value)} → <strong>{humanizeValue(ev.to_value)}</strong>)
                   </span>
                 )}
               </div>

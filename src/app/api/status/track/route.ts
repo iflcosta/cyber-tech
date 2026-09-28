@@ -84,7 +84,21 @@ export async function GET(request: Request) {
 
         const { data: orders } = await soQuery;
         if (orders && orders.length > 0) {
-          return NextResponse.json(formatSafeOS(orders[0]));
+          const so = orders[0];
+          const [{ data: events }, { data: partsRaw }] = await Promise.all([
+            client
+              .from('service_order_events')
+              .select('id, event_type, from_value, to_value, note, created_at')
+              .eq('service_order_id', so.id)
+              .order('created_at', { ascending: true }),
+            client
+              .from('stock_movements')
+              .select('quantity, unit_price, stock_item:stock_items(name)')
+              .eq('service_order_id', so.id)
+              .in('movement_type', ['out', 'sale']),
+          ]);
+
+          return NextResponse.json(formatSafeOS(so, events ?? [], partsRaw ?? []));
         }
       } catch (e) {
         console.warn('Erro ao consultar Supabase em /api/status/track:', e);
@@ -105,9 +119,22 @@ export async function GET(request: Request) {
   }
 }
 
-function formatSafeOS(so: any) {
+function formatSafeOS(so: any, rawEvents: any[] = [], rawParts: any[] = []) {
   const customerName = so.customer?.name ?? 'Cliente';
   const firstName = customerName.split(' ')[0] || 'Cliente';
+
+  const partsApplied = rawParts.map((p: any) => ({
+    name: p.stock_item?.name ?? 'Componente / Peça',
+    quantity: Number(p.quantity || 1),
+    unit_price: Number(p.unit_price || 0),
+  }));
+
+  const timeline = rawEvents.map((e: any) => ({
+    id: e.id,
+    event_type: e.event_type,
+    note: e.note || (e.from_value && e.to_value ? `${e.from_value} → ${e.to_value}` : e.event_type),
+    created_at: e.created_at,
+  }));
 
   return {
     found: true,
@@ -131,7 +158,7 @@ function formatSafeOS(so: any) {
     updated_at: so.updated_at,
     delivered_at: so.delivered_at,
     customer_first_name: firstName,
-    timeline: [],
-    parts_applied: [],
+    timeline,
+    parts_applied: partsApplied,
   };
 }

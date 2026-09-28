@@ -99,17 +99,27 @@ export function StatusQuickActions({
     setActiveStatus(newStatus);
     try {
       const supabase = createCRMBrowserClient();
+      const now = new Date().toISOString();
+      const updatePayload: Record<string, unknown> = {
+        status: newStatus,
+        updated_at: now,
+      };
+      if (newStatus === 'delivered') {
+        updatePayload.delivered_at = now;
+      }
+
       const { error: upErr } = await supabase
         .from('service_orders')
-        .update({ status: newStatus })
+        .update(updatePayload)
         .eq('id', osId);
       if (upErr) throw upErr;
+
       await supabase.from('service_order_events').insert({
         service_order_id: osId,
-        event_type: 'status_changed',
+        event_type: newStatus === 'delivered' ? 'delivered' : 'status_changed',
         from_value: currentStatus,
         to_value: newStatus,
-        note: note ?? null,
+        note: note ?? (newStatus === 'delivered' ? 'Equipamento entregue ao cliente.' : null),
         author_id: currentUserId,
       });
 
