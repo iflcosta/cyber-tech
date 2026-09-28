@@ -3,21 +3,31 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
-import { ENTRY_CHECKLIST_FIELDS } from '@/app/admin/types/database';
+import { getChecklistFieldsForEquipment } from '@/app/admin/types/database';
 
 export function ChecklistEditor({
   osId,
   initialChecklist,
   canEdit,
+  equipmentType,
+  equipmentBrand,
+  equipmentModel,
 }: {
   osId: string;
   initialChecklist: Record<string, boolean | string> | null | undefined;
   canEdit: boolean;
+  equipmentType?: string | null;
+  equipmentBrand?: string | null;
+  equipmentModel?: string | null;
 }) {
   const router = useRouter();
+  const fields = useMemo(
+    () => getChecklistFieldsForEquipment(equipmentType, equipmentBrand, equipmentModel),
+    [equipmentType, equipmentBrand, equipmentModel],
+  );
   const baseState = useMemo(
-    () => Object.fromEntries(ENTRY_CHECKLIST_FIELDS.map((f) => [f.key, Boolean(initialChecklist?.[f.key])])),
-    [initialChecklist],
+    () => Object.fromEntries(fields.map((f) => [f.key, Boolean(initialChecklist?.[f.key])])),
+    [fields, initialChecklist],
   );
   const [checklist, setChecklist] = useState<Record<string, boolean>>(baseState);
   const [saving, setSaving] = useState(false);
@@ -25,8 +35,8 @@ export function ChecklistEditor({
   const [error, setError] = useState<string | null>(null);
 
   const isDirty = useMemo(
-    () => ENTRY_CHECKLIST_FIELDS.some((f) => Boolean(checklist[f.key]) !== Boolean(baseState[f.key])),
-    [checklist, baseState],
+    () => fields.some((f) => Boolean(checklist[f.key]) !== Boolean(baseState[f.key])),
+    [fields, checklist, baseState],
   );
 
   function toggle(key: string) {
@@ -63,7 +73,7 @@ export function ChecklistEditor({
   return (
     <div>
       <ul className="mt-1.5 grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-3">
-        {ENTRY_CHECKLIST_FIELDS.map((f) => {
+        {fields.map((f) => {
           const val = checklist[f.key];
           return (
             <li key={f.key}>

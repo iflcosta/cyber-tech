@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { LabelPrintButton } from './LabelPrintButton';
 import { EscPosLabelButton } from './EscPosLabelButton';
-import { EQUIPMENT_TYPES, type EquipmentTypeValue } from '@/app/admin/types/database';
+import { getEquipmentTypeLabel } from '@/app/admin/types/database';
 import { formatDateBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
@@ -47,8 +47,7 @@ export default async function OSLabelPage({ params }: { params: Promise<{ id: st
   const equipRaw = [so.equipment_brand, so.equipment_model, so.equipment_color]
     .filter(Boolean).join(' ');
   const equipNorm = norm(equipRaw);
-  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
-  const typeLabel = norm(typeMeta?.label ?? '');
+  const typeLabel = norm(getEquipmentTypeLabel(so.equipment_type, so.equipment_brand, so.equipment_model));
   const shortId = norm(so.short_id ?? `OS-${so.os_number}`);
   const osNumberStr = String(so.os_number ?? shortId);
   const created = formatDateBR(so.created_at);

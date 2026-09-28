@@ -341,9 +341,20 @@ export function StatusQuickActions({
           Fluxo da OS
         </h2>
         <span className="text-xs font-medium text-zinc-600">
-          Atual: <strong className="text-zinc-950">{OS_STATUSES.find((s) => s.value === currentStatus)?.label ?? currentStatus}</strong>
+          Atual:{' '}
+          <strong className="text-zinc-950">
+            {currentStatus === 'awaiting_approval' && effectiveGrandTotal === 0
+              ? 'Em triagem (sem valor)'
+              : (OS_STATUSES.find((s) => s.value === currentStatus)?.label ?? currentStatus)}
+          </strong>
         </span>
       </div>
+
+      {isApprovalStep && effectiveGrandTotal === 0 && (
+        <p className="mt-2 rounded border border-amber-200 bg-amber-50/80 px-2.5 py-1.5 text-[11px] leading-snug text-amber-900">
+          💡 <strong>Em triagem:</strong> preencha o diagnóstico e valor no bloco <strong>2. Bancada</strong> para liberar o orçamento no portal do cliente, ou aprove direto abaixo.
+        </p>
+      )}
 
       <button
         type="button"
@@ -353,16 +364,18 @@ export function StatusQuickActions({
       >
         {activeStatus === next
           ? 'Salvando…'
-          : `→ ${STATUS_QUICK_LABEL[next] ?? OS_STATUSES.find((s) => s.value === next)?.label}`}
+          : isApprovalStep && effectiveGrandTotal === 0
+            ? '→ ✅ Definir valor / Aprovar orçamento'
+            : `→ ${STATUS_QUICK_LABEL[next] ?? OS_STATUSES.find((s) => s.value === next)?.label}`}
       </button>
 
-      {isApprovalStep && customerPhone && (
+      {isApprovalStep && customerPhone && effectiveGrandTotal > 0 && (
         <button
           type="button"
           onClick={() => sendQuoteWhatsApp()}
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-100 cursor-pointer"
         >
-          📲 Enviar orçamento no WhatsApp {effectiveGrandTotal > 0 ? `(${fmtBRL(effectiveGrandTotal)})` : ''}
+          📲 Enviar orçamento no WhatsApp ({fmtBRL(effectiveGrandTotal)})
         </button>
       )}
 

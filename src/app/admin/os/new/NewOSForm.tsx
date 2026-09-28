@@ -6,26 +6,12 @@ import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import {
   EQUIPMENT_TYPES,
   ENTRY_CHECKLIST_FIELDS,
+  getChecklistFieldsForEquipment,
+  getQuickSymptomChips,
+  getQuickAccessoryChips,
   type EquipmentTypeValue,
 } from '@/app/admin/types/database';
 import { CameraSyncModal } from './CameraSyncModal';
-
-const QUICK_SYMPTOM_CHIPS = [
-  'Formatação & Backup de Dados',
-  'Limpeza Preventiva + Pasta Térmica',
-  'Lento / Travando (Upgrade SSD/RAM)',
-  'Não Liga / Sem Sinal de Vídeo',
-  'Superaquecendo / Desligando em Jogo',
-  'Troca de Tela / Remanufatura Óptica OCA',
-  'Reparo de Placa de Vídeo (GPU / BGA)',
-] as const;
-
-const QUICK_ACCESSORY_CHIPS = [
-  'Carregador / Fonte Original',
-  'Cabo de Força Tripolar',
-  'Sem Acessórios (Só Aparelho)',
-  'Case / Mochila / Capa',
-] as const;
 
 async function compressImage(file: File, maxDimension = 1600, quality = 0.8): Promise<File> {
   if (!file.type.startsWith('image/')) return file;
@@ -196,6 +182,7 @@ export function NewOSForm({
 
   const [equipment, setEquipment] = useState({
     type: 'notebook' as EquipmentTypeValue,
+    customType: '',
     brand: '',
     model: '',
     color: '',
@@ -212,6 +199,24 @@ export function NewOSForm({
   const [defect, setDefect] = useState('');
   const [blocking, setBlocking] = useState('');
   const [estimatedReady, setEstimatedReady] = useState('');
+
+  const effectiveEquipmentType =
+    equipment.type === 'outro' ? equipment.customType.trim() || 'outro' : equipment.type;
+  const activeChecklistFields = getChecklistFieldsForEquipment(
+    effectiveEquipmentType,
+    equipment.brand,
+    equipment.model,
+  );
+  const QUICK_ACCESSORY_CHIPS = getQuickAccessoryChips(
+    effectiveEquipmentType,
+    equipment.brand,
+    equipment.model,
+  );
+  const QUICK_SYMPTOM_CHIPS = getQuickSymptomChips(
+    effectiveEquipmentType,
+    equipment.brand,
+    equipment.model,
+  );
 
   const handleSyncedPhotos = useCallback((newPhotos: string[]) => {
     setPhotos((prev) => Array.from(new Set([...prev, ...newPhotos])));
@@ -315,7 +320,7 @@ export function NewOSForm({
       // 2. OS (com fallback caso a coluna technician_id da migration 0034 ainda não tenha sido aplicada)
       const basePayload = {
         customer_id: customerId,
-        equipment_type: equipment.type,
+        equipment_type: effectiveEquipmentType,
         equipment_brand: equipment.brand.trim() || null,
         equipment_model: equipment.model.trim() || null,
         equipment_color: equipment.color.trim() || null,
@@ -520,7 +525,7 @@ export function NewOSForm({
         {step === 2 && (
           <div className="space-y-4">
             <Field label="Tipo de aparelho *">
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {EQUIPMENT_TYPES.map((t) => (
                   <button
                     key={t.value}
@@ -538,6 +543,18 @@ export function NewOSForm({
               </div>
             </Field>
 
+            {equipment.type === 'outro' && (
+              <Field label="Qual é o aparelho? (especifique) *">
+                <input
+                  autoFocus
+                  value={equipment.customType}
+                  onChange={(e) => setEquipment({ ...equipment, customType: e.target.value })}
+                  className="form-input"
+                  placeholder="Ex: Nobreak, GPS, Roteador, Scanner, Caixa de Som…"
+                />
+              </Field>
+            )}
+
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Marca">
                 <input
@@ -547,7 +564,11 @@ export function NewOSForm({
                   placeholder={
                     equipment.type === 'computador'
                       ? 'Ex: Pichau / Custom / Dell'
-                      : 'Ex: Samsung / Apple / Acer'
+                      : equipment.type === 'impressora'
+                        ? 'Ex: HP / Epson / Brother / Canon'
+                        : equipment.type === 'console'
+                          ? 'Ex: Sony / Microsoft / Nintendo'
+                          : 'Ex: Samsung / Apple / Acer / Dell'
                   }
                 />
               </Field>
@@ -559,7 +580,11 @@ export function NewOSForm({
                   placeholder={
                     equipment.type === 'computador'
                       ? 'Ex: Gabinete Aquário Branco / RTX 4060'
-                      : 'Ex: Nitro 5 / Galaxy S23'
+                      : equipment.type === 'impressora'
+                        ? 'Ex: Smart Tank 517 / EcoTank L3250'
+                        : equipment.type === 'console'
+                          ? 'Ex: PlayStation 5 / Xbox Series S'
+                          : 'Ex: Nitro 5 / Galaxy S23 / Inspiron 15'
                   }
                 />
               </Field>
@@ -571,11 +596,19 @@ export function NewOSForm({
                   placeholder={
                     equipment.type === 'computador'
                       ? 'Ex: Preto, lateral vidro temperado'
-                      : 'Ex: Grafite'
+                      : equipment.type === 'impressora'
+                        ? 'Ex: Cinza / Preta / Branca'
+                        : 'Ex: Grafite / Prata / Preto'
                   }
                 />
               </Field>
-              <Field label={equipment.type === 'computador' ? 'Nº de série (se tiver etiqueta)' : 'IMEI / Serial'}>
+              <Field
+                label={
+                  equipment.type === 'celular' || equipment.type === 'tablet'
+                    ? 'IMEI / Nº de Série'
+                    : 'Nº de Série (se visível)'
+                }
+              >
                 <input
                   value={equipment.serial}
                   onChange={(e) => setEquipment({ ...equipment, serial: e.target.value })}
@@ -585,19 +618,29 @@ export function NewOSForm({
               </Field>
             </div>
 
-            <Field label="Senha / PIN de teste (se o cliente informar)">
+            <Field
+              label={
+                equipment.type === 'impressora' || equipment.type === 'monitor'
+                  ? 'Senha de Rede / PIN / Observação de acesso (opcional)'
+                  : 'Senha / PIN de teste (se o cliente informar)'
+              }
+            >
               <input
                 type="text"
                 value={equipment.password}
                 onChange={(e) => setEquipment({ ...equipment, password: e.target.value })}
                 className="form-input"
-                placeholder="Ex: 1234 / Sem senha"
+                placeholder={
+                  equipment.type === 'impressora' || equipment.type === 'monitor'
+                    ? 'Opcional (ex: Sem senha / Wi-Fi Direto)'
+                    : 'Ex: 1234 / Sem senha'
+                }
               />
             </Field>
 
             <Field label="Checklist de integridade na entrada">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                {ENTRY_CHECKLIST_FIELDS.map((f) => {
+                {activeChecklistFields.map((f) => {
                   const checked = checklist[f.key] ?? false;
                   return (
                     <label
@@ -650,7 +693,7 @@ export function NewOSForm({
                 value={accessories}
                 onChange={(e) => setAccessories(e.target.value)}
                 className="form-input"
-                placeholder="Digite livremente qualquer acessório (ex: Fonte Dell 65W, mouse USB, mochila preta…)"
+                placeholder="Digite livremente qualquer acessório deixado pelo cliente…"
               />
             </Field>
 

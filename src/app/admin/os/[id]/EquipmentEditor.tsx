@@ -10,7 +10,15 @@ import {
 } from '@/app/admin/types/database';
 import { formatDateOnlyBR } from '@/app/admin/lib/datetime';
 
-const STANDARD_TYPES = new Set<string>(['computador', 'notebook', 'celular', 'tablet']);
+const STANDARD_TYPES = new Set<string>([
+  'computador',
+  'notebook',
+  'impressora',
+  'celular',
+  'tablet',
+  'console',
+  'monitor',
+]);
 
 export function EquipmentEditor({
   osId,
@@ -52,7 +60,7 @@ export function EquipmentEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const displayTypeLabel = getEquipmentTypeLabel(initialType);
+  const displayTypeLabel = getEquipmentTypeLabel(initialType, initialBrand, initialModel);
 
   async function save() {
     const finalType =

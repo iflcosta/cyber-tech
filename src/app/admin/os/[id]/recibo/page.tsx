@@ -4,10 +4,9 @@ import { ConfirmDeliveryButton } from './ConfirmDeliveryButton';
 import { ReciboActionButtons } from './ReciboActionButtons';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import {
-  EQUIPMENT_TYPES,
+  getEquipmentTypeLabel,
   PAYMENT_METHODS,
   WARRANTY_DAYS,
-  type EquipmentTypeValue,
 } from '@/app/admin/types/database';
 import { formatDateBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
@@ -106,15 +105,19 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   const customerPhone = soWithCustomer.customer?.phone ?? null;
   const customerEmail = soWithCustomer.customer?.email ?? null;
   const customerNotes = soWithCustomer.customer?.notes ?? null;
-  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === (so.equipment_type as EquipmentTypeValue));
+  const typeLabel = getEquipmentTypeLabel(
+    so.equipment_type,
+    so.equipment_brand,
+    so.equipment_model,
+  );
 
-  const laborCost = Number(soWithCustomer.labor_cost ?? 0);
+  const rawLaborCost = Number(soWithCustomer.labor_cost ?? 0);
   const partsTotal = (parts ?? []).reduce((acc, p) => acc + Number(p.total_amount ?? 0), 0);
   const totalPaid = payments.reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-  const calculatedTotal = laborCost + partsTotal;
   const estimatedVal = Number(so.estimated_value ?? 0);
-  const grandTotal =
-    calculatedTotal > 0 ? calculatedTotal : estimatedVal > 0 ? estimatedVal : totalPaid;
+  const laborCost = rawLaborCost > 0 ? rawLaborCost : Math.max(0, estimatedVal - partsTotal);
+  const calculatedTotal = laborCost + partsTotal;
+  const grandTotal = calculatedTotal > 0 ? calculatedTotal : totalPaid;
 
   const isPaid =
     so.payment_status === 'paid' || (grandTotal > 0 && totalPaid >= grandTotal);
@@ -130,7 +133,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   const canConfirmDelivery = profile?.role === 'owner' || profile?.role === 'technician';
 
   const equipmentFullTitle = [
-    typeMeta?.label ?? so.equipment_type,
+    typeLabel,
     so.equipment_brand,
     so.equipment_model,
   ]

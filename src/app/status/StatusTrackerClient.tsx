@@ -11,6 +11,11 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { brand } from '@/lib/brand';
+import {
+  getChecklistFieldsForEquipment,
+  getEquipmentTypeLabel,
+  resolveEquipmentCategory,
+} from '@/app/admin/types/database';
 
 interface TrackingData {
   found: boolean;
@@ -21,19 +26,25 @@ interface TrackingData {
     | 'awaiting_approval'
     | 'approved'
     | 'in_progress'
+    | 'in_repair'
     | 'waiting_part'
+    | 'waiting_parts'
     | 'ready'
     | 'delivered'
     | 'cancelled';
   equipment_type: string;
-  equipment_brand: string;
-  equipment_model: string;
+  equipment_brand: string | null;
+  equipment_model: string | null;
+  equipment_color?: string | null;
+  equipment_serial?: string | null;
   reported_defect: string;
+  repair_notes?: string | null;
   accessories_in: string | null;
   entry_checklist: Record<string, boolean | string>;
   equipment_photos: string[];
   estimated_value: number;
   labor_cost: number;
+  parts_total?: number;
   payment_status: 'pending' | 'partial' | 'paid';
   payment_method: string | null;
   estimated_ready_at: string | null;
@@ -41,30 +52,138 @@ interface TrackingData {
   updated_at: string;
   delivered_at: string | null;
   customer_first_name: string;
-  parts_applied?: Array<{ name: string; quantity: number; unit_price: number }>;
-  telemetry?: {
-    cpu_max_temp?: string;
-    cpu_test_profile?: string;
-    gpu_max_temp?: string;
-    gpu_test_profile?: string;
-    ssd_smart_health?: string;
-    ssd_sectors_bad?: number;
-    boot_time?: string;
-    boot_profile?: string;
-    rail_12v_voltage?: string;
-    rail_12v_ripple?: string;
-    esd_loop_ground?: string;
-  };
-  timeline?: Array<{ id: string; event_type: string; note: string; created_at: string }>;
+  parts_applied?: Array<{
+    name: string;
+    quantity: number;
+    unit_price: number;
+    total_amount?: number;
+  }>;
+  timeline?: Array<{
+    id: string;
+    event_type: string;
+    from_value?: string | null;
+    to_value?: string | null;
+    note?: string | null;
+    created_at: string;
+  }>;
 }
 
 const STEP_ITEMS = [
-  { step: 1, short: 'Check-in', title: '01 / Check-in', desc: 'Recebido com Fotos' },
+  { step: 1, short: 'Check-in', title: '01 / Check-in', desc: 'Recepção & Triagem' },
   { step: 2, short: 'Laudo', title: '02 / Diagnóstico', desc: 'Laudo & Orçamento' },
   { step: 3, short: 'Bancada', title: '03 / Bancada', desc: 'Execução Técnica' },
-  { step: 4, short: 'Testes', title: '04 / Testes QA', desc: 'Estresse & Estabilidade' },
+  { step: 4, short: 'Qualidade', title: '04 / Qualidade', desc: 'Testes Operacionais' },
   { step: 5, short: 'Pronto', title: '05 / Pronto', desc: 'Garantia CDC 90 Dias' },
 ];
+
+function getQualityProtocolItems(
+  type?: string | null,
+  brandName?: string | null,
+  modelName?: string | null,
+): ReadonlyArray<{ title: string; subtitle: string }> {
+  const cat = resolveEquipmentCategory(type, brandName, modelName);
+  switch (cat) {
+    case 'impressora':
+      return [
+        {
+          title: 'CABEÇOTE & SISTEMA DE TINTA',
+          subtitle: 'Pressurização, dampers e injeção das cores (CMYK)',
+        },
+        {
+          title: 'MECANISMO TRACIONADOR',
+          subtitle: 'Roldanas, sensores de papel e alinhamento do carro',
+        },
+        {
+          title: 'PLACA LÓGICA & FIRMWARE',
+          subtitle: 'Sensores ópticos, almofadas e comunicação USB/Wi-Fi',
+        },
+        {
+          title: 'PÁGINA DE TESTE & QUALIDADE',
+          subtitle: 'Fidelidade de impressão, limpeza e vedação final',
+        },
+      ];
+    case 'celular':
+    case 'tablet':
+      return [
+        {
+          title: 'DISPLAY & TOUCHSCREEN',
+          subtitle: 'Sensibilidade ao toque, brilho e integridade óptica',
+        },
+        {
+          title: 'ENERGIA & CARREGAMENTO',
+          subtitle: 'Conector de carga, consumo na fonte e bateria',
+        },
+        {
+          title: 'PLACA LÓGICA & PERIFÉRICOS',
+          subtitle: 'Áudio, câmeras, botões físicos e conectividade',
+        },
+        {
+          title: 'TESTE FUNCIONAL FINAL',
+          subtitle: 'Estabilidade geral, fechamento e higienização',
+        },
+      ];
+    case 'console':
+      return [
+        {
+          title: 'FONTE & CIRCUITO DE VÍDEO',
+          subtitle: 'Tensões primárias, porta HDMI e inicialização',
+        },
+        {
+          title: 'ARREFECIMENTO & TÉRMICA',
+          subtitle: 'Dissipador, cooler e composto térmico sob carga',
+        },
+        {
+          title: 'ARMAZENAMENTO & LEITURA',
+          subtitle: 'Integridade do sistema, SSD/HD e drive óptico',
+        },
+        {
+          title: 'CONTROLES & CONECTIVIDADE',
+          subtitle: 'Pareamento sem fio, portas USB e estabilidade',
+        },
+      ];
+    case 'monitor':
+    case 'outro':
+      return [
+        {
+          title: 'FONTE & ALIMENTAÇÃO',
+          subtitle: 'Circuito de entrada, tensões e acionamento',
+        },
+        {
+          title: 'PLACA PRINCIPAL & SINAIS',
+          subtitle: 'Componentes eletrônicos, cabos e conectores',
+        },
+        {
+          title: 'FUNCIONAMENTO & CONTROLES',
+          subtitle: 'Painel, comandos físicos e operação contínua',
+        },
+        {
+          title: 'INSPEÇÃO DE QUALIDADE',
+          subtitle: 'Validação operacional na bancada e acabamento',
+        },
+      ];
+    case 'computador':
+    case 'notebook':
+    default:
+      return [
+        {
+          title: 'ALIMENTAÇÃO & PLACA-MÃE',
+          subtitle: 'Circuito de carga, tensões primárias e BIOS',
+        },
+        {
+          title: 'ARMAZENAMENTO & MEMÓRIA',
+          subtitle: 'Integridade de leitura/escrita e sistema operacional',
+        },
+        {
+          title: 'ARREFECIMENTO & TÉRMICA',
+          subtitle: 'Dissipação térmica, cooler e estabilidade sob carga',
+        },
+        {
+          title: 'PERIFÉRICOS & CONECTIVIDADE',
+          subtitle: 'Vídeo, teclado, portas USB, áudio e rede',
+        },
+      ];
+  }
+}
 
 export default function StatusTrackerClient() {
   const searchParams = useSearchParams();
@@ -97,9 +216,9 @@ export default function StatusTrackerClient() {
   }, [initialQuery]);
 
   async function handleSearch(searchTarget?: string) {
-    const q = (searchTarget ?? query).trim().replace(/^OS-?/i, '').replace(/^#/, '');
+    const q = (searchTarget ?? query).trim().replace(/^#/, '');
     if (!q) {
-      setError('Por favor, informe o número da OS ou telefone.');
+      setError('Por favor, informe o número da OS ou seu WhatsApp.');
       return;
     }
 
@@ -123,13 +242,36 @@ export default function StatusTrackerClient() {
     }
   }
 
-  function getStepIndex(status: string): number {
-    switch (status) {
+  // Cálculo financeiro único e fiel ao CRM:
+  // Mão de Obra (effectiveLaborCost) + Peças (partsTotal) = Total da OS (totalOrderAmount)
+  const partsFromList = (data?.parts_applied ?? []).reduce(
+    (acc, p) => acc + Number(p.total_amount ?? p.unit_price * p.quantity),
+    0,
+  );
+  const partsTotal = Number(data?.parts_total ?? partsFromList);
+  const rawLaborCost = Number(data?.labor_cost ?? 0);
+  const estimatedVal = Number(data?.estimated_value ?? 0);
+  const effectiveLaborCost =
+    rawLaborCost > 0 ? rawLaborCost : Math.max(0, estimatedVal - partsTotal);
+  const totalOrderAmount = effectiveLaborCost + partsTotal;
+
+  // Diferencia OS recém-aberta (em triagem, sem orçamento fechado) de OS com orçamento pronto aguardando aprovação
+  const hasQuoteReady = Boolean(
+    data && data.status === 'awaiting_approval' && totalOrderAmount > 0,
+  );
+  const isInInitialTriage = Boolean(
+    data && data.status === 'awaiting_approval' && totalOrderAmount === 0,
+  );
+
+  function getStepIndex(order: TrackingData): number {
+    switch (order.status) {
       case 'awaiting_approval':
-        return 2;
+        return totalOrderAmount > 0 ? 2 : 1;
       case 'approved':
       case 'waiting_part':
+      case 'waiting_parts':
       case 'in_progress':
+      case 'in_repair':
         return 3;
       case 'ready':
       case 'delivered':
@@ -139,8 +281,74 @@ export default function StatusTrackerClient() {
     }
   }
 
-  const currentStep = data ? getStepIndex(data.status) : 1;
+  const currentStep = data ? getStepIndex(data) : 1;
   const activeStepInfo = STEP_ITEMS.find((s) => s.step === currentStep) || STEP_ITEMS[0];
+
+  const equipmentTypeLabel = data
+    ? getEquipmentTypeLabel(data.equipment_type, data.equipment_brand, data.equipment_model)
+    : 'Equipamento';
+  const equipmentTitle = data
+    ? [data.equipment_brand, data.equipment_model].filter(Boolean).join(' ') || equipmentTypeLabel
+    : '';
+  const qualityProtocolItems = data
+    ? getQualityProtocolItems(data.equipment_type, data.equipment_brand, data.equipment_model)
+    : [];
+  const checklistFields = data
+    ? getChecklistFieldsForEquipment(data.equipment_type, data.equipment_brand, data.equipment_model)
+    : [];
+  const checkedEntryItems = checklistFields.filter((f) => Boolean(data?.entry_checklist?.[f.key]));
+
+  const isCompletedOrReady = Boolean(
+    data && (data.status === 'ready' || data.status === 'delivered'),
+  );
+
+  function getStatusLabel(order: TrackingData): string {
+    if (order.status === 'awaiting_approval') {
+      return totalOrderAmount > 0
+        ? 'Orçamento Disponível · Aguardando Aprovação'
+        : 'Recebido · Em Análise Técnica';
+    }
+    switch (order.status) {
+      case 'approved':
+        return 'Orçamento Aprovado · Na Fila de Bancada';
+      case 'in_progress':
+      case 'in_repair':
+        return 'Em Manutenção na Bancada';
+      case 'waiting_part':
+      case 'waiting_parts':
+        return 'Aguardando Peça / Insumo';
+      case 'ready':
+        return 'Pronto p/ Retirada';
+      case 'delivered':
+        return 'Entregue · Garantia 90D';
+      case 'cancelled':
+        return 'Ordem Cancelada';
+      default:
+        return 'Em Atendimento';
+    }
+  }
+
+  function getProtocolBadge(): { statusText: string; detailText: string } {
+    if (!data) return { statusText: 'AGUARDANDO', detailText: 'Em fila' };
+    if (isCompletedOrReady) {
+      return { statusText: 'VERIFICADO ✓', detailText: 'Aprovado em bancada' };
+    }
+    if (
+      data.status === 'approved' ||
+      data.status === 'in_progress' ||
+      data.status === 'in_repair' ||
+      data.status === 'waiting_part' ||
+      data.status === 'waiting_parts'
+    ) {
+      return { statusText: 'EM EXECUÇÃO', detailText: 'Procedimento em bancada' };
+    }
+    if (hasQuoteReady) {
+      return { statusText: 'DIAGNOSTICADO', detailText: 'Aguardando aprovação' };
+    }
+    return { statusText: 'EM TRIAGEM', detailText: 'Fila de avaliação técnica' };
+  }
+
+  const protocolBadge = getProtocolBadge();
 
   function fmtBRL(val: number) {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -169,8 +377,6 @@ export default function StatusTrackerClient() {
     setTimeout(() => setCopiedPix(false), 2500);
   }
 
-  const totalOrderAmount = data ? (data.estimated_value || 0) + (data.labor_cost || 0) : 0;
-
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Cabeçalho Editorial Monocromático Compacto no Mobile — no-print */}
@@ -184,11 +390,11 @@ export default function StatusTrackerClient() {
           </h1>
         </div>
         <p className="text-xs sm:text-sm text-zinc-600 max-w-sm leading-relaxed">
-          Acompanhe a etapa atual na bancada, fotos do check-in, orçamento e Garantia CDC 90 Dias.
+          Acompanhe em tempo real a etapa atual do seu equipamento, diagnóstico técnico, orçamento e Garantia CDC 90 Dias.
         </p>
       </div>
 
-      {/* Formulário de Busca em Linha Única Horizontal (Mobile & Desktop) — 16px p/ evitar auto-zoom no iOS */}
+      {/* Formulário de Busca em Linha Única Horizontal */}
       <div className="no-print mb-6 sm:mb-10">
         <form
           onSubmit={(e) => {
@@ -206,7 +412,7 @@ export default function StatusTrackerClient() {
               enterKeyHint="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nº da OS ou seu WhatsApp..."
+              placeholder="Nº da OS (ex: OS-2026-0003) ou seu WhatsApp..."
               className="w-full bg-transparent pl-12 sm:pl-14 pr-2 sm:pr-4 py-3.5 sm:py-4 text-base text-zinc-950 placeholder-zinc-400 font-mono focus:outline-none"
             />
           </div>
@@ -222,7 +428,7 @@ export default function StatusTrackerClient() {
 
         <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] sm:text-xs text-zinc-500">
           <span>
-            Digite o nº impresso na sua etiqueta/recibo ou seu WhatsApp.
+            Digite o nº impresso na sua etiqueta/comprovante ou seu WhatsApp.
           </span>
           <span className="hidden sm:inline text-zinc-500">
             RUA CORONEL TEÓFILO LEME, 967 — CENTRO
@@ -251,8 +457,38 @@ export default function StatusTrackerClient() {
       {/* Resultados da Consulta — no-print */}
       {data && (
         <div className="no-print space-y-4 sm:space-y-6">
-          {/* Banner de Aprovação em 1 Clique (quando aguardando aprovação) */}
-          {data.status === 'awaiting_approval' && (
+          {/* CASO 1: OS recém-criada em triagem (sem orçamento definido ainda) */}
+          {isInInitialTriage && (
+            <div className="border-2 border-zinc-900 bg-zinc-50 text-zinc-950 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-500 block mb-1">
+                  PROTOCOLO DE ENTRADA // EM TRIAGEM & DIAGNÓSTICO TÉCNICO
+                </span>
+                <h3 className="text-base sm:text-lg font-extrabold text-zinc-950">
+                  Olá, {data.customer_first_name}! Seu equipamento ({equipmentTypeLabel}) deu entrada em nosso laboratório.
+                </h3>
+                <p className="mt-1 text-xs sm:text-sm text-zinc-600">
+                  Nossa equipe técnica realizará a avaliação detalhada em bancada. Assim que o diagnóstico e o orçamento forem concluídos, os valores e a opção de aprovação aparecerão nesta página.
+                </p>
+              </div>
+              <a
+                href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
+                  `Olá! Aqui é ${data.customer_first_name}. Gostaria de falar sobre a minha OS #${
+                    data.os_number || data.short_id
+                  } (${equipmentTypeLabel} ${equipmentTitle}).`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto shrink-0 border-2 border-zinc-950 bg-white hover:bg-zinc-950 hover:text-white text-zinc-950 px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
+              >
+                <span>Falar com o Balcão</span>
+                <ArrowUpRight className="w-4 h-4 shrink-0" />
+              </a>
+            </div>
+          )}
+
+          {/* CASO 2: Orçamento já precificado pelo técnico e aguardando aprovação do cliente */}
+          {hasQuoteReady && (
             <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
@@ -262,16 +498,16 @@ export default function StatusTrackerClient() {
                   Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
                 </h3>
                 <p className="mt-1 text-xs sm:text-sm text-zinc-300">
-                  Confira o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e aprove em 1 toque pelo WhatsApp.
+                  Confira o laudo e o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e aprove em 1 toque pelo WhatsApp para iniciarmos o serviço.
                 </p>
               </div>
               <a
                 href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
                   `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
                     data.os_number || data.short_id
-                  } (${data.equipment_brand} ${data.equipment_model}) no valor de ${fmtBRL(
-                    totalOrderAmount
-                  )}. Podem iniciar o serviço!`
+                  } (${equipmentTypeLabel} ${equipmentTitle}) no valor de ${fmtBRL(
+                    totalOrderAmount,
+                  )}. Podem iniciar o serviço!`,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -283,22 +519,63 @@ export default function StatusTrackerClient() {
             </div>
           )}
 
+          {/* CASO 3: Equipamento Pronto para Retirada */}
+          {data.status === 'ready' && (
+            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
+                  SERVIÇO CONCLUÍDO // LIBERADO PARA RETIRADA
+                </span>
+                <h3 className="text-base sm:text-lg font-extrabold text-white">
+                  Olá, {data.customer_first_name}! Seu equipamento ({equipmentTitle}) está pronto.
+                </h3>
+                <p className="mt-1 text-xs sm:text-sm text-zinc-300">
+                  Testes operacionais concluídos com sucesso. Você já pode retirar em nossa loja na Rua Coronel Teófilo Leme, 967 — Centro.
+                </p>
+              </div>
+              <a
+                href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
+                  `Olá! Aqui é ${data.customer_first_name}. Vi no portal que minha OS #${
+                    data.os_number || data.short_id
+                  } (${equipmentTitle}) está pronta para retirada!`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
+              >
+                <span>Avisar Retirada no WhatsApp</span>
+                <ArrowUpRight className="w-4 h-4 shrink-0" />
+              </a>
+            </div>
+          )}
+
           {/* Bloco Principal: Cabeçalho da OS & Stepper Suíço Mobile-First */}
           <div className="border border-zinc-300 bg-white p-4 sm:p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 border-b border-zinc-200 pb-4 sm:pb-6 mb-4 sm:mb-6">
               <div className="w-full md:w-auto">
                 <div className="flex flex-wrap items-center justify-between md:justify-start gap-2 font-mono text-xs text-zinc-500 mb-2">
                   <span className="font-bold bg-zinc-950 text-white px-2.5 py-1">
-                    OS #{data.os_number || data.short_id}
+                    {data.os_number || data.short_id}
                   </span>
+                  {data.short_id && data.os_number && data.short_id !== data.os_number && (
+                    <span className="text-[11px] text-zinc-500 font-semibold">
+                      ({data.short_id})
+                    </span>
+                  )}
                   <span className="text-[11px] sm:text-xs">ENTRADA: {fmtDate(data.created_at)}</span>
                 </div>
                 <h2 className="text-xl sm:text-3xl font-extrabold text-zinc-950 leading-tight">
-                  {data.equipment_brand} {data.equipment_model}
+                  {equipmentTitle}
                 </h2>
                 <p className="text-xs text-zinc-600 mt-1 font-mono">
                   CLIENTE: <strong className="text-zinc-950">{data.customer_first_name}</strong> ·{' '}
-                  <strong className="uppercase text-zinc-950">{data.equipment_type}</strong>
+                  CATEGORIA: <strong className="uppercase text-zinc-950">{equipmentTypeLabel}</strong>
+                  {data.equipment_color ? (
+                    <>
+                      {' '}
+                      · COR: <strong className="uppercase text-zinc-950">{data.equipment_color}</strong>
+                    </>
+                  ) : null}
                 </p>
               </div>
 
@@ -308,13 +585,7 @@ export default function StatusTrackerClient() {
                   STATUS ATUAL:
                 </span>
                 <span className="inline-block px-3 py-1.5 text-[11px] sm:text-xs font-bold uppercase bg-zinc-950 text-white">
-                  {data.status === 'awaiting_approval' && 'Aguardando Aprovação'}
-                  {data.status === 'approved' && 'Orçamento Aprovado'}
-                  {data.status === 'in_progress' && 'Em Bancada'}
-                  {data.status === 'waiting_part' && 'Aguardando Peça'}
-                  {data.status === 'ready' && 'Pronto p/ Retirada'}
-                  {data.status === 'delivered' && 'Entregue · Garantia 90D'}
-                  {data.status === 'cancelled' && 'Ordem Cancelada'}
+                  {getStatusLabel(data)}
                 </span>
               </div>
             </div>
@@ -341,8 +612,8 @@ export default function StatusTrackerClient() {
                           isCurrent
                             ? 'bg-zinc-950 text-white'
                             : active
-                            ? 'bg-zinc-200 text-zinc-950'
-                            : 'bg-white text-zinc-400'
+                              ? 'bg-zinc-200 text-zinc-950'
+                              : 'bg-white text-zinc-400'
                         }`}
                       >
                         <div className="font-mono font-extrabold text-xs leading-none">
@@ -377,8 +648,8 @@ export default function StatusTrackerClient() {
                         isCurrent
                           ? 'bg-zinc-950 text-white'
                           : active
-                          ? 'bg-zinc-100 text-zinc-950'
-                          : 'bg-white text-zinc-400'
+                            ? 'bg-zinc-100 text-zinc-950'
+                            : 'bg-white text-zinc-400'
                       }`}
                     >
                       <div className="font-mono font-bold text-xs mb-1">{item.title}</div>
@@ -392,42 +663,97 @@ export default function StatusTrackerClient() {
             </div>
           </div>
 
-          {/* Relato de Entrada & Previsão */}
+          {/* Relato de Entrada, Diagnóstico Técnico & Previsão */}
           <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="border border-zinc-300 bg-white p-4 sm:p-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
-                RELATO / SINTOMA REGISTRADO
-              </span>
-              <p className="text-zinc-900 text-xs sm:text-sm leading-relaxed bg-zinc-50 border border-zinc-200 p-3.5">
-                {data.reported_defect || 'Avaliação técnica em bancada.'}
-              </p>
+            <div className="border border-zinc-300 bg-white p-4 sm:p-6 space-y-4">
+              <div>
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2">
+                  RELATO / SINTOMA REGISTRADO NA ENTRADA
+                </span>
+                <p className="text-zinc-900 text-xs sm:text-sm leading-relaxed bg-zinc-50 border border-zinc-200 p-3.5 whitespace-pre-wrap">
+                  {data.reported_defect || 'Avaliação técnica em bancada.'}
+                </p>
+              </div>
+
+              <div>
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2">
+                  DIAGNÓSTICO / LAUDO TÉCNICO DA BANCADA
+                </span>
+                {data.repair_notes && data.repair_notes.trim() ? (
+                  <p className="text-zinc-950 font-medium text-xs sm:text-sm leading-relaxed bg-zinc-50 border-l-2 border-zinc-950 p-3.5 whitespace-pre-wrap">
+                    {data.repair_notes}
+                  </p>
+                ) : (
+                  <p className="text-zinc-500 text-xs leading-relaxed bg-zinc-50/70 border border-dashed border-zinc-200 p-3.5">
+                    {isInInitialTriage
+                      ? 'Equipamento em fila de triagem. O parecer técnico detalhado será registrado aqui assim que a análise em bancada for concluída.'
+                      : 'Procedimentos técnicos executados conforme protocolo de manutenção para o equipamento.'}
+                  </p>
+                )}
+              </div>
+
               {data.accessories_in && (
-                <p className="mt-3 text-xs text-zinc-600 font-mono">
+                <p className="text-xs text-zinc-600 font-mono pt-1 border-t border-zinc-100">
                   ACESSÓRIOS DEIXADOS: <strong className="text-zinc-950">{data.accessories_in}</strong>
                 </p>
               )}
             </div>
 
-            <div className="border border-zinc-300 bg-white p-4 sm:p-6">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
-                PREVISÃO & GARANTIA LEGAL
-              </span>
-              <div className="space-y-2.5 text-xs font-mono">
-                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
-                  <span className="text-zinc-500">PREVISÃO:</span>
-                  <span className="text-zinc-950 font-bold text-right">
-                    {data.estimated_ready_at ? fmtDate(data.estimated_ready_at) : 'EM AVALIAÇÃO'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
-                  <span className="text-zinc-500">GARANTIA LEGAL:</span>
-                  <span className="text-zinc-950 font-bold text-right">90 DIAS (ART. 26 CDC)</span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-zinc-500">UNIDADE:</span>
-                  <span className="text-zinc-900 font-bold text-right">RUA CEL. TEÓFILO LEME, 967</span>
+            <div className="border border-zinc-300 bg-white p-4 sm:p-6 flex flex-col justify-between space-y-4">
+              <div>
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 block mb-2.5">
+                  INFORMAÇÕES TÉCNICAS & GARANTIA LEGAL
+                </span>
+                <div className="space-y-2.5 text-xs font-mono">
+                  <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
+                    <span className="text-zinc-500">TIPO DE EQUIPAMENTO:</span>
+                    <span className="text-zinc-950 font-bold text-right uppercase">
+                      {equipmentTypeLabel}
+                    </span>
+                  </div>
+                  {data.equipment_serial && (
+                    <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
+                      <span className="text-zinc-500">Nº DE SÉRIE / ID:</span>
+                      <span className="text-zinc-950 font-bold text-right">
+                        {data.equipment_serial}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
+                    <span className="text-zinc-500">PREVISÃO:</span>
+                    <span className="text-zinc-950 font-bold text-right">
+                      {data.estimated_ready_at ? fmtDate(data.estimated_ready_at) : 'EM AVALIAÇÃO'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 border-b border-zinc-200 pb-2">
+                    <span className="text-zinc-500">GARANTIA DO SERVIÇO:</span>
+                    <span className="text-zinc-950 font-bold text-right">90 DIAS APÓS ENTREGA (CDC)</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-zinc-500">UNIDADE:</span>
+                    <span className="text-zinc-900 font-bold text-right">RUA CEL. TEÓFILO LEME, 967</span>
+                  </div>
                 </div>
               </div>
+
+              {checkedEntryItems.length > 0 && (
+                <div className="pt-3 border-t border-zinc-200">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-2">
+                    CHECKLIST REGISTRADO NO RECEBIMENTO:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {checkedEntryItems.map((item) => (
+                      <span
+                        key={item.key}
+                        className="inline-flex items-center gap-1 border border-zinc-300 bg-zinc-50 px-2 py-1 font-mono text-[11px] font-semibold text-zinc-900"
+                      >
+                        <span>✓</span>
+                        <span>{item.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -436,7 +762,7 @@ export default function StatusTrackerClient() {
             <div className="border border-zinc-300 bg-white p-4 sm:p-8">
               <div className="flex items-center justify-between mb-1.5">
                 <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
-                  VISTORIA FOTOGRÁFICA ({data.equipment_photos.length})
+                  VISTORIA FOTOGRÁFICA DE ENTRADA ({data.equipment_photos.length})
                 </h3>
                 <span className="font-mono text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase">
                   TOQUE P/ AMPLIAR
@@ -468,42 +794,46 @@ export default function StatusTrackerClient() {
             </div>
           )}
 
-          {/* Telemetria e Testes de Bancada (Grid 2x2 Perfeito com gap-px) */}
+          {/* Protocolo de Inspeção & Controle de Qualidade (Adaptado ao Tipo de Equipamento!) */}
           <div className="border border-zinc-300 bg-white p-4 sm:p-8">
-            <div className="flex items-center justify-between mb-3.5 border-b border-zinc-200 pb-2.5 font-mono">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5 border-b border-zinc-200 pb-2.5 font-mono">
               <span className="text-xs font-bold uppercase tracking-wider text-zinc-950">
-                CONTROLE DE QUALIDADE & TESTES
+                PROTOCOLO DE INSPEÇÃO & CONTROLE DE QUALIDADE ({equipmentTypeLabel})
               </span>
-              <span className="text-[11px] text-zinc-500 uppercase">BANCADA</span>
+              <span className="text-[11px] text-zinc-600 font-bold uppercase">
+                STATUS: {protocolBadge.statusText}
+              </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-300 border border-zinc-300 text-center font-mono">
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">GPU EM CARGA</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
-                  {currentStep >= 4 ? '64 °C' : 'EM ANÁLISE'}
-                </span>
-              </div>
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">CPU EM CARGA</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
-                  {currentStep >= 4 ? '68 °C' : 'EM ANÁLISE'}
-                </span>
-              </div>
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">SAÚDE DO DISCO</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">100% OK</span>
-              </div>
-              <div className="bg-white p-3.5 sm:p-4">
-                <span className="text-[10px] text-zinc-500 uppercase block mb-1">TEMPO DE BOOT</span>
-                <span className="text-base sm:text-xl font-bold text-zinc-950 block">
-                  {currentStep >= 4 ? '8.4 s' : '-- s'}
-                </span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-300 border border-zinc-300 font-mono">
+              {qualityProtocolItems.map((item, idx) => (
+                <div key={idx} className="bg-white p-3.5 sm:p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-[10px] font-bold text-zinc-400">0{idx + 1}</span>
+                      <span
+                        className={`text-[10px] font-bold uppercase px-1.5 py-0.5 ${
+                          isCompletedOrReady
+                            ? 'bg-zinc-950 text-white'
+                            : 'bg-zinc-100 text-zinc-700'
+                        }`}
+                      >
+                        {protocolBadge.statusText}
+                      </span>
+                    </div>
+                    <span className="text-xs font-extrabold text-zinc-950 uppercase block mt-1">
+                      {item.title}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-zinc-500 font-sans leading-snug block mt-2">
+                    {item.subtitle}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Discriminação Transparente de Custos (Lado a Lado no Mobile) */}
+          {/* Discriminação Transparente de Custos */}
           <div className="border border-zinc-300 bg-white p-4 sm:p-8">
             <div className="flex flex-row items-center justify-between gap-3 border-b border-zinc-200 pb-4 mb-4 sm:mb-6">
               <div>
@@ -516,57 +846,74 @@ export default function StatusTrackerClient() {
               </div>
               <div className="text-right font-mono shrink-0">
                 <span className="text-[10px] sm:text-xs text-zinc-500 block uppercase">VALOR TOTAL</span>
-                <span className="text-xl sm:text-3xl font-extrabold text-zinc-950 block">
-                  {fmtBRL(totalOrderAmount)}
-                </span>
+                {isInInitialTriage ? (
+                  <span className="inline-block mt-0.5 bg-zinc-100 border border-zinc-300 px-2.5 py-1 text-xs sm:text-sm font-bold uppercase text-zinc-800">
+                    Em Avaliação
+                  </span>
+                ) : (
+                  <span className="text-xl sm:text-3xl font-extrabold text-zinc-950 block">
+                    {fmtBRL(totalOrderAmount)}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-5 font-mono">
-              <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
-                <span className="text-[10px] sm:text-xs font-bold text-zinc-500 block uppercase mb-1">
-                  MÃO DE OBRA
-                </span>
-                <span className="text-base sm:text-2xl font-bold text-zinc-950">
-                  {fmtBRL(data.labor_cost || 0)}
-                </span>
+            {isInInitialTriage ? (
+              <div className="mb-5 bg-zinc-50 border border-zinc-200 p-4 text-xs sm:text-sm text-zinc-700 leading-relaxed">
+                <p className="font-mono text-xs font-bold uppercase text-zinc-900 mb-1">
+                  Orçamento em Elaboração na Bancada
+                </p>
+                <p>
+                  Os valores de mão de obra e eventuais peças ou insumos serão discriminados aqui assim que o diagnóstico técnico for concluído. <strong>Nenhum serviço cobrado é executado sem a sua aprovação prévia.</strong>
+                </p>
               </div>
-              <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
-                <span className="text-[10px] sm:text-xs font-bold text-zinc-500 block uppercase mb-1">
-                  PEÇAS & INSUMOS
-                </span>
-                <span className="text-base sm:text-2xl font-bold text-zinc-950">
-                  {fmtBRL(data.estimated_value || 0)}
-                </span>
-              </div>
-            </div>
-
-            {data.parts_applied && data.parts_applied.length > 0 && (
-              <div className="mb-5 bg-zinc-50 border border-zinc-200 p-3.5 sm:p-4 text-xs font-mono">
-                <span className="text-[11px] text-zinc-500 block uppercase font-bold mb-2 border-b border-zinc-200 pb-1.5">
-                  PEÇAS APLICADAS NESTA OS:
-                </span>
-                <div className="space-y-2">
-                  {data.parts_applied.map((p, idx) => (
-                    <div key={idx} className="flex justify-between items-start gap-2 text-zinc-800">
-                      <span>
-                        — {p.quantity}x {p.name}
-                      </span>
-                      <strong className="text-zinc-950 shrink-0">
-                        {fmtBRL(p.unit_price * p.quantity)}
-                      </strong>
-                    </div>
-                  ))}
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-5 font-mono">
+                  <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
+                    <span className="text-[10px] sm:text-xs font-bold text-zinc-500 block uppercase mb-1">
+                      MÃO DE OBRA / SERVIÇO
+                    </span>
+                    <span className="text-base sm:text-2xl font-bold text-zinc-950">
+                      {fmtBRL(effectiveLaborCost)}
+                    </span>
+                  </div>
+                  <div className="bg-zinc-50 border border-zinc-200 p-3 sm:p-4">
+                    <span className="text-[10px] sm:text-xs font-bold text-zinc-500 block uppercase mb-1">
+                      PEÇAS & INSUMOS
+                    </span>
+                    <span className="text-base sm:text-2xl font-bold text-zinc-950">
+                      {fmtBRL(partsTotal)}
+                    </span>
+                  </div>
                 </div>
-              </div>
+
+                {data.parts_applied && data.parts_applied.length > 0 && (
+                  <div className="mb-5 bg-zinc-50 border border-zinc-200 p-3.5 sm:p-4 text-xs font-mono">
+                    <span className="text-[11px] text-zinc-500 block uppercase font-bold mb-2 border-b border-zinc-200 pb-1.5">
+                      PEÇAS / INSUMOS APLICADOS NESTA OS:
+                    </span>
+                    <div className="space-y-2">
+                      {data.parts_applied.map((p, idx) => (
+                        <div key={idx} className="flex justify-between items-start gap-2 text-zinc-800">
+                          <span>
+                            — {p.quantity}x {p.name}
+                          </span>
+                          <strong className="text-zinc-950 shrink-0">
+                            {fmtBRL(Number(p.total_amount ?? p.unit_price * p.quantity))}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-4 border-t border-zinc-200">
               <a
                 href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
-                  `Olá! Gostaria de falar sobre a minha OS #${data.os_number || data.short_id} (${
-                    data.equipment_brand
-                  } ${data.equipment_model}).`
+                  `Olá! Gostaria de falar sobre a minha OS #${data.os_number || data.short_id} (${equipmentTypeLabel} ${equipmentTitle}).`,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -576,31 +923,33 @@ export default function StatusTrackerClient() {
                 <ArrowUpRight className="w-4 h-4 shrink-0" />
               </a>
 
-              <button
-                type="button"
-                onClick={() => setShowWarrantyModal(true)}
-                className="bg-zinc-950 hover:bg-zinc-800 text-white py-3.5 px-5 font-mono text-xs font-bold uppercase tracking-wider text-center justify-center flex items-center gap-2 transition-colors cursor-pointer min-h-[48px]"
-              >
-                <Printer className="w-4 h-4 shrink-0" />
-                <span className="sm:hidden">Certificado de Garantia (90D)</span>
-                <span className="hidden sm:inline">Emitir Termo de Garantia Legal (CDC 90 Dias)</span>
-              </button>
+              {isCompletedOrReady && (
+                <button
+                  type="button"
+                  onClick={() => setShowWarrantyModal(true)}
+                  className="bg-zinc-950 hover:bg-zinc-800 text-white py-3.5 px-5 font-mono text-xs font-bold uppercase tracking-wider text-center justify-center flex items-center gap-2 transition-colors cursor-pointer min-h-[48px]"
+                >
+                  <Printer className="w-4 h-4 shrink-0" />
+                  <span className="sm:hidden">Certificado de Garantia (90D)</span>
+                  <span className="hidden sm:inline">Emitir Termo de Garantia Legal (CDC 90 Dias)</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Pagamento Pix (se pendente) */}
-          {data.payment_status === 'pending' && (
+          {/* Pagamento Pix (somente quando há valor definido e pagamento pendente) */}
+          {data.payment_status === 'pending' && totalOrderAmount > 0 && (
             <div className="border border-zinc-900 bg-zinc-50 p-4 sm:p-8">
               <div className="flex items-center justify-between mb-2 font-mono">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-950">
-                  PAGAMENTO VIA PIX
+                  PAGAMENTO VIA PIX ({fmtBRL(totalOrderAmount)})
                 </h3>
                 <span className="text-[11px] text-zinc-600 font-bold uppercase">
                   CHAVE OFICIAL CYBER
                 </span>
               </div>
               <p className="text-xs text-zinc-600 mb-3.5">
-                Você pode pagar na retirada no balcão ou copiar nossa chave Pix oficial abaixo.
+                Você pode pagar na retirada do equipamento no balcão ou copiar nossa chave Pix oficial abaixo.
               </p>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 bg-white border border-zinc-300 p-3.5 text-sm font-mono">
@@ -664,7 +1013,7 @@ export default function StatusTrackerClient() {
             </div>
           )}
 
-          {/* Modal Oficial de Emissão do Termo de Garantia Legal (CDC 90 Dias) — 100% Mobile-Safe */}
+          {/* Modal Oficial de Emissão do Termo de Garantia Legal (CDC 90 Dias) */}
           {showWarrantyModal && (
             <div
               className="fixed inset-0 z-50 bg-black/80 flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto"
@@ -674,7 +1023,6 @@ export default function StatusTrackerClient() {
                 className="relative max-w-3xl w-full my-4 sm:my-8 bg-white text-zinc-950 p-4 sm:p-10 border-2 border-zinc-950"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Barra de Controle Superior do Modal (Evita colisão do botão X com o selo de garantia no mobile) */}
                 <div className="no-print flex items-center justify-between pb-3 mb-4 border-b border-zinc-200 font-mono text-xs">
                   <span className="text-zinc-500 font-bold uppercase">
                     CERTIFICADO DIGITAL · OS #{data.os_number || data.short_id}
@@ -720,7 +1068,6 @@ export default function StatusTrackerClient() {
                   </span>
                 </div>
 
-                {/* Tabela Responsiva (Empilhada em 360px / Colunas no Desktop) */}
                 <div className="border border-zinc-300 text-xs mb-5 divide-y divide-zinc-300 font-mono">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 bg-zinc-50">
                     <div>
@@ -730,7 +1077,7 @@ export default function StatusTrackerClient() {
                     <div>
                       <span className="text-zinc-500 block text-[10px] uppercase">EQUIPAMENTO:</span>
                       <strong className="text-zinc-950">
-                        {data.equipment_brand} {data.equipment_model}
+                        {equipmentTypeLabel} · {equipmentTitle}
                       </strong>
                     </div>
                   </div>
@@ -754,7 +1101,9 @@ export default function StatusTrackerClient() {
                   <h4 className="font-bold uppercase text-zinc-950 border-b border-zinc-200 pb-1 mb-2 font-mono">
                     Serviços Executados & Validação Técnica:
                   </h4>
-                  <p className="text-zinc-700 leading-relaxed">{data.reported_defect}</p>
+                  <p className="text-zinc-700 leading-relaxed whitespace-pre-wrap">
+                    {data.repair_notes?.trim() || data.reported_defect}
+                  </p>
                 </div>
 
                 <div className="mb-6 text-[11px] leading-relaxed text-zinc-700 border-l-2 border-zinc-950 pl-3">
@@ -800,28 +1149,16 @@ export default function StatusTrackerClient() {
               ORDEM DE SERVIÇO #{data.os_number || data.short_id} · GARANTIA LEGAL CDC 90 DIAS
             </p>
           </div>
-          <div className="text-xs font-mono space-y-2 mb-4">
-            <p>
-              <strong>Titular:</strong> {data.customer_first_name} | <strong>Equipamento:</strong>{' '}
-              {data.equipment_brand} {data.equipment_model}
-            </p>
-            <p>
-              <strong>Data de Entrada:</strong> {fmtDate(data.created_at)} |{' '}
-              <strong>Data de Emissão:</strong> {new Date().toLocaleDateString('pt-BR')}
-            </p>
-            <p>
-              <strong>Descrição:</strong> {data.reported_defect}
-            </p>
-            <p>
-              <strong>Valor Total:</strong> {fmtBRL(totalOrderAmount)}
-            </p>
-          </div>
-          <div className="border-t border-b border-zinc-400 py-2 my-4 text-xs font-mono">
-            <p className="font-bold">Termo de Garantia Legal (Art. 26 da Lei 8.078/1990 - CDC):</p>
-            <p className="text-[11px] mt-1">
-              Garantia integral de 90 dias a contar da data de retirada para serviços executados e componentes substituídos, mediante conservação dos lacres de chassi.
-            </p>
-          </div>
+          <p className="text-xs mb-2">
+            <strong>Titular:</strong> {data.customer_first_name} | <strong>Equipamento:</strong>{' '}
+            {equipmentTypeLabel} · {equipmentTitle}
+          </p>
+          <p className="text-xs mb-4">
+            <strong>Serviço / Diagnóstico:</strong> {data.repair_notes?.trim() || data.reported_defect}
+          </p>
+          <p className="text-[11px] border-t border-black pt-3">
+            Certificamos a garantia legal de 90 (noventa) dias sobre o serviço executado e peças aplicadas, nos termos do Art. 26, II do Código de Defesa do Consumidor (Lei 8.078/90).
+          </p>
         </div>
       )}
     </div>

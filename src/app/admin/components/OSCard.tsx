@@ -1,13 +1,20 @@
 import Link from 'next/link';
 import { StatusBadge } from './StatusBadge';
 import { StaleBadge } from './StaleBadge';
-import { EQUIPMENT_TYPES, type ServiceOrderWithStale } from '../types/database';
+import {
+  getEquipmentTypeLabel,
+  resolveEquipmentCategory,
+  type ServiceOrderWithStale,
+} from '../types/database';
 
 const TYPE_ICONS: Record<string, string> = {
   computador: '🖥️',
   notebook: '💻',
+  impressora: '🖨️',
   celular: '📱',
   tablet: '📱',
+  console: '🎮',
+  monitor: '🖥️',
   outro: '📦',
 };
 
@@ -25,8 +32,20 @@ function timeAgo(dateStr: string): string {
 }
 
 export function OSCard({ so }: { so: ServiceOrderWithStale }) {
-  const typeMeta = EQUIPMENT_TYPES.find((t) => t.value === so.equipment_type);
+  const category = resolveEquipmentCategory(
+    so.equipment_type,
+    so.equipment_brand,
+    so.equipment_model,
+  );
+  const typeLabel = getEquipmentTypeLabel(
+    so.equipment_type,
+    so.equipment_brand,
+    so.equipment_model,
+  );
   const equip = [so.equipment_brand, so.equipment_model, so.equipment_color].filter(Boolean).join(' ');
+  const hasQuote =
+    Number(so.estimated_value ?? 0) > 0 ||
+    Number((so as { labor_cost?: number | null }).labor_cost ?? 0) > 0;
 
   return (
     <Link
@@ -42,13 +61,13 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
             <span className="font-mono text-xs font-medium text-slate-400">
               #{so.os_number}
             </span>
-            <StatusBadge status={so.status} />
+            <StatusBadge status={so.status} hasQuote={hasQuote} />
             {so.days_since_update > 2 && <StaleBadge days={so.days_since_update} />}
           </div>
           <h3 className="mt-1.5 truncate text-base font-bold text-slate-900">{so.customer_name}</h3>
           <p className="mt-0.5 text-xs text-slate-600">
-            <span className="mr-1.5">{TYPE_ICONS[so.equipment_type]}</span>
-            {typeMeta?.label}
+            <span className="mr-1.5">{TYPE_ICONS[category] ?? '📦'}</span>
+            {typeLabel}
             {equip ? ` · ${equip}` : ''}
           </p>
           {so.reported_defect && (

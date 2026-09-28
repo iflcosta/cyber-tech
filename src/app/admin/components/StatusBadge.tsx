@@ -10,7 +10,15 @@ const COLOR_CLASSES: Record<string, string> = {
   red: 'bg-red-100 text-red-800 ring-red-200',
 };
 
-export function StatusBadge({ status, className = '' }: { status: OSStatusValue | string; className?: string }) {
+export function StatusBadge({
+  status,
+  hasQuote,
+  className = '',
+}: {
+  status: OSStatusValue | string;
+  hasQuote?: boolean;
+  className?: string;
+}) {
   const meta = OS_STATUSES.find((s) => s.value === status);
   if (!meta) {
     return (
@@ -19,9 +27,13 @@ export function StatusBadge({ status, className = '' }: { status: OSStatusValue 
       </span>
     );
   }
+  const label =
+    status === 'awaiting_approval' && hasQuote === false
+      ? 'Em triagem / diagnóstico'
+      : meta.label;
   return (
     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${COLOR_CLASSES[meta.color]} ${className}`}>
-      {meta.label}
+      {label}
     </span>
   );
 }

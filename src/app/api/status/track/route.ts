@@ -41,7 +41,9 @@ export async function GET(request: Request) {
           return NextResponse.json(rpcData);
         }
 
-        // 2. Consulta direta na tabela service_orders
+        // 2. Consulta direta na tabela service_orders (fallback caso RPC não retorne)
+        const cleanQuery = query.replace(/^#/, '').trim();
+        const noPrefix = cleanQuery.replace(/^OS-?/i, '').trim();
         let soQuery = client
           .from('service_orders')
           .select(`
@@ -52,7 +54,10 @@ export async function GET(request: Request) {
             equipment_type,
             equipment_brand,
             equipment_model,
+            equipment_color,
+            equipment_serial,
             reported_defect,
+            repair_notes,
             accessories_in,
             entry_checklist,
             equipment_photos,
@@ -69,16 +74,14 @@ export async function GET(request: Request) {
           .order('created_at', { ascending: false })
           .limit(1);
 
-        if (query) {
-          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
+        if (cleanQuery) {
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
           if (isUUID) {
-            soQuery = soQuery.eq('id', query);
-          } else if (query.startsWith('#')) {
-            soQuery = soQuery.eq('os_number', query.slice(1));
-          } else if (/^\d+$/.test(query)) {
-            soQuery = soQuery.or(`os_number.eq.${query},short_id.ilike.%${query}%`);
+            soQuery = soQuery.eq('id', cleanQuery);
           } else {
-            soQuery = soQuery.ilike('short_id', `%${query}%`);
+            soQuery = soQuery.or(
+              `os_number.ilike.${cleanQuery},os_number.ilike.OS-${noPrefix},short_id.ilike.${cleanQuery},short_id.ilike.OS-${noPrefix}`,
+            );
           }
         }
 
@@ -105,25 +108,34 @@ export async function GET(request: Request) {
   }
 }
 
-function formatSafeOS(so: any) {
-  const customerName = so.customer?.name ?? 'Cliente';
+function formatSafeOS(
+  so: Record<string, unknown> & {
+    customer?: { name?: string } | Array<{ name?: string }> | null;
+  },
+) {
+  const custObj = Array.isArray(so.customer) ? so.customer[0] : so.customer;
+  const customerName = custObj?.name ?? 'Cliente';
   const firstName = customerName.split(' ')[0] || 'Cliente';
 
   return {
     found: true,
     id: so.id,
-    short_id: so.short_id || `CYB-${so.id.slice(0, 6).toUpperCase()}`,
+    short_id: so.short_id || `CYB-${String(so.id).slice(0, 6).toUpperCase()}`,
     os_number: so.os_number,
     status: so.status,
     equipment_type: so.equipment_type,
-    equipment_brand: so.equipment_brand || 'Equipamento',
-    equipment_model: so.equipment_model || 'Hardware',
+    equipment_brand: so.equipment_brand || '',
+    equipment_model: so.equipment_model || '',
+    equipment_color: so.equipment_color || null,
+    equipment_serial: so.equipment_serial || null,
     reported_defect: so.reported_defect,
+    repair_notes: so.repair_notes || null,
     accessories_in: so.accessories_in,
     entry_checklist: so.entry_checklist || {},
     equipment_photos: so.equipment_photos || [],
     estimated_value: Number(so.estimated_value || 0),
     labor_cost: Number(so.labor_cost || 0),
+    parts_total: 0,
     payment_status: so.payment_status || 'pending',
     payment_method: so.payment_method,
     estimated_ready_at: so.estimated_ready_at,

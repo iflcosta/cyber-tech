@@ -147,7 +147,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
   const canEdit =
     profile?.role === 'owner' || profile?.role === 'technician';
-  const typeLabel = getEquipmentTypeLabel(so.equipment_type);
+  const typeLabel = getEquipmentTypeLabel(
+    so.equipment_type,
+    so.equipment_brand,
+    so.equipment_model,
+  );
   const isFinal = so.status === 'delivered' || so.status === 'cancelled';
 
   return (
@@ -193,7 +197,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 {normalizedSo.os_number}
               </span>
             )}
-            <StatusBadge status={normalizedSo.status} />
+            <StatusBadge status={normalizedSo.status} hasQuote={grandTotal > 0} />
             <StaleBadge days={normalizedSo.days_since_update} />
           </h1>
           <p className="text-sm text-zinc-500">
@@ -248,12 +252,15 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
             <div className="border-t border-zinc-100 pt-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Checklist de entrada
+                Checklist de entrada ({typeLabel})
               </h3>
               <ChecklistEditor
                 osId={normalizedSo.id}
                 initialChecklist={normalizedSo.entry_checklist}
                 canEdit={canEdit}
+                equipmentType={normalizedSo.equipment_type}
+                equipmentBrand={normalizedSo.equipment_brand}
+                equipmentModel={normalizedSo.equipment_model}
               />
               {normalizedSo.accessories_in && (
                 <p className="mt-3 text-sm text-zinc-700">

@@ -600,17 +600,71 @@ export type ApprovalMethodValue = (typeof APPROVAL_METHODS)[number]['value'];
 export const EQUIPMENT_TYPES = [
   { value: 'computador', label: 'Computador' },
   { value: 'notebook', label: 'Notebook' },
+  { value: 'impressora', label: 'Impressora' },
   { value: 'celular', label: 'Celular' },
   { value: 'tablet', label: 'Tablet' },
+  { value: 'console', label: 'Console / Game' },
+  { value: 'monitor', label: 'Monitor / TV' },
   { value: 'outro', label: 'Outro' },
 ] as const;
 
 export type EquipmentTypeValue = (typeof EQUIPMENT_TYPES)[number]['value'];
 
-export function getEquipmentTypeLabel(value: string | null | undefined): string {
-  if (!value) return 'Outro';
-  const found = EQUIPMENT_TYPES.find((t) => t.value === value);
-  return found ? found.label : value;
+export function resolveEquipmentCategory(
+  type?: string | null,
+  brand?: string | null,
+  model?: string | null,
+): EquipmentTypeValue {
+  const rawType = (type ?? '').trim().toLowerCase();
+  const combined = `${rawType} ${(brand ?? '').toLowerCase()} ${(model ?? '').toLowerCase()}`;
+
+  if (
+    rawType === 'impressora' ||
+    /impressora|multifuncional|smart\s*tank|ecotank|deskjet|laserjet|officejet|pixma|maxify|brother\s*(dcp|hl|mfc)|epson\s*l\d/i.test(
+      combined,
+    )
+  ) {
+    return 'impressora';
+  }
+  if (rawType === 'computador' || /^pc\b|desktop|all[\s-]*in[\s-]*one|workstation/i.test(rawType)) {
+    return 'computador';
+  }
+  if (rawType === 'notebook' || /notebook|laptop|macbook|ultrabook|chromebook/i.test(rawType)) {
+    return 'notebook';
+  }
+  if (rawType === 'celular' || /celular|smartphone|iphone/i.test(rawType)) {
+    return 'celular';
+  }
+  if (rawType === 'tablet' || /tablet|ipad/i.test(rawType)) {
+    return 'tablet';
+  }
+  if (rawType === 'console' || /console|videogame|ps4|ps5|playstation|xbox|nintendo|switch/i.test(combined)) {
+    return 'console';
+  }
+  if (rawType === 'monitor' || /monitor|televisor|smart\s*tv/i.test(rawType)) {
+    return 'monitor';
+  }
+  return 'outro';
+}
+
+export function getEquipmentTypeLabel(
+  value: string | null | undefined,
+  brand?: string | null,
+  model?: string | null,
+): string {
+  if (!value) return 'Equipamento';
+  const normalized = value.trim().toLowerCase();
+  const found = EQUIPMENT_TYPES.find((t) => t.value === normalized);
+  if (found && found.value !== 'outro') return found.label;
+  if (normalized === 'outro') {
+    const resolved = resolveEquipmentCategory(value, brand, model);
+    if (resolved !== 'outro') {
+      return EQUIPMENT_TYPES.find((t) => t.value === resolved)?.label ?? 'Equipamento';
+    }
+    return 'Equipamento';
+  }
+  if (normalized === 'gps') return 'GPS';
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 export const ENTRY_CHECKLIST_FIELDS = [
@@ -624,6 +678,189 @@ export const ENTRY_CHECKLIST_FIELDS = [
   { key: 'queda', label: 'Sofreu queda' },
   { key: 'senha_conhecida', label: 'Senha conhecida' },
 ] as const;
+
+export function getChecklistFieldsForEquipment(
+  type?: string | null,
+  brand?: string | null,
+  model?: string | null,
+): ReadonlyArray<{ key: string; label: string }> {
+  const cat = resolveEquipmentCategory(type, brand, model);
+  switch (cat) {
+    case 'impressora':
+      return [
+        { key: 'liga', label: 'Liga / Painel acende' },
+        { key: 'tela_ok', label: 'Puxa papel / Tracionador OK' },
+        { key: 'carrega', label: 'Tanque / Cartuchos com tinta' },
+        { key: 'carregador', label: 'Acompanha cabo de força / USB' },
+        { key: 'riscos', label: 'Riscos / avarias na carcaça' },
+        { key: 'pecas_faltantes', label: 'Tampas / bandejas ausentes' },
+        { key: 'molhou', label: 'Vazamento de tinta visível' },
+        { key: 'queda', label: 'Sofreu queda / impacto' },
+        { key: 'senha_conhecida', label: 'Wi-Fi / Rede configurada' },
+      ];
+    case 'celular':
+    case 'tablet':
+      return [
+        { key: 'liga', label: 'Liga normalmente' },
+        { key: 'tela_ok', label: 'Tela / Touch sem trincos' },
+        { key: 'carrega', label: 'Carrega / Conector OK' },
+        { key: 'carregador', label: 'Acompanha carregador / cabo' },
+        { key: 'riscos', label: 'Riscos / tampa trincada' },
+        { key: 'pecas_faltantes', label: 'Gaveta SIM / botões ausentes' },
+        { key: 'molhou', label: 'Teve contato com líquido' },
+        { key: 'queda', label: 'Sofreu queda / impacto' },
+        { key: 'senha_conhecida', label: 'Senha / Padrão informado' },
+      ];
+    case 'console':
+      return [
+        { key: 'liga', label: 'Liga / LED de força OK' },
+        { key: 'tela_ok', label: 'Saída HDMI / Vídeo OK' },
+        { key: 'carrega', label: 'Cooler / Leitor acionando' },
+        { key: 'carregador', label: 'Acompanha cabos / controle' },
+        { key: 'riscos', label: 'Riscos / avarias na carcaça' },
+        { key: 'pecas_faltantes', label: 'Lacre rompido / aberto' },
+        { key: 'molhou', label: 'Teve contato com líquido' },
+        { key: 'queda', label: 'Sofreu queda / impacto' },
+        { key: 'senha_conhecida', label: 'Conta / PIN liberado' },
+      ];
+    case 'monitor':
+    case 'outro':
+      return [
+        { key: 'liga', label: 'Liga / Energiza' },
+        { key: 'tela_ok', label: 'Painel / Visor íntegro' },
+        { key: 'carrega', label: 'Fonte / Alimentação OK' },
+        { key: 'carregador', label: 'Acompanha fonte / cabos' },
+        { key: 'riscos', label: 'Riscos / avarias externas' },
+        { key: 'pecas_faltantes', label: 'Base / peças faltantes' },
+        { key: 'molhou', label: 'Teve contato com líquido' },
+        { key: 'queda', label: 'Sofreu queda / impacto' },
+        { key: 'senha_conhecida', label: 'Configuração / Senha informada' },
+      ];
+    case 'computador':
+    case 'notebook':
+    default:
+      return ENTRY_CHECKLIST_FIELDS;
+  }
+}
+
+export function getQuickSymptomChips(
+  type?: string | null,
+  brand?: string | null,
+  model?: string | null,
+): readonly string[] {
+  const cat = resolveEquipmentCategory(type, brand, model);
+  switch (cat) {
+    case 'impressora':
+      return [
+        'Falha na impressão / Cor não sai',
+        'Cabeçote de impressão entupido',
+        'Não puxa papel / Engasgando folha',
+        'Erro de almofadas / Reset necessário',
+        'Vazamento de tinta / Manchas na folha',
+        'Luzes piscando / Erro no painel',
+        'Não liga / Problema na fonte lógica',
+        'Desentupimento + Pressurização do Bulk/Tank',
+      ];
+    case 'celular':
+    case 'tablet':
+      return [
+        'Troca de Tela / Frontal Completa',
+        'Não carrega / Reparo no Conector',
+        'Bateria descarregando rápido / Estufada',
+        'Não liga / Consumo na placa',
+        'Desoxidação / Contato com líquido',
+        'Restauração de Software / Desbloqueio',
+        'Alto-falante / Microfone / Câmera sem funcionar',
+      ];
+    case 'console':
+      return [
+        'Limpeza Preventiva + Pasta Térmica / Metal Líquido',
+        'Superaquecendo / Desligando sozinho',
+        'Sem sinal de vídeo / Troca de CI ou porta HDMI',
+        'Não liga / Reparo de Fonte',
+        'Não lê discos / Falha no drive óptico',
+        'Reparo de Controle (Drift no Analógico)',
+      ];
+    case 'monitor':
+      return [
+        'Liga mas não dá imagem / Backlight apagado',
+        'Não liga / Reparo na placa fonte',
+        'Desligando sozinho / Piscando a tela',
+        'Porta HDMI / DisplayPort sem sinal',
+      ];
+    case 'outro':
+      return [
+        'Não liga / Falha de alimentação',
+        'Funcionamento intermitente / Desligando',
+        'Revisão eletrônica e limpeza interna',
+        'Reparo de conector / cabo rompido',
+        'Atualização de sistema / configuração',
+      ];
+    case 'computador':
+    case 'notebook':
+    default:
+      return [
+        'Formatação & Backup de Dados',
+        'Limpeza Preventiva + Pasta Térmica',
+        'Lento / Travando (Upgrade SSD/RAM)',
+        'Não Liga / Sem Sinal de Vídeo',
+        'Superaquecendo / Desligando em Carga',
+        'Troca de Tela / Dobradiça / Teclado',
+        'Reparo de Placa-Mãe / Placa de Vídeo (BGA)',
+      ];
+  }
+}
+
+export function getQuickAccessoryChips(
+  type?: string | null,
+  brand?: string | null,
+  model?: string | null,
+): readonly string[] {
+  const cat = resolveEquipmentCategory(type, brand, model);
+  switch (cat) {
+    case 'impressora':
+      return [
+        'Cabo de Força',
+        'Cabo USB',
+        'Fonte Externa',
+        'Garrafas / Cartuchos de Tinta',
+        'Sem Acessórios (Só Impressora)',
+      ];
+    case 'celular':
+    case 'tablet':
+      return [
+        'Capinha / Case',
+        'Carregador + Cabo USB',
+        'Chip SIM / Cartão SD retirado',
+        'Sem Acessórios (Só Aparelho)',
+      ];
+    case 'console':
+      return [
+        'Cabo de Força + Cabo HDMI',
+        '1 Controle Original',
+        '2 Controles',
+        'Fonte Externa',
+        'Sem Acessórios (Só Console)',
+      ];
+    case 'monitor':
+    case 'outro':
+      return [
+        'Fonte Externa / Carregador',
+        'Cabo de Força',
+        'Cabo HDMI / Sinal',
+        'Sem Acessórios (Só Aparelho)',
+      ];
+    case 'computador':
+    case 'notebook':
+    default:
+      return [
+        'Carregador / Fonte Original',
+        'Cabo de Força Tripolar',
+        'Sem Acessórios (Só Aparelho)',
+        'Case / Mochila / Capa',
+      ];
+  }
+}
 
 export const STOCK_MOVEMENT_TYPES = [
   { value: 'in', label: 'Entrada (compra)', color: 'emerald' },

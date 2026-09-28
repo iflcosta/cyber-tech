@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { PrintButton } from './PrintButton';
-import { ENTRY_CHECKLIST_FIELDS, getEquipmentTypeLabel } from '@/app/admin/types/database';
+import { getChecklistFieldsForEquipment, getEquipmentTypeLabel } from '@/app/admin/types/database';
 import { formatDateOnlyBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,12 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
   const customerName = soWithCustomer.customer?.name ?? '(cliente removido)';
   const customerPhone = soWithCustomer.customer?.phone ?? null;
 
-  const typeLabel = getEquipmentTypeLabel(so.equipment_type);
+  const typeLabel = getEquipmentTypeLabel(so.equipment_type, so.equipment_brand, so.equipment_model);
+  const checklistFields = getChecklistFieldsForEquipment(
+    so.equipment_type,
+    so.equipment_brand,
+    so.equipment_model,
+  );
   const checklist = so.entry_checklist ?? {};
 
   return (
@@ -75,9 +80,11 @@ export default async function PrintOSPage({ params }: { params: Promise<{ id: st
         </section>
 
         <section className="mt-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Checklist de entrada</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Checklist de entrada ({typeLabel})
+          </h2>
           <ul className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            {ENTRY_CHECKLIST_FIELDS.map((f) => {
+            {checklistFields.map((f) => {
               const v = checklist[f.key];
               return (
                 <li key={f.key} className="flex items-center gap-2 text-slate-900">
