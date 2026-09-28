@@ -9,24 +9,36 @@ export function CameraSyncModal({
   onClose,
   onPhotosSynced,
   existingPhotos,
+  osId,
+  sessionTokenProp,
 }: {
   open: boolean;
   onClose: () => void;
   onPhotosSynced: (newPhotos: string[]) => void;
   existingPhotos: string[];
+  osId?: string;
+  sessionTokenProp?: string;
 }) {
-  const [sessionToken] = useState(
+  const [internalToken] = useState(
     () => `sync_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
   );
+  const sessionToken = sessionTokenProp || internalToken;
+  const [hasActivated, setHasActivated] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [mobileUrl, setMobileUrl] = useState<string>('');
   const [syncedPhotos, setSyncedPhotos] = useState<string[]>([]);
   const [sessionStatus, setSessionStatus] = useState<'active' | 'completed'>('active');
   const seenRef = useRef<Set<string>>(new Set(existingPhotos));
 
-  // Inicializa sessão e gera QR Code quando o modal abre
   useEffect(() => {
-    if (!open) return;
+    if (open && !hasActivated) {
+      setHasActivated(true);
+    }
+  }, [open, hasActivated]);
+
+  // Inicializa sessão e gera QR Code quando ativado pela primeira vez
+  useEffect(() => {
+    if (!open && !hasActivated) return;
 
     const origin =
       typeof window !== 'undefined' ? window.location.origin : 'https://cyberinformatica.tech';
@@ -44,29 +56,31 @@ export function CameraSyncModal({
     fetch('/api/camera-sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: sessionToken, action: 'init' }),
+      cache: 'no-store',
+      body: JSON.stringify({
+        token: sessionToken,
+        action: 'init',
+        ...(osId ? { osId } : {}),
+      }),
     }).catch(() => {});
-  }, [open, sessionToken]);
+  }, [open, hasActivated, sessionToken, osId]);
 
-  // Escuta via Supabase Realtime + Polling de alta confiabilidade (1.5s)
+  // Escuta via Supabase Realtime + Polling contínuo em background mesmo após fechar o modal
   useEffect(() => {
-    if (!open) return;
+    if (!open && !hasActivated) return;
 
     let active = true;
 
     const pushNewPhotos = (incoming: string[]) => {
       const fresh: string[] = [];
       for (const p of incoming) {
-        if (!seenRef.current.has(p)) {
+        if (typeof p === 'string' && p.trim() && !seenRef.current.has(p)) {
           seenRef.current.add(p);
           fresh.push(p);
         }
       }
       if (fresh.length > 0) {
-        setSyncedPhotos((prev) => {
-          const merged = Array.from(new Set([...prev, ...fresh]));
-          return merged;
-        });
+        setSyncedPhotos((prev) => Array.from(new Set([...prev, ...fresh])));
         onPhotosSynced(fresh);
       }
     };
@@ -92,11 +106,14 @@ export function CameraSyncModal({
       // Continua via polling se Realtime não estiver configurado
     }
 
-    // 2. Polling leve na API (/api/camera-sync)
-    const interval = setInterval(async () => {
+    // 2. Polling leve na API (/api/camera-sync) com no-store
+    const pollNow = async () => {
       if (!active) return;
       try {
-        const res = await fetch(`/api/camera-sync?token=${encodeURIComponent(sessionToken)}`);
+        const res = await fetch(
+          `/api/camera-sync?token=${encodeURIComponent(sessionToken)}&_t=${Date.now()}`,
+          { cache: 'no-store' },
+        );
         if (!res.ok) return;
         const data = await res.json();
         if (Array.isArray(data.photos) && data.photos.length > 0) {
@@ -108,14 +125,17 @@ export function CameraSyncModal({
       } catch {
         // Ignora oscilação momentânea
       }
-    }, 1500);
+    };
+
+    pollNow();
+    const interval = setInterval(pollNow, 1500);
 
     return () => {
       active = false;
       clearInterval(interval);
       cleanupRealtime();
     };
-  }, [open, sessionToken, onPhotosSynced]);
+  }, [open, hasActivated, sessionToken, onPhotosSynced]);
 
   if (!open) return null;
 

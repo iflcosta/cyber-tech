@@ -14,6 +14,7 @@ import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
 import { EquipmentEditor } from './EquipmentEditor';
+import { OSPhotosEditor } from './OSPhotosEditor';
 import { getEquipmentTypeLabel } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -261,25 +262,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               )}
             </div>
 
-            {normalizedSo.equipment_photos && normalizedSo.equipment_photos.length > 0 && (
-              <div className="border-t border-zinc-100 pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Fotos na entrada ({normalizedSo.equipment_photos.length})
-                </p>
-                <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {normalizedSo.equipment_photos.map((url: string) => (
-                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt="Foto do aparelho na entrada"
-                        className="aspect-square w-full rounded-md border border-zinc-200 object-cover hover:opacity-90"
-                      />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
+            <OSPhotosEditor
+              osId={normalizedSo.id}
+              initialPhotos={normalizedSo.equipment_photos}
+              canEdit={canEdit}
+            />
           </section>
 
           {/* BLOCO 2: Bancada — Diagnóstico, Peças & Valores */}

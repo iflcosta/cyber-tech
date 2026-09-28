@@ -71,6 +71,15 @@ export function NewOSForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cameraSyncOpen, setCameraSyncOpen] = useState(false);
+  const [hasOpenedCameraSync, setHasOpenedCameraSync] = useState(false);
+  const [cameraSessionToken] = useState(
+    () => `sync_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+  );
+
+  function openCameraSync() {
+    setHasOpenedCameraSync(true);
+    setCameraSyncOpen(true);
+  }
 
   const [customer, setCustomer] = useState({
     name: '',
@@ -123,6 +132,7 @@ export function NewOSForm({
     function handleKeyDown(e: KeyboardEvent) {
       if (e.altKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
+        setHasOpenedCameraSync(true);
         setCameraSyncOpen(true);
       }
     }
@@ -265,6 +275,27 @@ export function NewOSForm({
     setError(null);
     try {
       const supabase = createCRMBrowserClient();
+
+      // Garante sincronização final das fotos caso o Cyber Camera Sync tenha sido usado
+      let finalPhotos = [...photos];
+      if (hasOpenedCameraSync) {
+        try {
+          const syncRes = await fetch(
+            `/api/camera-sync?token=${encodeURIComponent(cameraSessionToken)}&_t=${Date.now()}`,
+            { cache: 'no-store' },
+          );
+          if (syncRes.ok) {
+            const syncData = await syncRes.json();
+            if (Array.isArray(syncData.photos) && syncData.photos.length > 0) {
+              finalPhotos = Array.from(new Set([...finalPhotos, ...syncData.photos]));
+              setPhotos(finalPhotos);
+            }
+          }
+        } catch {
+          // Segue com as fotos já carregadas em estado
+        }
+      }
+
       // 1. cliente — reaproveita se já foi selecionado na busca, senão cria novo
       let customerId = selectedCustomer?.id;
       if (!customerId) {
@@ -293,7 +324,7 @@ export function NewOSForm({
         reported_defect: defect.trim(),
         entry_checklist: checklist,
         accessories_in: accessories.trim() || null,
-        equipment_photos: photos,
+        equipment_photos: finalPhotos,
         blocking_reason: blocking.trim() || null,
         estimated_ready_at: estimatedReady || null,
         created_by: currentUserId,
@@ -319,6 +350,20 @@ export function NewOSForm({
       }
 
       if (osErr || !newOS) throw osErr ?? new Error('Erro ao criar OS');
+
+      // Vincula sessão do Cyber Camera Sync à OS criada (para fotos tardias do celular caírem direto na OS)
+      if (hasOpenedCameraSync) {
+        fetch('/api/camera-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({
+            token: cameraSessionToken,
+            action: 'link_os',
+            osId: newOS.id,
+          }),
+        }).catch(() => {});
+      }
 
       // 3. evento inicial
       await supabase.from('service_order_events').insert({
@@ -624,7 +669,7 @@ export function NewOSForm({
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setCameraSyncOpen(true)}
+                    onClick={openCameraSync}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition"
                   >
                     <span>📱 Cyber Camera Sync (QR Code)</span>
@@ -753,6 +798,19 @@ export function NewOSForm({
                 placeholder="Ex: Cliente pediu prioridade para hoje às 17h"
               />
             </Field>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+              <span className="font-semibold text-slate-700">
+                📸 Fotos anexadas nesta OS: <strong>{photos.length}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={openCameraSync}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-1.5 font-bold text-sky-700 hover:bg-sky-50 transition"
+              >
+                📱 + Fotos via Cyber Camera Sync
+              </button>
+            </div>
           </div>
         )}
 
@@ -830,6 +888,7 @@ export function NewOSForm({
         onClose={() => setCameraSyncOpen(false)}
         onPhotosSynced={handleSyncedPhotos}
         existingPhotos={photos}
+        sessionTokenProp={cameraSessionToken}
       />
     </>
   );

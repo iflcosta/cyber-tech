@@ -24,21 +24,51 @@ const GUIDED_SLOTS = [
   },
 ] as const;
 
+async function loadDrawableImage(
+  file: File,
+): Promise<{ source: CanvasImageSource; width: number; height: number }> {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(file);
+      return { source: bitmap, width: bitmap.width, height: bitmap.height };
+    } catch {
+      // Fallback para HTMLImageElement em navegadores mobile que falham no createImageBitmap
+    }
+  }
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        source: img,
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
+      });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Não foi possível decodificar a imagem selecionada.'));
+    };
+    img.src = url;
+  });
+}
+
 async function compressToBlobAndDataUrl(
   file: File,
   maxDimension = 1280,
   quality = 0.78,
 ): Promise<{ file: File; dataUrl: string }> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
+  const { source, width: rawW, height: rawH } = await loadDrawableImage(file);
+  const scale = Math.min(1, maxDimension / Math.max(rawW, rawH));
+  const width = Math.max(1, Math.round(rawW * scale));
+  const height = Math.max(1, Math.round(rawH * scale));
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas 2D indisponível');
-  ctx.drawImage(bitmap, 0, 0, width, height);
+  ctx.drawImage(source, 0, 0, width, height);
 
   const dataUrl = canvas.toDataURL('image/jpeg', quality);
   const blob: Blob | null = await new Promise((resolve) =>
@@ -66,7 +96,9 @@ export default function MobileCameraSyncPage({
   useEffect(() => {
     async function fetchInitial() {
       try {
-        const res = await fetch(`/api/camera-sync?token=${encodeURIComponent(token)}`);
+        const res = await fetch(`/api/camera-sync?token=${encodeURIComponent(token)}`, {
+          cache: 'no-store',
+        });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.photos)) setPhotos(data.photos);
@@ -94,30 +126,34 @@ export default function MobileCameraSyncPage({
         }
       })();
 
+      const safeToken = token.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
+
       for (const rawFile of Array.from(files)) {
         const { file, dataUrl } = await compressToBlobAndDataUrl(rawFile, 1280, 0.78);
         let finalUrl = dataUrl;
 
-        // Tenta subir para o bucket público equipment-photos se disponível
+        // 1. Sobe para o bucket público equipment-photos (permitido pela policy 'sync-%')
         if (supabase) {
           try {
-            const path = `sync-${token}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`;
+            const path = `sync-${safeToken}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.jpg`;
             const { error: upErr } = await supabase.storage
               .from('equipment-photos')
-              .upload(path, file, { contentType: 'image/jpeg' });
+              .upload(path, file, { contentType: 'image/jpeg', upsert: false });
             if (!upErr) {
               const { data: pub } = supabase.storage.from('equipment-photos').getPublicUrl(path);
               if (pub?.publicUrl) finalUrl = pub.publicUrl;
             }
           } catch {
-            // Usa o dataUrl comprimido como fallback instantâneo
+            // Se falhar no client, o servidor (/api/camera-sync) converte o dataUrl em arquivo no bucket
           }
         }
 
-        // Sincroniza via API
+        // 2. Sincroniza via API (que persiste em public.camera_sync_sessions e na OS se vinculada)
+        let syncedUrl = finalUrl;
         const res = await fetch('/api/camera-sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
           body: JSON.stringify({
             token,
             action: 'add_photo',
@@ -127,8 +163,9 @@ export default function MobileCameraSyncPage({
 
         if (res.ok) {
           const updated = await res.json();
-          if (Array.isArray(updated.photos)) {
+          if (Array.isArray(updated.photos) && updated.photos.length > 0) {
             setPhotos(updated.photos);
+            syncedUrl = updated.photos[updated.photos.length - 1] || finalUrl;
           } else {
             setPhotos((prev) => [...prev, finalUrl]);
           }
@@ -136,21 +173,27 @@ export default function MobileCameraSyncPage({
           setPhotos((prev) => [...prev, finalUrl]);
         }
 
-        // Dispara broadcast via Supabase Realtime se disponível
+        // 3. Dispara broadcast via Supabase Realtime se disponível
         if (supabase) {
           try {
             const channel = supabase.channel(`camera-sync:${token}`);
             channel.subscribe((subStatus) => {
               if (subStatus === 'SUBSCRIBED') {
-                channel.send({
-                  type: 'broadcast',
-                  event: 'photo_added',
-                  payload: { photoUrl: finalUrl, slot: slotLabel },
-                });
+                channel
+                  .send({
+                    type: 'broadcast',
+                    event: 'photo_added',
+                    payload: { photoUrl: syncedUrl, slot: slotLabel },
+                  })
+                  .finally(() => {
+                    setTimeout(() => {
+                      supabase.removeChannel(channel);
+                    }, 1500);
+                  });
               }
             });
           } catch {
-            // Ignora falha de broadcast se API já salvou
+            // Ignora falha de broadcast se API já salvou no banco
           }
         }
       }
