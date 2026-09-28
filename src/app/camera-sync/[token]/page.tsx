@@ -91,6 +91,17 @@ export default function MobileCameraSyncPage({
           const data = await res.json();
           if (Array.isArray(data.photos)) setPhotos(data.photos);
           if (data.status) setStatus(data.status);
+          if (data.auth_token) {
+            try {
+              const supabase = createCRMBrowserClient();
+              supabase.auth.setSession({
+                access_token: data.auth_token,
+                refresh_token: '',
+              }).catch(() => {});
+            } catch {
+              // Continua
+            }
+          }
         }
       } catch {
         // Ignora erro de rede inicial

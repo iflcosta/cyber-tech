@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Fallback em memória para garantir funcionamento 100% mesmo em ambiente
- * local/dev antes da aplicação da migration 0036 no banco remoto.
+ * Estado da sessão de sincronização da câmera.
  */
 type SyncSessionState = {
   session_token: string;
   photos: string[];
   status: 'active' | 'completed' | 'expired';
+  auth_token?: string;
   created_at: string;
   updated_at: string;
   expires_at: string;
@@ -19,7 +19,8 @@ const memorySessions = new Map<string, SyncSessionState>();
 function getSupabaseServiceOrAnon() {
   const url =
     process.env.NEXT_PUBLIC_SUPABASE_CRM_URL ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    'https://avfcsuyackxiaglldyvo.supabase.co';
   const key =
     process.env.SUPABASE_CRM_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
@@ -34,14 +35,16 @@ function getSupabaseServiceOrAnon() {
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token')?.trim();
-  if (!token || token.length < 6) {
+  if (!token || token.length < 4) {
     return NextResponse.json(
       { error: 'Token de sessão inválido.' },
       { status: 400 },
     );
   }
 
+  const mem = memorySessions.get(token);
   const supabase = getSupabaseServiceOrAnon();
+
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -55,6 +58,7 @@ export async function GET(request: NextRequest) {
           session_token: data.session_token,
           photos: Array.isArray(data.photos) ? data.photos : [],
           status: data.status ?? 'active',
+          auth_token: mem?.auth_token,
           created_at: data.created_at,
           updated_at: data.updated_at,
           expires_at: data.expires_at,
@@ -63,11 +67,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(session);
       }
     } catch {
-      // Fallback silencioso para memória se tabela ainda não existir no remoto
+      // Fallback para memória
     }
   }
 
-  const mem = memorySessions.get(token);
   if (mem) {
     return NextResponse.json(mem);
   }
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
     const token = typeof body.token === 'string' ? body.token.trim() : '';
     const action = typeof body.action === 'string' ? body.action : 'init';
 
-    if (!token || token.length < 6) {
+    if (!token || token.length < 4) {
       return NextResponse.json(
         { error: 'Token de sessão inválido.' },
         { status: 400 },
@@ -113,6 +116,10 @@ export async function POST(request: NextRequest) {
       expires_at: expires.toISOString(),
     };
 
+    if (typeof body.auth_token === 'string' && body.auth_token) {
+      current.auth_token = body.auth_token;
+    }
+
     const supabase = getSupabaseServiceOrAnon();
     if (supabase) {
       try {
@@ -127,6 +134,7 @@ export async function POST(request: NextRequest) {
             session_token: data.session_token,
             photos: Array.isArray(data.photos) ? data.photos : [],
             status: data.status ?? 'active',
+            auth_token: current.auth_token,
             created_at: data.created_at,
             updated_at: data.updated_at,
             expires_at: data.expires_at,

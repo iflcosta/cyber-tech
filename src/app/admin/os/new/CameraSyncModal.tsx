@@ -15,8 +15,9 @@ export function CameraSyncModal({
   onPhotosSynced: (newPhotos: string[]) => void;
   existingPhotos: string[];
 }) {
+  // Token curto e limpo para manter o QR Code leve com blocos grandes
   const [sessionToken] = useState(
-    () => `sync_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+    () => `s_${Date.now().toString(36).slice(-4)}_${Math.random().toString(36).slice(2, 6)}`,
   );
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [mobileUrl, setMobileUrl] = useState<string>('');
@@ -24,62 +25,59 @@ export function CameraSyncModal({
   const [sessionStatus, setSessionStatus] = useState<'active' | 'completed'>('active');
   const seenRef = useRef<Set<string>>(new Set(existingPhotos));
 
-  // Inicializa sessão e gera QR Code quando o modal abre (incluindo auth token para o celular)
+  // Inicializa sessão e gera QR Code leve e de leitura instantânea
   useEffect(() => {
     if (!open) return;
 
     const origin =
-      typeof window !== 'undefined' ? window.location.origin : 'https://cyberinformatica.tech';
+      typeof window !== 'undefined' ? window.location.origin : 'https://www.cyberinformatica.tech';
 
+    // URL curta (< 55 caracteres) gerando QR Code de baixa densidade (blocos grandes)
+    const url = `${origin}/camera-sync/${sessionToken}`;
+    setMobileUrl(url);
+
+    QRCode.toDataURL(url, {
+      width: 260,
+      margin: 2,
+      errorCorrectionLevel: 'L',
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    })
+      .then(setQrDataUrl)
+      .catch((err) => console.error('Erro ao gerar QR Code:', err));
+
+    // Obtém token de autenticação do atendente no PC para autorizar a sessão no backend (sem poluir o QR Code)
     try {
       const supabase = createCRMBrowserClient();
       supabase.auth.getSession().then(({ data }) => {
-        const accessToken = data?.session?.access_token;
-        const refreshToken = data?.session?.refresh_token;
-        const authParams = accessToken
-          ? `?auth=${encodeURIComponent(accessToken)}&refresh=${encodeURIComponent(refreshToken || '')}`
-          : '';
-        const url = `${origin}/camera-sync/${sessionToken}${authParams}`;
-        setMobileUrl(url);
-
-        QRCode.toDataURL(url, {
-          width: 220,
-          margin: 1,
-          errorCorrectionLevel: 'M',
-        })
-          .then(setQrDataUrl)
-          .catch(() => {});
+        fetch('/api/camera-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: sessionToken,
+            action: 'init',
+            auth_token: data?.session?.access_token || '',
+          }),
+        }).catch(() => {});
       }).catch(() => {
-        const url = `${origin}/camera-sync/${sessionToken}`;
-        setMobileUrl(url);
-        QRCode.toDataURL(url, {
-          width: 220,
-          margin: 1,
-          errorCorrectionLevel: 'M',
-        })
-          .then(setQrDataUrl)
-          .catch(() => {});
+        fetch('/api/camera-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: sessionToken, action: 'init' }),
+        }).catch(() => {});
       });
     } catch {
-      const url = `${origin}/camera-sync/${sessionToken}`;
-      setMobileUrl(url);
-      QRCode.toDataURL(url, {
-        width: 220,
-        margin: 1,
-        errorCorrectionLevel: 'M',
-      })
-        .then(setQrDataUrl)
-        .catch(() => {});
+      fetch('/api/camera-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: sessionToken, action: 'init' }),
+      }).catch(() => {});
     }
-
-    fetch('/api/camera-sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: sessionToken, action: 'init' }),
-    }).catch(() => {});
   }, [open, sessionToken]);
 
-  // Escuta via Supabase Realtime + Polling de alta confiabilidade (1.5s)
+  // Escuta via Supabase Realtime + Polling leve (1.5s)
   useEffect(() => {
     if (!open) return;
 
@@ -152,12 +150,12 @@ export function CameraSyncModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-labelledby="camera-sync-title"
     >
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <div className="flex items-center gap-2">
@@ -170,7 +168,7 @@ export function CameraSyncModal({
               Fotografar Carcaça pelo Celular
             </h2>
             <p className="text-xs text-slate-500">
-              Aponte a câmera do seu celular para o QR Code abaixo. Sem precisar digitar senha.
+              Aponte a câmera do seu celular para o QR Code abaixo. Leitura instantânea sem login.
             </p>
           </div>
           <button
@@ -184,31 +182,31 @@ export function CameraSyncModal({
         </div>
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2 sm:items-center">
-          {/* Coluna do QR Code */}
+          {/* Coluna do QR Code Nítido e Grande */}
           <div className="flex flex-col items-center rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
             {qrDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={qrDataUrl}
-                alt="QR Code para abrir câmera no celular"
-                className="h-44 w-44 rounded-lg border border-slate-200 bg-white p-2 shadow-xs"
+                alt="QR Code limpo para captura no celular"
+                className="h-48 w-48 rounded-lg border-2 border-slate-300 bg-white p-2 shadow-sm"
               />
             ) : (
-              <div className="flex h-44 w-44 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs text-slate-400">
+              <div className="flex h-48 w-48 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs text-slate-400">
                 Gerando QR Code…
               </div>
             )}
             <span className="mt-2 font-mono text-[11px] font-semibold text-slate-600">
-              Sessão: {sessionToken.slice(0, 14)}
+              Código: {sessionToken}
             </span>
             {mobileUrl && (
               <a
                 href={mobileUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-1.5 text-xs font-semibold text-sky-600 underline hover:text-sky-700"
+                className="mt-1 text-xs font-semibold text-sky-600 underline hover:text-sky-700"
               >
-                Abrir link direto (teste local) ↗
+                Abrir link no navegador ↗
               </a>
             )}
           </div>
@@ -218,9 +216,9 @@ export function CameraSyncModal({
             <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-3 text-sky-900">
               <p className="font-bold">Como funciona (15 segundos):</p>
               <ol className="mt-1.5 list-decimal space-y-1 pl-4">
-                <li>Escaneie o QR Code com o celular.</li>
-                <li>Bata as fotos guiadas (Frente, Traseira e Laterais).</li>
-                <li>As fotos aparecem aqui na tela do PC automaticamente!</li>
+                <li>Abra a câmera do celular e aponte para o código.</li>
+                <li>Tire as fotos guiadas (Frente, Traseira e Laterais).</li>
+                <li>As fotos sobem direto para a OS automaticamente!</li>
               </ol>
             </div>
 
@@ -234,7 +232,7 @@ export function CameraSyncModal({
 
               {syncedPhotos.length === 0 ? (
                 <p className="mt-2 text-slate-400">
-                  Aguardando captura no celular…
+                  Aguardando fotos do celular…
                 </p>
               ) : (
                 <div className="mt-2 grid grid-cols-3 gap-1.5">
