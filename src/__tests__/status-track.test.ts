@@ -43,7 +43,7 @@ describe('API Route — /api/status/track (Portal de Rastreio Público — Sem M
     expect(symptoms.some((s) => s.includes('Cabeçote'))).toBe(true);
   });
 
-  it('garante que o StatusTrackerClient diferencia OS em triagem inicial de OS com orçamento disponível e não exibe telemetria fake de PC', () => {
+  it('garante que o StatusTrackerClient diferencia OS em triagem inicial de OS com orçamento disponível e não exibe telemetria fake de PC nem upsell', () => {
     const clientPath = path.resolve(process.cwd(), 'src/app/status/StatusTrackerClient.tsx');
     const code = fs.readFileSync(clientPath, 'utf-8');
 
@@ -51,6 +51,6 @@ describe('API Route — /api/status/track (Portal de Rastreio Público — Sem M
     expect(code).not.toContain('SAÚDE DO DISCO');
     expect(code).toContain('isInInitialTriage');
     expect(code).toContain('hasQuoteReady');
-    expect(code).toContain('CABEÇOTE & SISTEMA DE TINTA');
+    expect(code).toContain('VISTORIA FOTOGRÁFICA DE ENTRADA');
   });
 });

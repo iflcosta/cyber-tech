@@ -3,6 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+  'CDN-Cache-Control': 'no-store',
+  'Vercel-CDN-Cache-Control': 'no-store',
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -12,7 +20,7 @@ export async function GET(request: Request) {
     if (!query && !phone) {
       return NextResponse.json(
         { found: false, error: 'Informe o número da OS ou telefone para consulta.' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
@@ -38,7 +46,7 @@ export async function GET(request: Request) {
         });
 
         if (!rpcError && rpcData && rpcData.found) {
-          return NextResponse.json(rpcData);
+          return NextResponse.json(rpcData, { headers: NO_CACHE_HEADERS });
         }
 
         // 2. Consulta direta na tabela service_orders (fallback caso RPC não retorne)
@@ -87,7 +95,7 @@ export async function GET(request: Request) {
 
         const { data: orders } = await soQuery;
         if (orders && orders.length > 0) {
-          return NextResponse.json(formatSafeOS(orders[0]));
+          return NextResponse.json(formatSafeOS(orders[0]), { headers: NO_CACHE_HEADERS });
         }
       } catch (e) {
         console.warn('Erro ao consultar Supabase em /api/status/track:', e);
@@ -100,11 +108,11 @@ export async function GET(request: Request) {
         error:
           'Nenhuma Ordem de Serviço encontrada com o número ou WhatsApp informado. Verifique o código no seu comprovante ou fale com nosso balcão.',
       },
-      { status: 404 }
+      { status: 404, headers: NO_CACHE_HEADERS }
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro interno ao consultar OS.';
-    return NextResponse.json({ found: false, error: message }, { status: 500 });
+    return NextResponse.json({ found: false, error: message }, { status: 500, headers: NO_CACHE_HEADERS });
   }
 }
 

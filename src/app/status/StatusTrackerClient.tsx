@@ -14,7 +14,6 @@ import { brand } from '@/lib/brand';
 import {
   getChecklistFieldsForEquipment,
   getEquipmentTypeLabel,
-  resolveEquipmentCategory,
 } from '@/app/admin/types/database';
 
 interface TrackingData {
@@ -76,115 +75,6 @@ const STEP_ITEMS = [
   { step: 5, short: 'Pronto', title: '05 / Pronto', desc: 'Garantia CDC 90 Dias' },
 ];
 
-function getQualityProtocolItems(
-  type?: string | null,
-  brandName?: string | null,
-  modelName?: string | null,
-): ReadonlyArray<{ title: string; subtitle: string }> {
-  const cat = resolveEquipmentCategory(type, brandName, modelName);
-  switch (cat) {
-    case 'impressora':
-      return [
-        {
-          title: 'CABEÇOTE & SISTEMA DE TINTA',
-          subtitle: 'Pressurização, dampers e injeção das cores (CMYK)',
-        },
-        {
-          title: 'MECANISMO TRACIONADOR',
-          subtitle: 'Roldanas, sensores de papel e alinhamento do carro',
-        },
-        {
-          title: 'PLACA LÓGICA & FIRMWARE',
-          subtitle: 'Sensores ópticos, almofadas e comunicação USB/Wi-Fi',
-        },
-        {
-          title: 'PÁGINA DE TESTE & QUALIDADE',
-          subtitle: 'Fidelidade de impressão, limpeza e vedação final',
-        },
-      ];
-    case 'celular':
-    case 'tablet':
-      return [
-        {
-          title: 'DISPLAY & TOUCHSCREEN',
-          subtitle: 'Sensibilidade ao toque, brilho e integridade óptica',
-        },
-        {
-          title: 'ENERGIA & CARREGAMENTO',
-          subtitle: 'Conector de carga, consumo na fonte e bateria',
-        },
-        {
-          title: 'PLACA LÓGICA & PERIFÉRICOS',
-          subtitle: 'Áudio, câmeras, botões físicos e conectividade',
-        },
-        {
-          title: 'TESTE FUNCIONAL FINAL',
-          subtitle: 'Estabilidade geral, fechamento e higienização',
-        },
-      ];
-    case 'console':
-      return [
-        {
-          title: 'FONTE & CIRCUITO DE VÍDEO',
-          subtitle: 'Tensões primárias, porta HDMI e inicialização',
-        },
-        {
-          title: 'ARREFECIMENTO & TÉRMICA',
-          subtitle: 'Dissipador, cooler e composto térmico sob carga',
-        },
-        {
-          title: 'ARMAZENAMENTO & LEITURA',
-          subtitle: 'Integridade do sistema, SSD/HD e drive óptico',
-        },
-        {
-          title: 'CONTROLES & CONECTIVIDADE',
-          subtitle: 'Pareamento sem fio, portas USB e estabilidade',
-        },
-      ];
-    case 'monitor':
-    case 'outro':
-      return [
-        {
-          title: 'FONTE & ALIMENTAÇÃO',
-          subtitle: 'Circuito de entrada, tensões e acionamento',
-        },
-        {
-          title: 'PLACA PRINCIPAL & SINAIS',
-          subtitle: 'Componentes eletrônicos, cabos e conectores',
-        },
-        {
-          title: 'FUNCIONAMENTO & CONTROLES',
-          subtitle: 'Painel, comandos físicos e operação contínua',
-        },
-        {
-          title: 'INSPEÇÃO DE QUALIDADE',
-          subtitle: 'Validação operacional na bancada e acabamento',
-        },
-      ];
-    case 'computador':
-    case 'notebook':
-    default:
-      return [
-        {
-          title: 'ALIMENTAÇÃO & PLACA-MÃE',
-          subtitle: 'Circuito de carga, tensões primárias e BIOS',
-        },
-        {
-          title: 'ARMAZENAMENTO & MEMÓRIA',
-          subtitle: 'Integridade de leitura/escrita e sistema operacional',
-        },
-        {
-          title: 'ARREFECIMENTO & TÉRMICA',
-          subtitle: 'Dissipação térmica, cooler e estabilidade sob carga',
-        },
-        {
-          title: 'PERIFÉRICOS & CONECTIVIDADE',
-          subtitle: 'Vídeo, teclado, portas USB, áudio e rede',
-        },
-      ];
-  }
-}
-
 export default function StatusTrackerClient() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') ?? '';
@@ -227,7 +117,16 @@ export default function StatusTrackerClient() {
     setData(null);
 
     try {
-      const res = await fetch(`/api/status/track?q=${encodeURIComponent(q)}`);
+      const res = await fetch(
+        `/api/status/track?q=${encodeURIComponent(q)}&_t=${Date.now()}`,
+        {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        },
+      );
       const json = await res.json();
 
       if (!res.ok || !json.found) {
@@ -327,28 +226,6 @@ export default function StatusTrackerClient() {
         return 'Em Atendimento';
     }
   }
-
-  function getProtocolBadge(): { statusText: string; detailText: string } {
-    if (!data) return { statusText: 'AGUARDANDO', detailText: 'Em fila' };
-    if (isCompletedOrReady) {
-      return { statusText: 'VERIFICADO ✓', detailText: 'Aprovado em bancada' };
-    }
-    if (
-      data.status === 'approved' ||
-      data.status === 'in_progress' ||
-      data.status === 'in_repair' ||
-      data.status === 'waiting_part' ||
-      data.status === 'waiting_parts'
-    ) {
-      return { statusText: 'EM EXECUÇÃO', detailText: 'Procedimento em bancada' };
-    }
-    if (hasQuoteReady) {
-      return { statusText: 'DIAGNOSTICADO', detailText: 'Aguardando aprovação' };
-    }
-    return { statusText: 'EM TRIAGEM', detailText: 'Fila de avaliação técnica' };
-  }
-
-  const protocolBadge = getProtocolBadge();
 
   function fmtBRL(val: number) {
     return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -489,33 +366,67 @@ export default function StatusTrackerClient() {
 
           {/* CASO 2: Orçamento já precificado pelo técnico e aguardando aprovação do cliente */}
           {hasQuoteReady && (
-            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="border-2 border-zinc-950 bg-zinc-950 text-white p-5 sm:p-6 flex flex-col gap-5">
+              {/* Cabeçalho */}
               <div>
                 <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
                   AÇÃO NECESSÁRIA // ORÇAMENTO DISPONÍVEL
                 </span>
                 <h3 className="text-base sm:text-lg font-extrabold text-white">
-                  Olá, {data.customer_first_name}! O diagnóstico do seu equipamento está pronto.
+                  Olá, {data.customer_first_name}! O diagnóstico do seu {equipmentTypeLabel} está pronto.
                 </h3>
-                <p className="mt-1 text-xs sm:text-sm text-zinc-300">
-                  Confira o laudo e o detalhamento abaixo ({fmtBRL(totalOrderAmount)}) e aprove em 1 toque pelo WhatsApp para iniciarmos o serviço.
+                <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+                  Leia o laudo técnico abaixo e aprove em 1 toque pelo WhatsApp para iniciarmos o serviço.
                 </p>
               </div>
-              <a
-                href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
-                  `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
-                    data.os_number || data.short_id
-                  } (${equipmentTypeLabel} ${equipmentTitle}) no valor de ${fmtBRL(
-                    totalOrderAmount,
-                  )}. Podem iniciar o serviço!`,
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-3.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[48px]"
-              >
-                <span>Aprovar Orçamento no WhatsApp</span>
-                <ArrowUpRight className="w-4 h-4 shrink-0" />
-              </a>
+
+              {/* Laudo técnico em destaque */}
+              {data.repair_notes && data.repair_notes.trim() && (
+                <div className="border-l-2 border-zinc-500 pl-4">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-zinc-500 block mb-1.5">
+                    LAUDO TÉCNICO DA BANCADA:
+                  </span>
+                  <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap">
+                    {data.repair_notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Resumo de valor + botão de aprovação */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3 border-t border-zinc-800">
+                {/* Breakdown de valor */}
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-xs">
+                  <div className="bg-zinc-900 border border-zinc-700 px-3 py-2.5">
+                    <span className="text-zinc-500 block uppercase mb-1">Mão de Obra</span>
+                    <span className="text-white font-bold text-sm">{fmtBRL(effectiveLaborCost)}</span>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-700 px-3 py-2.5">
+                    <span className="text-zinc-500 block uppercase mb-1">Peças / Insumos</span>
+                    <span className="text-white font-bold text-sm">{fmtBRL(partsTotal)}</span>
+                  </div>
+                  <div className="bg-white col-span-2 sm:col-span-1 px-3 py-2.5">
+                    <span className="text-zinc-600 block uppercase mb-1">TOTAL DA OS</span>
+                    <span className="text-zinc-950 font-extrabold text-base sm:text-lg">{fmtBRL(totalOrderAmount)}</span>
+                  </div>
+                </div>
+
+                {/* Botão de aprovação */}
+                <a
+                  href={`https://wa.me/55${brand.whatsapp}?text=${encodeURIComponent(
+                    `Olá! Aqui é ${data.customer_first_name}. Acabei de conferir no portal e APROVO o orçamento da OS #${
+                      data.os_number || data.short_id
+                    } (${equipmentTypeLabel} ${equipmentTitle}) no valor de ${fmtBRL(
+                      totalOrderAmount,
+                    )}. Podem iniciar o serviço!`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="sm:w-auto shrink-0 bg-white hover:bg-zinc-200 text-black px-5 py-4 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 min-h-[56px]"
+                >
+                  <span>✅ Aprovar Orçamento no WhatsApp</span>
+                  <ArrowUpRight className="w-4 h-4 shrink-0" />
+                </a>
+              </div>
             </div>
           )}
 
@@ -793,45 +704,6 @@ export default function StatusTrackerClient() {
               </div>
             </div>
           )}
-
-          {/* Protocolo de Inspeção & Controle de Qualidade (Adaptado ao Tipo de Equipamento!) */}
-          <div className="border border-zinc-300 bg-white p-4 sm:p-8">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5 border-b border-zinc-200 pb-2.5 font-mono">
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-950">
-                PROTOCOLO DE INSPEÇÃO & CONTROLE DE QUALIDADE ({equipmentTypeLabel})
-              </span>
-              <span className="text-[11px] text-zinc-600 font-bold uppercase">
-                STATUS: {protocolBadge.statusText}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-300 border border-zinc-300 font-mono">
-              {qualityProtocolItems.map((item, idx) => (
-                <div key={idx} className="bg-white p-3.5 sm:p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className="text-[10px] font-bold text-zinc-400">0{idx + 1}</span>
-                      <span
-                        className={`text-[10px] font-bold uppercase px-1.5 py-0.5 ${
-                          isCompletedOrReady
-                            ? 'bg-zinc-950 text-white'
-                            : 'bg-zinc-100 text-zinc-700'
-                        }`}
-                      >
-                        {protocolBadge.statusText}
-                      </span>
-                    </div>
-                    <span className="text-xs font-extrabold text-zinc-950 uppercase block mt-1">
-                      {item.title}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-zinc-500 font-sans leading-snug block mt-2">
-                    {item.subtitle}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Discriminação Transparente de Custos */}
           <div className="border border-zinc-300 bg-white p-4 sm:p-8">
