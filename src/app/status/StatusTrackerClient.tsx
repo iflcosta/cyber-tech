@@ -189,9 +189,6 @@ export default function StatusTrackerClient() {
   const equipmentTitle = data
     ? [data.equipment_brand, data.equipment_model].filter(Boolean).join(' ') || equipmentTypeLabel
     : '';
-  const qualityProtocolItems = data
-    ? getQualityProtocolItems(data.equipment_type, data.equipment_brand, data.equipment_model)
-    : [];
   const checklistFields = data
     ? getChecklistFieldsForEquipment(data.equipment_type, data.equipment_brand, data.equipment_model)
     : [];
