@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from './LogoutButton';
+import { PWAInstallButton } from './PWAInstallButton';
 
 const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
@@ -82,6 +83,7 @@ export function DesktopNav({
       </div>
 
       <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
+        <PWAInstallButton />
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700"
           aria-hidden="true"

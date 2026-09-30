@@ -88,8 +88,11 @@ export default function RootLayout({
         <UTMTracker />
 
         <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#09090b" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Cyber ERP" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
         {/* Google Ads Tag (gtag.js) */}

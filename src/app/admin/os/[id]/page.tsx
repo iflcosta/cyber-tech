@@ -15,6 +15,7 @@ import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadg
 import { UsePartForm } from './UsePartForm';
 import { EquipmentEditor } from './EquipmentEditor';
 import { OSPhotosEditor } from './OSPhotosEditor';
+import { TechnicianAssigner } from './TechnicianAssigner';
 import { getEquipmentTypeLabel } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -42,9 +43,10 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     supplier: { name: string } | null;
   };
 
-  // Executa todas as 7 queries independentes em paralelo para eliminar waterfall
+  // Executa todas as 8 queries independentes em paralelo para eliminar waterfall
   const [
     { data: profile },
+    { data: allProfiles },
     { data: so },
     { data: events },
     { data: partsUsedRaw },
@@ -57,6 +59,10 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
       .select('id, full_name, role, can_delete')
       .eq('id', user.id)
       .single(),
+    supabase
+      .from('profiles')
+      .select('id, full_name, role, commission_rate, active')
+      .order('full_name'),
     // Busca direto da tabela (nao da view) pra OSs finalizadas
     // (delivered/cancelled) nao darem 404. A view filtra essas fora.
     supabase
@@ -136,14 +142,10 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
 
   const partOrders = partOrdersRaw as unknown as LinkedPartOrder[] | null;
 
-  const authorIds = Array.from(new Set((events ?? []).map((e) => e.author_id)));
-  const { data: authorProfiles } =
-    authorIds.length > 0
-      ? await supabase.from('profiles').select('id, full_name').in('id', authorIds)
-      : { data: [] };
   const authorNames = Object.fromEntries(
-    (authorProfiles ?? []).map((p) => [p.id, p.full_name]),
+    (allProfiles ?? []).map((p) => [p.id, p.full_name]),
   );
+  const activeTechnicians = (allProfiles ?? []).filter((p) => p.active !== false);
 
   const canEdit =
     profile?.role === 'owner' || profile?.role === 'technician';
@@ -430,8 +432,21 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </section>
 
-          {/* BLOCO 6: Ficha do Cliente & Aparelho */}
+          {/* BLOCO 6: Ficha do Cliente, Técnico & Aparelho */}
           <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+            {profile && (
+              <div className="border-b border-zinc-100 pb-3.5">
+                <TechnicianAssigner
+                  osId={normalizedSo.id}
+                  currentTechnicianId={normalizedSo.technician_id ?? null}
+                  currentUserId={profile.id}
+                  currentUserName={profile.full_name}
+                  technicians={activeTechnicians}
+                  canEdit={canEdit && !isFinal}
+                />
+              </div>
+            )}
+
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
                 Cliente

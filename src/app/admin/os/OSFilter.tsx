@@ -3,7 +3,29 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { OS_STATUSES } from '@/app/admin/types/database';
 
-export function OSFilter() {
+export type TechSummaryItem = {
+  id: string;
+  full_name: string;
+  count: number;
+};
+
+export function OSFilter({
+  currentUserId,
+  currentUserName,
+  activeTech,
+  counts,
+  otherTechnicians,
+}: {
+  currentUserId: string;
+  currentUserName: string;
+  activeTech: string; // 'me' | 'all' | 'unassigned' | uuid
+  counts: {
+    mine: number;
+    all: number;
+    unassigned: number;
+  };
+  otherTechnicians: TechSummaryItem[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -24,6 +46,55 @@ export function OSFilter() {
 
   return (
     <div className="space-y-3">
+      {/* 1. Seletor de Bancada / Técnico (Destaque Principal) */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 shadow-2xs">
+        <span className="px-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+          Bancada:
+        </span>
+
+        <TechScopeButton
+          active={activeTech === 'me' || activeTech === currentUserId}
+          onClick={() => update('tech', 'me')}
+          icon="👤"
+          label={`Minhas OS (${currentUserName})`}
+          count={counts.mine}
+          highlight
+        />
+
+        <TechScopeButton
+          active={activeTech === 'all'}
+          onClick={() => update('tech', 'all')}
+          icon="🌐"
+          label="Todas da Loja"
+          count={counts.all}
+        />
+
+        <TechScopeButton
+          active={activeTech === 'unassigned'}
+          onClick={() => update('tech', 'unassigned')}
+          icon="⚠️"
+          label="Sem Técnico"
+          count={counts.unassigned}
+          warn={counts.unassigned > 0}
+        />
+
+        {otherTechnicians.length > 0 && (
+          <div className="hidden sm:block h-5 w-px bg-zinc-200 mx-0.5" />
+        )}
+
+        {otherTechnicians.map((tech) => (
+          <TechScopeButton
+            key={tech.id}
+            active={activeTech === tech.id}
+            onClick={() => update('tech', tech.id)}
+            icon="🔧"
+            label={tech.full_name}
+            count={tech.count}
+          />
+        ))}
+      </div>
+
+      {/* 2. Busca por texto */}
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
           key={urlQ}
@@ -42,6 +113,7 @@ export function OSFilter() {
         </button>
       </form>
 
+      {/* 3. Filtro por Status */}
       <div className="flex flex-wrap gap-1.5">
         <FilterChip
           label="Ativas"
@@ -69,7 +141,64 @@ export function OSFilter() {
   );
 }
 
-function FilterChip({ label, active, onClick }: { label: string; value: string; active: boolean; onClick: () => void }) {
+function TechScopeButton({
+  active,
+  onClick,
+  icon,
+  label,
+  count,
+  highlight,
+  warn,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: string;
+  label: string;
+  count: number;
+  highlight?: boolean;
+  warn?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition cursor-pointer ${
+        active
+          ? 'bg-zinc-950 text-white shadow-xs ring-2 ring-zinc-950/20'
+          : warn
+            ? 'border border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100'
+            : highlight
+              ? 'border border-zinc-300 bg-zinc-100 text-zinc-950 hover:bg-zinc-200'
+              : 'border border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+      }`}
+    >
+      <span>{icon}</span>
+      <span>{label}</span>
+      <span
+        className={`ml-0.5 rounded px-1.5 py-0.2 text-[11px] font-extrabold ${
+          active
+            ? 'bg-white text-zinc-950'
+            : warn
+              ? 'bg-amber-200/80 text-amber-950'
+              : 'bg-zinc-200/80 text-zinc-800'
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  value: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

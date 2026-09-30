@@ -1,22 +1,62 @@
 {
-    "name": "Cyber Tech Admin",
-    "short_name": "CyberAdmin",
-    "description": "Painel de Gestão Cyber Tech - Hardware e PC Gamer",
-    "start_url": "/admin",
-    "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#2563eb",
-    "icons": [
-        {
-            "src": "https://placehold.co/192x192/2563eb/white?text=CT",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any maskable"
-        },
-        {
-            "src": "https://placehold.co/512x512/2563eb/white?text=Cyber+Tech",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+  "id": "/admin",
+  "name": "Cyber ERP — Gestão & Bancada",
+  "short_name": "Cyber ERP",
+  "description": "Sistema ERP, Ordens de Serviço e PDV da Cyber Informática",
+  "start_url": "/admin/os",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "+ Nova OS",
+      "short_name": "Nova OS",
+      "description": "Abrir nova Ordem de Serviço",
+      "url": "/admin/os/new",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Minha Bancada",
+      "short_name": "Minhas OS",
+      "description": "Ver OS atribuídas a mim",
+      "url": "/admin/os?tech=me",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "PDV / Vender",
+      "short_name": "Vender",
+      "description": "Registrar nova venda no balcão",
+      "url": "/admin/vender",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Resumo financeiro e movimento da loja",
+      "url": "/admin/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
 }

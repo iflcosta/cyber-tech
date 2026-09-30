@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getAuthedUser } from '@/app/admin/lib/auth';
-import { PAYMENT_METHODS } from '@/app/admin/types/database';
+import { getAuthedProfile } from '@/app/admin/lib/auth';
+import { PAYMENT_METHODS, getEquipmentTypeLabel } from '@/app/admin/types/database';
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
+import { StatusBadge } from '@/app/admin/components/StatusBadge';
 import { SalesChart } from './SalesChart';
 import { formatDateTimeBR, startOfDayBR, startOfMonthBR } from '@/app/admin/lib/datetime';
 
@@ -16,7 +17,7 @@ function fmtBRL(n: number): string {
 }
 
 export default async function DashboardPage() {
-  const { supabase, user } = await getAuthedUser();
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) redirect('/admin/login');
 
   // Janelas de tempo — sempre no fuso de Brasília, não no fuso do
@@ -43,6 +44,7 @@ export default async function DashboardPage() {
     readyList,
     unpaidList,
     partsWaitingList,
+    activeBenchOS,
   ] = await Promise.all([
     // Uma query só cobre o gráfico E os cards "Hoje"/"Últimos 7 dias" —
     // ambos derivados por agregação em memória dos mesmos buckets diários
@@ -137,6 +139,11 @@ export default async function DashboardPage() {
       .eq('status', 'ordered')
       .order('created_at', { ascending: true })
       .limit(5),
+    supabase
+      .from('service_orders')
+      .select('id, short_id, os_number, status, equipment_type, equipment_brand, equipment_model, estimated_value, labor_cost, technician_id, customer:customers(name)')
+      .in('status', ['awaiting_approval', 'approved', 'in_progress', 'waiting_part', 'ready'])
+      .order('updated_at', { ascending: false }),
   ]);
 
   // Numeros de OS
@@ -299,6 +306,45 @@ export default async function DashboardPage() {
   const attentionCount =
     staleItems.length + readyItems.length + unpaidItems.length + partsWaitingItems.length;
 
+  type BenchRow = {
+    id: string;
+    short_id: string | null;
+    os_number: string | null;
+    status: string;
+    equipment_type: string | null;
+    equipment_brand: string | null;
+    equipment_model: string | null;
+    estimated_value: number | null;
+    labor_cost: number;
+    technician_id: string | null;
+    customer: { name: string } | null;
+  };
+
+  const allBenchItems = ((activeBenchOS.data ?? []) as unknown as BenchRow[]).map((o) => ({
+    ...o,
+    customer_name: o.customer?.name ?? '(cliente removido)',
+  }));
+
+  const myBenchItems = allBenchItems.filter((o) => o.technician_id === user.id);
+  const unassignedBenchCount = allBenchItems.filter((o) => !o.technician_id).length;
+
+  const myTriagemCount = myBenchItems.filter(
+    (o) =>
+      o.status === 'awaiting_approval' &&
+      (o.estimated_value === null || Number(o.estimated_value) <= 0) &&
+      Number(o.labor_cost ?? 0) <= 0,
+  ).length;
+  const myOrcamentoCount = myBenchItems.filter(
+    (o) => o.status === 'awaiting_approval',
+  ).length - myTriagemCount;
+  const myManutencaoCount = myBenchItems.filter(
+    (o) => o.status === 'approved' || o.status === 'in_progress' || o.status === 'waiting_part',
+  ).length;
+  const myProntasCount = myBenchItems.filter((o) => o.status === 'ready').length;
+
+  const currentUserName =
+    profile?.full_name || user.email?.split('@')[0] || 'Técnico';
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -314,6 +360,136 @@ export default async function DashboardPage() {
           buttonClassName="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         />
       </div>
+
+      {/* Minha Bancada — atalho rápido para as OS atribuídas ao usuário logado */}
+      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-sm text-white">
+              🔧
+            </span>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">
+                Minha Bancada ({currentUserName})
+              </h2>
+              <p className="text-xs text-slate-500">
+                OS ativas atribuídas diretamente a você
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {unassignedBenchCount > 0 && (
+              <Link
+                href="/admin/os?tech=unassigned"
+                className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+              >
+                ⚠️ {unassignedBenchCount} sem técnico
+              </Link>
+            )}
+            <Link
+              href="/admin/os?tech=me"
+              className="inline-flex items-center gap-1.5 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
+            >
+              Ver minhas OS ({myBenchItems.length}) →
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          <Link
+            href="/admin/os?tech=me&status=awaiting_diagnosis"
+            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Em Triagem
+            </p>
+            <p className="mt-1 text-xl font-bold text-slate-900">{myTriagemCount}</p>
+          </Link>
+          <Link
+            href="/admin/os?tech=me&status=awaiting_approval"
+            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Aguard. Aprovação
+            </p>
+            <p className="mt-1 text-xl font-bold text-slate-900">{myOrcamentoCount}</p>
+          </Link>
+          <Link
+            href="/admin/os?tech=me&status=in_progress"
+            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Em Reparo / Peça
+            </p>
+            <p className="mt-1 text-xl font-bold text-slate-900">{myManutencaoCount}</p>
+          </Link>
+          <Link
+            href="/admin/os?tech=me&status=ready"
+            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Prontas
+            </p>
+            <p className="mt-1 text-xl font-bold text-emerald-700">{myProntasCount}</p>
+          </Link>
+        </div>
+
+        {myBenchItems.length > 0 ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {myBenchItems.slice(0, 4).map((o) => {
+              const eqLabel = [
+                getEquipmentTypeLabel(o.equipment_type),
+                o.equipment_brand,
+                o.equipment_model,
+              ]
+                .filter(Boolean)
+                .join(' ');
+              const isTriagem =
+                o.status === 'awaiting_approval' &&
+                (o.estimated_value === null || Number(o.estimated_value) <= 0) &&
+                Number(o.labor_cost ?? 0) <= 0;
+              return (
+                <Link
+                  key={o.id}
+                  href={`/admin/os/${o.id}`}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold text-slate-900">
+                        {o.short_id ?? o.os_number}
+                      </span>
+                      <span className="truncate font-medium text-slate-700">
+                        {o.customer_name}
+                      </span>
+                    </div>
+                    <p className="truncate text-[11px] text-slate-500">
+                      {eqLabel || 'Equipamento'}
+                    </p>
+                  </div>
+                  <StatusBadge
+                    status={o.status}
+                    hasQuote={!isTriagem}
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-slate-500">
+            Nenhuma OS ativa atribuída a você no momento.{' '}
+            {unassignedBenchCount > 0 && (
+              <Link
+                href="/admin/os?tech=unassigned"
+                className="font-semibold text-amber-700 underline hover:text-amber-800"
+              >
+                Ver {unassignedBenchCount} OS aguardando atribuição →
+              </Link>
+            )}
+          </p>
+        )}
+      </section>
 
       {/* Painel "hoje" — o que precisa de atenção, não só contador. Os
           cards de números abaixo já existiam; isso junta o que dá pra

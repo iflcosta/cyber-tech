@@ -31,7 +31,13 @@ function timeAgo(dateStr: string): string {
   return `${months}m`;
 }
 
-export function OSCard({ so }: { so: ServiceOrderWithStale }) {
+export function OSCard({
+  so,
+  currentUserId,
+}: {
+  so: ServiceOrderWithStale;
+  currentUserId?: string;
+}) {
   const category = resolveEquipmentCategory(
     so.equipment_type,
     so.equipment_brand,
@@ -46,11 +52,14 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
   const hasQuote =
     Number(so.estimated_value ?? 0) > 0 ||
     Number((so as { labor_cost?: number | null }).labor_cost ?? 0) > 0;
+  const isMine = Boolean(currentUserId && so.technician_id === currentUserId);
 
   return (
     <Link
       href={`/admin/os/${so.id}`}
-      className="block rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-sky-300 hover:shadow-md active:scale-[0.99] sm:p-5"
+      className={`block rounded-xl border bg-white p-4 shadow-xs transition hover:border-sky-300 hover:shadow-md active:scale-[0.99] sm:p-5 ${
+        isMine ? 'border-zinc-900 ring-1 ring-zinc-900/10' : 'border-slate-200'
+      }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -75,6 +84,26 @@ export function OSCard({ so }: { so: ServiceOrderWithStale }) {
               {so.reported_defect}
             </p>
           )}
+          <div className="mt-2.5 flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            {so.technician_name ? (
+              <span
+                className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-[11px] font-semibold ${
+                  isMine
+                    ? 'bg-zinc-950 text-white'
+                    : 'bg-slate-100 text-slate-700 border border-slate-200'
+                }`}
+              >
+                <span>👤</span>
+                <span>{so.technician_name}</span>
+                {isMine && <span className="text-[9px] uppercase opacity-80">· Minha</span>}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-[11px] font-semibold text-amber-800">
+                <span>⚪</span>
+                <span>Sem técnico</span>
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex flex-col items-end gap-1 text-right">
           <span className="font-mono text-[11px] text-slate-400">{timeAgo(so.updated_at)}</span>

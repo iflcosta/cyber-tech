@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { createCRMBrowserClient } from '../lib/supabase/client';
+import { PWAInstallButton } from './PWAInstallButton';
 
 const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
@@ -76,6 +77,8 @@ export function MobileNav({
               <p className="text-sm font-semibold text-slate-900">{userName}</p>
               <p className="text-xs text-slate-500">{roleLabel}</p>
             </div>
+
+            <PWAInstallButton mobile />
 
             <Link
               href="/admin/os/new"
