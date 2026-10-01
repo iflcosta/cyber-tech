@@ -173,15 +173,15 @@ export function OSLabelClient({
 
       {/* ============ MODO 1: ETIQUETA ADESIVA 50x40mm C/ QR CODE (KNUP KP-IM608) ============ */}
       {mode === '50x40' ? (
-        <div className="flex flex-col items-center gap-4 print:block print:m-0 print:gap-0">
+        <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
           {copiesArray.map((_, idx) => (
             <div
               key={idx}
               className="label-os-50x40 border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
               style={{
                 width: '50mm',
-                height: '40mm',
-                padding: '1.8mm 2.2mm',
+                height: '39mm',
+                padding: '1.6mm 2.2mm',
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -198,7 +198,7 @@ export function OSLabelClient({
               </div>
 
               {/* 2. Bloco Principal: QR Code (Esquerda) + OS/Cliente/Aparelho (Direita) */}
-              <div className="my-[0.8mm] flex items-center gap-[1.8mm]">
+              <div className="my-[0.6mm] flex items-center gap-[1.8mm]">
                 <div className="shrink-0 border border-black p-[0.4mm] bg-white">
                   <QRCodeImage
                     value={qrUrl}
@@ -212,7 +212,7 @@ export function OSLabelClient({
                   <div className="font-mono text-[10.5pt] font-black tracking-tight leading-none text-black">
                     {osNumberStr}
                   </div>
-                  <div className="mt-[0.8mm] truncate font-sans text-[7.5pt] font-bold uppercase text-black">
+                  <div className="mt-[0.6mm] truncate font-sans text-[7.5pt] font-bold uppercase text-black">
                     {customerName}
                   </div>
                   {customerPhone && (
@@ -221,7 +221,7 @@ export function OSLabelClient({
                     </div>
                   )}
                   <div
-                    className="mt-[0.8mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
+                    className="mt-[0.6mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -235,7 +235,7 @@ export function OSLabelClient({
               </div>
 
               {/* 3. Senha / Acessórios / S/N */}
-              <div className="border-t border-dashed border-black pt-[0.6mm] font-mono text-[6.5pt] font-bold leading-tight text-black truncate">
+              <div className="border-t border-dashed border-black pt-[0.5mm] font-mono text-[6.5pt] font-bold leading-tight text-black truncate">
                 {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
                 {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
                 {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
@@ -243,7 +243,7 @@ export function OSLabelClient({
 
               {/* 4. Defeito Relatado (Resumo Prático de Bancada) */}
               <div
-                className="border-t border-black pt-[0.6mm] font-sans text-[6.5pt] leading-[1.1] text-black"
+                className="border-t border-black pt-[0.5mm] font-sans text-[6.5pt] leading-[1.08] text-black"
                 style={{
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
@@ -260,33 +260,54 @@ export function OSLabelClient({
           <style>{`
             @page {
               size: 50mm 40mm;
-              margin: 0;
+              margin: 0 !important;
             }
             @media print {
               html, body {
                 width: 50mm !important;
+                height: 40mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
                 color: #000000 !important;
+                overflow: visible !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
-              body * {
-                visibility: hidden;
+              header, nav, aside, footer, .no-print, [class*="print:hidden"] {
+                display: none !important;
               }
-              .label-os-50x40, .label-os-50x40 * {
-                visibility: visible;
+              body > div, main {
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 0 !important;
+                max-width: none !important;
+                width: 50mm !important;
+                display: block !important;
+              }
+              .label-print-container {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 50mm !important;
               }
               .label-os-50x40 {
                 width: 50mm !important;
-                height: 40mm !important;
+                height: 39mm !important;
+                max-width: 50mm !important;
+                max-height: 39mm !important;
                 margin: 0 !important;
-                padding: 1.8mm 2.2mm !important;
+                padding: 1.6mm 2.2mm !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;
                 color: #000000 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+              .label-os-50x40:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
               }
             }
           `}</style>

@@ -538,7 +538,7 @@ h5, h6 {
    ESTILOS PERICIAIS DE IMPRESSÃO // TERMO DE GARANTIA CDC 90 DIAS
    ============================================================ */
 @media print {
-  @page {
+  @page a4_warranty {
     size: A4 portrait;
     margin: 12mm 15mm;
   }
@@ -562,6 +562,7 @@ h5, h6 {
 
   /* Exibe o container de impressão oficial */
   .printable-warranty-certificate {
+    page: a4_warranty;
     display: block !important;
     position: static !important;
     width: 100% !important;

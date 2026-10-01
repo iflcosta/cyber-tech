@@ -157,15 +157,15 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
       </div>
 
       {/* Área de Impressão 50x40mm */}
-      <div className="flex flex-col items-center gap-4 print:block print:m-0 print:gap-0">
+      <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
         {copiesArray.map((_, index) => (
           <div
             key={index}
             className="label-50x40 border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
             style={{
               width: '50mm',
-              height: '40mm',
-              padding: '2mm 2.5mm',
+              height: '39mm',
+              padding: '1.8mm 2.2mm',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -176,15 +176,15 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             }}
           >
             {/* 1. Topo: Marca da Loja + Lote/Data */}
-            <div className="flex items-center justify-between border-b border-black pb-[1mm] font-mono text-[7pt] font-bold uppercase leading-none">
+            <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
               <span>CYBER INFORMÁTICA</span>
               <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
             </div>
 
             {/* 2. Nome e Características do Produto */}
-            <div className="my-[0.8mm] flex-1 flex flex-col justify-center overflow-hidden">
+            <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
               <div
-                className="font-sans text-[8.5pt] font-black uppercase leading-[1.1] text-black"
+                className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
                 style={{
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
@@ -195,7 +195,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 {title}
               </div>
               {specsLine && (
-                <div className="mt-[0.6mm] truncate font-mono text-[6.5pt] font-bold uppercase text-black leading-none">
+                <div className="mt-[0.5mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
                   {specsLine}
                 </div>
               )}
@@ -203,20 +203,20 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
             {/* 3. Preço em Destaque */}
             {showPrice && (
-              <div className="my-[0.5mm] flex items-baseline justify-between border-y border-black py-[0.8mm] leading-none">
-                <span className="font-mono text-[6pt] font-bold uppercase">VALOR:</span>
-                <span className="font-mono text-[12pt] font-black tracking-tight text-black">
+              <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.6mm] leading-none">
+                <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
+                <span className="font-mono text-[11.5pt] font-black tracking-tight text-black">
                   R$ {price}
                 </span>
               </div>
             )}
 
             {/* 4. Código de Barras (Code 128) + SKU Interno */}
-            <div className="pt-[0.5mm] text-center">
+            <div className="pt-[0.4mm] text-center">
               <div className="mx-auto w-full">
-                <Barcode128 value={activeBarcodeValue} height={showPrice ? 26 : 36} />
+                <Barcode128 value={activeBarcodeValue} height={showPrice ? 25 : 34} />
               </div>
-              <div className="mt-[0.5mm] font-mono text-[6.5pt] font-bold tracking-wider uppercase leading-none text-black">
+              <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
                 {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
               </div>
             </div>
@@ -227,33 +227,54 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
       <style>{`
         @page {
           size: 50mm 40mm;
-          margin: 0;
+          margin: 0 !important;
         }
         @media print {
           html, body {
             width: 50mm !important;
+            height: 40mm !important;
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
+            overflow: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          body * {
-            visibility: hidden;
+          header, nav, aside, footer, .no-print, [class*="print:hidden"] {
+            display: none !important;
           }
-          .label-50x40, .label-50x40 * {
-            visibility: visible;
+          body > div, main {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+            max-width: none !important;
+            width: 50mm !important;
+            display: block !important;
+          }
+          .label-print-container {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 50mm !important;
           }
           .label-50x40 {
             width: 50mm !important;
-            height: 40mm !important;
+            height: 39mm !important;
+            max-width: 50mm !important;
+            max-height: 39mm !important;
             margin: 0 !important;
-            padding: 2mm 2.5mm !important;
+            padding: 1.8mm 2.2mm !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
             color: #000000 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .label-50x40:last-child {
+            page-break-after: auto !important;
+            break-after: auto !important;
           }
         }
       `}</style>
