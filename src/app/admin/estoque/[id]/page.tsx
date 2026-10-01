@@ -97,12 +97,21 @@ export default async function StockItemDetailPage({
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Estoque atual
               </h2>
-              <Link
-                href={`/admin/estoque/${item.id}/movimentar`}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-              >
-                + Movimentar
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/estoque/${item.id}/label`}
+                  target="_blank"
+                  className="rounded-md border border-zinc-950 bg-amber-50 px-3 py-1.5 text-sm font-semibold font-mono text-zinc-950 hover:bg-amber-100 flex items-center gap-1.5"
+                >
+                  🏷️ Imprimir Etiqueta
+                </Link>
+                <Link
+                  href={`/admin/estoque/${item.id}/movimentar`}
+                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+                >
+                  + Movimentar
+                </Link>
+              </div>
             </div>
             <div className="mt-3 flex items-baseline gap-3">
               <span

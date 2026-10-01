@@ -86,6 +86,12 @@ export default async function StockListPage({
         <div className="flex flex-wrap shrink-0 gap-2">
           {canDelete && <WipeStockButtons />}
           <Link
+            href="/admin/estoque/etiquetas"
+            className="border-2 border-zinc-950 bg-amber-50 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-amber-100 transition flex items-center gap-1.5"
+          >
+            <span>🏷️ Imprimir Etiquetas</span>
+          </Link>
+          <Link
             href="/admin/estoque/new?showroom=1"
             className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
           >
@@ -144,6 +150,7 @@ export default async function StockListPage({
                 <th className="px-4 py-3 text-right">Estoque</th>
                 <th className="hidden px-4 py-3 text-right sm:table-cell">Preço</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Etiqueta</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 text-xs text-zinc-800">
@@ -221,6 +228,16 @@ export default async function StockListPage({
                           OK
                         </span>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/admin/estoque/${item.id}/label`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 border border-zinc-950 bg-white px-2 py-1 font-mono text-[10px] font-bold uppercase text-zinc-950 hover:bg-zinc-100 transition"
+                        title="Imprimir Etiqueta Térmica"
+                      >
+                        🏷️ Imprimir
+                      </Link>
                     </td>
                   </tr>
                 );
