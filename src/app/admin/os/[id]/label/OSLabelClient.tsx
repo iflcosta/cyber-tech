@@ -36,14 +36,11 @@ export function OSLabelClient({
 }: OSLabelClientProps) {
   const [mode, setMode] = useState<'60x40' | '50x40' | '58mm'>('60x40');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
-  const [origin, setOrigin] = useState('https://cyberinformatica.tech');
   const [copies, setCopies] = useState(1);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.origin) {
-      setOrigin(window.location.origin);
-    }
-  }, []);
+  const origin =
+    typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : 'https://cyberinformatica.tech';
 
   const qrUrl =
     qrTarget === 'admin'

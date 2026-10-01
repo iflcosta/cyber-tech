@@ -137,7 +137,8 @@ export default async function ComissoesPage({
     soQuery = soQuery.eq('technician_id', params.tech);
   }
 
-  let { data: serviceOrdersData, error: soError } = await soQuery;
+  const { data: initialSoData, error: soError } = await soQuery;
+  let serviceOrdersData = initialSoData;
 
   if (soError) {
     let fallbackSoQuery = supabase
