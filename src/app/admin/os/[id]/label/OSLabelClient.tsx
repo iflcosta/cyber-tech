@@ -34,7 +34,7 @@ export function OSLabelClient({
   reportedDefect,
   plainText58mm,
 }: OSLabelClientProps) {
-  const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60-landscape');
+  const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
   const [copies, setCopies] = useState(1);
   const origin =
@@ -53,7 +53,7 @@ export function OSLabelClient({
   const is40x60Any = mode === '40x60' || is40x60Landscape;
   const isKnupThermal = is40x60Any || mode === '60x40' || mode === '50x40';
   const labelWidthMm = mode === '60x40' ? 60 : (is40x60Any ? 40 : 50);
-  const labelHeightMm = is40x60Any ? 59 : 39;
+  const labelHeightMm = mode === '40x60' ? 52 : (is40x60Landscape ? 58 : 39);
   const paperHeightMm = is40x60Any ? 60 : 40;
 
   return (
@@ -81,17 +81,6 @@ export function OSLabelClient({
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setMode('40x60-landscape')}
-            className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
-              mode === '40x60-landscape'
-                ? 'border-zinc-950 bg-zinc-950 text-white'
-                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-            }`}
-          >
-            🔄 40x60mm De Lado (Paisagem / Estilo 60x40)
-          </button>
-          <button
-            type="button"
             onClick={() => setMode('40x60')}
             className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
               mode === '40x60'
@@ -100,6 +89,17 @@ export function OSLabelClient({
             }`}
           >
             📱 40x60mm Em Pé (Vertical / Retrato)
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('40x60-landscape')}
+            className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              mode === '40x60-landscape'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            🔄 40x60mm De Lado (Paisagem / Estilo 60x40)
           </button>
           <button
             type="button"
@@ -240,7 +240,7 @@ export function OSLabelClient({
               style={{
                 width: `${labelWidthMm}mm`,
                 height: `${labelHeightMm}mm`,
-                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm')),
+                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '1.2mm 1.8mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm')),
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -337,50 +337,50 @@ export function OSLabelClient({
                 </div>
               ) : mode === '40x60' ? (
                 <>
-                  {/* Layout Vertical 40x60mm (Preenchimento Completo da Altura) */}
+                  {/* Layout Vertical 40x60mm (Preenchimento Sob Medida para Bobina 40x60mm) */}
                   {/* 1. Cabeçalho: Loja + Data */}
-                  <div className="flex items-center justify-between border-b-2 border-black pb-[0.8mm] font-mono text-[6.5pt] font-black uppercase leading-none">
+                  <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.2pt] font-black uppercase leading-none">
                     <span>CYBER INFORMÁTICA</span>
                     <span>{createdDate}</span>
                   </div>
 
                   {/* 2. Destaque da OS (Box Fechado) */}
-                  <div className="my-[0.8mm] border-2 border-black p-[0.8mm] text-center bg-zinc-50">
-                    <div className="font-mono text-[5.8pt] font-black uppercase tracking-wider text-black leading-none">
+                  <div className="my-[0.5mm] border-2 border-black p-[0.6mm] text-center bg-zinc-50">
+                    <div className="font-mono text-[5.2pt] font-black uppercase tracking-wider text-black leading-none">
                       ORDEM DE SERVIÇO
                     </div>
-                    <div className="mt-[0.5mm] font-mono text-[12pt] font-black tracking-tight leading-none text-black">
+                    <div className="mt-[0.3mm] font-mono text-[11pt] font-black tracking-tight leading-none text-black">
                       {osNumberStr}
                     </div>
                   </div>
 
                   {/* 3. QR Code Centralizado em Destaque */}
-                  <div className="my-[0.5mm] flex flex-col items-center justify-center">
+                  <div className="my-[0.4mm] flex flex-col items-center justify-center">
                     <div className="border border-black p-[0.4mm] bg-white">
                       <QRCodeImage
                         value={qrUrl}
-                        size={80}
+                        size={64}
                         alt={`QR Code ${osNumberStr}`}
-                        className="block w-[19mm] h-[19mm]"
+                        className="block w-[15mm] h-[15mm]"
                       />
                     </div>
-                    <div className="mt-[0.4mm] font-mono text-[5.2pt] font-black tracking-wider uppercase text-black leading-none">
+                    <div className="mt-[0.3mm] font-mono text-[5pt] font-black tracking-wider uppercase text-black leading-none">
                       BIPE P/ ABRIR NO SISTEMA
                     </div>
                   </div>
 
                   {/* 4. Dados do Cliente e Aparelho */}
-                  <div className="border-t border-black pt-[0.8mm] leading-tight">
-                    <div className="truncate font-sans text-[7.8pt] font-black uppercase text-black">
+                  <div className="border-t border-black pt-[0.5mm] leading-tight">
+                    <div className="truncate font-sans text-[7.5pt] font-black uppercase text-black">
                       CLI: {customerName}
                     </div>
                     {customerPhone && (
-                      <div className="truncate font-mono text-[6.5pt] text-zinc-900">
+                      <div className="truncate font-mono text-[6pt] text-zinc-900">
                         TEL: {customerPhone}
                       </div>
                     )}
                     <div
-                      className="mt-[0.5mm] font-sans text-[7.2pt] font-black uppercase leading-[1.08] text-black"
+                      className="mt-[0.3mm] font-sans text-[6.8pt] font-black uppercase leading-[1.08] text-black"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -393,7 +393,7 @@ export function OSLabelClient({
                   </div>
 
                   {/* 5. Senha / Acessórios / S/N */}
-                  <div className="border-t border-dashed border-black pt-[0.6mm] font-mono text-[6.2pt] font-bold leading-tight text-black truncate">
+                  <div className="border-t border-dashed border-black pt-[0.4mm] font-mono text-[5.8pt] font-bold leading-tight text-black truncate">
                     {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
                     {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
                     {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
@@ -401,7 +401,7 @@ export function OSLabelClient({
 
                   {/* 6. Defeito Relatado */}
                   <div
-                    className="border-t border-black pt-[0.6mm] font-sans text-[6.5pt] leading-[1.08] text-black"
+                    className="border-t border-black pt-[0.4mm] font-sans text-[6.2pt] leading-[1.08] text-black"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -414,8 +414,8 @@ export function OSLabelClient({
                   </div>
 
                   {/* 7. Rodapé */}
-                  <div className="mt-[0.5mm] border-t border-black pt-[0.5mm] text-center font-mono text-[5.2pt] font-bold uppercase text-black leading-none">
-                    ✦ BANCADA TÉCNICA · CYBER INFORMÁTICA ✦
+                  <div className="mt-[0.4mm] border-t border-black pt-[0.4mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
+                    ✦ BANCADA TÉCNICA · CYBER ✦
                   </div>
                 </>
               ) : (
@@ -532,7 +532,7 @@ export function OSLabelClient({
                 max-width: ${labelWidthMm}mm !important;
                 max-height: ${labelHeightMm}mm !important;
                 margin: 0 !important;
-                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'))} !important;
+                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '1.2mm 1.8mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'))} !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;

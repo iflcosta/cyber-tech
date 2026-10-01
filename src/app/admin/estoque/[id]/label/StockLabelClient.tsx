@@ -27,7 +27,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
 
-  const [labelFormat, setLabelFormat] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40'>('40x60-landscape');
+  const [labelFormat, setLabelFormat] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40'>('40x60');
   const [title, setTitle] = useState(item.name);
   const [specsLine, setSpecsLine] = useState(defaultSpecs || 'Pronta-Entrega · Garantia Loja');
   const [price, setPrice] = useState(
@@ -46,7 +46,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const is40x60Any = labelFormat === '40x60' || is40x60Landscape;
 
   const labelWidthMm = labelFormat === '60x40' ? 60 : (is40x60Any ? 40 : 50);
-  const labelHeightMm = is40x60Any ? 59 : 39;
+  const labelHeightMm = labelFormat === '40x60' ? 52 : (is40x60Landscape ? 58 : 39);
   const paperHeightMm = is40x60Any ? 60 : 40;
 
   return (
@@ -77,17 +77,6 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           </span>
           <button
             type="button"
-            onClick={() => setLabelFormat('40x60-landscape')}
-            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
-              labelFormat === '40x60-landscape'
-                ? 'border-zinc-950 bg-zinc-950 text-white'
-                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-            }`}
-          >
-            🔄 40x60 mm De Lado (Paisagem / Estilo 60x40)
-          </button>
-          <button
-            type="button"
             onClick={() => setLabelFormat('40x60')}
             className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
               labelFormat === '40x60'
@@ -96,6 +85,17 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             }`}
           >
             📱 40x60 mm Em Pé (Vertical / Retrato)
+          </button>
+          <button
+            type="button"
+            onClick={() => setLabelFormat('40x60-landscape')}
+            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              labelFormat === '40x60-landscape'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            🔄 40x60 mm De Lado (Paisagem / Estilo 60x40)
           </button>
           <button
             type="button"
@@ -247,7 +247,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             style={{
               width: `${labelWidthMm}mm`,
               height: `${labelHeightMm}mm`,
-              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm')),
+              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '1.2mm 1.8mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm')),
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -325,21 +325,21 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 </div>
               </div>
             ) : labelFormat === '40x60' ? (
-              /* Layout Vertical Profissional 40x60mm (Preenchimento Completo da Altura) */
+              /* Layout Vertical Profissional 40x60mm (Preenchimento Sob Medida para Bobina 40x60mm) */
               <>
                 {/* 1. Topo: Marca da Loja + Lote/Data */}
-                <div className="flex items-center justify-between border-b-2 border-black pb-[0.8mm] font-mono text-[6.5pt] font-black uppercase leading-none">
+                <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.2pt] font-black uppercase leading-none">
                   <span>CYBER INFORMÁTICA</span>
                   <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
                 </div>
 
                 {/* 2. Nome e Características do Produto */}
-                <div className="my-[1.2mm] flex-1 flex flex-col justify-center">
+                <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
                   <div
-                    className="font-sans text-[9pt] font-black uppercase leading-[1.12] text-black"
+                    className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
                     style={{
                       display: '-webkit-box',
-                      WebkitLineClamp: 3,
+                      WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                     }}
@@ -347,48 +347,48 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                     {title}
                   </div>
                   {specsLine && (
-                    <div className="mt-[1mm] font-mono text-[6.5pt] font-bold uppercase text-zinc-900 leading-tight">
+                    <div className="mt-[0.4mm] truncate font-mono text-[5.8pt] font-bold uppercase text-zinc-800 leading-tight">
                       {specsLine}
                     </div>
                   )}
                 </div>
 
                 {/* 3. Selo de Garantia da Loja */}
-                <div className="mb-[1.2mm] border border-black bg-zinc-100 py-[0.8mm] text-center font-mono text-[6.2pt] font-black uppercase tracking-wider text-black leading-none">
+                <div className="mb-[0.6mm] border border-black bg-zinc-100 py-[0.5mm] text-center font-mono text-[5.8pt] font-black uppercase tracking-wider text-black leading-none">
                   ✦ GARANTIA DE 90 DIAS LOJA ✦
                 </div>
 
                 {/* 4. Preço em Destaque (Box Fechado) */}
                 {showPrice && (
-                  <div className="mb-[1.2mm] border-2 border-black p-[1mm] text-center bg-white">
-                    <div className="font-mono text-[5.8pt] font-black uppercase tracking-wider text-black leading-none">
+                  <div className="mb-[0.6mm] border-2 border-black p-[0.6mm] text-center bg-white">
+                    <div className="font-mono text-[5.2pt] font-black uppercase tracking-wider text-black leading-none">
                       VALOR À VISTA / PIX
                     </div>
-                    <div className="my-[0.6mm] font-mono text-[14pt] font-black tracking-tight leading-none text-black">
+                    <div className="my-[0.4mm] font-mono text-[13pt] font-black tracking-tight leading-none text-black">
                       R$ {price}
                     </div>
-                    <div className="font-mono text-[5.2pt] font-bold uppercase text-zinc-700 leading-none">
+                    <div className="font-mono text-[4.8pt] font-bold uppercase text-zinc-600 leading-none">
                       Consulte parcelamento no cartão
                     </div>
                   </div>
                 )}
 
-                {/* 5. Código de Barras (Code 128 com Altura Ideal de 42px) + SKU */}
-                <div className="pt-[0.5mm] text-center">
+                {/* 5. Código de Barras (Code 128 com Altura Ideal de 28px) + SKU */}
+                <div className="pt-[0.2mm] text-center">
                   <div className="mx-auto w-full flex justify-center">
                     <Barcode128
                       value={activeBarcodeValue}
-                      height={showPrice ? 42 : 54}
+                      height={showPrice ? 28 : 38}
                     />
                   </div>
-                  <div className="mt-[0.8mm] font-mono text-[6.5pt] font-black tracking-widest uppercase leading-none text-black">
+                  <div className="mt-[0.5mm] font-mono text-[6pt] font-black tracking-wider uppercase leading-none text-black">
                     {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
                   </div>
                 </div>
 
-                {/* 6. Rodapé da Loja */}
-                <div className="mt-[1mm] border-t border-black pt-[0.6mm] text-center font-mono text-[5.5pt] font-bold uppercase text-black leading-none">
-                  cyberinformatica.tech · Atendimento Loja
+                {/* 6. Rodapé da Loja (Linha Única sem quebra) */}
+                <div className="mt-[0.6mm] border-t border-black pt-[0.4mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
+                  cyberinformatica.tech · Loja
                 </div>
               </>
             ) : (
@@ -488,7 +488,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             max-width: ${labelWidthMm}mm !important;
             max-height: ${labelHeightMm}mm !important;
             margin: 0 !important;
-            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'))} !important;
+            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '1.2mm 1.8mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'))} !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;

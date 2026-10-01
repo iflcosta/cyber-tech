@@ -56,7 +56,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const showLeadsTab = isIagoUser(user, profile);
 
   return (
-    <div className="min-h-dvh bg-[#FAFAFA] text-slate-900 antialiased">
+    <div className="min-h-dvh print:min-h-0 print:h-auto bg-[#FAFAFA] text-slate-900 antialiased">
       <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link href="/admin/os" className="flex items-center gap-2 text-base font-bold tracking-tight text-zinc-950 group">
@@ -79,7 +79,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           />
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 print:m-0 print:p-0 print:max-w-none">{children}</main>
     </div>
   );
 }
