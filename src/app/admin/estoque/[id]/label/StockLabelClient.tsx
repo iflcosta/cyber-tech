@@ -27,7 +27,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
 
-  const [labelFormat, setLabelFormat] = useState<'40x60' | '60x40' | '50x40'>('40x60');
+  const [labelFormat, setLabelFormat] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40'>('40x60-landscape');
   const [title, setTitle] = useState(item.name);
   const [specsLine, setSpecsLine] = useState(defaultSpecs || 'Pronta-Entrega · Garantia Loja');
   const [price, setPrice] = useState(
@@ -42,9 +42,12 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const copiesArray = Array.from({ length: Math.max(1, Math.min(50, copies)) });
 
-  const labelWidthMm = labelFormat === '60x40' ? 60 : (labelFormat === '40x60' ? 40 : 50);
-  const labelHeightMm = labelFormat === '40x60' ? 59 : 39;
-  const paperHeightMm = labelFormat === '40x60' ? 60 : 40;
+  const is40x60Landscape = labelFormat === '40x60-landscape';
+  const is40x60Any = labelFormat === '40x60' || is40x60Landscape;
+
+  const labelWidthMm = labelFormat === '60x40' ? 60 : (is40x60Any ? 40 : 50);
+  const labelHeightMm = is40x60Any ? 59 : 39;
+  const paperHeightMm = is40x60Any ? 60 : 40;
 
   return (
     <>
@@ -53,7 +56,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
           <div className="flex items-center gap-2">
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
-              Knup KP-IM608 · {labelFormat}mm
+              Knup KP-IM608 · {is40x60Landscape ? '40x60 Paisagem (De Lado)' : `${labelFormat}mm`}
             </span>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               Etiqueta de Produto / PDV
@@ -70,8 +73,19 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
         {/* Seletor de Tamanho de Etiqueta */}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="font-mono text-[11px] font-bold uppercase text-zinc-700 mr-1">
-            Tamanho da Bobina:
+            Formato / Bobina:
           </span>
+          <button
+            type="button"
+            onClick={() => setLabelFormat('40x60-landscape')}
+            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              labelFormat === '40x60-landscape'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            🔄 40x60 mm De Lado (Paisagem / Estilo 60x40)
+          </button>
           <button
             type="button"
             onClick={() => setLabelFormat('40x60')}
@@ -81,7 +95,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            ⭐ 40x60 mm (Sua Bobina Vertical)
+            📱 40x60 mm Em Pé (Vertical / Retrato)
           </button>
           <button
             type="button"
@@ -92,7 +106,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            60x40 mm (Horizontal)
+            60x40 mm (Bobina Horizontal)
           </button>
           <button
             type="button"
@@ -205,17 +219,24 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4">
           <p className="font-mono text-[11px] text-zinc-600">
-            Papel da <strong>Knup KP-IM608</strong>: <strong>{labelFormat === '40x60' ? '40 x 60 mm (Vertical)' : (labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm')}</strong>.
+            Papel da <strong>Knup KP-IM608</strong>: <strong>{is40x60Landscape ? '40 x 60 mm (Paisagem / Girada 90°)' : (labelFormat === '40x60' ? '40 x 60 mm (Vertical)' : (labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm'))}</strong>.
           </p>
           <button
             type="button"
             onClick={() => window.print()}
             className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
           >
-            🖨️ Imprimir {copies > 1 ? `${copies} Etiquetas` : 'Etiqueta'} ({labelFormat}mm)
+            🖨️ Imprimir {copies > 1 ? `${copies} Etiquetas` : 'Etiqueta'} ({is40x60Landscape ? '40x60 De Lado' : `${labelFormat}mm`})
           </button>
         </div>
       </div>
+
+      {/* Dica visual informativa sobre o Modo Paisagem */}
+      {is40x60Landscape && (
+        <div className="print:hidden mx-auto mb-4 max-w-2xl rounded border border-blue-200 bg-blue-50 px-3 py-2 text-center font-mono text-[11px] text-blue-900">
+          🔄 <strong>Modo Paisagem Ativo:</strong> A etiqueta sai <strong>girada 90° de lado</strong> na bobina de 40mm. Ao colar no produto, você cola na <strong>horizontal (60mm de largura × 40mm de altura)</strong>!
+        </div>
+      )}
 
       {/* Área de Impressão (40x60mm, 60x40mm ou 50x40mm) */}
       <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
@@ -226,17 +247,84 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             style={{
               width: `${labelWidthMm}mm`,
               height: `${labelHeightMm}mm`,
-              padding: labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'),
+              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm')),
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
+              justifyContent: is40x60Landscape ? 'center' : 'space-between',
+              alignItems: is40x60Landscape ? 'center' : 'stretch',
+              position: 'relative',
               overflow: 'hidden',
               pageBreakAfter: index < copiesArray.length - 1 ? 'always' : 'auto',
               breakAfter: index < copiesArray.length - 1 ? 'page' : 'auto',
             }}
           >
-            {labelFormat === '40x60' ? (
+            {labelFormat === '40x60-landscape' ? (
+              /* Layout Paisagem Rotacionada 90° (Design 60x40mm na bobina física de 40x60mm) */
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: '58mm',
+                  height: '38mm',
+                  transform: 'translate(-50%, -50%) rotate(90deg)',
+                  transformOrigin: 'center center',
+                  padding: '1.8mm 2.6mm',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* 1. Topo: Marca da Loja + Lote/Data */}
+                <div className="flex items-center justify-between border-b border-black pb-[0.6mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                  <span>CYBER INFORMÁTICA</span>
+                  <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+                </div>
+
+                {/* 2. Nome e Características do Produto */}
+                <div className="my-[0.5mm] flex-1 flex flex-col justify-center overflow-hidden">
+                  <div
+                    className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {title}
+                  </div>
+                  {specsLine && (
+                    <div className="mt-[0.4mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
+                      {specsLine}
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Preço em Destaque */}
+                {showPrice && (
+                  <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.5mm] leading-none">
+                    <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
+                    <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
+                      R$ {price}
+                    </span>
+                  </div>
+                )}
+
+                {/* 4. Código de Barras (Code 128) + SKU Interno */}
+                <div className="pt-[0.3mm] text-center">
+                  <div className="mx-auto w-full">
+                    <Barcode128 value={activeBarcodeValue} height={showPrice ? 24 : 32} />
+                  </div>
+                  <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
+                    {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
+                  </div>
+                </div>
+              </div>
+            ) : labelFormat === '40x60' ? (
               /* Layout Vertical Profissional 40x60mm (Preenchimento Completo da Altura) */
               <>
                 {/* 1. Topo: Marca da Loja + Lote/Data */}
@@ -359,7 +447,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
       <style>{`
         @page {
-          size: ${labelFormat === '40x60' ? '40mm 60mm' : (labelFormat === '60x40' ? '60mm 40mm' : '50mm 40mm')};
+          size: ${is40x60Any ? '40mm 60mm' : (labelFormat === '60x40' ? '60mm 40mm' : '50mm 40mm')};
           margin: 0 !important;
         }
         @media print {
@@ -400,11 +488,12 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             max-width: ${labelWidthMm}mm !important;
             max-height: ${labelHeightMm}mm !important;
             margin: 0 !important;
-            padding: ${labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm')} !important;
+            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'))} !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
             color: #000000 !important;
+            position: relative !important;
             overflow: hidden !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;

@@ -34,7 +34,7 @@ export function OSLabelClient({
   reportedDefect,
   plainText58mm,
 }: OSLabelClientProps) {
-  const [mode, setMode] = useState<'40x60' | '60x40' | '50x40' | '58mm'>('40x60');
+  const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60-landscape');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
   const [copies, setCopies] = useState(1);
   const origin =
@@ -49,10 +49,12 @@ export function OSLabelClient({
 
   const shortNumberBadge = osNumberStr.replace(/^OS-\d{4}-/i, '#');
   const copiesArray = Array.from({ length: Math.max(1, Math.min(20, copies)) });
-  const isKnupThermal = mode === '40x60' || mode === '60x40' || mode === '50x40';
-  const labelWidthMm = mode === '60x40' ? 60 : (mode === '40x60' ? 40 : 50);
-  const labelHeightMm = mode === '40x60' ? 59 : 39;
-  const paperHeightMm = mode === '40x60' ? 60 : 40;
+  const is40x60Landscape = mode === '40x60-landscape';
+  const is40x60Any = mode === '40x60' || is40x60Landscape;
+  const isKnupThermal = is40x60Any || mode === '60x40' || mode === '50x40';
+  const labelWidthMm = mode === '60x40' ? 60 : (is40x60Any ? 40 : 50);
+  const labelHeightMm = is40x60Any ? 59 : 39;
+  const paperHeightMm = is40x60Any ? 60 : 40;
 
   return (
     <>
@@ -61,7 +63,7 @@ export function OSLabelClient({
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
           <div className="flex items-center gap-2">
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
-              {isKnupThermal ? `Knup KP-IM608 · ${mode}mm` : 'MPT-II · 58mm'}
+              {isKnupThermal ? `Knup KP-IM608 · ${is40x60Landscape ? '40x60 Paisagem (De Lado)' : `${mode}mm`}` : 'MPT-II · 58mm'}
             </span>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               Etiqueta Interna de Dispositivo (OS)
@@ -79,6 +81,17 @@ export function OSLabelClient({
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
+            onClick={() => setMode('40x60-landscape')}
+            className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              mode === '40x60-landscape'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            🔄 40x60mm De Lado (Paisagem / Estilo 60x40)
+          </button>
+          <button
+            type="button"
             onClick={() => setMode('40x60')}
             className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
               mode === '40x60'
@@ -86,7 +99,7 @@ export function OSLabelClient({
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            ⭐ 40x60mm Vertical (Sua Bobina)
+            📱 40x60mm Em Pé (Vertical / Retrato)
           </button>
           <button
             type="button"
@@ -177,14 +190,14 @@ export function OSLabelClient({
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
               <div className="font-mono text-[11px] text-zinc-600">
-                Papel da <strong>Knup KP-IM608</strong>: <strong>{mode === '40x60' ? '40 x 60 mm (Vertical)' : (mode === '60x40' ? '60 x 40 mm' : '50 x 40 mm')}</strong>.
+                Papel da <strong>Knup KP-IM608</strong>: <strong>{is40x60Landscape ? '40 x 60 mm (Paisagem / Girada 90°)' : (mode === '40x60' ? '40 x 60 mm (Vertical)' : (mode === '60x40' ? '60 x 40 mm' : '50 x 40 mm'))}</strong>.
               </div>
               <button
                 type="button"
                 onClick={() => window.print()}
                 className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
               >
-                🖨️ Imprimir Etiqueta ({mode}mm)
+                🖨️ Imprimir Etiqueta ({is40x60Landscape ? '40x60 De Lado' : `${mode}mm`})
               </button>
             </div>
           </div>
@@ -210,6 +223,13 @@ export function OSLabelClient({
         )}
       </div>
 
+      {/* Dica visual informativa sobre o Modo Paisagem */}
+      {is40x60Landscape && (
+        <div className="print:hidden mx-auto mb-4 max-w-2xl rounded border border-blue-200 bg-blue-50 px-3 py-2 text-center font-mono text-[11px] text-blue-900">
+          🔄 <strong>Modo Paisagem Ativo:</strong> A etiqueta sai <strong>girada 90° de lado</strong> na bobina de 40mm. Ao colar no aparelho, você posiciona na <strong>horizontal (60mm de largura × 40mm de altura)</strong>!
+        </div>
+      )}
+
       {/* ============ MODO 1: ETIQUETA ADESIVA 40x60mm / 60x40mm / 50x40mm C/ QR CODE (KNUP KP-IM608) ============ */}
       {isKnupThermal ? (
         <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
@@ -220,17 +240,102 @@ export function OSLabelClient({
               style={{
                 width: `${labelWidthMm}mm`,
                 height: `${labelHeightMm}mm`,
-                padding: mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'),
+                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm')),
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between',
+                justifyContent: is40x60Landscape ? 'center' : 'space-between',
+                alignItems: is40x60Landscape ? 'center' : 'stretch',
+                position: 'relative',
                 overflow: 'hidden',
                 pageBreakAfter: idx < copiesArray.length - 1 ? 'always' : 'auto',
                 breakAfter: idx < copiesArray.length - 1 ? 'page' : 'auto',
               }}
             >
-              {mode === '40x60' ? (
+              {mode === '40x60-landscape' ? (
+                /* Layout Paisagem Rotacionada 90° (Design 60x40mm na bobina 40x60mm) */
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    width: '58mm',
+                    height: '38mm',
+                    transform: 'translate(-50%, -50%) rotate(90deg)',
+                    transformOrigin: 'center center',
+                    padding: '1.6mm 2.6mm',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* 1. Cabeçalho: Loja + Data */}
+                  <div className="flex items-center justify-between border-b border-black pb-[0.6mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                    <span>CYBER INFORMÁTICA</span>
+                    <span>{createdDate}</span>
+                  </div>
+
+                  {/* 2. Bloco Principal: QR Code (Esquerda) + OS/Cliente/Aparelho (Direita) */}
+                  <div className="my-[0.5mm] flex items-center gap-[2mm]">
+                    <div className="shrink-0 border border-black p-[0.4mm] bg-white">
+                      <QRCodeImage
+                        value={qrUrl}
+                        size={64}
+                        alt={`QR Code ${osNumberStr}`}
+                        className="block w-[16.5mm] h-[16.5mm]"
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1 leading-tight">
+                      <div className="font-mono text-[10.5pt] font-black tracking-tight leading-none text-black">
+                        {osNumberStr}
+                      </div>
+                      <div className="mt-[0.5mm] truncate font-sans text-[7.5pt] font-bold uppercase text-black">
+                        {customerName}
+                      </div>
+                      {customerPhone && (
+                        <div className="truncate font-mono text-[6.5pt] text-black">
+                          {customerPhone}
+                        </div>
+                      )}
+                      <div
+                        className="mt-[0.5mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {equipmentTitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Senha / Acessórios / S/N */}
+                  <div className="border-t border-dashed border-black pt-[0.4mm] font-mono text-[6.5pt] font-bold leading-tight text-black truncate">
+                    {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
+                    {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
+                    {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
+                  </div>
+
+                  {/* 4. Defeito Relatado */}
+                  <div
+                    className="border-t border-black pt-[0.4mm] font-sans text-[6.5pt] leading-[1.08] text-black"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <strong className="font-mono uppercase">DEF:</strong>{' '}
+                    {reportedDefect || 'Verificar em bancada'}
+                  </div>
+                </div>
+              ) : mode === '40x60' ? (
                 <>
                   {/* Layout Vertical 40x60mm (Preenchimento Completo da Altura) */}
                   {/* 1. Cabeçalho: Loja + Data */}
@@ -386,7 +491,7 @@ export function OSLabelClient({
 
           <style>{`
             @page {
-              size: ${mode === '40x60' ? '40mm 60mm' : (mode === '60x40' ? '60mm 40mm' : '50mm 40mm')};
+              size: ${is40x60Any ? '40mm 60mm' : (mode === '60x40' ? '60mm 40mm' : '50mm 40mm')};
               margin: 0 !important;
             }
             @media print {
@@ -427,11 +532,12 @@ export function OSLabelClient({
                 max-width: ${labelWidthMm}mm !important;
                 max-height: ${labelHeightMm}mm !important;
                 margin: 0 !important;
-                padding: ${mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm')} !important;
+                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'))} !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;
                 color: #000000 !important;
+                position: relative !important;
                 overflow: hidden !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
