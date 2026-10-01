@@ -34,7 +34,7 @@ export function OSLabelClient({
   reportedDefect,
   plainText58mm,
 }: OSLabelClientProps) {
-  const [mode, setMode] = useState<'60x40' | '50x40' | '58mm'>('60x40');
+  const [mode, setMode] = useState<'40x60' | '60x40' | '50x40' | '58mm'>('40x60');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
   const [copies, setCopies] = useState(1);
   const origin =
@@ -49,8 +49,10 @@ export function OSLabelClient({
 
   const shortNumberBadge = osNumberStr.replace(/^OS-\d{4}-/i, '#');
   const copiesArray = Array.from({ length: Math.max(1, Math.min(20, copies)) });
-  const isKnupThermal = mode === '60x40' || mode === '50x40';
-  const labelWidthMm = mode === '60x40' ? 60 : 50;
+  const isKnupThermal = mode === '40x60' || mode === '60x40' || mode === '50x40';
+  const labelWidthMm = mode === '60x40' ? 60 : (mode === '40x60' ? 40 : 50);
+  const labelHeightMm = mode === '40x60' ? 59 : 39;
+  const paperHeightMm = mode === '40x60' ? 60 : 40;
 
   return (
     <>
@@ -77,6 +79,17 @@ export function OSLabelClient({
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
+            onClick={() => setMode('40x60')}
+            className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              mode === '40x60'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            ⭐ 40x60mm Vertical (Sua Bobina)
+          </button>
+          <button
+            type="button"
             onClick={() => setMode('60x40')}
             className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
               mode === '60x40'
@@ -84,7 +97,7 @@ export function OSLabelClient({
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            ⭐ 60x40mm c/ QR (Knup)
+            60x40mm Horizontal
           </button>
           <button
             type="button"
@@ -95,7 +108,7 @@ export function OSLabelClient({
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            50x40mm c/ QR (Knup)
+            50x40mm
           </button>
           <button
             type="button"
@@ -181,7 +194,7 @@ export function OSLabelClient({
         )}
       </div>
 
-      {/* ============ MODO 1: ETIQUETA ADESIVA 60x40mm / 50x40mm C/ QR CODE (KNUP KP-IM608) ============ */}
+      {/* ============ MODO 1: ETIQUETA ADESIVA 40x60mm / 60x40mm / 50x40mm C/ QR CODE (KNUP KP-IM608) ============ */}
       {isKnupThermal ? (
         <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
           {copiesArray.map((_, idx) => (
@@ -190,8 +203,8 @@ export function OSLabelClient({
               className="label-os-thermal border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
               style={{
                 width: `${labelWidthMm}mm`,
-                height: '39mm',
-                padding: mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm',
+                height: `${labelHeightMm}mm`,
+                padding: mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'),
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -201,37 +214,67 @@ export function OSLabelClient({
                 breakAfter: idx < copiesArray.length - 1 ? 'page' : 'auto',
               }}
             >
-              {/* 1. Cabeçalho: Loja + Data + Nº Curto */}
-              <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                <span>CYBER INFORMÁTICA</span>
-                <span>{createdDate}</span>
-              </div>
-
-              {/* 2. Bloco Principal: QR Code (Esquerda) + OS/Cliente/Aparelho (Direita) */}
-              <div className="my-[0.6mm] flex items-center gap-[2mm]">
-                <div className="shrink-0 border border-black p-[0.4mm] bg-white">
-                  <QRCodeImage
-                    value={qrUrl}
-                    size={mode === '60x40' ? 66 : 60}
-                    alt={`QR Code ${osNumberStr}`}
-                    className={`block ${mode === '60x40' ? 'w-[17.5mm] h-[17.5mm]' : 'w-[16mm] h-[16mm]'}`}
-                  />
-                </div>
-
-                <div className="min-w-0 flex-1 leading-tight">
-                  <div className="font-mono text-[10.5pt] font-black tracking-tight leading-none text-black">
-                    {osNumberStr}
+              {mode === '40x60' ? (
+                <>
+                  {/* Layout Vertical 40x60mm */}
+                  {/* 1. Cabeçalho: Loja + Data */}
+                  <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                    <span>CYBER INFORMÁTICA</span>
+                    <span>{createdDate}</span>
                   </div>
-                  <div className="mt-[0.6mm] truncate font-sans text-[7.5pt] font-bold uppercase text-black">
-                    {customerName}
-                  </div>
-                  {customerPhone && (
-                    <div className="truncate font-mono text-[6.5pt] text-black">
-                      {customerPhone}
+
+                  {/* 2. Destaque Grande da OS */}
+                  <div className="my-[0.4mm] text-center">
+                    <div className="font-mono text-[11.5pt] font-black tracking-tight leading-none text-black">
+                      {osNumberStr}
                     </div>
-                  )}
+                  </div>
+
+                  {/* 3. QR Code Centralizado em Destaque */}
+                  <div className="my-[0.4mm] flex justify-center">
+                    <div className="border border-black p-[0.4mm] bg-white">
+                      <QRCodeImage
+                        value={qrUrl}
+                        size={76}
+                        alt={`QR Code ${osNumberStr}`}
+                        className="block w-[19mm] h-[19mm]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. Dados do Cliente e Aparelho */}
+                  <div className="border-t border-black pt-[0.6mm] leading-tight">
+                    <div className="truncate font-sans text-[7.5pt] font-bold uppercase text-black">
+                      {customerName}
+                    </div>
+                    {customerPhone && (
+                      <div className="truncate font-mono text-[6.5pt] text-black">
+                        {customerPhone}
+                      </div>
+                    )}
+                    <div
+                      className="mt-[0.4mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {equipmentTitle}
+                    </div>
+                  </div>
+
+                  {/* 5. Senha / Acessórios / S/N */}
+                  <div className="border-t border-dashed border-black pt-[0.5mm] font-mono text-[6.2pt] font-bold leading-tight text-black truncate">
+                    {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
+                    {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
+                    {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
+                  </div>
+
+                  {/* 6. Defeito Relatado */}
                   <div
-                    className="mt-[0.6mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
+                    className="border-t border-black pt-[0.5mm] font-sans text-[6.5pt] leading-[1.08] text-black"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -239,43 +282,90 @@ export function OSLabelClient({
                       overflow: 'hidden',
                     }}
                   >
-                    {equipmentTitle}
+                    <strong className="font-mono uppercase">DEF:</strong>{' '}
+                    {reportedDefect || 'Verificar em bancada'}
                   </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <>
+                  {/* Layout Horizontal 60x40mm / 50x40mm */}
+                  {/* 1. Cabeçalho: Loja + Data + Nº Curto */}
+                  <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                    <span>CYBER INFORMÁTICA</span>
+                    <span>{createdDate}</span>
+                  </div>
 
-              {/* 3. Senha / Acessórios / S/N */}
-              <div className="border-t border-dashed border-black pt-[0.5mm] font-mono text-[6.5pt] font-bold leading-tight text-black truncate">
-                {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
-                {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
-                {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
-              </div>
+                  {/* 2. Bloco Principal: QR Code (Esquerda) + OS/Cliente/Aparelho (Direita) */}
+                  <div className="my-[0.6mm] flex items-center gap-[2mm]">
+                    <div className="shrink-0 border border-black p-[0.4mm] bg-white">
+                      <QRCodeImage
+                        value={qrUrl}
+                        size={mode === '60x40' ? 66 : 60}
+                        alt={`QR Code ${osNumberStr}`}
+                        className={`block ${mode === '60x40' ? 'w-[17.5mm] h-[17.5mm]' : 'w-[16mm] h-[16mm]'}`}
+                      />
+                    </div>
 
-              {/* 4. Defeito Relatado (Resumo Prático de Bancada) */}
-              <div
-                className="border-t border-black pt-[0.5mm] font-sans text-[6.5pt] leading-[1.08] text-black"
-                style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                <strong className="font-mono uppercase">DEF:</strong>{' '}
-                {reportedDefect || 'Verificar em bancada'}
-              </div>
+                    <div className="min-w-0 flex-1 leading-tight">
+                      <div className="font-mono text-[10.5pt] font-black tracking-tight leading-none text-black">
+                        {osNumberStr}
+                      </div>
+                      <div className="mt-[0.6mm] truncate font-sans text-[7.5pt] font-bold uppercase text-black">
+                        {customerName}
+                      </div>
+                      {customerPhone && (
+                        <div className="truncate font-mono text-[6.5pt] text-black">
+                          {customerPhone}
+                        </div>
+                      )}
+                      <div
+                        className="mt-[0.6mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {equipmentTitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Senha / Acessórios / S/N */}
+                  <div className="border-t border-dashed border-black pt-[0.5mm] font-mono text-[6.5pt] font-bold leading-tight text-black truncate">
+                    {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
+                    {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
+                    {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
+                  </div>
+
+                  {/* 4. Defeito Relatado (Resumo Prático de Bancada) */}
+                  <div
+                    className="border-t border-black pt-[0.5mm] font-sans text-[6.5pt] leading-[1.08] text-black"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <strong className="font-mono uppercase">DEF:</strong>{' '}
+                    {reportedDefect || 'Verificar em bancada'}
+                  </div>
+                </>
+              )}
             </div>
           ))}
 
           <style>{`
             @page {
-              size: ${mode === '60x40' ? '60mm 40mm' : '50mm 40mm'};
+              size: ${mode === '40x60' ? '40mm 60mm' : (mode === '60x40' ? '60mm 40mm' : '50mm 40mm')};
               margin: 0 !important;
             }
             @media print {
               html, body {
                 width: ${labelWidthMm}mm !important;
-                height: 40mm !important;
+                height: ${paperHeightMm}mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
@@ -303,11 +393,11 @@ export function OSLabelClient({
               }
               .label-os-thermal {
                 width: ${labelWidthMm}mm !important;
-                height: 39mm !important;
+                height: ${labelHeightMm}mm !important;
                 max-width: ${labelWidthMm}mm !important;
-                max-height: 39mm !important;
+                max-height: ${labelHeightMm}mm !important;
                 margin: 0 !important;
-                padding: ${mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'} !important;
+                padding: ${mode === '40x60' ? '1.8mm 2.2mm' : (mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm')} !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;

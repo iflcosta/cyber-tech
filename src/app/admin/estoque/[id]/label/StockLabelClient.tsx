@@ -27,7 +27,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
 
-  const [labelFormat, setLabelFormat] = useState<'60x40' | '50x40'>('60x40');
+  const [labelFormat, setLabelFormat] = useState<'40x60' | '60x40' | '50x40'>('40x60');
   const [title, setTitle] = useState(item.name);
   const [specsLine, setSpecsLine] = useState(defaultSpecs || 'Pronta-Entrega · Garantia Loja');
   const [price, setPrice] = useState(
@@ -42,7 +42,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const copiesArray = Array.from({ length: Math.max(1, Math.min(50, copies)) });
 
-  const labelWidthMm = labelFormat === '60x40' ? 60 : 50;
+  const labelWidthMm = labelFormat === '60x40' ? 60 : (labelFormat === '40x60' ? 40 : 50);
+  const labelHeightMm = labelFormat === '40x60' ? 59 : 39;
+  const paperHeightMm = labelFormat === '40x60' ? 60 : 40;
 
   return (
     <>
@@ -72,6 +74,17 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           </span>
           <button
             type="button"
+            onClick={() => setLabelFormat('40x60')}
+            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              labelFormat === '40x60'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            ⭐ 40x60 mm (Sua Bobina Vertical)
+          </button>
+          <button
+            type="button"
             onClick={() => setLabelFormat('60x40')}
             className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
               labelFormat === '60x40'
@@ -79,7 +92,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            ⭐ 60x40 mm (Recomendado)
+            60x40 mm (Horizontal)
           </button>
           <button
             type="button"
@@ -176,7 +189,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4">
           <p className="font-mono text-[11px] text-zinc-600">
-            Configure o papel da <strong>Knup KP-IM608</strong> como <strong>{labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm'}</strong> (Margens: Nenhuma / Escala: 100%).
+            Configure o papel da <strong>Knup KP-IM608</strong> como <strong>{labelFormat === '40x60' ? '40 x 60 mm' : (labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm')}</strong> (Margens: Nenhuma / Escala: 100%).
           </p>
           <button
             type="button"
@@ -188,7 +201,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
         </div>
       </div>
 
-      {/* Área de Impressão (60x40mm ou 50x40mm) */}
+      {/* Área de Impressão (40x60mm, 60x40mm ou 50x40mm) */}
       <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
         {copiesArray.map((_, index) => (
           <div
@@ -196,8 +209,8 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             className="label-thermal-item border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
             style={{
               width: `${labelWidthMm}mm`,
-              height: '39mm',
-              padding: labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm',
+              height: `${labelHeightMm}mm`,
+              padding: labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'),
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -219,7 +232,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
                 style={{
                   display: '-webkit-box',
-                  WebkitLineClamp: 2,
+                  WebkitLineClamp: labelFormat === '40x60' ? 3 : 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                 }}
@@ -246,7 +259,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             {/* 4. Código de Barras (Code 128) + SKU Interno */}
             <div className="pt-[0.4mm] text-center">
               <div className="mx-auto w-full">
-                <Barcode128 value={activeBarcodeValue} height={showPrice ? 25 : 34} />
+                <Barcode128 value={activeBarcodeValue} height={showPrice ? (labelFormat === '40x60' ? 28 : 25) : (labelFormat === '40x60' ? 38 : 34)} />
               </div>
               <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
                 {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
@@ -258,13 +271,13 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
       <style>{`
         @page {
-          size: ${labelFormat === '60x40' ? '60mm 40mm' : '50mm 40mm'};
+          size: ${labelFormat === '40x60' ? '40mm 60mm' : (labelFormat === '60x40' ? '60mm 40mm' : '50mm 40mm')};
           margin: 0 !important;
         }
         @media print {
           html, body {
             width: ${labelWidthMm}mm !important;
-            height: 40mm !important;
+            height: ${paperHeightMm}mm !important;
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
@@ -292,11 +305,11 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           }
           .label-thermal-item {
             width: ${labelWidthMm}mm !important;
-            height: 39mm !important;
+            height: ${labelHeightMm}mm !important;
             max-width: ${labelWidthMm}mm !important;
-            max-height: 39mm !important;
+            max-height: ${labelHeightMm}mm !important;
             margin: 0 !important;
-            padding: ${labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'} !important;
+            padding: ${labelFormat === '40x60' ? '2mm 2.2mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm')} !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
