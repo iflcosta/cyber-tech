@@ -159,9 +159,25 @@ export function OSLabelClient({
               </label>
             </div>
 
+            {/* Alerta de Configuração Crítica do Chrome */}
+            <div className="rounded border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                <span className="text-base">⚠️</span> Para não gerar 3 páginas nem cortar a etiqueta:
+              </div>
+              <ol className="mt-1.5 list-decimal pl-4 space-y-1 font-mono text-[11px] text-amber-900">
+                <li>No diálogo de impressão do Chrome, clique em <strong>Mais definições</strong> (More settings).</li>
+                <li><strong>Desmarque</strong> a opção <strong>"Cabeçalhos e rodapés"</strong> (isso remove URL e data que empurram para 3 páginas).</li>
+                <li>Altere <strong>Margens</strong> para <strong>"Nenhuma"</strong> (None).</li>
+                <li>Altere <strong>Escala</strong> para <strong>100%</strong> (Padrão).</li>
+              </ol>
+              <p className="mt-1 text-[10px] text-amber-800">
+                <em>O Chrome memoriza essas escolhas para a sua impressora KP-IM608, você só precisa configurar uma única vez!</em>
+              </p>
+            </div>
+
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
               <div className="font-mono text-[11px] text-zinc-600">
-                URL no QR: <code className="bg-zinc-100 px-1 py-0.5 text-zinc-900">{qrUrl}</code>
+                Papel da <strong>Knup KP-IM608</strong>: <strong>{mode === '40x60' ? '40 x 60 mm (Vertical)' : (mode === '60x40' ? '60 x 40 mm' : '50 x 40 mm')}</strong>.
               </div>
               <button
                 type="button"
@@ -216,44 +232,50 @@ export function OSLabelClient({
             >
               {mode === '40x60' ? (
                 <>
-                  {/* Layout Vertical 40x60mm */}
+                  {/* Layout Vertical 40x60mm (Preenchimento Completo da Altura) */}
                   {/* 1. Cabeçalho: Loja + Data */}
-                  <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                  <div className="flex items-center justify-between border-b-2 border-black pb-[0.8mm] font-mono text-[6.5pt] font-black uppercase leading-none">
                     <span>CYBER INFORMÁTICA</span>
                     <span>{createdDate}</span>
                   </div>
 
-                  {/* 2. Destaque Grande da OS */}
-                  <div className="my-[0.4mm] text-center">
-                    <div className="font-mono text-[11.5pt] font-black tracking-tight leading-none text-black">
+                  {/* 2. Destaque da OS (Box Fechado) */}
+                  <div className="my-[0.8mm] border-2 border-black p-[0.8mm] text-center bg-zinc-50">
+                    <div className="font-mono text-[5.8pt] font-black uppercase tracking-wider text-black leading-none">
+                      ORDEM DE SERVIÇO
+                    </div>
+                    <div className="mt-[0.5mm] font-mono text-[12pt] font-black tracking-tight leading-none text-black">
                       {osNumberStr}
                     </div>
                   </div>
 
                   {/* 3. QR Code Centralizado em Destaque */}
-                  <div className="my-[0.4mm] flex justify-center">
+                  <div className="my-[0.5mm] flex flex-col items-center justify-center">
                     <div className="border border-black p-[0.4mm] bg-white">
                       <QRCodeImage
                         value={qrUrl}
-                        size={76}
+                        size={80}
                         alt={`QR Code ${osNumberStr}`}
                         className="block w-[19mm] h-[19mm]"
                       />
                     </div>
+                    <div className="mt-[0.4mm] font-mono text-[5.2pt] font-black tracking-wider uppercase text-black leading-none">
+                      BIPE P/ ABRIR NO SISTEMA
+                    </div>
                   </div>
 
                   {/* 4. Dados do Cliente e Aparelho */}
-                  <div className="border-t border-black pt-[0.6mm] leading-tight">
-                    <div className="truncate font-sans text-[7.5pt] font-bold uppercase text-black">
-                      {customerName}
+                  <div className="border-t border-black pt-[0.8mm] leading-tight">
+                    <div className="truncate font-sans text-[7.8pt] font-black uppercase text-black">
+                      CLI: {customerName}
                     </div>
                     {customerPhone && (
-                      <div className="truncate font-mono text-[6.5pt] text-black">
-                        {customerPhone}
+                      <div className="truncate font-mono text-[6.5pt] text-zinc-900">
+                        TEL: {customerPhone}
                       </div>
                     )}
                     <div
-                      className="mt-[0.4mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
+                      className="mt-[0.5mm] font-sans text-[7.2pt] font-black uppercase leading-[1.08] text-black"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -261,12 +283,12 @@ export function OSLabelClient({
                         overflow: 'hidden',
                       }}
                     >
-                      {equipmentTitle}
+                      EQ: {equipmentTitle}
                     </div>
                   </div>
 
                   {/* 5. Senha / Acessórios / S/N */}
-                  <div className="border-t border-dashed border-black pt-[0.5mm] font-mono text-[6.2pt] font-bold leading-tight text-black truncate">
+                  <div className="border-t border-dashed border-black pt-[0.6mm] font-mono text-[6.2pt] font-bold leading-tight text-black truncate">
                     {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
                     {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
                     {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
@@ -274,7 +296,7 @@ export function OSLabelClient({
 
                   {/* 6. Defeito Relatado */}
                   <div
-                    className="border-t border-black pt-[0.5mm] font-sans text-[6.5pt] leading-[1.08] text-black"
+                    className="border-t border-black pt-[0.6mm] font-sans text-[6.5pt] leading-[1.08] text-black"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -284,6 +306,11 @@ export function OSLabelClient({
                   >
                     <strong className="font-mono uppercase">DEF:</strong>{' '}
                     {reportedDefect || 'Verificar em bancada'}
+                  </div>
+
+                  {/* 7. Rodapé */}
+                  <div className="mt-[0.5mm] border-t border-black pt-[0.5mm] text-center font-mono text-[5.2pt] font-bold uppercase text-black leading-none">
+                    ✦ BANCADA TÉCNICA · CYBER INFORMÁTICA ✦
                   </div>
                 </>
               ) : (
@@ -366,11 +393,12 @@ export function OSLabelClient({
               html, body {
                 width: ${labelWidthMm}mm !important;
                 height: ${paperHeightMm}mm !important;
+                max-height: ${paperHeightMm}mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
                 color: #000000 !important;
-                overflow: visible !important;
+                overflow: hidden !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
@@ -384,12 +412,14 @@ export function OSLabelClient({
                 max-width: none !important;
                 width: ${labelWidthMm}mm !important;
                 display: block !important;
+                overflow: hidden !important;
               }
               .label-print-container {
                 display: block !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 width: ${labelWidthMm}mm !important;
+                overflow: hidden !important;
               }
               .label-os-thermal {
                 width: ${labelWidthMm}mm !important;
@@ -402,6 +432,7 @@ export function OSLabelClient({
                 box-shadow: none !important;
                 background: #ffffff !important;
                 color: #000000 !important;
+                overflow: hidden !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }

@@ -187,9 +187,25 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           </div>
         </div>
 
+        {/* Alerta de Configuração Crítica do Chrome */}
+        <div className="mt-4 rounded border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
+          <div className="flex items-center gap-1.5 font-bold text-amber-900">
+            <span className="text-base">⚠️</span> Para não gerar 3 páginas nem cortar a etiqueta:
+          </div>
+          <ol className="mt-1.5 list-decimal pl-4 space-y-1 font-mono text-[11px] text-amber-900">
+            <li>No diálogo de impressão do Chrome, clique em <strong>Mais definições</strong> (More settings).</li>
+            <li><strong>Desmarque</strong> a opção <strong>"Cabeçalhos e rodapés"</strong> (isso remove data e URL que empurram o conteúdo para 3 páginas).</li>
+            <li>Altere <strong>Margens</strong> para <strong>"Nenhuma"</strong> (None).</li>
+            <li>Altere <strong>Escala</strong> para <strong>100%</strong> (Padrão).</li>
+          </ol>
+          <p className="mt-1 text-[10px] text-amber-800">
+            <em>O Chrome memoriza essas escolhas para a sua impressora KP-IM608, você só precisa configurar uma única vez!</em>
+          </p>
+        </div>
+
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4">
           <p className="font-mono text-[11px] text-zinc-600">
-            Configure o papel da <strong>Knup KP-IM608</strong> como <strong>{labelFormat === '40x60' ? '40 x 60 mm' : (labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm')}</strong> (Margens: Nenhuma / Escala: 100%).
+            Papel da <strong>Knup KP-IM608</strong>: <strong>{labelFormat === '40x60' ? '40 x 60 mm (Vertical)' : (labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm')}</strong>.
           </p>
           <button
             type="button"
@@ -220,51 +236,123 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
               breakAfter: index < copiesArray.length - 1 ? 'page' : 'auto',
             }}
           >
-            {/* 1. Topo: Marca da Loja + Lote/Data */}
-            <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-              <span>CYBER INFORMÁTICA</span>
-              <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
-            </div>
-
-            {/* 2. Nome e Características do Produto */}
-            <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
-              <div
-                className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
-                style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: labelFormat === '40x60' ? 3 : 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {title}
-              </div>
-              {specsLine && (
-                <div className="mt-[0.5mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
-                  {specsLine}
+            {labelFormat === '40x60' ? (
+              /* Layout Vertical Profissional 40x60mm (Preenchimento Completo da Altura) */
+              <>
+                {/* 1. Topo: Marca da Loja + Lote/Data */}
+                <div className="flex items-center justify-between border-b-2 border-black pb-[0.8mm] font-mono text-[6.5pt] font-black uppercase leading-none">
+                  <span>CYBER INFORMÁTICA</span>
+                  <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
                 </div>
-              )}
-            </div>
 
-            {/* 3. Preço em Destaque */}
-            {showPrice && (
-              <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.6mm] leading-none">
-                <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
-                <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
-                  R$ {price}
-                </span>
-              </div>
+                {/* 2. Nome e Características do Produto */}
+                <div className="my-[1.2mm] flex-1 flex flex-col justify-center">
+                  <div
+                    className="font-sans text-[9pt] font-black uppercase leading-[1.12] text-black"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {title}
+                  </div>
+                  {specsLine && (
+                    <div className="mt-[1mm] font-mono text-[6.5pt] font-bold uppercase text-zinc-900 leading-tight">
+                      {specsLine}
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Selo de Garantia da Loja */}
+                <div className="mb-[1.2mm] border border-black bg-zinc-100 py-[0.8mm] text-center font-mono text-[6.2pt] font-black uppercase tracking-wider text-black leading-none">
+                  ✦ GARANTIA DE 90 DIAS LOJA ✦
+                </div>
+
+                {/* 4. Preço em Destaque (Box Fechado) */}
+                {showPrice && (
+                  <div className="mb-[1.2mm] border-2 border-black p-[1mm] text-center bg-white">
+                    <div className="font-mono text-[5.8pt] font-black uppercase tracking-wider text-black leading-none">
+                      VALOR À VISTA / PIX
+                    </div>
+                    <div className="my-[0.6mm] font-mono text-[14pt] font-black tracking-tight leading-none text-black">
+                      R$ {price}
+                    </div>
+                    <div className="font-mono text-[5.2pt] font-bold uppercase text-zinc-700 leading-none">
+                      Consulte parcelamento no cartão
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Código de Barras (Code 128 com Altura Ideal de 42px) + SKU */}
+                <div className="pt-[0.5mm] text-center">
+                  <div className="mx-auto w-full flex justify-center">
+                    <Barcode128
+                      value={activeBarcodeValue}
+                      height={showPrice ? 42 : 54}
+                    />
+                  </div>
+                  <div className="mt-[0.8mm] font-mono text-[6.5pt] font-black tracking-widest uppercase leading-none text-black">
+                    {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
+                  </div>
+                </div>
+
+                {/* 6. Rodapé da Loja */}
+                <div className="mt-[1mm] border-t border-black pt-[0.6mm] text-center font-mono text-[5.5pt] font-bold uppercase text-black leading-none">
+                  cyberinformatica.tech · Atendimento Loja
+                </div>
+              </>
+            ) : (
+              /* Layout Horizontal 60x40mm ou 50x40mm */
+              <>
+                {/* 1. Topo: Marca da Loja + Lote/Data */}
+                <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                  <span>CYBER INFORMÁTICA</span>
+                  <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+                </div>
+
+                {/* 2. Nome e Características do Produto */}
+                <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
+                  <div
+                    className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {title}
+                  </div>
+                  {specsLine && (
+                    <div className="mt-[0.5mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
+                      {specsLine}
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Preço em Destaque */}
+                {showPrice && (
+                  <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.6mm] leading-none">
+                    <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
+                    <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
+                      R$ {price}
+                    </span>
+                  </div>
+                )}
+
+                {/* 4. Código de Barras (Code 128) + SKU Interno */}
+                <div className="pt-[0.4mm] text-center">
+                  <div className="mx-auto w-full">
+                    <Barcode128 value={activeBarcodeValue} height={showPrice ? 25 : 34} />
+                  </div>
+                  <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
+                    {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
+                  </div>
+                </div>
+              </>
             )}
-
-            {/* 4. Código de Barras (Code 128) + SKU Interno */}
-            <div className="pt-[0.4mm] text-center">
-              <div className="mx-auto w-full">
-                <Barcode128 value={activeBarcodeValue} height={showPrice ? (labelFormat === '40x60' ? 28 : 25) : (labelFormat === '40x60' ? 38 : 34)} />
-              </div>
-              <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
-                {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
-              </div>
-            </div>
           </div>
         ))}
       </div>
@@ -278,11 +366,12 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           html, body {
             width: ${labelWidthMm}mm !important;
             height: ${paperHeightMm}mm !important;
+            max-height: ${paperHeightMm}mm !important;
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
             color: #000000 !important;
-            overflow: visible !important;
+            overflow: hidden !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
@@ -296,12 +385,14 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             max-width: none !important;
             width: ${labelWidthMm}mm !important;
             display: block !important;
+            overflow: hidden !important;
           }
           .label-print-container {
             display: block !important;
             margin: 0 !important;
             padding: 0 !important;
             width: ${labelWidthMm}mm !important;
+            overflow: hidden !important;
           }
           .label-thermal-item {
             width: ${labelWidthMm}mm !important;
@@ -314,6 +405,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             box-shadow: none !important;
             background: #ffffff !important;
             color: #000000 !important;
+            overflow: hidden !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
