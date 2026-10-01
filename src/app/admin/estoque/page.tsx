@@ -144,6 +144,7 @@ export default async function StockListPage({
                 <th className="px-4 py-3 text-right">Estoque</th>
                 <th className="hidden px-4 py-3 text-right sm:table-cell">Preço</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Etiqueta</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 text-xs text-zinc-800">
@@ -221,6 +222,16 @@ export default async function StockListPage({
                           OK
                         </span>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono">
+                      <Link
+                        href={`/admin/estoque/${item.id}/label`}
+                        target="_blank"
+                        className="inline-block border border-zinc-950 bg-white px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-950 hover:bg-zinc-950 hover:text-white transition"
+                        title="Imprimir Etiqueta 50x40mm (PDV)"
+                      >
+                        🏷️ 50x40
+                      </Link>
                     </td>
                   </tr>
                 );

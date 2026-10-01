@@ -94,16 +94,25 @@ export default async function StockItemDetailPage({
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Estoque atual
               </h2>
-              <Link
-                href={`/admin/estoque/${item.id}/movimentar`}
-                className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800"
-              >
-                + Movimentar
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/estoque/${item.id}/label`}
+                  target="_blank"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
+                >
+                  🏷️ Etiqueta (50x40mm)
+                </Link>
+                <Link
+                  href={`/admin/estoque/${item.id}/movimentar`}
+                  className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800"
+                >
+                  + Movimentar
+                </Link>
+              </div>
             </div>
             <div className="mt-3 flex items-baseline gap-3">
               <span
