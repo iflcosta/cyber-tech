@@ -117,14 +117,14 @@ export function OSLabelClient({
               height: 52mm !important;
               max-height: 52mm !important;
               margin: 0 !important;
-              padding: 1.2mm 1.8mm !important;
+              padding: 1.8mm 1.8mm 1.5mm 1.8mm !important;
               border: 0 !important;
               box-shadow: none !important;
               background: #ffffff !important;
               color: #000000 !important;
               display: flex !important;
               flex-direction: column !important;
-              justify-content: flex-start !important;
+              justify-content: space-between !important;
               overflow: hidden !important;
               page-break-inside: avoid !important;
               break-inside: avoid !important;
@@ -241,7 +241,7 @@ export function OSLabelClient({
               <ol className="mt-1.5 list-decimal pl-4 space-y-1 font-mono text-[11px] text-blue-950">
                 <li>Na tela de impressão, selecione a impressora <strong>LABEL</strong> (Knup KP-IM608).</li>
                 <li>Clique em <strong>Mais configurações</strong> (More settings).</li>
-                <li>No campo <strong>Tamanho do papel</strong>, selecione <strong>40x60</strong> (ou o papel criado no driver).</li>
+                <li>No campo <strong>Tamanho do papel</strong>, selecione <strong>USER</strong> (ou 40x60).</li>
                 <li>No campo <strong>Margens</strong>, mude para <strong>"Nenhuma"</strong> (None).</li>
                 <li><strong>Desmarque</strong> a caixinha <strong>"Cabeçalhos e rodapés"</strong>.</li>
                 <li>Confira se a visualização indica <strong>Páginas: 1</strong> e clique em Imprimir!</li>
@@ -293,11 +293,11 @@ export function OSLabelClient({
               style={{
                 width: `${labelWidthMm}mm`,
                 height: `${labelHeightMm}mm`,
-                padding: '1.2mm 1.8mm',
+                padding: '1.8mm 1.8mm 1.5mm 1.8mm',
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'flex-start',
+                justifyContent: 'space-between',
                 position: 'relative',
                 overflow: 'hidden',
                 pageBreakAfter: idx < copiesArray.length - 1 ? 'always' : 'auto',
@@ -310,8 +310,8 @@ export function OSLabelClient({
                 <span>{createdDate}</span>
               </div>
 
-              {/* 2. Destaque da OS (Box Fechado) */}
-              <div className="my-[0.4mm] border-2 border-black p-[0.5mm] text-center bg-zinc-50">
+              {/* 2. Destaque da OS (Fundo Branco Puro, sem dithering cinza) */}
+              <div className="border-2 border-black p-[0.5mm] text-center bg-white">
                 <div className="font-mono text-[5pt] font-black uppercase tracking-wider text-black leading-none">
                   ORDEM DE SERVIÇO
                 </div>
@@ -321,13 +321,13 @@ export function OSLabelClient({
               </div>
 
               {/* 3. QR Code Centralizado em Destaque */}
-              <div className="my-[0.3mm] flex flex-col items-center justify-center">
+              <div className="flex flex-col items-center justify-center">
                 <div className="border border-black p-[0.3mm] bg-white">
                   <QRCodeImage
                     value={qrUrl}
                     size={60}
                     alt={`QR Code ${osNumberStr}`}
-                    className="block w-[14mm] h-[14mm]"
+                    className="block w-[13.5mm] h-[13.5mm]"
                   />
                 </div>
                 <div className="mt-[0.2mm] font-mono text-[4.8pt] font-black tracking-wider uppercase text-black leading-none">
@@ -336,12 +336,12 @@ export function OSLabelClient({
               </div>
 
               {/* 4. Dados do Cliente e Aparelho */}
-              <div className="border-t border-black pt-[0.4mm] leading-tight">
+              <div className="border-t border-black pt-[0.3mm] leading-tight">
                 <div className="truncate font-sans text-[7.2pt] font-black uppercase text-black">
                   CLI: {customerName}
                 </div>
                 {customerPhone && (
-                  <div className="truncate font-mono text-[5.8pt] text-zinc-900">
+                  <div className="truncate font-mono text-[5.8pt] font-bold text-black">
                     TEL: {customerPhone}
                   </div>
                 )}
@@ -380,7 +380,7 @@ export function OSLabelClient({
               </div>
 
               {/* 7. Rodapé */}
-              <div className="mt-[0.4mm] border-t border-black pt-[0.3mm] text-center font-mono text-[4.8pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
+              <div className="border-t border-black pt-[0.3mm] text-center font-mono text-[4.8pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
                 ✦ BANCADA TÉCNICA · CYBER ✦
               </div>
             </div>
@@ -430,7 +430,7 @@ export function OSLabelClient({
                 max-width: 40mm !important;
                 max-height: 52mm !important;
                 margin: 0 !important;
-                padding: 1.2mm 1.8mm !important;
+                padding: 1.8mm 1.8mm 1.5mm 1.8mm !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;
@@ -439,7 +439,7 @@ export function OSLabelClient({
                 overflow: hidden !important;
                 display: flex !important;
                 flex-direction: column !important;
-                justify-content: flex-start !important;
+                justify-content: space-between !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 page-break-after: always;

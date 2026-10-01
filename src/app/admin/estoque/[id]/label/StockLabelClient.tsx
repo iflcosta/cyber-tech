@@ -104,14 +104,14 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
               height: 52mm !important;
               max-height: 52mm !important;
               margin: 0 !important;
-              padding: 1.2mm 1.8mm !important;
+              padding: 1.8mm 1.8mm 1.5mm 1.8mm !important;
               border: 0 !important;
               box-shadow: none !important;
               background: #ffffff !important;
               color: #000000 !important;
               display: flex !important;
               flex-direction: column !important;
-              justify-content: flex-start !important;
+              justify-content: space-between !important;
               overflow: hidden !important;
               page-break-inside: avoid !important;
               break-inside: avoid !important;
@@ -258,7 +258,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           <ol className="mt-1.5 list-decimal pl-4 space-y-1 font-mono text-[11px] text-blue-950">
             <li>Na tela de impressão, selecione a impressora <strong>LABEL</strong> (Knup KP-IM608).</li>
             <li>Clique em <strong>Mais configurações</strong> (More settings).</li>
-            <li>No campo <strong>Tamanho do papel</strong>, selecione <strong>40x60</strong> (ou o papel criado no driver).</li>
+            <li>No campo <strong>Tamanho do papel</strong>, selecione <strong>USER</strong> (ou 40x60).</li>
             <li>No campo <strong>Margens</strong>, mude para <strong>"Nenhuma"</strong> (None).</li>
             <li><strong>Desmarque</strong> a caixinha <strong>"Cabeçalhos e rodapés"</strong>.</li>
             <li>Confira se a visualização indica <strong>Páginas: 1</strong> e clique em Imprimir!</li>
@@ -288,11 +288,11 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             style={{
               width: `${labelWidthMm}mm`,
               height: `${labelHeightMm}mm`,
-              padding: '1.2mm 1.8mm',
+              padding: '1.8mm 1.8mm 1.5mm 1.8mm',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-start',
+              justifyContent: 'space-between',
               position: 'relative',
               overflow: 'hidden',
               pageBreakAfter: index < copiesArray.length - 1 ? 'always' : 'auto',
@@ -306,9 +306,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             </div>
 
             {/* 2. Nome e Características do Produto */}
-            <div className="my-[0.5mm] flex flex-col justify-center overflow-hidden">
+            <div className="flex flex-col justify-center overflow-hidden">
               <div
-                className="font-sans text-[8pt] font-black uppercase leading-[1.08] text-black"
+                className="font-sans text-[8.2pt] font-black uppercase leading-[1.08] text-black"
                 style={{
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
@@ -319,38 +319,39 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 {title}
               </div>
               {specsLine && (
-                <div className="mt-[0.3mm] truncate font-mono text-[5.5pt] font-bold uppercase text-zinc-800 leading-tight">
+                <div className="mt-[0.3mm] truncate font-mono text-[5.2pt] font-bold uppercase text-black leading-tight">
                   {specsLine}
                 </div>
               )}
             </div>
 
-            {/* 3. Selo de Garantia da Loja */}
-            <div className="mb-[0.5mm] border border-black bg-zinc-100 py-[0.4mm] text-center font-mono text-[5.5pt] font-black uppercase tracking-wider text-black leading-none">
+            {/* 3. Selo de Garantia da Loja (1 Linha Perfeita, sem quebra da estrela) */}
+            <div className="border border-black bg-white py-[0.4mm] px-[0.5mm] text-center font-mono text-[4.8pt] font-black uppercase tracking-normal text-black leading-none whitespace-nowrap">
               ✦ GARANTIA DE 90 DIAS LOJA ✦
             </div>
 
-            {/* 4. Preço em Destaque (Box Fechado) */}
+            {/* 4. Preço em Destaque (Box Fechado com Hierarquia Visual) */}
             {showPrice && (
-              <div className="mb-[0.5mm] border-2 border-black p-[0.5mm] text-center bg-white">
+              <div className="border-2 border-black py-[0.6mm] px-[1mm] text-center bg-white">
                 <div className="font-mono text-[5pt] font-black uppercase tracking-wider text-black leading-none">
                   VALOR À VISTA / PIX
                 </div>
-                <div className="my-[0.3mm] font-mono text-[12.5pt] font-black tracking-tight leading-none text-black">
-                  R$ {price}
+                <div className="my-[0.3mm] font-mono font-black tracking-tight leading-none text-black">
+                  <span className="text-[8pt] font-black align-baseline mr-[0.5mm]">R$</span>
+                  <span className="text-[13pt] font-black">{price}</span>
                 </div>
-                <div className="font-mono text-[4.5pt] font-bold uppercase text-zinc-600 leading-none">
+                <div className="font-mono text-[4.5pt] font-bold uppercase text-black leading-none">
                   Consulte parcelamento no cartão
                 </div>
               </div>
             )}
 
-            {/* 5. Código de Barras (Code 128 com Altura Ideal de 24px) + SKU */}
-            <div className="pt-[0.2mm] text-center">
+            {/* 5. Código de Barras (Altura 28px) + SKU */}
+            <div className="text-center">
               <div className="mx-auto w-full flex justify-center">
                 <Barcode128
                   value={activeBarcodeValue}
-                  height={showPrice ? 24 : 32}
+                  height={showPrice ? 28 : 36}
                 />
               </div>
               <div className="mt-[0.4mm] font-mono text-[5.8pt] font-black tracking-wider uppercase leading-none text-black">
@@ -358,8 +359,8 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
               </div>
             </div>
 
-            {/* 6. Rodapé da Loja (Linha Única sem quebra) */}
-            <div className="mt-[0.5mm] border-t border-black pt-[0.3mm] text-center font-mono text-[4.8pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
+            {/* 6. Rodapé da Loja */}
+            <div className="border-t border-black pt-[0.3mm] text-center font-mono text-[4.8pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
               cyberinformatica.tech · Loja
             </div>
           </div>
@@ -410,7 +411,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             max-width: 40mm !important;
             max-height: 52mm !important;
             margin: 0 !important;
-            padding: 1.2mm 1.8mm !important;
+            padding: 1.8mm 1.8mm 1.5mm 1.8mm !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
@@ -419,7 +420,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             overflow: hidden !important;
             display: flex !important;
             flex-direction: column !important;
-            justify-content: flex-start !important;
+            justify-content: space-between !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             page-break-after: always;
