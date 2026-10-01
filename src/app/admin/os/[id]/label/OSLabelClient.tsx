@@ -34,7 +34,7 @@ export function OSLabelClient({
   reportedDefect,
   plainText58mm,
 }: OSLabelClientProps) {
-  const [mode, setMode] = useState<'50x40' | '58mm'>('50x40');
+  const [mode, setMode] = useState<'60x40' | '50x40' | '58mm'>('60x40');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
   const [origin, setOrigin] = useState('https://cyberinformatica.tech');
   const [copies, setCopies] = useState(1);
@@ -52,6 +52,8 @@ export function OSLabelClient({
 
   const shortNumberBadge = osNumberStr.replace(/^OS-\d{4}-/i, '#');
   const copiesArray = Array.from({ length: Math.max(1, Math.min(20, copies)) });
+  const isKnupThermal = mode === '60x40' || mode === '50x40';
+  const labelWidthMm = mode === '60x40' ? 60 : 50;
 
   return (
     <>
@@ -60,7 +62,7 @@ export function OSLabelClient({
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
           <div className="flex items-center gap-2">
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
-              {mode === '50x40' ? 'Knup KP-IM608 · 50x40mm' : 'MPT-II · 58mm'}
+              {isKnupThermal ? `Knup KP-IM608 · ${mode}mm` : 'MPT-II · 58mm'}
             </span>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               Etiqueta Interna de Dispositivo (OS)
@@ -78,6 +80,17 @@ export function OSLabelClient({
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
+            onClick={() => setMode('60x40')}
+            className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              mode === '60x40'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            ⭐ 60x40mm c/ QR (Knup)
+          </button>
+          <button
+            type="button"
             onClick={() => setMode('50x40')}
             className={`px-3 py-1.5 font-mono text-xs font-bold uppercase border cursor-pointer ${
               mode === '50x40'
@@ -85,7 +98,7 @@ export function OSLabelClient({
                 : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
             }`}
           >
-            🏷️ Etiqueta 50x40mm c/ QR Code (Knup KP-IM608)
+            50x40mm c/ QR (Knup)
           </button>
           <button
             type="button"
@@ -100,7 +113,7 @@ export function OSLabelClient({
           </button>
         </div>
 
-        {mode === '50x40' ? (
+        {isKnupThermal ? (
           <div className="mt-4 space-y-3 border-t border-zinc-200 pt-3">
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block sm:col-span-2">
@@ -145,7 +158,7 @@ export function OSLabelClient({
                 onClick={() => window.print()}
                 className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
               >
-                🖨️ Imprimir Etiqueta 50x40mm
+                🖨️ Imprimir Etiqueta ({mode}mm)
               </button>
             </div>
           </div>
@@ -171,17 +184,17 @@ export function OSLabelClient({
         )}
       </div>
 
-      {/* ============ MODO 1: ETIQUETA ADESIVA 50x40mm C/ QR CODE (KNUP KP-IM608) ============ */}
-      {mode === '50x40' ? (
+      {/* ============ MODO 1: ETIQUETA ADESIVA 60x40mm / 50x40mm C/ QR CODE (KNUP KP-IM608) ============ */}
+      {isKnupThermal ? (
         <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
           {copiesArray.map((_, idx) => (
             <div
               key={idx}
-              className="label-os-50x40 border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
+              className="label-os-thermal border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
               style={{
-                width: '50mm',
+                width: `${labelWidthMm}mm`,
                 height: '39mm',
-                padding: '1.6mm 2.2mm',
+                padding: mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm',
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -198,13 +211,13 @@ export function OSLabelClient({
               </div>
 
               {/* 2. Bloco Principal: QR Code (Esquerda) + OS/Cliente/Aparelho (Direita) */}
-              <div className="my-[0.6mm] flex items-center gap-[1.8mm]">
+              <div className="my-[0.6mm] flex items-center gap-[2mm]">
                 <div className="shrink-0 border border-black p-[0.4mm] bg-white">
                   <QRCodeImage
                     value={qrUrl}
-                    size={62}
+                    size={mode === '60x40' ? 66 : 60}
                     alt={`QR Code ${osNumberStr}`}
-                    className="block w-[16.5mm] h-[16.5mm]"
+                    className={`block ${mode === '60x40' ? 'w-[17.5mm] h-[17.5mm]' : 'w-[16mm] h-[16mm]'}`}
                   />
                 </div>
 
@@ -259,12 +272,12 @@ export function OSLabelClient({
 
           <style>{`
             @page {
-              size: 50mm 40mm;
+              size: ${mode === '60x40' ? '60mm 40mm' : '50mm 40mm'};
               margin: 0 !important;
             }
             @media print {
               html, body {
-                width: 50mm !important;
+                width: ${labelWidthMm}mm !important;
                 height: 40mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
@@ -282,22 +295,22 @@ export function OSLabelClient({
                 padding: 0 !important;
                 min-height: 0 !important;
                 max-width: none !important;
-                width: 50mm !important;
+                width: ${labelWidthMm}mm !important;
                 display: block !important;
               }
               .label-print-container {
                 display: block !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 50mm !important;
+                width: ${labelWidthMm}mm !important;
               }
-              .label-os-50x40 {
-                width: 50mm !important;
+              .label-os-thermal {
+                width: ${labelWidthMm}mm !important;
                 height: 39mm !important;
-                max-width: 50mm !important;
+                max-width: ${labelWidthMm}mm !important;
                 max-height: 39mm !important;
                 margin: 0 !important;
-                padding: 1.6mm 2.2mm !important;
+                padding: ${mode === '60x40' ? '1.6mm 2.8mm' : '1.6mm 2.2mm'} !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;
@@ -305,7 +318,7 @@ export function OSLabelClient({
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
-              .label-os-50x40:last-child {
+              .label-os-thermal:last-child {
                 page-break-after: auto !important;
                 break-after: auto !important;
               }

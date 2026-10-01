@@ -228,9 +228,9 @@ export default async function StockListPage({
                         href={`/admin/estoque/${item.id}/label`}
                         target="_blank"
                         className="inline-block border border-zinc-950 bg-white px-2.5 py-1 text-[10px] font-bold uppercase text-zinc-950 hover:bg-zinc-950 hover:text-white transition"
-                        title="Imprimir Etiqueta 50x40mm (PDV)"
+                        title="Imprimir Etiqueta Térmica (60x40 / 50x40mm)"
                       >
-                        🏷️ 50x40
+                        🏷️ Etiqueta
                       </Link>
                     </td>
                   </tr>

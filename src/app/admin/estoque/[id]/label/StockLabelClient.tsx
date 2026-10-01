@@ -27,6 +27,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
 
+  const [labelFormat, setLabelFormat] = useState<'60x40' | '50x40'>('60x40');
   const [title, setTitle] = useState(item.name);
   const [specsLine, setSpecsLine] = useState(defaultSpecs || 'Pronta-Entrega · Garantia Loja');
   const [price, setPrice] = useState(
@@ -41,6 +42,8 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const copiesArray = Array.from({ length: Math.max(1, Math.min(50, copies)) });
 
+  const labelWidthMm = labelFormat === '60x40' ? 60 : 50;
+
   return (
     <>
       {/* Painel de Configuração (Oculto na Impressão) */}
@@ -48,7 +51,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
           <div className="flex items-center gap-2">
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
-              Knup KP-IM608 · 50x40mm
+              Knup KP-IM608 · {labelFormat}mm
             </span>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               Etiqueta de Produto / PDV
@@ -60,6 +63,35 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           >
             ← Voltar para o Item
           </Link>
+        </div>
+
+        {/* Seletor de Tamanho de Etiqueta */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="font-mono text-[11px] font-bold uppercase text-zinc-700 mr-1">
+            Tamanho da Bobina:
+          </span>
+          <button
+            type="button"
+            onClick={() => setLabelFormat('60x40')}
+            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              labelFormat === '60x40'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            ⭐ 60x40 mm (Recomendado)
+          </button>
+          <button
+            type="button"
+            onClick={() => setLabelFormat('50x40')}
+            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+              labelFormat === '50x40'
+                ? 'border-zinc-950 bg-zinc-950 text-white'
+                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+            }`}
+          >
+            50x40 mm
+          </button>
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -144,28 +176,28 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4">
           <p className="font-mono text-[11px] text-zinc-600">
-            Configure o papel da <strong>Knup KP-IM608</strong> como <strong>50 x 40 mm</strong> (Margens: Nenhuma / Escala: 100%).
+            Configure o papel da <strong>Knup KP-IM608</strong> como <strong>{labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm'}</strong> (Margens: Nenhuma / Escala: 100%).
           </p>
           <button
             type="button"
             onClick={() => window.print()}
             className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
           >
-            🖨️ Imprimir {copies > 1 ? `${copies} Etiquetas` : 'Etiqueta'} (50x40mm)
+            🖨️ Imprimir {copies > 1 ? `${copies} Etiquetas` : 'Etiqueta'} ({labelFormat}mm)
           </button>
         </div>
       </div>
 
-      {/* Área de Impressão 50x40mm */}
+      {/* Área de Impressão (60x40mm ou 50x40mm) */}
       <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
         {copiesArray.map((_, index) => (
           <div
             key={index}
-            className="label-50x40 border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
+            className="label-thermal-item border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
             style={{
-              width: '50mm',
+              width: `${labelWidthMm}mm`,
               height: '39mm',
-              padding: '1.8mm 2.2mm',
+              padding: labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -205,7 +237,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             {showPrice && (
               <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.6mm] leading-none">
                 <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
-                <span className="font-mono text-[11.5pt] font-black tracking-tight text-black">
+                <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
                   R$ {price}
                 </span>
               </div>
@@ -226,12 +258,12 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
       <style>{`
         @page {
-          size: 50mm 40mm;
+          size: ${labelFormat === '60x40' ? '60mm 40mm' : '50mm 40mm'};
           margin: 0 !important;
         }
         @media print {
           html, body {
-            width: 50mm !important;
+            width: ${labelWidthMm}mm !important;
             height: 40mm !important;
             margin: 0 !important;
             padding: 0 !important;
@@ -249,22 +281,22 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             padding: 0 !important;
             min-height: 0 !important;
             max-width: none !important;
-            width: 50mm !important;
+            width: ${labelWidthMm}mm !important;
             display: block !important;
           }
           .label-print-container {
             display: block !important;
             margin: 0 !important;
             padding: 0 !important;
-            width: 50mm !important;
+            width: ${labelWidthMm}mm !important;
           }
-          .label-50x40 {
-            width: 50mm !important;
+          .label-thermal-item {
+            width: ${labelWidthMm}mm !important;
             height: 39mm !important;
-            max-width: 50mm !important;
+            max-width: ${labelWidthMm}mm !important;
             max-height: 39mm !important;
             margin: 0 !important;
-            padding: 1.8mm 2.2mm !important;
+            padding: ${labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'} !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
@@ -272,7 +304,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
-          .label-50x40:last-child {
+          .label-thermal-item:last-child {
             page-break-after: auto !important;
             break-after: auto !important;
           }
