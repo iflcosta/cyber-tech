@@ -370,6 +370,14 @@ export function NewOSForm({
         }).catch(() => {});
       }
 
+      // Dispara notificação automática de WhatsApp em background (Evolution API)
+      fetch('/api/notify/os-created', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ osId: newOS.id }),
+      }).catch((err) => console.warn('[WhatsApp Auto] Falha ao disparar notificação:', err));
+
       // 3. evento inicial
       await supabase.from('service_order_events').insert({
         service_order_id: newOS.id,
@@ -379,7 +387,7 @@ export function NewOSForm({
       });
 
       if (redirectToLabel) {
-        router.push(`/admin/os/${newOS.id}/label`);
+        router.push(`/admin/os/${newOS.id}/label?autoprint=1`);
       } else {
         router.push(`/admin/os/${newOS.id}`);
       }

@@ -56,6 +56,20 @@ export function OSLabelClient({
   const labelHeightMm = mode === '40x60' ? 52 : (is40x60Landscape ? 58 : 39);
   const paperHeightMm = is40x60Any ? 60 : 40;
 
+  // Disparo automático quando vindo do check-in da OS (?autoprint=1)
+  // No Chrome/Edge com --kiosk-printing, isso imprime direto na Knup sem diálogo!
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('autoprint') === '1') {
+        const timer = setTimeout(() => {
+          window.print();
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
   return (
     <>
       {/* Barra de Controles (Oculta na Impressão) */}
