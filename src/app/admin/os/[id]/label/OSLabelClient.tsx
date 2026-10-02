@@ -57,7 +57,7 @@ export function OSLabelClient({
   const is40x60Any = mode === '40x60' || is40x60Landscape;
   const isKnupThermal = is40x60Any || mode === '60x40' || mode === '50x40';
   const labelWidthMm = mode === '60x40' ? 60 : (is40x60Any ? 40 : 50);
-  const labelHeightMm = is40x60Any ? 60 : (mode === '60x40' ? 40 : 40);
+  const labelHeightMm = mode === '40x60' ? 55 : (is40x60Landscape ? 58 : (mode === '60x40' ? 38 : 38));
   const paperHeightMm = is40x60Any ? 60 : 40;
 
   // Disparo automático quando vindo do check-in da OS (?autoprint=1)
@@ -267,7 +267,7 @@ export function OSLabelClient({
               style={{
                 width: `${labelWidthMm}mm`,
                 height: `${labelHeightMm}mm`,
-                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '3mm 2.2mm' : (mode === '60x40' ? '2.5mm 3mm' : '2.5mm 2.5mm')),
+                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '2.5mm 2.2mm' : (mode === '60x40' ? '2mm 3mm' : '2mm 2.5mm')),
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -298,9 +298,9 @@ export function OSLabelClient({
                     overflow: 'hidden',
                   }}
                 >
-                  {/* 1. Cabeçalho: Loja + Data */}
+                  {/* 1. Cabeçalho: OS + Data */}
                   <div className="flex items-center justify-between border-b border-black pb-[0.6mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                    <span>CYBER INFORMÁTICA</span>
+                    <span className="font-mono text-[8pt] font-black">{osNumberStr}</span>
                     <span>{createdDate}</span>
                   </div>
 
@@ -354,53 +354,47 @@ export function OSLabelClient({
               ) : mode === '40x60' ? (
                 <>
                   {/* Layout Vertical 40x60mm Ultra Limpo */}
-                  {/* 1. Cabeçalho: Loja + Data */}
-                  <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.5pt] font-black uppercase leading-none">
-                    <span>CYBER INFORMÁTICA</span>
-                    <span>{createdDate}</span>
-                  </div>
-
-                  {/* 2. Destaque da OS (Box Fechado) */}
-                  <div className="my-[0.6mm] border-2 border-black p-[0.8mm] text-center bg-white">
-                    <div className="font-mono text-[5.5pt] font-black uppercase tracking-wider text-black leading-none">
-                      ORDEM DE SERVIÇO
-                    </div>
-                    <div className="mt-[0.4mm] font-mono text-[12pt] font-black tracking-tight leading-none text-black">
+                  {/* 1. Topo: Identificador Direto da OS + Data */}
+                  <div className="flex items-baseline justify-between border-b-2 border-black pb-[0.8mm] leading-none">
+                    <span className="font-mono text-[14pt] font-black tracking-tight text-black">
                       {osNumberStr}
-                    </div>
+                    </span>
+                    <span className="font-mono text-[7pt] font-bold text-black">
+                      {createdDate}
+                    </span>
                   </div>
 
-                  {/* 3. QR Code Centralizado em Destaque (alta legibilidade, sem moldura escura) */}
-                  <div className="my-[0.6mm] flex items-center justify-center">
+                  {/* 2. QR Code Centralizado em Destaque */}
+                  <div className="my-[1.2mm] flex items-center justify-center">
                     <QRCodeImage
                       value={qrUrl}
                       size={256}
                       alt={`QR Code ${osNumberStr}`}
-                      className="block w-[20mm] h-[20mm]"
+                      className="block w-[24mm] h-[24mm]"
                     />
                   </div>
 
-                  {/* 4. Dados do Cliente */}
-                  <div className="border-t border-black pt-[0.6mm] leading-tight space-y-[0.4mm]">
-                    <div className="truncate font-sans text-[8pt] font-black uppercase text-black">
+                  {/* 3. Dados do Cliente */}
+                  <div className="border-t border-black pt-[0.8mm] leading-tight space-y-[0.4mm]">
+                    <div className="truncate font-sans text-[8.5pt] font-black uppercase text-black">
                       CLI: {customerName}
                     </div>
                     {customerPhone && (
-                      <div className="truncate font-mono text-[6.5pt] font-bold text-black">
+                      <div className="truncate font-mono text-[7pt] font-bold text-black">
                         TEL: {customerPhone}
                       </div>
                     )}
                   </div>
 
-                  {/* 5. Senha (se informada) e Defeito Relatado */}
-                  <div className="border-t border-dashed border-black pt-[0.6mm] font-mono text-[6.5pt] font-bold leading-tight text-black">
+                  {/* 4. Senha (se informada) e Defeito Relatado */}
+                  <div className="border-t border-dashed border-black pt-[0.8mm] font-mono text-[7pt] font-bold leading-tight text-black">
                     {equipmentPassword ? (
-                      <div className="truncate mb-[0.3mm]">
+                      <div className="truncate mb-[0.4mm]">
                         <strong className="uppercase">SENHA:</strong> {equipmentPassword}
                       </div>
                     ) : null}
                     <div
-                      className="font-sans text-[6.5pt] leading-[1.1] text-black"
+                      className="font-sans text-[7pt] leading-[1.15] text-black"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -412,18 +406,13 @@ export function OSLabelClient({
                       {reportedDefect || 'Verificar em bancada'}
                     </div>
                   </div>
-
-                  {/* 6. Rodapé Limpo da Loja (sem faixa preta) */}
-                  <div className="border-t border-black pt-[0.4mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
-                    cyberinformatica.tech · Loja
-                  </div>
                 </>
               ) : (
                 <>
                   {/* Layout Horizontal 60x40mm / 50x40mm */}
-                  {/* 1. Cabeçalho: Loja + Data + Nº Curto */}
+                  {/* 1. Cabeçalho: OS + Data */}
                   <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                    <span>CYBER INFORMÁTICA</span>
+                    <span className="font-mono text-[8pt] font-black">{osNumberStr}</span>
                     <span>{createdDate}</span>
                   </div>
 
@@ -490,48 +479,40 @@ export function OSLabelClient({
               }
               html, body {
                 width: ${labelWidthMm}mm !important;
-                height: ${paperHeightMm}mm !important;
-                max-height: ${paperHeightMm}mm !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
                 background-color: #ffffff !important;
                 color: #000000 !important;
-                overflow: hidden !important;
+                overflow: visible !important;
               }
               header, nav, aside, footer, .no-print, [class*="print:hidden"] {
                 display: none !important;
               }
-              body > div, main {
+              body > div, main, .label-print-container {
                 margin: 0 !important;
                 padding: 0 !important;
                 min-height: 0 !important;
                 max-width: none !important;
                 width: ${labelWidthMm}mm !important;
-                height: ${paperHeightMm}mm !important;
+                height: auto !important;
+                max-height: none !important;
                 background: #ffffff !important;
                 background-color: #ffffff !important;
                 display: block !important;
-                overflow: hidden !important;
-              }
-              .label-print-container {
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: ${labelWidthMm}mm !important;
-                height: ${paperHeightMm}mm !important;
-                background: #ffffff !important;
-                background-color: #ffffff !important;
-                overflow: hidden !important;
+                overflow: visible !important;
               }
               .label-os-thermal {
                 width: ${labelWidthMm}mm !important;
                 height: ${labelHeightMm}mm !important;
                 max-width: ${labelWidthMm}mm !important;
                 max-height: ${labelHeightMm}mm !important;
-                min-height: ${labelHeightMm}mm !important;
-                margin: 0 !important;
-                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '3mm 2.2mm' : (mode === '60x40' ? '2.5mm 3mm' : '2.5mm 2.5mm'))} !important;
+                min-height: 0 !important;
+                margin: 0 auto !important;
+                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '2.5mm 2.2mm' : (mode === '60x40' ? '2mm 3mm' : '2mm 2.5mm'))} !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;
@@ -539,6 +520,8 @@ export function OSLabelClient({
                 color: #000000 !important;
                 position: relative !important;
                 overflow: hidden !important;
+                page-break-after: always !important;
+                break-after: page !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
