@@ -538,9 +538,17 @@ h5, h6 {
    ESTILOS PERICIAIS DE IMPRESSÃO // TERMO DE GARANTIA CDC 90 DIAS
    ============================================================ */
 @media print {
-  body {
+  html,
+  body,
+  #__next,
+  body > div,
+  main {
     background-color: #ffffff !important;
-    color: #09090b !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body {
     font-size: 11pt !important;
   }
 

@@ -57,7 +57,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const showLeadsTab = isIagoUser(user, profile);
 
   return (
-    <div className="min-h-dvh print:min-h-0 print:h-auto bg-zinc-50 text-zinc-950 antialiased font-body">
+    <div className="min-h-dvh print:min-h-0 print:h-auto bg-zinc-50 print:bg-white text-zinc-950 antialiased font-body overflow-x-hidden print:overflow-visible">
       <PrintShortcutGuard />
       <header className="print:hidden sticky top-0 z-30 border-b-2 border-zinc-950 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -81,7 +81,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           />
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 print:m-0 print:p-0 print:max-w-none">{children}</main>
+      <main className="mx-auto max-w-6xl w-full px-4 py-6 sm:px-6 print:m-0 print:p-0 print:max-w-none">{children}</main>
     </div>
   );
 }

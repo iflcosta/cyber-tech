@@ -120,22 +120,22 @@ export function OSPhotosEditor({
 
   return (
     <div className="border-t-2 border-zinc-950 pt-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
           Fotos na entrada ({photos.length})
         </p>
 
         {canEdit && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setCameraSyncOpen(true)}
-              className="inline-flex items-center gap-1.5 border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm"
+              className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm text-center"
             >
               <span>📱 Cyber Camera Sync (QR Code)</span>
             </button>
 
-            <label className="inline-flex cursor-pointer items-center gap-1.5 border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition">
+            <label className="inline-flex w-full sm:w-auto justify-center cursor-pointer items-center gap-1.5 border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition text-center">
               <span>{uploading ? 'Enviando…' : '💻 Upload do PC'}</span>
               <input
                 type="file"

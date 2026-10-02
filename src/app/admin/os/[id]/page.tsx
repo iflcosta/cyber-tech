@@ -185,50 +185,50 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
       )}
 
       {/* Cabeçalho da OS */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="min-w-0">
           <Link href="/admin/os" className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-black">
             ← Todas as OS
           </Link>
           <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-zinc-950">
             <span className="font-mono text-2xl font-bold tracking-tight text-zinc-950">
-              {normalizedSo.short_id ?? normalizedSo.os_number ?? normalizedSo.id.slice(0, 8)}
+              {normalizedSo.os_number ?? normalizedSo.short_id ?? normalizedSo.id.slice(0, 8)}
             </span>
-            {normalizedSo.os_number && (
+            {normalizedSo.short_id && normalizedSo.short_id !== normalizedSo.os_number && (
               <span className="font-mono text-sm font-medium text-zinc-500">
-                {normalizedSo.os_number}
+                {normalizedSo.short_id}
               </span>
             )}
             <StatusBadge status={normalizedSo.status} hasQuote={grandTotal > 0} />
             <StaleBadge days={normalizedSo.days_since_update} />
           </h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-500 truncate">
             {normalizedSo.customer_name} · {typeLabel}
             {normalizedSo.equipment_brand ? ` · ${normalizedSo.equipment_brand}` : ''}
             {normalizedSo.equipment_model ? ` ${normalizedSo.equipment_model}` : ''}
           </p>
         </div>
-        <div className="flex flex-shrink-0 flex-wrap gap-2">
+        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap">
           <Link
             href={`/admin/os/${normalizedSo.id}/label`}
             target="_blank"
-            className="border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="flex items-center justify-center border border-zinc-300 bg-white px-2.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors text-center"
           >
             🏷️ Etiqueta
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/print`}
             target="_blank"
-            className="border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="flex items-center justify-center border border-zinc-300 bg-white px-2.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors text-center"
           >
-            🖨️ Entrada (A4)
+            🖨️ <span className="hidden sm:inline">&nbsp;Entrada&nbsp;</span>(A4)
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/recibo`}
             target="_blank"
-            className="bg-zinc-950 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition-colors"
+            className="flex items-center justify-center bg-zinc-950 px-2.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition-colors text-center"
           >
-            📄 Nota / Recibo (PDF)
+            📄 <span className="hidden sm:inline">&nbsp;Nota /&nbsp;</span>Recibo
           </Link>
         </div>
       </div>

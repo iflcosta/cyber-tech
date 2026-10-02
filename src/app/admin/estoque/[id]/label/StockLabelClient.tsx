@@ -46,7 +46,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const is40x60Any = labelFormat === '40x60' || is40x60Landscape;
 
   const labelWidthMm = labelFormat === '60x40' ? 60 : (is40x60Any ? 40 : 50);
-  const labelHeightMm = labelFormat === '40x60' ? 52 : (is40x60Landscape ? 58 : 39);
+  const labelHeightMm = is40x60Any ? 60 : (labelFormat === '60x40' ? 40 : 40);
   const paperHeightMm = is40x60Any ? 60 : 40;
 
   return (
@@ -247,7 +247,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             style={{
               width: `${labelWidthMm}mm`,
               height: `${labelHeightMm}mm`,
-              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '1.2mm 1.8mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm')),
+              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '3mm 2.2mm' : (labelFormat === '60x40' ? '2.5mm 3mm' : '2.5mm 2.5mm')),
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -451,6 +451,10 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           margin: 0 !important;
         }
         @media print {
+          *, *::before, *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           html, body {
             width: ${labelWidthMm}mm !important;
             height: ${paperHeightMm}mm !important;
@@ -458,10 +462,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
+            background-color: #ffffff !important;
             color: #000000 !important;
             overflow: hidden !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
           }
           header, nav, aside, footer, .no-print, [class*="print:hidden"] {
             display: none !important;
@@ -472,6 +475,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             min-height: 0 !important;
             max-width: none !important;
             width: ${labelWidthMm}mm !important;
+            height: ${paperHeightMm}mm !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
             display: block !important;
             overflow: hidden !important;
           }
@@ -480,6 +486,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             margin: 0 !important;
             padding: 0 !important;
             width: ${labelWidthMm}mm !important;
+            height: ${paperHeightMm}mm !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
             overflow: hidden !important;
           }
           .label-thermal-item {
@@ -487,11 +496,13 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             height: ${labelHeightMm}mm !important;
             max-width: ${labelWidthMm}mm !important;
             max-height: ${labelHeightMm}mm !important;
+            min-height: ${labelHeightMm}mm !important;
             margin: 0 !important;
-            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '1.2mm 1.8mm' : (labelFormat === '60x40' ? '1.8mm 2.8mm' : '1.8mm 2.2mm'))} !important;
+            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '3mm 2.2mm' : (labelFormat === '60x40' ? '2.5mm 3mm' : '2.5mm 2.5mm'))} !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
+            background-color: #ffffff !important;
             color: #000000 !important;
             position: relative !important;
             overflow: hidden !important;
