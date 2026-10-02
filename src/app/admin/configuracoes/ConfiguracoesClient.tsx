@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getPrintAgentUrl, setPrintAgentUrl, checkPrintAgentStatus, sendToPrintAgent } from '@/app/admin/lib/printAgent';
 import { QRCodeImage } from '@/app/admin/components/QRCode';
 
-const CHROME_KIOSK_COMMAND = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="%LOCALAPPDATA%\\Google\\Chrome\\CyberBalcao" --kiosk-printing --allow-running-insecure-content --unsafely-treat-insecure-origin-as-secure=http://localhost:9100,http://127.0.0.1:9100 --app=https://www.cyberinformatica.tech/admin/os`;
+const CHROME_KIOSK_COMMAND = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="%LOCALAPPDATA%\\Google\\Chrome\\CyberBalcao" --kiosk-printing --test-type --app=https://www.cyberinformatica.tech/admin/os`;
 
 export function ConfiguracoesClient({
   userName,
@@ -279,18 +279,18 @@ export function ConfiguracoesClient({
                     ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
                     : agentStatus === 'checking'
                     ? 'bg-amber-100 text-amber-900 border-amber-300'
-                    : 'bg-red-100 text-red-900 border-red-300'
+                    : 'bg-zinc-100 text-zinc-700 border-zinc-300'
                 }`}
               >
                 {agentStatus === 'online'
                   ? '🟢 Agente Ativo'
                   : agentStatus === 'checking'
                   ? '🟡 Verificando…'
-                  : '🔴 Agente Offline'}
+                  : '⚪ Agente Standby (Opcional)'}
               </span>
             </div>
             <p className="mt-2 text-xs text-zinc-700 leading-relaxed">
-              O Agente de Impressão Local (porta 9100) envia comandos diretos via ESC/POS para a mini impressora térmica MPT-II de 58mm.
+              <strong>Importante:</strong> A Knup KP-IM608 e a MPT-II já imprimem nativamente pelo botão padrão <strong>Imprimir</strong> via Windows. O agente local abaixo é apenas um canal opcional para comandos ESC/POS.
             </p>
 
             <form onSubmit={handleSaveAgentUrl} className="mt-4 space-y-2">
