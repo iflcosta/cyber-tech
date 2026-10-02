@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getPrintAgentUrl, setPrintAgentUrl, checkPrintAgentStatus, sendToPrintAgent } from '@/app/admin/lib/printAgent';
 import { QRCodeImage } from '@/app/admin/components/QRCode';
 
-const CHROME_KIOSK_COMMAND = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app=https://www.cyberinformatica.tech/admin/os --kiosk-printing`;
+const CHROME_KIOSK_COMMAND = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="%LOCALAPPDATA%\\Google\\Chrome\\CyberBalcao" --kiosk-printing --allow-running-insecure-content --unsafely-treat-insecure-origin-as-secure=http://localhost:9100,http://127.0.0.1:9100 --app=https://www.cyberinformatica.tech/admin/os`;
 
 export function ConfiguracoesClient({
   userName,
@@ -320,6 +320,16 @@ export function ConfiguracoesClient({
             <div className="mt-3 text-[11px] font-mono text-zinc-500">
               Inicialização: o atalho <code className="bg-zinc-100 px-1 py-0.5 border border-zinc-300 text-zinc-800">CyberERP-PrintAgent.vbs</code> na pasta Startup do Windows sobe o agente local automaticamente.
             </div>
+
+            {agentStatus === 'offline' && (
+              <div className="mt-3 border border-amber-300 bg-amber-50 p-2.5 text-[11px] text-amber-950 font-mono space-y-1">
+                <p className="font-bold text-amber-900">⚠️ Se o agente estiver rodando mas o navegador bloquear:</p>
+                <p>1. Clique no ícone de ajustes/cadeado à esquerda da URL (ao lado de <code>cyberinformatica.tech</code>).</p>
+                <p>2. Clique em <strong>Configurações do site</strong>.</p>
+                <p>3. Na opção <strong>Conteúdo não seguro</strong>, mude para <strong>Permitir</strong> e dê F5.</p>
+                <p className="text-[10px] text-zinc-600 pt-0.5"><em>(Dica: Ao abrir pelo atalho <strong>iniciar_cyber_balcao_kiosk</strong> na Área de Trabalho, isso já é liberado automaticamente!)</em></p>
+              </div>
+            )}
 
             {receiptFeedback && (
               <p className={`mt-3 p-2 font-mono text-xs font-bold border ${receiptFeedback.startsWith('✓') ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : 'bg-red-50 text-red-900 border-red-300'}`}>

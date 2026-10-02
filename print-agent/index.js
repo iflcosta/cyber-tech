@@ -65,6 +65,7 @@ function printToWindowsPrinter(text, printerName = PRINTER_NAME) {
 
 const server = http.createServer(async (req, res) => {
   withCors(req, res);
+  console.log(`[print-agent] ${new Date().toLocaleTimeString('pt-BR')} ${req.method} ${req.url} (Origin: ${req.headers.origin || 'none'})`);
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -133,7 +134,7 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ ok: false, error: 'Rota não encontrada' }));
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '::', () => {
   console.log(`[print-agent] Cyber ERP Print Agent rodando em http://localhost:${PORT} e http://127.0.0.1:${PORT}`);
   console.log(`[print-agent] Impressora configurada: ${PRINTER_NAME}`);
   console.log(`[print-agent] Pronto para receber impressões do PDV e recibos da bancada!`);

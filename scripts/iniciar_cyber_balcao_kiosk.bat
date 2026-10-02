@@ -7,28 +7,30 @@ echo   CYBER INFORMATICA - BALCAO SILENT KIOSK PRINTING
 echo ============================================================
 echo.
 echo Iniciando o sistema no modo Kiosk de Impressao Silenciosa...
-echo (A Knup KP-IM608 imprimira as etiquetas sem abrir dialogo!)
+echo (A Knup KP-IM608 e MPT-II imprimem diretamente sem abrir dialogo!)
 echo.
 
-:: 1. Tenta abrir via Google Chrome com profile isolado (garante --kiosk-printing mesmo se o Chrome ja estiver aberto)
+set FLAGS=--user-data-dir="%LOCALAPPDATA%\Google\Chrome\CyberBalcao" --kiosk-printing --allow-running-insecure-content --unsafely-treat-insecure-origin-as-secure=http://localhost:9100,http://127.0.0.1:9100 --app=https://www.cyberinformatica.tech/admin/os
+
+:: 1. Tenta abrir via Google Chrome com profile isolado
 if exist "C:\Program Files\Google\Chrome\Application\chrome.exe" (
-    start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="%LOCALAPPDATA%\Google\Chrome\CyberBalcao" --kiosk-printing --app=https://www.cyberinformatica.tech/admin/os/new
+    start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" %FLAGS%
     exit /b 0
 )
 
 if exist "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" (
-    start "" "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --user-data-dir="%LOCALAPPDATA%\Google\Chrome\CyberBalcao" --kiosk-printing --app=https://www.cyberinformatica.tech/admin/os/new
+    start "" "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" %FLAGS%
     exit /b 0
 )
 
 :: 2. Fallback: Microsoft Edge com profile isolado
 if exist "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" (
-    start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --user-data-dir="%LOCALAPPDATA%\Microsoft\Edge\CyberBalcao" --kiosk-printing --app=https://www.cyberinformatica.tech/admin/os/new
+    start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" %FLAGS%
     exit /b 0
 )
 
 if exist "C:\Program Files\Microsoft\Edge\Application\msedge.exe" (
-    start "" "C:\Program Files\Microsoft\Edge\Application\msedge.exe" --user-data-dir="%LOCALAPPDATA%\Microsoft\Edge\CyberBalcao" --kiosk-printing --app=https://www.cyberinformatica.tech/admin/os/new
+    start "" "C:\Program Files\Microsoft\Edge\Application\msedge.exe" %FLAGS%
     exit /b 0
 )
 
