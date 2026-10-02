@@ -196,7 +196,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
 
       <div className="mx-auto max-w-sm">
         <div className="print:hidden flex flex-col gap-2">
-          <ReciboPrintButton />
+          <ReciboPrintButton reciboText={reciboText} />
           <EscPosReciboButton
             osNumber={so.os_number ?? ''}
             dateStr={formatDateBR(warrantyStart)}
@@ -215,7 +215,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
             precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
           </p>
         </div>
-        <AutoPrint />
+        <AutoPrint reciboText={reciboText} />
         <pre className="mt-3 whitespace-pre-wrap border-2 border-zinc-950 bg-white p-4 font-mono text-xs leading-tight text-zinc-950 print:border-none print:p-0">
 {reciboText}
         </pre>

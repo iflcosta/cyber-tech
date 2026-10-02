@@ -67,6 +67,11 @@ export async function sendToPrintAgent(bytes: Uint8Array): Promise<PrintResult> 
   }
 }
 
+export async function sendTextToPrintAgent(text: string): Promise<PrintResult> {
+  const bytes = new TextEncoder().encode(text);
+  return sendToPrintAgent(bytes);
+}
+
 export async function checkPrintAgentStatus(): Promise<PrintResult> {
   const url = getPrintAgentUrl();
   const fallbackUrl = url.includes('localhost')

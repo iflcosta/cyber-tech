@@ -267,15 +267,26 @@ export function ConfiguracoesClient({
         </div>
 
         {/* SEÇÃO 3: RECIBOS TÉRMICOS MPT-II (58mm) & AGENTE LOCAL */}
-        {/* SEÇÃO 3: RECIBOS TÉRMICOS MPT-II (58mm) */}
         <div className="border-2 border-zinc-950 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-zinc-950 flex items-center gap-2">
                 <span>🧾</span> Recibos MPT-II (58mm)
               </h2>
-              <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
-                USB006 · 58mm
+              <span
+                className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase border ${
+                  agentStatus === 'online'
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                    : agentStatus === 'checking'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    : 'bg-red-100 text-red-900 border-red-300'
+                }`}
+              >
+                {agentStatus === 'online'
+                  ? '🟢 Agente Ativo'
+                  : agentStatus === 'checking'
+                  ? '🟡 Verificando…'
+                  : '🔴 Agente Offline'}
               </span>
             </div>
             <p className="mt-2 text-xs text-zinc-700 leading-relaxed">
@@ -284,27 +295,64 @@ export function ConfiguracoesClient({
 
             <div className="mt-4 border-2 border-zinc-950 bg-zinc-50 p-3 space-y-2 text-xs">
               <p className="font-mono font-bold uppercase text-[11px] text-zinc-950">
-                Driver Windows Ativo no Computador:
+                Dispositivo Conectado no Computador:
               </p>
               <ul className="space-y-1 font-mono text-[11px] text-zinc-700">
                 <li>• <strong>Dispositivo:</strong> MPT-II (Generic / Text Only)</li>
                 <li>• <strong>Porta Física:</strong> USB006</li>
-                <li>• <strong>Largura da Bobina:</strong> 58mm (30 colunas de texto)</li>
-                <li>• <strong>Método:</strong> Impressão Direta do Sistema (sem bloqueio de rede)</li>
+                <li>• <strong>Largura da Bobina:</strong> 58mm (Bobina Térmica)</li>
+                <li>• <strong>Roteamento:</strong> Agente Cyber ERP (Porta 9100) direciona direto para MPT-II</li>
               </ul>
             </div>
 
             <p className="mt-3 text-[11px] font-mono text-zinc-500">
-              A MPT-II imprime diretamente pelo Windows através do botão &quot;Imprimir&quot;, funcionando 100% no aplicativo desktop sem precisar de conexão de rede ou portas externas.
+              A Knup (40x60mm) permanece como padrão para etiquetas, enquanto a MPT-II recebe os recibos via Agente sem abrir diálogos do Windows.
             </p>
+
+            {receiptFeedback && (
+              <p
+                className={`mt-3 p-2 font-mono text-xs font-bold border ${
+                  receiptFeedback.startsWith('✓')
+                    ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                    : 'bg-red-50 text-red-900 border-red-300'
+                }`}
+              >
+                {receiptFeedback}
+              </p>
+            )}
+
+            {agentStatus === 'offline' && (
+              <div className="mt-3 border border-amber-300 bg-amber-50 p-2.5 text-[11px] text-amber-950 font-mono space-y-1">
+                <p className="font-bold text-amber-900">⚠️ Agente de Impressão não detectado em {agentUrl}:</p>
+                <p>1. O atalho de inicialização <code className="bg-white px-1 border border-zinc-300">CyberERP-PrintAgent.vbs</code> roda o agente silenciosamente ao iniciar o Windows.</p>
+                <p>2. Se o agente foi fechado, execute <code className="bg-white px-1 border border-zinc-300">print-agent/run.bat</code> na pasta do sistema.</p>
+              </div>
+            )}
           </div>
 
           <div className="mt-5 space-y-2 border-t border-zinc-200 pt-3">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={pingAgent}
+                className="flex-1 border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
+              >
+                🔄 Testar Conexão
+              </button>
+              <button
+                type="button"
+                onClick={handlePrintTestReceipt}
+                disabled={printingReceipt}
+                className="flex-1 border-2 border-zinc-950 bg-zinc-950 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
+              >
+                {printingReceipt ? 'Enviando…' : '🖨️ Imprimir na MPT-II'}
+              </button>
+            </div>
             <Link
               href="/admin/configuracoes/recibo-teste"
-              className="block w-full border-2 border-zinc-950 bg-zinc-950 px-4 py-2 text-center font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
+              className="block w-full border border-zinc-300 bg-zinc-50 px-4 py-1.5 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 transition"
             >
-              🖨️ Imprimir Recibo de Teste (58mm)
+              👁️ Abrir Tela de Teste Completa
             </Link>
           </div>
         </div>

@@ -60,7 +60,7 @@ export default async function ReciboPage({
           >
             📄 Nota / Comprovante (PDF / A4)
           </Link>
-          <ReciboPrintButton />
+          <ReciboPrintButton reciboText={reciboText} />
         </div>
       </div>
 

@@ -1,45 +1,44 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { sendTextToPrintAgent } from '@/app/admin/lib/printAgent';
 
-// Dispara impressão do recibo da MPT-II:
-// 1. Tenta envio direto e silencioso para o print-agent local (http://localhost:9100)
-// 2. Se o agente local não responder, faz fallback para window.print() no navegador
+// Dispara impressão automática do recibo na MPT-II (58mm) via print-agent local
 export function AutoPrint({ reciboText }: { reciboText?: string }) {
+  const [errorNotice, setErrorNotice] = useState<string | null>(null);
+
   useEffect(() => {
-    let printedViaAgent = false;
+    if (!reciboText) return;
 
-    if (reciboText) {
-      fetch('http://localhost:9100/print-receipt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-        body: reciboText,
-        signal: AbortSignal.timeout(1200),
+    sendTextToPrintAgent(reciboText)
+      .then((res) => {
+        if (!res.ok) {
+          setErrorNotice(res.error);
+        }
       })
-        .then((res) => {
-          if (res.ok) {
-            printedViaAgent = true;
-          } else {
-            window.print();
-          }
-        })
-        .catch(() => {
-          // Fallback para impressão via diálogo do navegador
-          window.print();
-        });
-      return;
-    }
-
-    const t = setTimeout(() => {
-      if (!printedViaAgent) {
-        try {
-          window.print();
-        } catch {}
-      }
-    }, 400);
-
-    return () => clearTimeout(t);
+      .catch((err) => {
+        setErrorNotice(err.message || 'Erro ao comunicar com impressora MPT-II');
+      });
   }, [reciboText]);
 
-  return null;
+  if (!errorNotice) return null;
+
+  return (
+    <div className="no-print mb-4 border-2 border-amber-400 bg-amber-50 p-3 font-mono text-xs text-amber-950 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p className="font-bold uppercase text-amber-900">⚠️ Agente de Impressão MPT-II Offline</p>
+        <p className="text-[11px] text-zinc-700">
+          O recibo não pôde ser enviado diretamente para a MPT-II. Certifique-se de que o agente local está em execução.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="shrink-0 border border-zinc-950 bg-white px-3 py-1.5 font-bold uppercase text-[11px] hover:bg-zinc-100 cursor-pointer"
+        title="Atenção: Selecione manualmente a impressora MPT-II no diálogo"
+      >
+        Imprimir via Diálogo
+      </button>
+    </div>
+  );
 }
