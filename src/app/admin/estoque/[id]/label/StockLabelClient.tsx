@@ -245,9 +245,10 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             key={index}
             className="label-thermal-item border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
             style={{
-              width: `${labelWidthMm}mm`,
+              width: labelFormat === '40x60' ? '38mm' : `${labelWidthMm}mm`,
               height: `${labelHeightMm}mm`,
-              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '3mm 2.2mm' : (labelFormat === '60x40' ? '2.5mm 3mm' : '2.5mm 2.5mm')),
+              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2.5mm 1.5mm' : (labelFormat === '60x40' ? '2mm 3mm' : '2mm 2.5mm')),
+              margin: labelFormat === '40x60' ? '0 1mm' : '0 auto',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -484,13 +485,13 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             overflow: visible !important;
           }
           .label-thermal-item {
-            width: ${labelWidthMm}mm !important;
+            width: ${labelFormat === '40x60' ? '38mm' : `${labelWidthMm}mm`} !important;
             height: ${labelHeightMm}mm !important;
-            max-width: ${labelWidthMm}mm !important;
+            max-width: ${labelFormat === '40x60' ? '38mm' : `${labelWidthMm}mm`} !important;
             max-height: ${labelHeightMm}mm !important;
             min-height: 0 !important;
-            margin: 0 auto !important;
-            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2.5mm 2.2mm' : (labelFormat === '60x40' ? '2mm 3mm' : '2mm 2.5mm'))} !important;
+            margin: ${labelFormat === '40x60' ? '0 1mm' : '0 auto'} !important;
+            padding: ${is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2.5mm 1.5mm' : (labelFormat === '60x40' ? '2mm 3mm' : '2mm 2.5mm'))} !important;
             border: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;

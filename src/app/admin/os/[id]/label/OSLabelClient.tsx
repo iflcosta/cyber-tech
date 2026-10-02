@@ -265,9 +265,10 @@ export function OSLabelClient({
               key={idx}
               className="label-os-thermal border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
               style={{
-                width: `${labelWidthMm}mm`,
+                width: mode === '40x60' ? '38mm' : `${labelWidthMm}mm`,
                 height: `${labelHeightMm}mm`,
-                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '2.5mm 2.2mm' : (mode === '60x40' ? '2mm 3mm' : '2mm 2.5mm')),
+                padding: is40x60Landscape ? '0' : (mode === '40x60' ? '2.5mm 1.5mm' : (mode === '60x40' ? '2mm 3mm' : '2mm 2.5mm')),
+                margin: mode === '40x60' ? '0 1mm' : '0 auto',
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
@@ -356,10 +357,10 @@ export function OSLabelClient({
                   {/* Layout Vertical 40x60mm Ultra Limpo */}
                   {/* 1. Topo: Identificador Direto da OS + Data */}
                   <div className="flex items-baseline justify-between border-b-2 border-black pb-[0.8mm] leading-none">
-                    <span className="font-mono text-[14pt] font-black tracking-tight text-black">
+                    <span className="font-mono text-[12.5pt] font-black tracking-tight text-black">
                       {osNumberStr}
                     </span>
-                    <span className="font-mono text-[7pt] font-bold text-black">
+                    <span className="font-mono text-[6.5pt] font-bold text-black shrink-0 ml-1">
                       {createdDate}
                     </span>
                   </div>
@@ -370,31 +371,31 @@ export function OSLabelClient({
                       value={qrUrl}
                       size={256}
                       alt={`QR Code ${osNumberStr}`}
-                      className="block w-[24mm] h-[24mm]"
+                      className="block w-[22mm] h-[22mm]"
                     />
                   </div>
 
                   {/* 3. Dados do Cliente */}
                   <div className="border-t border-black pt-[0.8mm] leading-tight space-y-[0.4mm]">
-                    <div className="truncate font-sans text-[8.5pt] font-black uppercase text-black">
+                    <div className="truncate font-sans text-[8pt] font-black uppercase text-black">
                       CLI: {customerName}
                     </div>
                     {customerPhone && (
-                      <div className="truncate font-mono text-[7pt] font-bold text-black">
+                      <div className="truncate font-mono text-[6.5pt] font-bold text-black">
                         TEL: {customerPhone}
                       </div>
                     )}
                   </div>
 
                   {/* 4. Senha (se informada) e Defeito Relatado */}
-                  <div className="border-t border-dashed border-black pt-[0.8mm] font-mono text-[7pt] font-bold leading-tight text-black">
+                  <div className="border-t border-dashed border-black pt-[0.8mm] font-mono text-[6.5pt] font-bold leading-tight text-black">
                     {equipmentPassword ? (
                       <div className="truncate mb-[0.4mm]">
                         <strong className="uppercase">SENHA:</strong> {equipmentPassword}
                       </div>
                     ) : null}
                     <div
-                      className="font-sans text-[7pt] leading-[1.15] text-black"
+                      className="font-sans text-[6.5pt] leading-[1.15] text-black"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -506,13 +507,13 @@ export function OSLabelClient({
                 overflow: visible !important;
               }
               .label-os-thermal {
-                width: ${labelWidthMm}mm !important;
+                width: ${mode === '40x60' ? '38mm' : `${labelWidthMm}mm`} !important;
                 height: ${labelHeightMm}mm !important;
-                max-width: ${labelWidthMm}mm !important;
+                max-width: ${mode === '40x60' ? '38mm' : `${labelWidthMm}mm`} !important;
                 max-height: ${labelHeightMm}mm !important;
                 min-height: 0 !important;
-                margin: 0 auto !important;
-                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '2.5mm 2.2mm' : (mode === '60x40' ? '2mm 3mm' : '2mm 2.5mm'))} !important;
+                margin: ${mode === '40x60' ? '0 1mm' : '0 auto'} !important;
+                padding: ${is40x60Landscape ? '0' : (mode === '40x60' ? '2.5mm 1.5mm' : (mode === '60x40' ? '2mm 3mm' : '2mm 2.5mm'))} !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: #ffffff !important;
