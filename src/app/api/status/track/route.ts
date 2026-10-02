@@ -14,7 +14,13 @@ const NO_CACHE_HEADERS = {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q')?.trim() ?? '';
+    const query = (
+      searchParams.get('q') ||
+      searchParams.get('os') ||
+      searchParams.get('code') ||
+      searchParams.get('id') ||
+      ''
+    ).trim();
     const phone = searchParams.get('phone')?.trim() ?? '';
 
     if (!query && !phone) {

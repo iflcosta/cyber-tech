@@ -77,7 +77,12 @@ const STEP_ITEMS = [
 
 export default function StatusTrackerClient() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') ?? '';
+  const initialQuery =
+    searchParams.get('os') ??
+    searchParams.get('q') ??
+    searchParams.get('code') ??
+    searchParams.get('id') ??
+    '';
 
   const [query, setQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
