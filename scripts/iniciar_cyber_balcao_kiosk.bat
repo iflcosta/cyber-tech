@@ -6,6 +6,18 @@ echo ============================================================
 echo   CYBER INFORMATICA - BALCAO SILENT KIOSK PRINTING
 echo ============================================================
 echo.
+echo Verificando Agente de Impressao MPT-II...
+
+netstat -ano | findstr 9100 >nul 2>&1
+if errorlevel 1 (
+    echo Iniciando Agente de Impressao local...
+    start "" wscript.exe "%~dp0..\print-agent\iniciar-oculto.vbs"
+    timeout /t 2 /nobreak >nul
+) else (
+    echo Agente de impressao ja esta ativo!
+)
+
+echo.
 echo Iniciando o sistema no modo Kiosk de Impressao Silenciosa...
 echo.
 

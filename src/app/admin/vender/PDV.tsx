@@ -310,11 +310,12 @@ export function PDV({
     setCart((prev) => prev.filter((c) => c.stock_item_id !== stockItemId));
   }
 
-  async function finalizarVenda() {
+  async function finalizarVenda(methodOverride?: PaymentMethodValue) {
     if (cart.length === 0) {
       setError('Carrinho vazio.');
       return;
     }
+    const chosenMethod = methodOverride || paymentMethod;
     setSubmitting(true);
     setError(null);
     try {
@@ -325,7 +326,7 @@ export function PDV({
           quantity: c.quantity,
           unit_price: c.unit_price,
         })),
-        p_payment_method: paymentMethod,
+        p_payment_method: chosenMethod,
         p_customer_name: customerName.trim() || null,
         p_customer_phone: customerPhone.trim() || null,
         p_customer_id: selectedCustomer?.id ?? null,
@@ -338,7 +339,7 @@ export function PDV({
       );
       if (rpcErr) throw rpcErr;
 
-      // Abre recibo em NOVA JANELA: gesto do user (clique em "Confirmar venda")
+      // Abre recibo em NOVA JANELA: gesto do user (clique em botao rapido ou F2/F3/F4)
       // permite auto-print sem bloqueio do Chrome. Janela anterior fica no PDV
       // pra iniciar proxima venda.
       window.open(`/admin/vendas/${saleId}/recibo`, '_blank');
@@ -361,6 +362,40 @@ export function PDV({
     }
   }
 
+  // Atalhos de teclado no PDV:
+  // F2 -> Venda Direta no PIX
+  // F3 -> Venda Direta em Dinheiro
+  // F4 -> Venda Direta no Cartao
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (addingPart) return;
+
+      if (finalizing) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setFinalizing(false);
+        }
+        return;
+      }
+
+      if (cart.length > 0 && !submitting) {
+        if (e.key === 'F2') {
+          e.preventDefault();
+          finalizarVenda('pix');
+        } else if (e.key === 'F3') {
+          e.preventDefault();
+          finalizarVenda('cash');
+        } else if (e.key === 'F4') {
+          e.preventDefault();
+          finalizarVenda('card');
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, submitting, addingPart, finalizing, paymentMethod, customerName, customerPhone, selectedCustomer, discountNum, notes]);
+
   // Sugestoes da busca manual
   const searchSuggestions = useMemo(() => {
     if (!search.trim()) return [];
@@ -378,12 +413,18 @@ export function PDV({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between border-b-2 border-zinc-950 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-zinc-950 pb-4">
         <div>
           <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-950">PDV Rápido · Balcão Cyber</h1>
           <p className="text-xs font-mono uppercase text-zinc-600">
             Bipe o código de barras/SKU ou digite o nome. Operador: <span className="font-bold text-zinc-950">{currentUserName}</span>.
           </p>
+        </div>
+        <div className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-600">
+          <span className="hidden sm:inline">Venda direta:</span>
+          <span className="border border-emerald-600 bg-emerald-50 px-1.5 py-0.5 font-bold text-emerald-800">F2 PIX</span>
+          <span className="border border-zinc-950 bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-950">F3 Dinheiro</span>
+          <span className="border border-zinc-300 bg-white px-1.5 py-0.5 font-bold text-zinc-700">F4 Cartão</span>
         </div>
       </div>
 
@@ -525,21 +566,60 @@ export function PDV({
               ))}
             </ul>
             <footer className="border-t-2 border-zinc-950 bg-zinc-50 px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-mono uppercase text-zinc-500">Subtotal</p>
-                  <p className="text-xl font-black font-mono text-zinc-950">
+                  <p className="text-xs font-mono uppercase text-zinc-500">
+                    Subtotal ({cart.reduce((acc, i) => acc + i.quantity, 0)} {cart.reduce((acc, i) => acc + i.quantity, 0) === 1 ? 'unidade' : 'unidades'})
+                  </p>
+                  <p className="text-2xl font-black font-mono text-zinc-950">
                     {fmtBRL(subtotal)}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setFinalizing(true)}
-                  disabled={cart.length === 0}
-                  className="bg-zinc-950 hover:bg-zinc-800 text-white font-mono text-xs font-bold uppercase tracking-wider px-5 py-2.5 shadow-sm transition disabled:opacity-30 cursor-pointer"
-                >
-                  Finalizar venda →
-                </button>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => finalizarVenda('pix')}
+                    disabled={cart.length === 0 || submitting}
+                    className="border-2 border-emerald-600 bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-xs font-bold uppercase tracking-wider px-3.5 py-2 shadow-xs transition disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                    title="Confirmar e imprimir no PIX direto (Atalho: F2)"
+                  >
+                    <span>⚡ PIX</span>
+                    <span className="rounded bg-emerald-800 px-1 py-0.5 text-[10px] font-mono">F2</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => finalizarVenda('cash')}
+                    disabled={cart.length === 0 || submitting}
+                    className="border-2 border-zinc-950 bg-zinc-950 hover:bg-zinc-800 text-white font-mono text-xs font-bold uppercase tracking-wider px-3.5 py-2 shadow-xs transition disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                    title="Confirmar e imprimir em Dinheiro direto (Atalho: F3)"
+                  >
+                    <span>💵 Dinheiro</span>
+                    <span className="rounded bg-zinc-800 px-1 py-0.5 text-[10px] font-mono">F3</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => finalizarVenda('card')}
+                    disabled={cart.length === 0 || submitting}
+                    className="border-2 border-zinc-950 bg-white hover:bg-zinc-100 text-zinc-950 font-mono text-xs font-bold uppercase tracking-wider px-3.5 py-2 shadow-xs transition disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                    title="Confirmar e imprimir no Cartão direto (Atalho: F4)"
+                  >
+                    <span>💳 Cartão</span>
+                    <span className="rounded bg-zinc-200 px-1 py-0.5 text-[10px] font-mono text-zinc-800">F4</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFinalizing(true)}
+                    disabled={cart.length === 0 || submitting}
+                    className="border border-zinc-400 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-mono text-xs font-semibold uppercase tracking-wider px-3 py-2 transition disabled:opacity-40 cursor-pointer"
+                    title="Abrir opções com desconto, cliente identificado ou observações"
+                  >
+                    + Opções
+                  </button>
+                </div>
               </div>
             </footer>
           </>
