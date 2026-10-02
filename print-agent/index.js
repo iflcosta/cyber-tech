@@ -20,7 +20,9 @@ function withCors(req, res) {
   const origin = req.headers.origin || '*';
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, *');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
 }
 
 function readBody(req) {
@@ -131,8 +133,8 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ ok: false, error: 'Rota não encontrada' }));
 });
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`[print-agent] Cyber ERP Print Agent rodando em http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[print-agent] Cyber ERP Print Agent rodando em http://localhost:${PORT} e http://127.0.0.1:${PORT}`);
   console.log(`[print-agent] Impressora configurada: ${PRINTER_NAME}`);
   console.log(`[print-agent] Pronto para receber impressões do PDV e recibos da bancada!`);
 });

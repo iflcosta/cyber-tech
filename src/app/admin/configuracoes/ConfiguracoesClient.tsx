@@ -15,7 +15,7 @@ export function ConfiguracoesClient({
   userRole: string;
 }) {
   // Estado do Agente de Impressão Local (MPT-II 58mm)
-  const [agentUrl, setAgentUrlState] = useState('http://localhost:9100');
+  const [agentUrl, setAgentUrlState] = useState('http://127.0.0.1:9100');
   const [agentStatus, setAgentStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [agentSavedNotice, setAgentSavedNotice] = useState(false);
   const [printingReceipt, setPrintingReceipt] = useState(false);
@@ -303,7 +303,7 @@ export function ConfiguracoesClient({
                   value={agentUrl}
                   onChange={(e) => setAgentUrlState(e.target.value)}
                   className="flex-1 border-2 border-zinc-950 px-3 py-1.5 font-mono text-xs text-zinc-950 bg-white"
-                  placeholder="http://localhost:9100"
+                  placeholder="http://127.0.0.1:9100"
                 />
                 <button
                   type="submit"
@@ -318,7 +318,7 @@ export function ConfiguracoesClient({
             </form>
 
             <div className="mt-3 text-[11px] font-mono text-zinc-500">
-              Inicialização: o script <code className="bg-zinc-100 px-1 py-0.5 border border-zinc-300 text-zinc-800">iniciar-servidores.bat</code> na inicialização do Windows sobe o agente local automaticamente.
+              Inicialização: o atalho <code className="bg-zinc-100 px-1 py-0.5 border border-zinc-300 text-zinc-800">CyberERP-PrintAgent.vbs</code> na pasta Startup do Windows sobe o agente local automaticamente.
             </div>
 
             {receiptFeedback && (
