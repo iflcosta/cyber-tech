@@ -36,7 +36,8 @@ export function OSLabelClient({
 }: OSLabelClientProps) {
   const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
-  const [copies, setCopies] = useState(1);
+  const hasAccessories = Boolean(accessoriesInfo && accessoriesInfo.trim());
+  const [copies, setCopies] = useState(hasAccessories ? 2 : 1);
   const origin =
     typeof window !== 'undefined' && window.location.origin
       ? window.location.origin
@@ -61,6 +62,10 @@ export function OSLabelClient({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      const c = params.get('copies');
+      if (c) {
+        setCopies(Math.max(1, parseInt(c, 10) || 1));
+      }
       if (params.get('autoprint') === '1') {
         const timer = setTimeout(() => {
           window.print();
@@ -352,10 +357,14 @@ export function OSLabelClient({
               ) : mode === '40x60' ? (
                 <>
                   {/* Layout Vertical 40x60mm (Preenchimento Sob Medida para Bobina 40x60mm) */}
-                  {/* 1. Cabeçalho: Loja + Data */}
+                  {/* 1. Cabeçalho: Loja + Data / Identificação */}
                   <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.2pt] font-black uppercase leading-none">
                     <span>CYBER INFORMÁTICA</span>
-                    <span>{createdDate}</span>
+                    <span>
+                      {copies > 1
+                        ? (idx === 0 ? '1/2 · APARELHO' : idx === 1 ? '2/2 · ACESSÓRIO' : `${idx + 1}/${copies}`)
+                        : createdDate}
+                    </span>
                   </div>
 
                   {/* 2. Destaque da OS (Box Fechado) */}
@@ -408,9 +417,15 @@ export function OSLabelClient({
 
                   {/* 5. Senha / Acessórios / S/N */}
                   <div className="border-t border-dashed border-black pt-[0.4mm] font-mono text-[5.8pt] font-bold leading-tight text-black truncate">
-                    {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
-                    {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
-                    {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
+                    {idx === 1 && accessoriesInfo ? (
+                      <span className="font-black bg-zinc-100 border border-black px-1">ACESSÓRIO: {accessoriesInfo}</span>
+                    ) : (
+                      <>
+                        {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
+                        {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
+                        {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
+                      </>
+                    )}
                   </div>
 
                   {/* 6. Defeito Relatado */}

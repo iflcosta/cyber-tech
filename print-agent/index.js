@@ -1,34 +1,24 @@
 /**
  * Agente de impressão local do Cyber ERP.
  *
- * Roda no PC da bancada (não no Vercel, não no navegador). Ouve em
- * localhost e, quando o site manda um payload ESC/POS via POST
- * /print, abre a porta COM da impressora (criada pelo Windows quando
- * a MPT-II é pareada por Bluetooth) e escreve os bytes crus nela.
- *
- * Por que precisa disso: o navegador não tem acesso a porta
- * serial/Bluetooth diretamente (WebUSB existe, mas só cobre USB, e a
- * MPT-II é Bluetooth). Esse agentinho é a ponte.
- *
- * Uso:
- *   1. npm install
- *   2. cp .env.example .env   (e ajustar PRINTER_COM_PORT se precisar)
- *   3. npm start
- *   4. Deixar rodando enquanto usa o sistema (ideal: iniciar junto
- *      com o Windows — ver README.md).
+ * Roda no PC do balcão da Cyber Informática (ouvindo em localhost:9100).
+ * Imprime silenciosamente na impressora térmica MPT-II conectada via USB
+ * (Driver: Generic / Text Only) sem abrir diálogo do navegador!
  */
 
-require('dotenv').config();
+try {
+  require('dotenv').config();
+} catch (_) {}
+
 const http = require('http');
-const { SerialPort } = require('serialport');
+const { spawn } = require('child_process');
 
 const PORT = Number(process.env.PORT) || 9100;
-const COM_PORT = process.env.PRINTER_COM_PORT || 'COM9';
-const BAUD_RATE = Number(process.env.BAUD_RATE) || 9600;
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://cyberinformatica.tech';
+const PRINTER_NAME = process.env.PRINTER_NAME || 'MPT-II';
 
-function withCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+function withCors(req, res) {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
@@ -42,39 +32,37 @@ function readBody(req) {
   });
 }
 
-function printBytes(bytes) {
+/**
+ * Imprime texto diretamente na impressora térmica do Windows (MPT-II)
+ * usando o spooler do Windows com codificação compatível com Generic / Text Only.
+ */
+function printToWindowsPrinter(text, printerName = PRINTER_NAME) {
   return new Promise((resolve, reject) => {
-    const port = new SerialPort({ path: COM_PORT, baudRate: BAUD_RATE }, (err) => {
-      if (err) {
-        reject(new Error(`Não consegui abrir a porta ${COM_PORT}: ${err.message}. A impressora está ligada e pareada?`));
-        return;
-      }
+    const ps = spawn('powershell.exe', [
+      '-NoProfile',
+      '-Command',
+      `$input | Out-Printer -Name "${printerName}"`,
+    ]);
 
-      port.write(bytes, (writeErr) => {
-        if (writeErr) {
-          port.close();
-          reject(new Error(`Erro ao mandar dados pra impressora: ${writeErr.message}`));
-          return;
-        }
-        port.drain((drainErr) => {
-          port.close();
-          if (drainErr) {
-            reject(new Error(`Erro ao finalizar envio: ${drainErr.message}`));
-            return;
-          }
-          resolve();
-        });
-      });
+    ps.stdin.write(text, 'latin1');
+    ps.stdin.end();
+
+    ps.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Out-Printer encerrou com código de saída ${code}`));
+      }
     });
 
-    port.on('error', (err) => {
-      reject(new Error(`Erro na porta serial: ${err.message}`));
+    ps.on('error', (err) => {
+      reject(err);
     });
   });
 }
 
 const server = http.createServer(async (req, res) => {
-  withCors(res);
+  withCors(req, res);
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -82,39 +70,69 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && req.url === '/status') {
+  // Healthcheck / Status
+  if (req.method === 'GET' && (req.url === '/status' || req.url === '/')) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, comPort: COM_PORT, baudRate: BAUD_RATE }));
+    res.end(
+      JSON.stringify({
+        ok: true,
+        printer: PRINTER_NAME,
+        port: PORT,
+        timestamp: new Date().toISOString(),
+      }),
+    );
     return;
   }
 
-  if (req.method === 'POST' && req.url === '/print') {
+  // Rota de impressão de recibo PDV (Texto Puro formatado em 30 colunas)
+  if (req.method === 'POST' && (req.url === '/print-receipt' || req.url === '/print')) {
     try {
-      const body = await readBody(req);
-      if (body.length === 0) {
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end('Payload vazio.');
+      const bodyBuffer = await readBody(req);
+      if (bodyBuffer.length === 0) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Payload vazio' }));
         return;
       }
-      await printBytes(body);
+
+      let text = '';
+      const contentType = req.headers['content-type'] || '';
+      if (contentType.includes('application/json')) {
+        try {
+          const parsed = JSON.parse(bodyBuffer.toString('utf-8'));
+          text = parsed.text || parsed.content || '';
+        } catch {
+          text = bodyBuffer.toString('utf-8');
+        }
+      } else {
+        text = bodyBuffer.toString('utf-8');
+      }
+
+      if (!text.trim()) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Texto do recibo está em branco' }));
+        return;
+      }
+
+      console.log(`[print-agent] Imprimindo recibo de ${text.length} caracteres na ${PRINTER_NAME}...`);
+      await printToWindowsPrinter(text, PRINTER_NAME);
+      console.log(`[print-agent] Recibo impresso com sucesso na ${PRINTER_NAME}!`);
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true }));
+      res.end(JSON.stringify({ ok: true, printedAt: new Date().toISOString() }));
     } catch (err) {
-      console.error('[print-agent] erro ao imprimir:', err.message);
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end(err.message);
+      console.error('[print-agent] Erro ao imprimir recibo:', err.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: err.message }));
     }
     return;
   }
 
-  res.writeHead(404, { 'Content-Type': 'text/plain' });
-  res.end('not found');
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ ok: false, error: 'Rota não encontrada' }));
 });
 
-// Só escuta em localhost — não expõe a porta pra rede local.
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Agente de impressão do Cyber ERP rodando em http://localhost:${PORT}`);
-  console.log(`Porta configurada: ${COM_PORT} @ ${BAUD_RATE} baud`);
-  console.log(`Origem liberada: ${ALLOWED_ORIGIN}`);
-  console.log('Deixe esta janela aberta enquanto usa o sistema. Testar em http://localhost:' + PORT + '/status');
+  console.log(`[print-agent] Cyber ERP Print Agent rodando em http://localhost:${PORT}`);
+  console.log(`[print-agent] Impressora configurada: ${PRINTER_NAME}`);
+  console.log(`[print-agent] Pronto para receber impressões do PDV e recibos da bancada!`);
 });

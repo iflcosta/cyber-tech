@@ -116,8 +116,8 @@ export default async function ReciboPage({
 
   return (
     <div className="space-y-4">
-      {/* Auto-print dispara window.print() 1x apos carregar (400ms) */}
-      <AutoPrint />
+      {/* Auto-print dispara impressão silenciosa na MPT-II via print-agent ou fallback window.print() */}
+      <AutoPrint reciboText={reciboText} />
 
       <div className="no-print flex flex-wrap items-center justify-between gap-2 border-b-2 border-zinc-950 pb-4">
         <div>

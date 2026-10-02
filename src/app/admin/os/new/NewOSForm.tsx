@@ -387,7 +387,9 @@ export function NewOSForm({
       });
 
       if (redirectToLabel) {
-        router.push(`/admin/os/${newOS.id}/label?autoprint=1`);
+        const hasAccessories = Boolean(accessories.trim() || checklist.carregador);
+        const copiesParam = hasAccessories ? '&copies=2' : '&copies=1';
+        router.push(`/admin/os/${newOS.id}/label?autoprint=1${copiesParam}`);
       } else {
         router.push(`/admin/os/${newOS.id}`);
       }
@@ -905,7 +907,11 @@ export function NewOSForm({
                 disabled={submitting}
                 className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
               >
-                {submitting ? 'Salvando…' : '🖨️ Criar OS + Etiqueta 58mm'}
+                {submitting
+                  ? 'Salvando…'
+                  : accessories.trim() || checklist.carregador
+                    ? '🖨️ Criar OS + 2x Etiquetas (Aparelho + Acessório)'
+                    : '🖨️ Criar OS + Etiqueta 58mm'}
               </button>
             </div>
           )}
