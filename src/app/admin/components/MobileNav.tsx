@@ -16,6 +16,7 @@ const LINKS = [
   { href: '/admin/comissoes', label: 'Comissões' },
   { href: '/admin/pecas', label: 'Peças' },
   { href: '/admin/fornecedores', label: 'Fornecedores' },
+  { href: '/admin/configuracoes', label: '⚙️ Configurações' },
 ];
 
 export function MobileNav({

@@ -127,7 +127,7 @@ export function NewOSForm({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Busca cliente já cadastrado enquanto digita telefone ou nome
+  // Busca cliente já cadastrado enquanto digita nome ou telefone
   useEffect(() => {
     if (selectedCustomer) return;
     const digits = customer.phone.replace(/\D/g, '');
@@ -144,10 +144,13 @@ export function NewOSForm({
           .from('customers')
           .select('id, name, phone, email')
           .limit(5);
-        query =
-          digits.length >= 4
-            ? query.ilike('phone_search', `%${digits}%`)
-            : query.ilike('name', `%${nameQuery}%`);
+        if (digits.length >= 4 && nameQuery.length >= 3) {
+          query = query.ilike('name', `%${nameQuery}%`).ilike('phone_search', `%${digits}%`);
+        } else if (nameQuery.length >= 3) {
+          query = query.ilike('name', `%${nameQuery}%`);
+        } else {
+          query = query.ilike('phone_search', `%${digits}%`);
+        }
         const { data } = await query;
         const withCounts = await Promise.all(
           (data ?? []).map(async (c) => {
@@ -484,15 +487,6 @@ export function NewOSForm({
             ) : (
               <>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Telefone / WhatsApp (busca automática)">
-                    <input
-                      type="tel"
-                      value={customer.phone}
-                      onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                      className="form-input"
-                      placeholder="(11) 99999-9999"
-                    />
-                  </Field>
                   <Field label="Nome do cliente *">
                     <input
                       autoFocus
@@ -500,6 +494,15 @@ export function NewOSForm({
                       onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
                       className="form-input"
                       placeholder="Ex: Maria Silva"
+                    />
+                  </Field>
+                  <Field label="Telefone / WhatsApp (busca automática)">
+                    <input
+                      type="tel"
+                      value={customer.phone}
+                      onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                      className="form-input"
+                      placeholder="(11) 99999-9999"
                     />
                   </Field>
                 </div>
@@ -929,9 +932,15 @@ export function NewOSForm({
         <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t-2 border-zinc-200 pt-4">
           <button
             type="button"
-            onClick={() => setStep((s) => Math.max(1, s - 1))}
-            disabled={step === 1 || submitting}
-            className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition disabled:opacity-30 cursor-pointer"
+            onClick={() => {
+              if (step > 1) {
+                setStep((s) => Math.max(1, s - 1));
+              } else {
+                router.push('/admin/os');
+              }
+            }}
+            disabled={submitting}
+            className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
           >
             ← Voltar
           </button>

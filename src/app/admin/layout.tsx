@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAuthedProfile, isIagoUser } from '@/app/admin/lib/auth';
 import { DesktopNav } from '@/app/admin/components/DesktopNav';
 import { MobileNav } from '@/app/admin/components/MobileNav';
+import { HeaderBackButton } from '@/app/admin/components/HeaderBackButton';
 import { PrintShortcutGuard } from '@/app/admin/components/PrintShortcutGuard';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -60,13 +61,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-dvh print:min-h-0 print:h-auto bg-zinc-50 print:bg-white text-zinc-950 antialiased font-body overflow-x-hidden print:overflow-visible">
       <PrintShortcutGuard />
       <header className="print:hidden sticky top-0 z-30 border-b-2 border-zinc-950 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/admin/os" className="flex items-center gap-2 text-base font-black tracking-tight text-zinc-950 group">
-            <span className="font-extrabold uppercase tracking-wider text-zinc-950">CYBER</span>
-            <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
-              ERP
-            </span>
-          </Link>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <HeaderBackButton />
+            <Link href="/admin/os" className="flex items-center gap-2 text-base font-black tracking-tight text-zinc-950 group">
+              <span className="font-extrabold uppercase tracking-wider text-zinc-950">CYBER</span>
+              <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
+                ERP
+              </span>
+            </Link>
+          </div>
 
           <DesktopNav
             userName={profile?.full_name ?? '—'}

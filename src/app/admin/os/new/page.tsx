@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { NewOSForm } from './NewOSForm';
@@ -33,9 +34,17 @@ export default async function NewOSPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">Nova OS</h1>
-        <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">Em 3 passos: cliente → aparelho → defeito</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">Nova OS</h1>
+          <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">Em 3 passos: cliente → aparelho → defeito</p>
+        </div>
+        <Link
+          href="/admin/os"
+          className="inline-flex items-center gap-1.5 border-2 border-zinc-950 bg-white px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition shadow-2xs"
+        >
+          ← Voltar para OS
+        </Link>
       </div>
       <NewOSForm
         currentUserId={user.id}

@@ -15,6 +15,7 @@ const LINKS = [
   { href: '/admin/comissoes', label: 'Comissões' },
   { href: '/admin/pecas', label: 'Peças' },
   { href: '/admin/fornecedores', label: 'Fornecedores' },
+  { href: '/admin/configuracoes', label: 'Configurações' },
 ];
 
 function initials(name: string) {
@@ -37,7 +38,7 @@ export function DesktopNav({
   const visibleLinks = LINKS.filter((link) => !link.iagoOnly || showLeadsTab);
 
   return (
-    <div className="hidden items-center gap-6 lg:flex">
+    <div className="hidden items-center gap-4 xl:gap-6 lg:flex">
       <nav className="flex items-center gap-1">
         {visibleLinks.map((link) => {
           const active =
@@ -84,6 +85,16 @@ export function DesktopNav({
 
       <div className="flex items-center gap-2.5 border-l-2 border-zinc-200 pl-4">
         <PWAInstallButton />
+        <Link
+          href="/admin/configuracoes"
+          title="Configurações do Sistema"
+          aria-label="Configurações do Sistema"
+          className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-zinc-950 font-mono text-xs font-bold transition hover:bg-zinc-100 cursor-pointer ${
+            pathname.startsWith('/admin/configuracoes') ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'
+          }`}
+        >
+          ⚙️
+        </Link>
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center bg-zinc-950 font-mono text-xs font-bold text-white uppercase"
           aria-hidden="true"
