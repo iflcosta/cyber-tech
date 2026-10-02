@@ -141,31 +141,31 @@ export function CameraSyncModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 p-4 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-labelledby="camera-sync-title"
     >
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-        <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="w-full max-w-lg border-2 border-zinc-950 bg-white p-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-3 border-b-2 border-zinc-950 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+              <span className="flex h-2 w-2 bg-emerald-500 animate-pulse" />
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-800">
                 Cyber Camera Sync · Tempo Real
               </span>
             </div>
-            <h2 id="camera-sync-title" className="mt-1 text-lg font-bold text-slate-900">
+            <h2 id="camera-sync-title" className="mt-1 font-mono text-lg font-black uppercase tracking-tight text-zinc-950">
               Fotografar Carcaça pelo Celular
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="font-mono text-xs text-zinc-500">
               Aponte a câmera do seu celular para o QR Code abaixo. Sem precisar fazer login.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="border-2 border-zinc-950 p-1.5 font-mono text-xs font-bold text-zinc-950 hover:bg-zinc-950 hover:text-white transition cursor-pointer"
             aria-label="Fechar modal"
           >
             ✕
@@ -174,20 +174,20 @@ export function CameraSyncModal({
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2 sm:items-center">
           {/* Coluna do QR Code */}
-          <div className="flex flex-col items-center rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+          <div className="flex flex-col items-center border border-zinc-300 bg-zinc-50 p-4 text-center">
             {qrDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={qrDataUrl}
                 alt="QR Code para abrir câmera no celular"
-                className="h-44 w-44 rounded-lg border border-slate-200 bg-white p-2 shadow-xs"
+                className="h-44 w-44 border-2 border-zinc-950 bg-white p-2"
               />
             ) : (
-              <div className="flex h-44 w-44 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs text-slate-400">
+              <div className="flex h-44 w-44 items-center justify-center border-2 border-zinc-950 bg-white font-mono text-xs text-zinc-400">
                 Gerando QR Code…
               </div>
             )}
-            <span className="mt-2 font-mono text-[11px] font-semibold text-slate-600">
+            <span className="mt-2 font-mono text-[11px] font-semibold text-zinc-600">
               Sessão: {sessionToken.slice(0, 14)}
             </span>
             {mobileUrl && (
@@ -195,7 +195,7 @@ export function CameraSyncModal({
                 href={mobileUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-1.5 text-xs font-semibold text-sky-600 underline hover:text-sky-700"
+                className="mt-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline hover:text-zinc-700"
               >
                 Abrir link direto (teste local) ↗
               </a>
@@ -203,26 +203,26 @@ export function CameraSyncModal({
           </div>
 
           {/* Coluna de Status & Instruções */}
-          <div className="space-y-3 text-xs text-slate-600">
-            <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-3 text-sky-900">
-              <p className="font-bold">Como funciona (15 segundos):</p>
-              <ol className="mt-1.5 list-decimal space-y-1 pl-4">
+          <div className="space-y-3 text-xs text-zinc-600">
+            <div className="border-2 border-zinc-950 bg-zinc-50 p-3 text-zinc-950 font-mono">
+              <p className="font-bold uppercase tracking-wider">Como funciona (15 segundos):</p>
+              <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-xs font-normal">
                 <li>Escaneie o QR Code com o celular do bolso.</li>
                 <li>Bata as 3 fotos guiadas (Frente, Traseira/S/N e Laterais).</li>
                 <li>As fotos aparecem aqui na tela do PC automaticamente!</li>
               </ol>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-3">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-700">Fotos recebidas:</span>
-                <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700 border border-emerald-200">
+            <div className="border border-zinc-300 bg-white p-3">
+              <div className="flex items-center justify-between font-mono text-xs">
+                <span className="font-bold uppercase text-zinc-950">Fotos recebidas:</span>
+                <span className="bg-zinc-950 px-2 py-0.5 font-mono text-xs font-bold text-white uppercase">
                   {syncedPhotos.length}
                 </span>
               </div>
 
               {syncedPhotos.length === 0 ? (
-                <p className="mt-2 text-slate-400">
+                <p className="mt-2 font-mono text-xs text-zinc-400">
                   Aguardando captura no celular…
                 </p>
               ) : (
@@ -230,7 +230,7 @@ export function CameraSyncModal({
                   {syncedPhotos.map((url, idx) => (
                     <div
                       key={`${idx}-${url.slice(0, 20)}`}
-                      className="aspect-square overflow-hidden rounded-md border border-emerald-300 bg-slate-100"
+                      className="aspect-square overflow-hidden border border-zinc-300 bg-zinc-100"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={url} alt={`Sincronizada ${idx + 1}`} className="h-full w-full object-cover" />
@@ -241,18 +241,18 @@ export function CameraSyncModal({
             </div>
 
             {sessionStatus === 'completed' && (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-2.5 text-center font-semibold text-emerald-800">
+              <div className="border-2 border-zinc-950 bg-zinc-100 p-2.5 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
                 ✓ Captura concluída no celular!
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+        <div className="mt-6 flex items-center justify-end gap-2 border-t-2 border-zinc-200 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+            className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition cursor-pointer"
           >
             ✓ Concluir e Voltar para OS ({syncedPhotos.length} {syncedPhotos.length === 1 ? 'foto' : 'fotos'})
           </button>

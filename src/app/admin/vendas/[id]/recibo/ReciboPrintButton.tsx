@@ -7,7 +7,7 @@ export function ReciboPrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+      className="border border-zinc-950 bg-black px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 focus:outline-none cursor-pointer"
     >
       🖨️ Imprimir novamente
     </button>

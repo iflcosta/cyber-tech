@@ -112,8 +112,8 @@ export function MovementForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-      <div className="space-y-3">
+    <div className="border-2 border-zinc-950 bg-white p-4 sm:p-6">
+      <div className="space-y-4">
         <Field label="Tipo de movimentação *">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {STOCK_MOVEMENT_TYPES.map((t) => (
@@ -121,10 +121,10 @@ export function MovementForm({
                 key={t.value}
                 type="button"
                 onClick={() => selectMovementType(t.value)}
-                className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
+                className={`border-2 p-2.5 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
                   movementType === t.value
-                    ? 'border-black bg-zinc-100 text-black font-semibold'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'border-zinc-950 bg-zinc-950 text-white font-bold'
+                    : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100'
                 }`}
               >
                 {t.label}
@@ -176,19 +176,19 @@ export function MovementForm({
           />
         </Field>
 
-        <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+        <div className="border-2 border-zinc-950 bg-zinc-50 p-4 font-mono text-xs text-zinc-950">
           <p>
             <strong>Estoque atual:</strong> {currentStock}
           </p>
-          <p>
+          <p className="mt-1">
             <strong>Estoque após:</strong>{' '}
             <span
               className={
                 projectedStock < 0
-                  ? 'font-bold text-red-600'
+                  ? 'font-black text-red-600'
                   : projectedStock === 0
-                    ? 'font-bold text-orange-600'
-                    : 'font-bold text-slate-900'
+                    ? 'font-black text-orange-600'
+                    : 'font-black text-zinc-950'
               }
             >
               {projectedStock}
@@ -206,14 +206,14 @@ export function MovementForm({
         </div>
       </div>
 
-      {error && <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs font-bold text-red-700">{error}</p>}
 
-      <div className="mt-5 flex justify-end gap-2">
+      <div className="mt-6 flex justify-end gap-2 border-t-2 border-zinc-200 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
           disabled={submitting}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+          className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
         >
           Cancelar
         </button>
@@ -221,7 +221,7 @@ export function MovementForm({
           type="button"
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="border-2 border-zinc-950 bg-zinc-950 px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
         >
           {submitting ? 'Salvando…' : 'Confirmar movimentação'}
         </button>
@@ -230,21 +230,20 @@ export function MovementForm({
       <style jsx global>{`
         .form-input {
           width: 100%;
-          border-radius: 0.375rem;
-          border: 1px solid rgb(203 213 225);
-          padding: 0.5rem 0.75rem;
-          font-size: 1rem;
+          border: 1px solid #d4d4d8;
+          padding: 0.55rem 0.85rem;
+          font-size: 0.9rem;
+          font-family: inherit;
           line-height: 1.5;
-          color: rgb(15 23 42);
+          color: #09090b;
           background: white;
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(0 0 0);
-          box-shadow: 0 0 0 1px rgb(0 0 0);
+          border-color: #09090b;
         }
         .form-input::placeholder {
-          color: rgb(148 163 184);
+          color: #a1a1aa;
         }
       `}</style>
     </div>
@@ -254,7 +253,7 @@ export function MovementForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

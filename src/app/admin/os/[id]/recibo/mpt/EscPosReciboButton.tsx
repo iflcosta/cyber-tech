@@ -103,7 +103,7 @@ export function EscPosReciboButton({
     <PrintAgentButton
       label="Imprimir na MPT-II (Bluetooth)"
       buildPayload={buildPayload}
-      className="w-full rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+      className="w-full border border-zinc-950 bg-black px-3 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
     />
   );
 }

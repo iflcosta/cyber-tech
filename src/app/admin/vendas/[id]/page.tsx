@@ -39,7 +39,7 @@ export default async function VendaDetailPage({
   return (
     <div className="space-y-6">
       {sale.voided_at && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+        <div className="border-2 border-red-600 bg-red-50 p-3 font-mono text-xs font-bold uppercase text-red-800">
           <strong>Venda cancelada</strong> em{' '}
           {formatDateTimeBR(sale.voided_at)} por{' '}
           {sale.voided_by_user?.full_name ?? '—'}.
@@ -49,19 +49,19 @@ export default async function VendaDetailPage({
         </div>
       )}
 
-      <div>
-        <Link href="/admin/vendas" className="text-sm font-medium text-slate-600 hover:text-black hover:underline">
+      <div className="border-b-2 border-zinc-950 pb-4">
+        <Link href="/admin/vendas" className="font-mono text-xs font-bold uppercase text-zinc-600 hover:text-zinc-950 hover:underline">
           ← Todas as vendas
         </Link>
-        <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
+        <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-black uppercase tracking-tight text-zinc-950">
           <span className="font-mono">{sale.sale_number}</span>
           {sale.voided_at && (
-            <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">
+            <span className="border border-red-400 bg-red-50 px-2 py-0.5 font-mono text-xs font-bold uppercase text-red-700">
               Cancelada
             </span>
           )}
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-xs font-mono uppercase text-zinc-600">
           {formatDateTimeBR(sale.created_at)} ·{' '}
           Operador: <strong>{sale.author?.full_name ?? '—'}</strong>
         </p>
@@ -71,14 +71,14 @@ export default async function VendaDetailPage({
         <Link
           href={`/admin/vendas/${sale.id}/nota`}
           target="_blank"
-          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors"
+          className="border-2 border-zinc-950 bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-zinc-800 transition"
         >
           📄 Nota / Comprovante (PDF)
         </Link>
         <Link
           href={`/admin/vendas/${sale.id}/recibo`}
           target="_blank"
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+          className="border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
         >
           🧾 {sale.voided_at ? 'Reimprimir cupom 58mm' : 'Cupom 58mm'}
         </Link>
@@ -88,16 +88,16 @@ export default async function VendaDetailPage({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5 lg:col-span-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 lg:col-span-2 shadow-sm">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-200 pb-2">
             Itens ({items?.length ?? 0})
           </h2>
-          <ul className="mt-3 divide-y divide-slate-200">
+          <ul className="mt-3 divide-y divide-zinc-200 font-mono text-xs">
             {(items ?? []).map((item) => (
-              <li key={item.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+              <li key={item.id} className="flex items-center justify-between gap-3 py-2">
                 <div className="flex-1">
-                  <p className="font-medium text-slate-900">{item.item_name}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="font-bold text-zinc-950">{item.item_name}</p>
+                  <p className="text-zinc-500">
                     {item.quantity}x ·{' '}
                     {item.unit_price.toLocaleString('pt-BR', {
                       style: 'currency',
@@ -106,7 +106,7 @@ export default async function VendaDetailPage({
                     cada
                   </p>
                 </div>
-                <span className="font-mono font-medium text-slate-900">
+                <span className="font-bold text-zinc-950">
                   {item.subtotal.toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
@@ -118,29 +118,29 @@ export default async function VendaDetailPage({
         </section>
 
         <aside className="space-y-4">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-200 pb-2">
               Totais
             </h2>
-            <dl className="mt-2 space-y-1.5 text-sm">
+            <dl className="mt-2 space-y-1.5 font-mono text-xs">
               <Row label="Subtotal" value={fmtBRL(sale.subtotal)} />
               {sale.discount > 0 && (
                 <Row label="Desconto" value={`− ${fmtBRL(sale.discount)}`} accent="red" />
               )}
-              <div className="border-t border-slate-200 pt-2">
+              <div className="border-t border-zinc-300 pt-2">
                 <Row
                   label="Total"
-                  value={<strong className="text-lg">{fmtBRL(sale.total)}</strong>}
+                  value={<strong className="text-base font-black text-zinc-950">{fmtBRL(sale.total)}</strong>}
                 />
               </div>
             </dl>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-200 pb-2">
               Pagamento e cliente
             </h2>
-            <dl className="mt-2 space-y-1.5 text-sm">
+            <dl className="mt-2 space-y-1.5 font-mono text-xs">
               <Row label="Forma" value={payMeta?.label ?? sale.payment_method} />
               {sale.customer_name && <Row label="Cliente" value={sale.customer_name} />}
               {sale.customer_phone && <Row label="Telefone" value={sale.customer_phone} />}
@@ -164,10 +164,10 @@ function Row({
 }) {
   return (
     <div className="flex justify-between gap-2">
-      <dt className="text-slate-500">{label}</dt>
+      <dt className="text-zinc-500 uppercase">{label}</dt>
       <dd
-        className={`text-right ${
-          accent === 'red' ? 'font-medium text-red-600' : 'text-slate-900'
+        className={`text-right font-bold ${
+          accent === 'red' ? 'text-red-600' : 'text-zinc-950'
         }`}
       >
         {value}

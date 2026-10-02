@@ -57,44 +57,44 @@ export function MobileNav({
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Fechar menu' : 'Abrir menu'}
         aria-expanded={open}
-        className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100"
+        className="flex h-10 w-10 items-center justify-center border-2 border-zinc-950 text-zinc-950 hover:bg-zinc-100 cursor-pointer"
       >
         {open ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
           </svg>
         ) : (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         )}
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-full z-20 max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-slate-200 bg-white shadow-xl">
+        <div className="absolute inset-x-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b-2 border-zinc-950 bg-white shadow-2xl">
           <div className="flex flex-col gap-1 p-4">
-            <div className="mb-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2.5">
-              <p className="text-sm font-semibold text-slate-900">{userName}</p>
-              <p className="text-xs text-slate-500">{roleLabel}</p>
+            <div className="mb-2 border-2 border-zinc-950 bg-zinc-100 px-3.5 py-2.5">
+              <p className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">{userName}</p>
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{roleLabel}</p>
             </div>
 
             <PWAInstallButton mobile />
 
             <Link
               href="/admin/os/new"
-              className="mb-1 rounded-lg bg-sky-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-sky-700"
+              className="mb-1 bg-zinc-950 px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition min-h-[48px] flex items-center justify-center"
             >
               + Nova OS
             </Link>
             <Link
               href="/admin/vender"
-              className="mb-1 rounded-lg bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-emerald-700"
+              className="mb-1 border-2 border-zinc-950 bg-white px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition min-h-[48px] flex items-center justify-center"
             >
               + Vender
             </Link>
             <Link
               href="/admin/pecas/new"
-              className="mb-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="mb-3 border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-center font-mono text-xs font-semibold uppercase tracking-wider text-zinc-800 hover:bg-zinc-200 transition min-h-[44px] flex items-center justify-center"
             >
               + Pedido Peça
             </Link>
@@ -108,10 +108,10 @@ export function MobileNav({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+                  className={`px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition min-h-[44px] flex items-center ${
                     active
-                      ? 'bg-sky-50 text-sky-700 border border-sky-200'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-zinc-950 text-white'
+                      : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
                   }`}
                 >
                   {link.label}
@@ -119,11 +119,11 @@ export function MobileNav({
               );
             })}
 
-            <div className="mt-4 border-t border-slate-200 pt-4">
+            <div className="mt-4 border-t-2 border-zinc-200 pt-4">
               <button
                 type="button"
                 onClick={logout}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 text-center text-base font-medium text-slate-700 hover:bg-slate-50"
+                className="w-full border-2 border-zinc-950 bg-white px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
               >
                 Sair
               </button>

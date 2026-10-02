@@ -181,26 +181,23 @@ export default function SuporteTIPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[var(--color-cyber-navy)] text-[var(--color-text-on-dark)] pt-28 pb-20">
+      <main className="min-h-screen bg-[#09090b] text-zinc-100 pt-28 pb-20 font-sans antialiased">
         {/* Hero */}
         <section className="container-narrow py-10 md:py-16">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--color-cyber-blue)]/15 border border-[var(--color-cyber-blue)]/30 text-[var(--color-circuit-green)] text-xs font-semibold uppercase tracking-widest mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-700 bg-zinc-900 text-emerald-400 font-mono text-xs font-bold uppercase tracking-widest mb-6">
               <Clock className="w-3.5 h-3.5" />
               Suporte em TI · Empresas, Clínicas, Comércios & Home Office
             </div>
 
-            <h1
-              className="text-3xl sm:text-5xl font-bold leading-tight mb-6"
-              style={{ fontFamily: 'var(--font-space)' }}
-            >
-              Sua operação não pode parar por causa de{' '}
-              <span className="text-[var(--color-circuit-green)]">
-                computador lento, rede caindo ou impressora travada.
+            <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight mb-6">
+              Sua operação não pode parar por{' '}
+              <span className="text-zinc-400">
+                computador lento, rede instável ou falhas de sistema.
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-[var(--color-text-on-dark-muted)] leading-relaxed mb-8">
+            <p className="text-base sm:text-lg text-zinc-400 leading-relaxed mb-8">
               A <strong className="text-white">{brand.name}</strong> oferece{' '}
               <strong className="text-white">
                 Suporte Técnico em TI Remoto e Presencial
@@ -210,55 +207,52 @@ export default function SuporteTIPage() {
               atendimento humano, resposta rápida e laboratório próprio completo.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
               <a
                 href={heroWaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-primary inline-flex items-center gap-2.5 px-6 py-3.5 text-base font-semibold"
+                className="bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider py-3.5 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
               >
-                <MessageCircle className="w-5 h-5" />
-                Falar com Especialista em TI Agora
+                <MessageCircle className="w-4 h-4 shrink-0" />
+                <span>Falar com Especialista em TI Agora</span>
               </a>
               <a
                 href="#modalidades"
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm font-semibold text-white transition-colors"
+                className="border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-3.5 px-5 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
               >
-                Ver Modalidades (Avulso e Mensal)
-                <ArrowRight className="w-4 h-4" />
+                <span>Ver Modalidades (Avulso e Mensal)</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </a>
             </div>
 
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-8 border-t border-white/10 text-xs text-[var(--color-text-on-dark-muted)]">
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-zinc-800 font-mono text-xs text-zinc-400">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[var(--color-circuit-green)] shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>Acesso Remoto Imediato</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[var(--color-circuit-green)] shrink-0" />
-                <span>Visita Presencial em Bragança e Região</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Visita Presencial em Bragança</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[var(--color-circuit-green)] shrink-0" />
-                <span>Laboratório Próprio & Peças em Estoque</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Laboratório Próprio & Peças</span>
               </div>
             </div>
           </div>
         </section>
 
         {/* Para quem é */}
-        <section className="container-narrow py-12 border-t border-white/[0.08]">
+        <section className="container-narrow py-12 border-t border-zinc-800">
           <div className="max-w-2xl mb-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-cyber-blue)] mb-2">
-              Atendimento Especializado por Setor
+            <p className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
+              01 // ATENDIMENTO ESPECIALIZADO POR SETOR
             </p>
-            <h2
-              className="text-2xl sm:text-3xl font-bold"
-              style={{ fontFamily: 'var(--font-space)' }}
-            >
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-white">
               Soluções pensadas para a rotina do seu negócio
             </h2>
-            <p className="mt-2 text-sm text-[var(--color-text-on-dark-muted)]">
+            <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
               Entendemos que cada segmento tem equipamentos e urgências
               diferentes. Atendemos desde consultórios e escritórios até lojas,
               oficinas e profissionais em Home Office.
@@ -271,15 +265,15 @@ export default function SuporteTIPage() {
               return (
                 <div
                   key={sector.title}
-                  className="rounded-xl bg-[var(--color-cyber-navy-mid)] border border-[var(--color-border-on-dark)] p-6 hover:border-[var(--color-cyber-blue)]/50 transition-colors"
+                  className="border border-zinc-800 bg-zinc-900/60 p-6 hover:border-zinc-600 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[var(--color-cyber-blue)]/15 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 text-[var(--color-cyber-blue)]" />
+                  <div className="w-10 h-10 border border-zinc-700 bg-zinc-800 flex items-center justify-center mb-4 text-white">
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-2">
+                  <h3 className="text-base font-bold text-white mb-2">
                     {sector.title}
                   </h3>
-                  <p className="text-sm text-[var(--color-text-on-dark-muted)] leading-relaxed">
+                  <p className="text-xs text-zinc-400 leading-relaxed">
                     {sector.description}
                   </p>
                 </div>
@@ -289,15 +283,12 @@ export default function SuporteTIPage() {
         </section>
 
         {/* O que está incluso / Pilares */}
-        <section className="container-narrow py-12 border-t border-white/[0.08]">
+        <section className="container-narrow py-12 border-t border-zinc-800">
           <div className="max-w-2xl mb-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-circuit-green)] mb-2">
-              Escopo Técnico Completo
+            <p className="font-mono text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
+              02 // ESCOPO TÉCNICO COMPLETO
             </p>
-            <h2
-              className="text-2xl sm:text-3xl font-bold"
-              style={{ fontFamily: 'var(--font-space)' }}
-            >
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-white">
               O que fazemos pela TI da sua empresa
             </h2>
           </div>
@@ -308,15 +299,15 @@ export default function SuporteTIPage() {
               return (
                 <div
                   key={pillar.title}
-                  className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-6"
+                  className="border border-zinc-800 bg-zinc-900/40 p-6"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[var(--color-circuit-green)]/15 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 text-[var(--color-circuit-green)]" />
+                  <div className="w-10 h-10 border border-zinc-700 bg-zinc-800 flex items-center justify-center mb-4 text-emerald-400">
+                    <Icon className="w-5 h-5 text-emerald-400" />
                   </div>
-                  <h3 className="text-base font-bold text-white mb-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-2">
                     {pillar.title}
                   </h3>
-                  <p className="text-sm text-[var(--color-text-on-dark-muted)] leading-relaxed">
+                  <p className="text-xs text-zinc-400 leading-relaxed">
                     {pillar.description}
                   </p>
                 </div>
@@ -328,19 +319,16 @@ export default function SuporteTIPage() {
         {/* Modalidades de contratação */}
         <section
           id="modalidades"
-          className="container-narrow py-12 border-t border-white/[0.08] scroll-mt-24"
+          className="container-narrow py-12 border-t border-zinc-800 scroll-mt-24"
         >
           <div className="max-w-2xl mb-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-cyber-blue)] mb-2">
-              Flexibilidade Total
+            <p className="font-mono text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
+              03 // FLEXIBILIDADE TOTAL
             </p>
-            <h2
-              className="text-2xl sm:text-3xl font-bold"
-              style={{ fontFamily: 'var(--font-space)' }}
-            >
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-white">
               Como você prefere ser atendido?
             </h2>
-            <p className="mt-2 text-sm text-[var(--color-text-on-dark-muted)]">
+            <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
               Trabalhamos tanto com chamados pontuais quanto com planos mensais
               preventivos para empresas que buscam tranquilidade contínua.
             </p>
@@ -352,26 +340,26 @@ export default function SuporteTIPage() {
               return (
                 <div
                   key={plan.title}
-                  className={`rounded-2xl p-6 sm:p-7 flex flex-col justify-between border ${
+                  className={`p-6 sm:p-7 flex flex-col justify-between ${
                     plan.highlighted
-                      ? 'bg-[var(--color-cyber-navy-mid)] border-[var(--color-circuit-green)] shadow-[0_0_32px_rgba(0,255,136,0.12)]'
-                      : 'bg-[var(--color-cyber-navy-mid)]/70 border-[var(--color-border-on-dark)]'
+                      ? 'border-2 border-white bg-zinc-900'
+                      : 'border border-zinc-800 bg-zinc-900/50'
                   }`}
                 >
                   <div>
                     <span
-                      className={`inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full mb-4 ${
+                      className={`inline-block font-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border mb-4 ${
                         plan.highlighted
-                          ? 'bg-[var(--color-circuit-green)] text-black'
-                          : 'bg-white/10 text-white/80'
+                          ? 'border-white bg-white text-black'
+                          : 'border-zinc-700 bg-zinc-800 text-zinc-300'
                       }`}
                     >
                       {plan.badge}
                     </span>
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <h3 className="text-lg font-bold uppercase tracking-tight text-white mb-1.5">
                       {plan.title}
                     </h3>
-                    <p className="text-sm text-[var(--color-text-on-dark-muted)] mb-6">
+                    <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
                       {plan.subtitle}
                     </p>
 
@@ -379,9 +367,9 @@ export default function SuporteTIPage() {
                       {plan.features.map((f) => (
                         <li
                           key={f}
-                          className="flex items-start gap-2.5 text-sm text-white/90"
+                          className="flex items-start gap-2.5 text-xs text-zinc-300 leading-relaxed"
                         >
-                          <CheckCircle2 className="w-4 h-4 text-[var(--color-circuit-green)] shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                           <span>{f}</span>
                         </li>
                       ))}
@@ -392,14 +380,14 @@ export default function SuporteTIPage() {
                     href={planUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`w-full py-3 px-4 rounded-lg text-sm font-semibold text-center inline-flex items-center justify-center gap-2 transition-colors ${
+                    className={`w-full py-3.5 px-4 font-mono text-xs font-bold uppercase tracking-wider text-center inline-flex items-center justify-center gap-2 transition-colors min-h-[48px] ${
                       plan.highlighted
-                        ? 'btn-primary'
-                        : 'bg-white/10 hover:bg-white/20 text-white'
+                        ? 'bg-white hover:bg-zinc-200 text-black'
+                        : 'border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-white'
                     }`}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    {plan.ctaLabel}
+                    <span>{plan.ctaLabel}</span>
                   </a>
                 </div>
               );
@@ -409,33 +397,30 @@ export default function SuporteTIPage() {
 
         {/* CTA Final */}
         <section className="container-narrow pt-8">
-          <div className="rounded-2xl bg-gradient-to-r from-[var(--color-cyber-navy-mid)] to-[#0d274c] border border-[var(--color-cyber-blue)]/40 p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="border-2 border-zinc-800 bg-zinc-900 p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
-              <h2
-                className="text-2xl font-bold text-white mb-2"
-                style={{ fontFamily: 'var(--font-space)' }}
-              >
+              <h2 className="text-2xl font-bold uppercase tracking-tight text-white mb-2">
                 Quer conversar direto com nossa equipe técnica?
               </h2>
-              <p className="text-sm text-[var(--color-text-on-dark-muted)] max-w-xl">
+              <p className="text-xs sm:text-sm text-zinc-400 max-w-xl leading-relaxed">
                 Conte quantos computadores ou notebooks vocês utilizam hoje e
                 montamos a melhor proposta para sua clínica, escritório,
                 comércio ou Home Office em Bragança Paulista.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
               <a
                 href={heroWaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-primary inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold"
+                className="bg-white hover:bg-zinc-200 text-black font-mono font-bold uppercase tracking-wider px-6 py-3.5 text-xs flex items-center justify-center gap-2 min-h-[48px]"
               >
                 <MessageCircle className="w-4 h-4" />
-                Chamar no WhatsApp
+                <span>Chamar no WhatsApp</span>
               </a>
               <Link
                 href="/contato"
-                className="inline-flex items-center gap-2 px-4 py-3 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm font-medium text-white"
+                className="border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold uppercase tracking-wider px-5 py-3.5 text-xs flex items-center justify-center min-h-[48px]"
               >
                 Ver Endereço da Loja
               </Link>

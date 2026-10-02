@@ -50,70 +50,70 @@ export default async function ClientesListPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-zinc-950 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Clientes</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-950">Clientes</h1>
+          <p className="text-xs font-mono uppercase text-zinc-600">
             {(customers ?? []).length} resultado{(customers ?? []).length === 1 ? '' : 's'}
           </p>
         </div>
         {showLeadsButton && (
           <Link
             href="/admin/clientes/leads"
-            className="rounded-md bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
+            className="border-2 border-zinc-950 bg-zinc-950 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-zinc-800 transition"
           >
             📲 Central de Leads & WhatsApp (Suporte TI)
           </Link>
         )}
       </div>
 
-      <form className="rounded-lg border border-slate-200 bg-white p-3" method="get">
+      <form className="border-2 border-zinc-950 bg-white p-3 shadow-sm" method="get">
         <input
           type="search"
           name="q"
           defaultValue={params.q ?? ''}
           placeholder="Buscar por nome, telefone ou e-mail…"
           aria-label="Buscar cliente por nome, telefone ou e-mail"
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
         />
       </form>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div className="border-2 border-red-600 bg-red-50 p-3 font-mono text-xs font-bold uppercase text-red-700">
           Erro ao carregar clientes: {error.message}
         </div>
       )}
 
       {(customers ?? []).length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-slate-200 bg-white p-8 text-center">
-          <p className="text-slate-500">Nenhum cliente encontrado.</p>
-          <p className="mt-1 text-xs text-slate-400">
+        <div className="border-2 border-dashed border-zinc-300 bg-white p-8 text-center font-mono">
+          <p className="text-xs uppercase text-zinc-500">Nenhum cliente encontrado.</p>
+          <p className="mt-1 text-xs text-zinc-400">
             Clientes são criados automaticamente ao abrir uma OS ou vincular uma venda.
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+        <ul className="divide-y divide-zinc-200 border-2 border-zinc-950 bg-white shadow-sm font-mono">
           {(customers ?? []).map((c) => (
             <li key={c.id}>
               <Link
                 href={`/admin/clientes/${c.id}`}
-                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50"
+                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-zinc-50 transition"
               >
                 <div>
-                  <p className="font-medium text-slate-900">{c.name}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="font-bold text-zinc-950">{c.name}</p>
+                  <p className="text-xs text-zinc-500">
                     {c.phone ?? '—'}
                     {c.email && ` · ${c.email}`}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500">
+                <div className="flex items-center gap-2 text-xs">
                   {(osCounts.get(c.id) ?? 0) > 0 && (
-                    <span className="rounded bg-zinc-200 px-1.5 py-0.5 font-medium text-zinc-900">
+                    <span className="border border-zinc-950 bg-zinc-950 px-1.5 py-0.5 text-[11px] font-bold text-white">
                       {osCounts.get(c.id)} OS
                     </span>
                   )}
                   {(saleCounts.get(c.id) ?? 0) > 0 && (
-                    <span className="rounded bg-zinc-100 border border-zinc-300 px-1.5 py-0.5 font-medium text-zinc-800">
+                    <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 text-[11px] font-bold text-zinc-900">
                       {saleCounts.get(c.id)} compra{saleCounts.get(c.id) === 1 ? '' : 's'}
                     </span>
                   )}

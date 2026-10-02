@@ -117,7 +117,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </div>
 
@@ -129,7 +129,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             list="stock-cat-list-edit"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
           <datalist id="stock-cat-list-edit">
             {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
@@ -143,7 +143,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             type="text"
             value={ean13}
             onChange={(e) => setEan13(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
       </div>
@@ -155,7 +155,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             type="text"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
         <div>
@@ -164,7 +164,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             type="text"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
       </div>
@@ -177,7 +177,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             inputMode="decimal"
             value={unitPrice}
             onChange={(e) => setUnitPrice(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
         <div>
@@ -187,7 +187,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             inputMode="decimal"
             value={unitCost}
             onChange={(e) => setUnitCost(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
         <div>
@@ -197,7 +197,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
             min="0"
             value={minStock}
             onChange={(e) => setMinStock(e.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
       </div>
@@ -208,18 +208,18 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
           rows={2}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="mt-1 w-full rounded-md border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
         />
       </div>
 
-      {error && <p className="rounded bg-red-50 p-2 text-xs text-red-700">{error}</p>}
+      {error && <p className="border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
 
       <div className="flex justify-end gap-2 pt-1">
         <button
           type="button"
           onClick={() => setEditing(false)}
           disabled={saving}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+          className="border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-wider text-zinc-700 hover:bg-zinc-50"
         >
           Cancelar
         </button>
@@ -227,7 +227,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="bg-black px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {saving ? 'Salvando…' : 'Salvar alterações'}
         </button>

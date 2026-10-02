@@ -88,10 +88,10 @@ export default async function PartOrdersListPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Pedidos de Peça</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">Pedidos de Peça</h1>
+          <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">
             {filtered.length} resultado{filtered.length === 1 ? '' : 's'}
             {params.status && params.status !== 'all' && (
               ` (filtrado por ${PART_ORDER_STATUSES.find((s) => s.value === params.status)?.label ?? params.status})`
@@ -101,13 +101,13 @@ export default async function PartOrdersListPage({
         <div className="flex flex-shrink-0 gap-2">
           <Link
             href="/admin/fornecedores"
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
           >
             Fornecedores
           </Link>
           <Link
             href="/admin/pecas/new"
-            className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 lg:hidden"
+            className="border-2 border-zinc-950 bg-zinc-950 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition lg:hidden"
           >
             + Novo pedido
           </Link>
@@ -117,17 +117,17 @@ export default async function PartOrdersListPage({
       <PartOrderFilter />
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div className="border border-red-500 bg-red-50 p-3 font-mono text-xs text-red-700">
           Erro ao carregar pedidos: {error.message}
         </div>
       )}
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-slate-200 bg-white p-8 text-center">
-          <p className="text-slate-500">Nenhum pedido de peça encontrado com esses filtros.</p>
+        <div className="border-2 border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
+          <p className="font-mono text-xs text-zinc-500">Nenhum pedido de peça encontrado com esses filtros.</p>
           <Link
             href="/admin/pecas/new"
-            className="mt-3 inline-block text-sm font-medium text-slate-800 hover:text-black hover:underline"
+            className="mt-3 inline-block font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline hover:text-zinc-700"
           >
             Registrar o primeiro →
           </Link>
@@ -138,34 +138,34 @@ export default async function PartOrdersListPage({
             <Link
               key={o.id}
               href={`/admin/pecas/${o.id}`}
-              className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-black hover:shadow-md"
+              className="block border-2 border-zinc-950 bg-white p-4 transition hover:bg-zinc-50"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-mono text-sm font-bold text-zinc-950">
                     {o.part_description}
-                    {o.part_variant && <span className="text-slate-500"> · {o.part_variant}</span>}
+                    {o.part_variant && <span className="text-zinc-500 font-normal"> · {o.part_variant}</span>}
                   </p>
-                  <p className="text-sm text-slate-500">{o.supplier_name}</p>
+                  <p className="font-mono text-xs text-zinc-500">{o.supplier_name}</p>
                 </div>
                 <PartOrderStatusBadge status={o.status} />
               </div>
-              <div className="mt-2 flex items-center justify-between text-sm">
-                <span className="text-slate-600">
+              <div className="mt-3 flex items-center justify-between font-mono text-xs">
+                <span className="text-zinc-600">
                   {o.os_label ? (
                     <>OS {o.os_label}{o.customer_name ? ` · ${o.customer_name}` : ''}</>
                   ) : o.context_note ? (
                     o.context_note
                   ) : (
-                    <span className="text-slate-500">Sem OS vinculada</span>
+                    <span className="text-zinc-400">Sem OS vinculada</span>
                   )}
                 </span>
-                <span className="font-mono font-medium text-slate-900">
+                <span className="font-mono font-black text-zinc-950">
                   {Number(o.part_value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </span>
               </div>
               {o.status === 'return_pending' && o.days_since_update >= PART_ORDER_STALE_DAYS && (
-                <p className="mt-2 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                <p className="mt-2 border border-red-300 bg-red-50 px-2 py-1 font-mono text-xs font-bold text-red-700">
                   ⚠️ Sinalizada há {o.days_since_update} dias sem confirmar devolução
                 </p>
               )}

@@ -43,28 +43,28 @@ export function ToggleActiveButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
+        className={`border px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
           active
-            ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
-            : 'border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50'
+            ? 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100'
+            : 'border-emerald-600 bg-emerald-50 text-emerald-950 hover:bg-emerald-100'
         }`}
       >
         {active ? 'Desativar' : 'Reativar'}
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} titleId={titleId}>
-        <h2 id={titleId} className="text-lg font-bold text-slate-900">
+        <h2 id={titleId} className="font-mono text-lg font-black uppercase tracking-tight text-zinc-950">
           {active ? 'Desativar item?' : 'Reativar item?'}
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          <strong>{itemName}</strong>
+        <p className="mt-1 font-mono text-xs text-zinc-500">
+          <strong className="text-zinc-950">{itemName}</strong>
         </p>
 
-        <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+        <div className="mt-3 border border-zinc-300 bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
           {active ? (
             <>
-              Item vai <strong>sair da lista</strong> e do PDV (nao da mais pra
-              bipar). Mas o <strong>historico de vendas e movimentacoes</strong>
+              Item vai <strong>sair da lista</strong> e do PDV (não dá mais pra
+              bipar). Mas o <strong>histórico de vendas e movimentações</strong>
               {' '}fica intacto. Pode reativar depois.
             </>
           ) : (
@@ -75,17 +75,17 @@ export function ToggleActiveButton({
         </div>
 
         {error && (
-          <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">
+          <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs font-bold text-red-700">
             {error}
           </p>
         )}
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex justify-end gap-2 border-t-2 border-zinc-200 pt-4">
           <button
             type="button"
             onClick={() => setOpen(false)}
             disabled={submitting}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+            className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
           >
             Cancelar
           </button>
@@ -93,10 +93,10 @@ export function ToggleActiveButton({
             type="button"
             onClick={toggle}
             disabled={submitting}
-            className={`rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 ${
+            className={`px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50 cursor-pointer ${
               active
-                ? 'bg-slate-600 hover:bg-slate-700'
-                : 'bg-emerald-700 hover:bg-emerald-800'
+                ? 'border-2 border-zinc-950 bg-zinc-950 hover:bg-zinc-800'
+                : 'border-2 border-emerald-700 bg-emerald-700 hover:bg-emerald-800'
             }`}
           >
             {submitting ? 'Salvando…' : active ? 'Desativar' : 'Reativar'}

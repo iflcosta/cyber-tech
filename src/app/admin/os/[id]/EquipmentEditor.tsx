@@ -136,7 +136,7 @@ export function EquipmentEditor({
             <Row
               label="Senha"
               value={
-                <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs text-zinc-900">
+                <code className="border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs text-zinc-900">
                   {initialPassword}
                 </code>
               }
@@ -150,18 +150,18 @@ export function EquipmentEditor({
           )}
         </dl>
       ) : (
-        <div className="mt-2.5 space-y-2.5 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+        <div className="mt-2.5 space-y-2.5 border border-zinc-300 bg-zinc-50 p-3">
           <div>
-            <span className="block text-xs font-medium text-zinc-600">Tipo de aparelho</span>
+            <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Tipo de aparelho</span>
             <div className="mt-1 grid grid-cols-3 gap-1.5">
               {EQUIPMENT_TYPES.map((t) => (
                 <button
                   key={t.value}
                   type="button"
                   onClick={() => setSelectedCategory(t.value)}
-                  className={`rounded-md border px-2 py-1 text-xs font-medium transition ${
+                  className={`border px-2 py-1 font-mono text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
                     selectedCategory === t.value
-                      ? 'border-black bg-zinc-900 text-white font-semibold'
+                      ? 'border-zinc-950 bg-zinc-950 text-white'
                       : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100'
                   }`}
                 >
@@ -173,7 +173,7 @@ export function EquipmentEditor({
 
           {selectedCategory === 'outro' && (
             <label className="block">
-              <span className="block text-xs font-semibold text-zinc-900">
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-900">
                 Qual é o aparelho? (especifique)
               </span>
               <input
@@ -181,74 +181,74 @@ export function EquipmentEditor({
                 value={customType}
                 onChange={(e) => setCustomType(e.target.value)}
                 placeholder="Ex: GPS, Monitor, Videogame, Impressora…"
-                className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-1 w-full border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
           )}
 
           <div className="grid grid-cols-2 gap-2">
             <label className="block">
-              <span className="block text-xs font-medium text-zinc-600">Marca</span>
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Marca</span>
               <input
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 placeholder="Ex: Aquarius"
-                className="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-0.5 w-full border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
             <label className="block">
-              <span className="block text-xs font-medium text-zinc-600">Modelo</span>
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Modelo</span>
               <input
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="Ex: Discovery Channel"
-                className="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-0.5 w-full border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
             <label className="block">
-              <span className="block text-xs font-medium text-zinc-600">Cor</span>
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Cor</span>
               <input
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
                 placeholder="Ex: Preto"
-                className="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-0.5 w-full border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
             <label className="block">
-              <span className="block text-xs font-medium text-zinc-600">IMEI / Serial</span>
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">IMEI / Serial</span>
               <input
                 value={serial}
                 onChange={(e) => setSerial(e.target.value)}
-                className="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-0.5 w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
             <label className="block">
-              <span className="block text-xs font-medium text-zinc-600">Senha / Padrão</span>
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Senha / Padrão</span>
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-0.5 w-full border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
             <label className="block">
-              <span className="block text-xs font-medium text-zinc-600">Previsão</span>
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Previsão</span>
               <input
                 type="date"
                 value={estimatedReady}
                 onChange={(e) => setEstimatedReady(e.target.value)}
-                className="mt-0.5 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-0.5 w-full border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </label>
           </div>
 
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="font-mono text-xs text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={cancel}
               disabled={saving}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
+              className="border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 cursor-pointer"
             >
               Cancelar
             </button>
@@ -256,7 +256,7 @@ export function EquipmentEditor({
               type="button"
               onClick={save}
               disabled={saving}
-              className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+              className="bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
             >
               {saving ? 'Salvando…' : 'Salvar aparelho'}
             </button>

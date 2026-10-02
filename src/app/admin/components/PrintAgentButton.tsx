@@ -48,7 +48,7 @@ export function PrintAgentButton({
         disabled={status === 'sending'}
         className={
           className ??
-          'rounded-md bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60'
+          'bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-60 transition cursor-pointer'
         }
       >
         {status === 'sending' ? 'Enviando…' : `🖨️ ${label}`}
@@ -58,7 +58,7 @@ export function PrintAgentButton({
         onClick={handleConfigure}
         title="Configurar endereço do agente de impressão"
         aria-label="Configurar agente de impressão"
-        className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-600"
+        className="border border-zinc-300 p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 transition cursor-pointer"
       >
         ⚙️
       </button>

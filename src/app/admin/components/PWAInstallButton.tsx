@@ -96,12 +96,12 @@ export function PWAInstallButton({ mobile = false }: { mobile?: boolean }) {
         title="Instalar Cyber ERP na Área de Trabalho"
         className={
           mobile
-            ? 'mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-center text-sm font-bold text-emerald-900 hover:bg-emerald-100 transition'
-            : 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 transition'
+            ? 'mb-2 flex w-full items-center justify-center gap-2 border-2 border-zinc-950 bg-white px-4 py-2.5 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition'
+            : 'inline-flex items-center gap-1.5 whitespace-nowrap border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition'
         }
       >
-        <span aria-hidden="true">🖥️</span>
-        <span>Instalar App</span>
+        <span aria-hidden="true">📱</span>
+        <span>Instalar PWA</span>
       </button>
 
       {showHelpModal && (
@@ -110,40 +110,40 @@ export function PWAInstallButton({ mobile = false }: { mobile?: boolean }) {
           onClick={() => setShowHelpModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-2xl"
+            className="w-full max-w-md border-2 border-zinc-950 bg-white p-5 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3 border-b-2 border-zinc-950 pb-3">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-900 text-base text-white">
-                  🖥️
+                <span className="flex h-9 w-9 items-center justify-center border border-zinc-950 bg-zinc-950 text-base text-white">
+                  📱
                 </span>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    Instalar Cyber ERP no Computador
+                  <h3 className="font-black uppercase tracking-tight text-zinc-950">
+                    Instalar Cyber ERP PWA
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    Cria atalho na Área de Trabalho e abre em janela dedicada
+                  <p className="text-xs font-mono uppercase text-zinc-600">
+                    Acesso rápido de bancada no mobile e desktop
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowHelpModal(false)}
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="font-mono p-1 text-zinc-400 hover:text-zinc-950"
               >
                 ✕
               </button>
             </div>
 
-            <div className="mt-4 space-y-2.5 text-xs text-slate-700">
+            <div className="mt-4 space-y-2.5 text-xs text-zinc-800">
               {/* iPhone / Safari */}
-              <div className="rounded-lg border border-sky-200 bg-sky-50/70 p-3">
-                <p className="font-bold text-sky-950 flex items-center gap-1.5">
+              <div className="border border-zinc-950 bg-zinc-50 p-3 font-mono">
+                <p className="font-bold uppercase tracking-wide text-zinc-950 flex items-center gap-1.5">
                   <span>📱</span>
-                  <span>No iPhone / iPad (Safari)</span>
+                  <span>iPhone / iPad (Safari)</span>
                 </p>
-                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-sky-900">
+                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-zinc-700">
                   <li>
                     Toque no ícone de <strong>Compartilhar</strong> (o quadrado com a seta para cima na barra inferior).
                   </li>
@@ -157,12 +157,12 @@ export function PWAInstallButton({ mobile = false }: { mobile?: boolean }) {
               </div>
 
               {/* Android / Chrome */}
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-3">
-                <p className="font-bold text-emerald-950 flex items-center gap-1.5">
+              <div className="border border-zinc-950 bg-zinc-50 p-3 font-mono">
+                <p className="font-bold uppercase tracking-wide text-zinc-950 flex items-center gap-1.5">
                   <span>🤖</span>
-                  <span>No Android (Chrome)</span>
+                  <span>Android (Chrome)</span>
                 </p>
-                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-emerald-900">
+                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-zinc-700">
                   <li>
                     Toque nos <strong>3 pontinhos (⋮)</strong> no canto superior direito do Chrome.
                   </li>
@@ -173,12 +173,12 @@ export function PWAInstallButton({ mobile = false }: { mobile?: boolean }) {
               </div>
 
               {/* Computador / Windows / Mac */}
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="font-bold text-slate-900 flex items-center gap-1.5">
+              <div className="border border-zinc-300 bg-zinc-50 p-3 font-mono">
+                <p className="font-bold uppercase tracking-wide text-zinc-950 flex items-center gap-1.5">
                   <span>🖥️</span>
-                  <span>No Computador (Chrome / Edge)</span>
+                  <span>Computador (Chrome / Edge)</span>
                 </p>
-                <p className="mt-1 text-slate-600">
+                <p className="mt-1 text-zinc-700">
                   Clique no ícone de <strong>computador com seta</strong> no canto direito da barra de endereços (ao lado dos favoritos) ou acesse o menu <strong>⋮ &rarr; Instalar página como app</strong>.
                 </p>
               </div>
@@ -188,7 +188,7 @@ export function PWAInstallButton({ mobile = false }: { mobile?: boolean }) {
               <button
                 type="button"
                 onClick={() => setShowHelpModal(false)}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-xs font-bold text-white hover:bg-zinc-800"
+                className="border-2 border-zinc-950 bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
               >
                 Entendi
               </button>

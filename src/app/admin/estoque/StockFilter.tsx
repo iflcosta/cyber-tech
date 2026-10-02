@@ -39,21 +39,21 @@ export function StockFilter() {
         onChange={(e) => setQ(e.target.value)}
         placeholder="Buscar no catálogo: nome, código de barras (EAN-13), SKU interno, prateleira, marca…"
         aria-label="Buscar no catálogo: nome, código de barras, SKU interno, marca"
-        className="flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
+        className="flex-1 border border-zinc-300 bg-white px-3.5 py-2 text-sm font-mono text-zinc-950 placeholder-zinc-400 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10 shadow-sm"
       />
       <button
         type="submit"
-        className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700 transition shadow-xs"
+        className="border-2 border-zinc-950 bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm"
       >
         Buscar
       </button>
       <button
         type="button"
         onClick={() => apply({ low: lowActive ? null : '1' })}
-        className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+        className={`px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider transition ${
           lowActive
-            ? 'bg-amber-600 text-white border border-amber-600 shadow-xs'
-            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            ? 'border-2 border-amber-600 bg-amber-600 text-white shadow-sm'
+            : 'border border-zinc-300 bg-white text-zinc-700 hover:border-zinc-950 hover:bg-zinc-100'
         }`}
       >
         {lowActive ? '✓ Só Estoque Baixo' : 'Estoque Baixo'}
@@ -61,10 +61,10 @@ export function StockFilter() {
       <button
         type="button"
         onClick={() => apply({ inactive: inactiveActive ? null : '1' })}
-        className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+        className={`px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider transition ${
           inactiveActive
-            ? 'bg-slate-800 text-white border border-slate-800'
-            : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            ? 'border-2 border-zinc-950 bg-zinc-950 text-white shadow-sm'
+            : 'border border-zinc-300 bg-white text-zinc-700 hover:border-zinc-950 hover:bg-zinc-100'
         }`}
       >
         {inactiveActive ? '✓ Mostrando Inativos' : 'Ver Inativos'}

@@ -221,24 +221,24 @@ export default function MobileCameraSyncPage({
 
   if (status === 'completed') {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-[#FAFAFA] px-5 text-center text-slate-900">
-        <div className="w-full max-w-sm rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl">
-            ✅
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-zinc-50 px-5 text-center text-zinc-950">
+        <div className="w-full max-w-sm border-2 border-zinc-950 bg-white p-6 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-zinc-950 bg-zinc-100 text-2xl font-mono">
+            ✓
           </div>
-          <h1 className="mt-4 text-xl font-bold text-slate-900">
+          <h1 className="mt-4 text-xl font-black uppercase tracking-tight text-zinc-950">
             Fotos Sincronizadas no Balcão!
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            <strong>{photos.length}</strong> {photos.length === 1 ? 'foto foi anexada' : 'fotos foram anexadas'} diretamente à Ordem de Serviço no computador do balcão.
+          <p className="mt-2 text-xs font-mono text-zinc-600">
+            <strong className="text-zinc-950">{photos.length}</strong> {photos.length === 1 ? 'foto foi anexada' : 'fotos foram anexadas'} diretamente à Ordem de Serviço no computador do balcão.
           </p>
-          <p className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+          <p className="mt-4 border border-zinc-300 bg-zinc-50 p-3 font-mono text-xs text-zinc-600">
             Você já pode guardar o celular no bolso e concluir a impressão da etiqueta 58mm no PC.
           </p>
           <button
             type="button"
             onClick={() => setStatus('active')}
-            className="mt-5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="mt-5 w-full border-2 border-zinc-950 bg-white px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
           >
             + Tirar mais fotos nesta sessão
           </button>
@@ -248,40 +248,40 @@ export default function MobileCameraSyncPage({
   }
 
   return (
-    <div className="min-h-dvh bg-[#FAFAFA] pb-12 text-slate-900">
-      {/* Header Mobile Modern Retail */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-md">
+    <div className="min-h-dvh bg-zinc-50 pb-12 text-zinc-950">
+      {/* Header Mobile CIS-01 */}
+      <header className="sticky top-0 z-10 border-b-2 border-zinc-950 bg-white px-4 py-3">
         <div className="mx-auto flex max-w-md items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-sm font-bold tracking-tight text-slate-900">
+            <span className="flex h-2 w-2 bg-emerald-500 animate-pulse" />
+            <span className="font-mono text-sm font-black uppercase tracking-tight text-zinc-950">
               Cyber Camera Sync
             </span>
           </div>
-          <span className="rounded-md bg-sky-50 px-2 py-0.5 font-mono text-[11px] font-semibold text-sky-700 border border-sky-200">
+          <span className="border border-zinc-950 bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
             {photos.length} {photos.length === 1 ? 'foto' : 'fotos'}
           </span>
         </div>
       </header>
 
       <main className="mx-auto max-w-md space-y-4 px-4 pt-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-          <h1 className="text-base font-bold text-slate-900">
+        <div className="border-2 border-zinc-950 bg-white p-4 shadow-sm">
+          <h1 className="font-black uppercase tracking-tight text-zinc-950">
             Vistoria Fotográfica de Check-in
           </h1>
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs font-mono text-zinc-600">
             Toque em cada ângulo abaixo para abrir a câmera traseira. As fotos aparecem em tempo real na tela do PC.
           </p>
         </div>
 
         {feedback && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
+          <div className="border-2 border-emerald-600 bg-emerald-50 p-3 font-mono text-xs font-bold uppercase text-emerald-800">
             {feedback}
           </div>
         )}
 
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+          <div className="border-2 border-red-600 bg-red-50 p-3 font-mono text-xs font-bold uppercase text-red-700">
             {error}
           </div>
         )}
@@ -295,35 +295,35 @@ export default function MobileCameraSyncPage({
             return (
               <label
                 key={slot.id}
-                className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-4 transition active:scale-[0.99] ${
+                className={`flex cursor-pointer items-center justify-between gap-3 border-2 p-4 transition ${
                   hasPhotoForSlot
-                    ? 'border-emerald-300 bg-emerald-50/40'
-                    : 'border-slate-200 bg-white hover:border-sky-300'
+                    ? 'border-emerald-600 bg-emerald-50/50'
+                    : 'border-zinc-950 bg-white hover:bg-zinc-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center border text-xl ${
                       hasPhotoForSlot
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-sky-50 text-sky-700'
+                        ? 'border-emerald-600 bg-emerald-100 text-emerald-800'
+                        : 'border-zinc-950 bg-zinc-100 text-zinc-950'
                     }`}
                   >
                     {hasPhotoForSlot ? '✓' : slot.icon}
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900">{slot.title}</div>
-                    <div className="text-xs text-slate-500">{slot.subtitle}</div>
+                    <div className="text-sm font-bold uppercase tracking-tight text-zinc-950">{slot.title}</div>
+                    <div className="text-xs font-mono text-zinc-600">{slot.subtitle}</div>
                   </div>
                 </div>
 
                 <span
-                  className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${
+                  className={`shrink-0 border px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider ${
                     isUploading
-                      ? 'bg-amber-100 text-amber-800'
+                      ? 'border-amber-400 bg-amber-100 text-amber-900'
                       : hasPhotoForSlot
-                        ? 'bg-white border border-emerald-300 text-emerald-700'
-                        : 'bg-sky-600 text-white shadow-xs'
+                        ? 'border-emerald-600 bg-white text-emerald-800'
+                        : 'border-zinc-950 bg-zinc-950 text-white'
                   }`}
                 >
                   {isUploading ? 'Enviando…' : hasPhotoForSlot ? '+ Outra' : '📷 Fotografar'}
@@ -343,7 +343,7 @@ export default function MobileCameraSyncPage({
         </div>
 
         {/* Botão de Fotos Extras */}
-        <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-white p-3.5 text-xs font-semibold text-slate-700 hover:border-sky-400 hover:bg-sky-50/30 transition">
+        <label className="flex cursor-pointer items-center justify-center gap-2 border-2 border-dashed border-zinc-950 bg-white p-3.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition">
           <span>➕ Adicionar foto extra / detalhe de avaria</span>
           <input
             type="file"
@@ -358,12 +358,12 @@ export default function MobileCameraSyncPage({
 
         {/* Miniaturas já sincronizadas */}
         {photos.length > 0 && (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Fotos já no PC do Balcão ({photos.length})
+          <div className="border-2 border-zinc-950 bg-white p-4 shadow-sm">
+            <div className="mb-2 flex items-center justify-between border-b border-zinc-200 pb-2">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
+                Fotos no PC do Balcão ({photos.length})
               </span>
-              <span className="text-[11px] font-semibold text-emerald-600">
+              <span className="font-mono text-[11px] font-bold uppercase text-emerald-700">
                 Sincronizado ✓
               </span>
             </div>
@@ -371,7 +371,7 @@ export default function MobileCameraSyncPage({
               {photos.map((url, idx) => (
                 <div
                   key={`${idx}-${url.slice(0, 24)}`}
-                  className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
+                  className="relative aspect-square overflow-hidden border border-zinc-950 bg-zinc-100"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -379,7 +379,7 @@ export default function MobileCameraSyncPage({
                     alt={`Foto ${idx + 1}`}
                     className="h-full w-full object-cover"
                   />
-                  <span className="absolute bottom-1 left-1 rounded bg-slate-900/75 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white">
+                  <span className="absolute bottom-1 left-1 bg-zinc-950/90 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white">
                     #{idx + 1}
                   </span>
                 </div>
@@ -392,7 +392,7 @@ export default function MobileCameraSyncPage({
         <button
           type="button"
           onClick={finishSession}
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition"
+          className="w-full border-2 border-zinc-950 bg-zinc-950 px-4 py-3.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-zinc-800 transition"
         >
           ✓ Concluir Captura ({photos.length} {photos.length === 1 ? 'foto' : 'fotos'})
         </button>

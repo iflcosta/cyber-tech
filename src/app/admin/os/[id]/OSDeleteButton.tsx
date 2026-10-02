@@ -71,7 +71,7 @@ export function OSDeleteButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+        className="w-full border-2 border-red-500 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 transition cursor-pointer"
       >
         🗑️ Apagar esta OS
       </button>
@@ -79,18 +79,18 @@ export function OSDeleteButton({
   }
 
   return (
-    <section className="rounded-lg border-2 border-red-300 bg-red-50 p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-red-900">
+    <section className="border-2 border-red-500 bg-red-50 p-4">
+      <h2 className="font-mono text-xs font-black uppercase tracking-wider text-red-900">
         ⚠️ Apagar {osShortId}?
       </h2>
-      <p className="mt-2 text-xs text-red-800">
+      <p className="mt-2 font-mono text-xs text-red-900">
         Esta ação é <strong>irreversível</strong>. A OS, todos os eventos da timeline
         e qualquer foto associada serão apagados permanentemente.
       </p>
 
       <div className="mt-3">
-        <label htmlFor="confirm-delete" className="block text-xs font-medium text-red-900">
-          Digite <code className="rounded bg-red-100 px-1 py-0.5 font-mono text-red-800">APAGAR</code> para confirmar:
+        <label htmlFor="confirm-delete" className="block font-mono text-xs font-bold text-red-900">
+          Digite <code className="border border-red-300 bg-white px-1 py-0.5 font-mono text-red-800">APAGAR</code> para confirmar:
         </label>
         <input
           id="confirm-delete"
@@ -98,16 +98,16 @@ export function OSDeleteButton({
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           autoComplete="off"
-          className="mt-1 w-full rounded-md border border-red-300 bg-white px-2 py-1.5 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          className="mt-1 w-full border-2 border-red-500 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 focus:outline-none"
           placeholder="APAGAR"
         />
       </div>
 
       {error && (
-        <p className="mt-2 rounded-md bg-red-100 p-2 text-xs text-red-900">{error}</p>
+        <p className="mt-2 border border-red-300 bg-white p-2 font-mono text-xs font-bold text-red-900">{error}</p>
       )}
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-4 flex gap-2">
         <button
           type="button"
           onClick={() => {
@@ -116,7 +116,7 @@ export function OSDeleteButton({
             setError(null);
           }}
           disabled={deleting}
-          className="flex-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          className="flex-1 border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-50 cursor-pointer"
         >
           Cancelar
         </button>
@@ -124,7 +124,7 @@ export function OSDeleteButton({
           type="button"
           onClick={handleDelete}
           disabled={!confirmMatches || deleting}
-          className="flex-1 rounded-md bg-red-600 px-2 py-1.5 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1 border-2 border-red-600 bg-red-600 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 transition cursor-pointer"
         >
           {deleting ? 'Apagando…' : 'Apagar para sempre'}
         </button>

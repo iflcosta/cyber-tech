@@ -54,49 +54,49 @@ export function DeleteStockItemButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
+        className="border-2 border-red-500 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 transition cursor-pointer"
       >
         🗑️ Deletar
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} titleId={titleId}>
-        <h2 id={titleId} className="text-lg font-bold text-slate-900">Deletar item</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          <strong>{itemName}</strong>
+        <h2 id={titleId} className="font-mono text-lg font-black uppercase tracking-tight text-zinc-950">Deletar item</h2>
+        <p className="mt-1 font-mono text-xs text-zinc-500">
+          <strong className="text-zinc-950">{itemName}</strong>
         </p>
 
         {hasSales ? (
-          <div className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+          <div className="mt-3 border border-amber-300 bg-amber-50 p-3 font-mono text-xs text-amber-950">
             <strong>Atenção:</strong> este item aparece em{' '}
             <strong>
               {salesCount} {salesCount === 1 ? 'venda' : 'vendas'}
             </strong>
-            . Nao da pra deletar (quebra o historico).
+            . Não dá pra deletar (quebra o histórico).
             <p className="mt-1">
-              Use o botao <strong>Desativar</strong> ao lado — esconde da lista
-              mas mantem o historico de vendas.
+              Use o botão <strong>Desativar</strong> ao lado — esconde da lista
+              mas mantém o histórico de vendas.
             </p>
           </div>
         ) : (
-          <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-900">
-            <strong>Acao irreversivel.</strong> O item sera removido
-            permanentemente. Como nunca foi vendido, da pra deletar sem perder
-            historico.
+          <div className="mt-3 border border-red-300 bg-red-50 p-3 font-mono text-xs text-red-950">
+            <strong>Ação irreversível.</strong> O item será removido
+            permanentemente. Como nunca foi vendido, dá pra deletar sem perder
+            histórico.
           </div>
         )}
 
         {error && (
-          <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">
+          <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs font-bold text-red-700">
             {error}
           </p>
         )}
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex justify-end gap-2 border-t-2 border-zinc-200 pt-4">
           <button
             type="button"
             onClick={() => setOpen(false)}
             disabled={submitting}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+            className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
           >
             Voltar
           </button>
@@ -105,7 +105,7 @@ export function DeleteStockItemButton({
               type="button"
               onClick={deleteItem}
               disabled={submitting}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              className="border-2 border-red-600 bg-red-600 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-red-700 disabled:opacity-50 transition cursor-pointer"
             >
               {submitting ? 'Deletando…' : 'Deletar permanentemente'}
             </button>

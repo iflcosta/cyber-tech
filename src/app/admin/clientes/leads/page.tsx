@@ -191,7 +191,7 @@ export default async function ClientesLeadsPage() {
             <h1 className="text-2xl font-bold text-zinc-950">
               Central CRM de Leads Quentes, Pós-Venda & Suporte em TI
             </h1>
-            <span className="rounded bg-zinc-900 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
+            <span className="border border-zinc-900 bg-zinc-900 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
               Exclusivo · Iago (Mkt & Dev)
             </span>
           </div>

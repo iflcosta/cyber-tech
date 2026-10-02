@@ -153,12 +153,12 @@ export function UsePartForm({
 
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
         Usar peça do estoque
       </h3>
       {newItemMode ? (
-        <div className="mt-1.5 space-y-2 rounded-md border border-zinc-300 bg-zinc-50 p-2.5">
-          <p className="text-xs text-slate-600">
+        <div className="mt-2 space-y-3 border-2 border-zinc-950 bg-zinc-50 p-3">
+          <p className="font-mono text-xs text-zinc-600">
             Cadastra a peça no estoque e já registra o uso nesta OS numa operação só.
           </p>
           <input
@@ -166,37 +166,37 @@ export function UsePartForm({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Nome da peça (ex: Conector USB-C avulso)"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-full border border-zinc-300 bg-white px-3 py-2 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
           />
           <div className="grid grid-cols-3 gap-2">
             <input
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Categoria (opcional)"
-              className="col-span-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              className="col-span-1 border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
             />
             <input
               value={newPrice}
               onChange={(e) => setNewPrice(e.target.value)}
               inputMode="decimal"
-              placeholder="Preço de venda R$"
-              title="Preço de venda — o que é cobrado do cliente. Preço de custo fica opcional, editável depois em Estoque."
-              className="col-span-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Preço R$"
+              title="Preço de venda cobrado do cliente."
+              className="col-span-1 border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
             />
             <input
               type="number"
               min="1"
               value={newQty}
               onChange={(e) => setNewQty(e.target.value)}
-              className="col-span-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-center font-mono text-sm text-zinc-950"
+              className="col-span-1 border border-zinc-300 bg-white px-2 py-1.5 text-center font-mono text-xs text-zinc-950"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
               onClick={submitNewItem}
               disabled={newSubmitting}
-              className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+              className="border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
             >
               {newSubmitting ? 'Cadastrando…' : 'Cadastrar e usar'}
             </button>
@@ -207,24 +207,24 @@ export function UsePartForm({
                 setNewError(null);
               }}
               disabled={newSubmitting}
-              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+              className="border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 cursor-pointer"
             >
               Cancelar
             </button>
           </div>
-          {newError && <p className="rounded-md bg-red-50 p-1.5 text-xs text-red-700">{newError}</p>}
+          {newError && <p className="border border-red-300 bg-red-50 p-1.5 font-mono text-xs font-bold text-red-700">{newError}</p>}
         </div>
       ) : !selected ? (
-        <div className="mt-1.5">
+        <div className="mt-2">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar cabo, SSD, RAM…"
             aria-label="Buscar peça no estoque"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-full border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:outline-none"
           />
           {suggestions.length > 0 && (
-            <ul className="mt-1.5 divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
+            <ul className="mt-1 divide-y divide-zinc-200 border-2 border-zinc-950 bg-white font-mono text-xs">
               {suggestions.map((i) => (
                 <li key={i.id}>
                   <button
@@ -233,10 +233,10 @@ export function UsePartForm({
                       setSelected(i);
                       setSearch('');
                     }}
-                    className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-sm hover:bg-slate-50"
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-zinc-100 transition cursor-pointer"
                   >
-                    <span className="font-medium text-slate-900">{i.name}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="font-bold text-zinc-950">{i.name}</span>
+                    <span className="text-[11px] text-zinc-500">
                       {i.current_stock} em estoque · {fmtBRL(i.unit_price)}
                     </span>
                   </button>
@@ -247,16 +247,16 @@ export function UsePartForm({
           <button
             type="button"
             onClick={() => setNewItemMode(true)}
-            className="mt-1.5 text-xs font-semibold text-zinc-900 underline hover:text-black"
+            className="mt-1.5 inline-block font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline hover:text-zinc-700 cursor-pointer"
           >
             Não achou? Cadastrar peça nova →
           </button>
         </div>
       ) : (
-        <div className="mt-1.5 flex items-center gap-2 rounded-md border border-slate-300 bg-white p-2">
+        <div className="mt-2 flex items-center gap-2 border-2 border-zinc-950 bg-white p-2.5 font-mono text-xs">
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-900">{selected.name}</p>
-            <p className="text-xs text-slate-500">
+            <p className="font-bold text-zinc-950">{selected.name}</p>
+            <p className="text-[11px] text-zinc-500">
               {selected.current_stock} em estoque · {fmtBRL(selected.unit_price)} cada
             </p>
           </div>
@@ -266,13 +266,13 @@ export function UsePartForm({
             max={selected.current_stock}
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            className="w-16 rounded-md border border-slate-300 bg-white px-2 py-1 text-center font-mono text-sm text-zinc-950"
+            className="w-16 border border-zinc-300 bg-white px-2 py-1 text-center font-mono text-xs text-zinc-950"
           />
           <button
             type="button"
             onClick={submit}
             disabled={submitting}
-            className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+            className="border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
           >
             {submitting ? '…' : 'Usar'}
           </button>
@@ -280,16 +280,16 @@ export function UsePartForm({
             type="button"
             onClick={() => setSelected(null)}
             disabled={submitting}
-            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100"
+            className="border-2 border-zinc-950 p-1.5 font-mono text-xs font-bold text-zinc-950 hover:bg-zinc-100 cursor-pointer"
             aria-label="Cancelar"
           >
             ✕
           </button>
         </div>
       )}
-      {error && <p className="mt-1.5 rounded-md bg-red-50 p-1.5 text-xs text-red-700">{error}</p>}
+      {error && <p className="mt-2 border border-red-300 bg-red-50 p-1.5 font-mono text-xs font-bold text-red-700">{error}</p>}
       {newSaved && (
-        <p className="mt-1.5 text-xs font-medium text-zinc-900">
+        <p className="mt-2 border border-emerald-500 bg-emerald-50 p-1.5 font-mono text-xs font-bold text-emerald-950">
           ✓ Peça cadastrada e usada nesta OS
         </p>
       )}

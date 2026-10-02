@@ -90,17 +90,17 @@ export function RepairNotesEditor({
           disabled={!canEdit}
           rows={3}
           placeholder="Descreva o diagnóstico constatado e o serviço realizado na bancada..."
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-zinc-50 disabled:text-zinc-500"
+          className="mt-1 block w-full border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-zinc-50 disabled:text-zinc-500"
         />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-zinc-600">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">
             Valor do Serviço / Mão de Obra (R$)
           </label>
           <div className="relative mt-1">
-            <span className="pointer-events-none absolute left-3 top-2 text-sm text-zinc-500">
+            <span className="pointer-events-none absolute left-3 top-2 font-mono text-sm text-zinc-500">
               R$
             </span>
             <input
@@ -110,12 +110,12 @@ export function RepairNotesEditor({
               onChange={(e) => setLabor(e.target.value)}
               disabled={!canEdit}
               placeholder="0,00"
-              className="block w-full rounded-md border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-zinc-50 disabled:text-zinc-500"
+              className="block w-full border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-zinc-50 disabled:text-zinc-500"
             />
           </div>
         </div>
 
-        <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+        <div className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs">
           <div className="flex items-center justify-between text-zinc-600">
             <span>Serviço: <strong className="font-mono text-zinc-900">{fmtBRL(liveLaborNum)}</strong></span>
             <span>Peças: <strong className="font-mono text-zinc-900">{fmtBRL(partsTotal)}</strong></span>
@@ -133,12 +133,12 @@ export function RepairNotesEditor({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-md bg-black px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors cursor-pointer"
+            className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors cursor-pointer"
           >
             {saving ? 'Salvando...' : 'Salvar diagnóstico e valor'}
           </button>
-          {saved && <span className="text-xs font-medium text-zinc-900">✓ Salvo com sucesso</span>}
-          {error && <span className="text-xs text-red-600">{error}</span>}
+          {saved && <span className="font-mono text-xs font-bold text-zinc-950">✓ Salvo com sucesso</span>}
+          {error && <span className="font-mono text-xs text-red-600">{error}</span>}
         </div>
       )}
     </div>

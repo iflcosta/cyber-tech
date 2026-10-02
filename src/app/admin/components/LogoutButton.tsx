@@ -16,7 +16,7 @@ export function LogoutButton() {
   return (
     <button
       onClick={logout}
-      className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition"
+      className="p-1.5 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-950 transition cursor-pointer"
       title="Sair"
       aria-label="Sair"
     >

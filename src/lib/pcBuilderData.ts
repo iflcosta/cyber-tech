@@ -39,7 +39,7 @@ export function calculateProfile(selections: Record<string, PCBuilderOption>): {
   }
 
   if (gpu.includes("integrado") || cpu.includes("i3") || cpu.includes("r3")) {
-    return { profile: "Home Office", color: "text-blue-400" };
+    return { profile: "Home Office", color: "text-zinc-400" };
   }
 
   return { profile: "Entusiasta", color: "text-amber-400" };

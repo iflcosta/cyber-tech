@@ -57,7 +57,7 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
         preserveAspectRatio="xMidYMax meet"
       >
         {/* Linha de base */}
-        <line x1={PAD} y1={H} x2={W - PAD} y2={H} stroke="#e2e8f0" strokeWidth={1} />
+        <line x1={PAD} y1={H} x2={W - PAD} y2={H} stroke="#d4d4d8" strokeWidth={1} />
 
         {data.map((d, i) => {
           const barH = (d.total / max) * usableH;
@@ -74,16 +74,17 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
                 y={d.total > 0 ? y : H - 2}
                 width={barW}
                 height={d.total > 0 ? Math.max(2, barH) : 2}
-                rx={3}
-                fill={d.isToday ? '#09090b' : '#a1a1aa'}
+                rx={0}
+                fill={d.isToday ? '#09090b' : '#71717a'}
               />
               {d.isToday && (
                 <text
                   x={x + barW / 2}
                   y={Math.max(10, y - 6)}
                   textAnchor="middle"
-                  fontSize={12}
-                  fontWeight={700}
+                  fontSize={11}
+                  fontWeight={800}
+                  fontFamily="monospace"
                   fill="#09090b"
                 >
                   {fmtBRLShort(d.total)}
@@ -95,7 +96,8 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
                   y={H + 14}
                   textAnchor="middle"
                   fontSize={10}
-                  fill="#94a3b8"
+                  fontFamily="monospace"
+                  fill="#71717a"
                 >
                   {d.weekday}
                 </text>
@@ -106,23 +108,23 @@ export function SalesChart({ data }: { data: DayPoint[] }) {
       </svg>
 
       <details className="mt-1">
-        <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600">
+        <summary className="cursor-pointer font-mono text-xs text-zinc-500 hover:text-zinc-950 uppercase tracking-wider">
           Ver como tabela
         </summary>
-        <table className="mt-2 w-full text-xs">
+        <table className="mt-2 w-full font-mono text-xs">
           <thead>
-            <tr className="text-left text-slate-500">
-              <th className="pb-1 font-medium">Dia</th>
-              <th className="pb-1 text-right font-medium">Total</th>
+            <tr className="text-left text-zinc-500 border-b border-zinc-200">
+              <th className="pb-1 font-bold uppercase">Dia</th>
+              <th className="pb-1 text-right font-bold uppercase">Total</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-zinc-200">
             {data.map((d, i) => (
               <tr key={i}>
-                <td className="py-0.5 text-slate-700">
+                <td className="py-0.5 text-zinc-700">
                   {d.dateLabel} ({d.weekday}){d.isToday ? ' · hoje' : ''}
                 </td>
-                <td className="py-0.5 text-right font-mono text-slate-900">{fmtBRL(d.total)}</td>
+                <td className="py-0.5 text-right font-bold text-zinc-950">{fmtBRL(d.total)}</td>
               </tr>
             ))}
           </tbody>

@@ -33,7 +33,7 @@ export function WhatsAppButton({
 
   if (!link) {
     return (
-      <p className="text-xs text-slate-500 italic">Sem telefone cadastrado.</p>
+      <p className="font-mono text-xs text-zinc-500 italic">Sem telefone cadastrado.</p>
     );
   }
 
@@ -54,21 +54,21 @@ export function WhatsAppButton({
           href={finalLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"
+          className="inline-flex items-center gap-2 bg-emerald-700 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-emerald-800 transition cursor-pointer"
         >
           <WhatsAppIcon /> WhatsApp
         </a>
         <button
           type="button"
           onClick={() => setShowQR((v) => !v)}
-          className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="inline-flex items-center gap-2 border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-800 hover:bg-zinc-100 transition cursor-pointer"
         >
           {showQR ? 'Ocultar QR' : 'Mostrar QR'}
         </button>
         {phone && (
           <a
             href={`tel:${phone}`}
-            className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-1 border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-800 hover:bg-zinc-100 transition cursor-pointer"
           >
             Ligar
           </a>
@@ -76,16 +76,16 @@ export function WhatsAppButton({
       </div>
 
       {showQR && (
-        <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="border border-zinc-300 bg-white p-3 shadow-2xs">
           <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-start">
             <QRCodeImage
               value={finalLink}
               size={140}
               alt="QR Code para abrir WhatsApp"
-              className="rounded border border-slate-200"
+              className="border border-zinc-200"
             />
             <div className="flex-1 space-y-2">
-              <p className="text-xs font-medium text-slate-700">
+              <p className="text-xs font-medium text-zinc-700">
                 Escaneie com a camera do celular pra abrir o WhatsApp direto.
               </p>
               <textarea
@@ -93,9 +93,9 @@ export function WhatsAppButton({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={defaultMsg}
                 rows={3}
-                className="block w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="block w-full border border-zinc-300 px-2 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-zinc-500">
                 O texto acima sera enviado como primeira mensagem (opcional).
               </p>
             </div>

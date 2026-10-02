@@ -68,15 +68,15 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/admin/pecas" className="text-sm font-medium text-slate-600 hover:text-black hover:underline">
+        <Link href="/admin/pecas" className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600 underline hover:text-zinc-950">
           ← Todos os pedidos
         </Link>
-        <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
+        <h1 className="mt-2 flex flex-wrap items-center gap-2 font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">
           {order.part_description}
-          {order.part_variant && <span className="text-lg font-normal text-slate-500">· {order.part_variant}</span>}
+          {order.part_variant && <span className="text-base font-normal text-zinc-500">· {order.part_variant}</span>}
           <PartOrderStatusBadge status={order.status} />
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="font-mono text-xs text-zinc-500">
           {supplier?.name ?? '(fornecedor removido)'}
           {supplier?.phone ? ` · ${supplier.phone}` : ''}
         </p>
@@ -84,23 +84,23 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Vínculo</h2>
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">Vínculo</h2>
             {so ? (
-              <p className="mt-1 text-slate-900">
+              <p className="mt-2 font-mono text-xs text-zinc-950">
                 OS{' '}
-                <Link href={`/admin/os/${so.id}`} className="font-mono font-semibold text-slate-900 underline hover:text-black">
+                <Link href={`/admin/os/${so.id}`} className="font-mono font-bold text-zinc-950 underline hover:text-zinc-700">
                   {so.short_id ?? so.os_number}
                 </Link>
                 {' · '}{so.customer?.name}
               </p>
             ) : (
-              <p className="mt-1 text-slate-700">{order.context_note ?? <span className="text-slate-500">Sem contexto</span>}</p>
+              <p className="mt-2 font-mono text-xs text-zinc-700">{order.context_note ?? <span className="text-zinc-400">Sem contexto</span>}</p>
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Linha do tempo</h2>
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">Linha do tempo</h2>
             <div className="mt-3">
               <PartOrderTimeline events={events ?? []} authorNames={authorNames} />
             </div>
@@ -117,17 +117,17 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
             />
           )}
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Valor</h2>
-            <p className="mt-1 font-mono text-xl font-bold text-slate-900">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">Valor</h2>
+            <p className="mt-2 font-mono text-2xl font-black text-zinc-950">
               {Number(order.part_value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </p>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Pedido por</h2>
-            <p className="mt-1 text-sm text-slate-900">{requester?.full_name ?? '—'}</p>
-            <p className="text-xs text-slate-500">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">Pedido por</h2>
+            <p className="mt-2 font-mono text-xs font-bold text-zinc-950">{requester?.full_name ?? '—'}</p>
+            <p className="font-mono text-[11px] text-zinc-500">
               {formatDateTimeShortBR(order.created_at)}
             </p>
           </section>

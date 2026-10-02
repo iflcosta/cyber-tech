@@ -97,7 +97,7 @@ export function TechnicianAssigner({
         {assignedTech ? (
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider ${
                 isAssignedToMe
                   ? 'bg-zinc-950 text-white'
                   : 'border border-zinc-300 bg-zinc-100 text-zinc-900'
@@ -106,14 +106,14 @@ export function TechnicianAssigner({
               <span>👤</span>
               <span>{assignedTech.full_name}</span>
               {isAssignedToMe && (
-                <span className="rounded bg-white/20 px-1.5 py-0.2 font-mono text-[10px] uppercase">
+                <span className="bg-white/20 px-1.5 py-0.2 font-mono text-[10px] uppercase">
                   Você
                 </span>
               )}
             </span>
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900">
+          <span className="inline-flex items-center gap-1.5 border border-amber-300 bg-amber-50 px-2.5 py-1 font-mono text-xs font-bold uppercase text-amber-900">
             <span>⚠️</span>
             <span>Sem técnico atribuído</span>
           </span>
@@ -124,7 +124,7 @@ export function TechnicianAssigner({
             type="button"
             disabled={saving}
             onClick={() => assignTo(currentUserId)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
           >
             <span>🔧</span>
             <span>{saving ? 'Atribuindo…' : 'Assumir para mim'}</span>
@@ -133,15 +133,15 @@ export function TechnicianAssigner({
       </div>
 
       {canEdit && changing && (
-        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2.5 space-y-2">
-          <label className="block text-xs font-medium text-zinc-700">
+        <div className="border border-zinc-300 bg-zinc-50 p-2.5 space-y-2">
+          <label className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
             Selecionar técnico para esta OS:
           </label>
           <select
             defaultValue={currentTechnicianId ?? ''}
             disabled={saving}
             onChange={(e) => assignTo(e.target.value || null)}
-            className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 focus:border-black focus:outline-none"
+            className="w-full border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 focus:border-black focus:outline-none"
           >
             <option value="">— Sem técnico (Fila geral) —</option>
             {technicians.map((t) => (
@@ -154,7 +154,7 @@ export function TechnicianAssigner({
             <button
               type="button"
               onClick={() => setChanging(false)}
-              className="text-xs font-medium text-zinc-500 hover:text-zinc-800"
+              className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-800 cursor-pointer"
             >
               Cancelar
             </button>
@@ -162,7 +162,7 @@ export function TechnicianAssigner({
         </div>
       )}
 
-      {error && <p className="rounded bg-red-50 p-2 text-xs text-red-700">{error}</p>}
+      {error && <p className="border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
     </div>
   );
 }

@@ -35,11 +35,11 @@ export function PartOrderFilter() {
           defaultValue={urlQ}
           placeholder="Buscar por peça, fornecedor, OS…"
           aria-label="Buscar por peça, fornecedor, OS"
-          className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="flex-1 border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:outline-none"
         />
         <button
           type="submit"
-          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+          className="border-2 border-zinc-950 bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer"
         >
           Buscar
         </button>
@@ -74,10 +74,10 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
     <button
       type="button"
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ring-1 transition ${
+      className={`whitespace-nowrap px-3 py-1 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
         active
-          ? 'bg-black text-white ring-black'
-          : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'
+          ? 'border-2 border-zinc-950 bg-zinc-950 text-white font-bold'
+          : 'border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 font-medium'
       }`}
     >
       {label}

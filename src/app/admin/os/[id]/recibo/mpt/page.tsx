@@ -174,20 +174,20 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm">
-        <span className="text-zinc-900">
+      <div className="print:hidden mb-4 flex flex-wrap items-center justify-between gap-2 border-2 border-zinc-950 bg-zinc-50 p-3 font-mono text-xs">
+        <span className="font-bold uppercase tracking-wider text-zinc-950">
           Versão MPT-II 58mm. <strong>Imprima na MPT-II</strong> (Generic / Text Only).
         </span>
         <div className="flex gap-2">
           <Link
             href={`/admin/os/${so.id}/recibo`}
-            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            className="border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
           >
             Versão A4 (PDF)
           </Link>
           <Link
             href={`/admin/os/${so.id}`}
-            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            className="border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
           >
             ← Voltar pra OS
           </Link>
@@ -210,18 +210,18 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
             warrantyEndStr={warrantyEndStr}
             deliveredToName={so.delivered_to_name}
           />
-          <p className="text-xs text-zinc-600">
-            O botão abaixo manda comandos reais (negrito, corte) via agente de impressão local —
+          <p className="font-mono text-xs text-zinc-500">
+            O botão acima manda comandos reais (negrito, corte) via agente de impressão local —
             precisa estar rodando no PC da bancada (ver <code>print-agent/README.md</code>).
           </p>
         </div>
         <AutoPrint />
-        <pre className="mt-2 whitespace-pre-wrap rounded-md border border-zinc-300 bg-white p-3 font-mono text-xs leading-tight text-black print:border-none print:p-0">
+        <pre className="mt-3 whitespace-pre-wrap border-2 border-zinc-950 bg-white p-4 font-mono text-xs leading-tight text-zinc-950 print:border-none print:p-0">
 {reciboText}
         </pre>
         {grandTotal > 0 && (
-          <div className="print:hidden mt-4 rounded-md border border-zinc-200 bg-zinc-50 p-3">
-            <p className="text-xs font-semibold text-zinc-700">
+          <div className="print:hidden mt-4 border-2 border-zinc-950 bg-zinc-50 p-4 font-mono">
+            <p className="text-xs font-bold uppercase tracking-wider text-zinc-950">
               💰 PIX pra cobrar R$ {grandTotal.toFixed(2)}
             </p>
             <div className="mt-2">
@@ -230,7 +230,7 @@ export default async function ReciboMPTPag({ params }: { params: Promise<{ id: s
                 txid={so.os_number ?? undefined}
                 description={`OS ${so.os_number ?? ''}`.substring(0, 50)}
                 buttonLabel="Gerar QR do PIX"
-                buttonClassName="w-full justify-center rounded-md bg-black px-3 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
+                buttonClassName="w-full justify-center border-2 border-zinc-950 bg-zinc-950 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
               />
             </div>
           </div>

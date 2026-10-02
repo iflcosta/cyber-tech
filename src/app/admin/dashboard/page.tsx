@@ -347,32 +347,32 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b-2 border-zinc-950 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-sm text-slate-500">
-            Resumo rapido do movimento da loja.
+          <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-950">Dashboard</h1>
+          <p className="text-xs font-mono uppercase text-zinc-600">
+            Resumo da operação e telemetria de bancada.
           </p>
         </div>
         <PixQRButton
           buttonLabel="PIX avulso"
-          description="Pagamento avulso Cyber Informatica"
-          buttonClassName="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          description="Pagamento avulso Cyber Informática"
+          buttonClassName="inline-flex items-center gap-2 border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-bold uppercase text-zinc-950 hover:border-zinc-950 hover:bg-zinc-100 transition shadow-sm"
         />
       </div>
 
       {/* Minha Bancada — atalho rápido para as OS atribuídas ao usuário logado */}
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <section className="border-2 border-zinc-950 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-sm text-white">
+            <span className="flex h-8 w-8 items-center justify-center border border-zinc-950 bg-zinc-950 text-sm text-white">
               🔧
             </span>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
+              <h2 className="text-sm font-black uppercase tracking-tight text-zinc-950">
                 Minha Bancada ({currentUserName})
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs font-mono uppercase text-zinc-600">
                 OS ativas atribuídas diretamente a você
               </p>
             </div>
@@ -382,14 +382,14 @@ export default async function DashboardPage() {
             {unassignedBenchCount > 0 && (
               <Link
                 href="/admin/os?tech=unassigned"
-                className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                className="inline-flex items-center gap-1.5 border border-amber-400 bg-amber-50 px-3 py-1.5 font-mono text-xs font-bold uppercase text-amber-900 hover:bg-amber-100"
               >
                 ⚠️ {unassignedBenchCount} sem técnico
               </Link>
             )}
             <Link
               href="/admin/os?tech=me"
-              className="inline-flex items-center gap-1.5 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
+              className="inline-flex items-center gap-1.5 border border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase text-white hover:bg-zinc-800 transition"
             >
               Ver minhas OS ({myBenchItems.length}) →
             </Link>
@@ -399,39 +399,39 @@ export default async function DashboardPage() {
         <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           <Link
             href="/admin/os?tech=me&status=awaiting_diagnosis"
-            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+            className="border border-zinc-300 bg-zinc-50 p-3 transition hover:border-zinc-950 hover:bg-zinc-100"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600">
               Em Triagem
             </p>
-            <p className="mt-1 text-xl font-bold text-slate-900">{myTriagemCount}</p>
+            <p className="mt-1 text-xl font-black font-mono text-zinc-950">{myTriagemCount}</p>
           </Link>
           <Link
             href="/admin/os?tech=me&status=awaiting_approval"
-            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+            className="border border-zinc-300 bg-zinc-50 p-3 transition hover:border-zinc-950 hover:bg-zinc-100"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600">
               Aguard. Aprovação
             </p>
-            <p className="mt-1 text-xl font-bold text-slate-900">{myOrcamentoCount}</p>
+            <p className="mt-1 text-xl font-black font-mono text-zinc-950">{myOrcamentoCount}</p>
           </Link>
           <Link
             href="/admin/os?tech=me&status=in_progress"
-            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+            className="border border-zinc-300 bg-zinc-50 p-3 transition hover:border-zinc-950 hover:bg-zinc-100"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600">
               Em Reparo / Peça
             </p>
-            <p className="mt-1 text-xl font-bold text-slate-900">{myManutencaoCount}</p>
+            <p className="mt-1 text-xl font-black font-mono text-zinc-950">{myManutencaoCount}</p>
           </Link>
           <Link
             href="/admin/os?tech=me&status=ready"
-            className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition hover:border-slate-300 hover:bg-slate-100/70"
+            className="border border-zinc-300 bg-zinc-50 p-3 transition hover:border-zinc-950 hover:bg-zinc-100"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600">
               Prontas
             </p>
-            <p className="mt-1 text-xl font-bold text-emerald-700">{myProntasCount}</p>
+            <p className="mt-1 text-xl font-black font-mono text-emerald-700">{myProntasCount}</p>
           </Link>
         </div>
 
@@ -453,18 +453,18 @@ export default async function DashboardPage() {
                 <Link
                   key={o.id}
                   href={`/admin/os/${o.id}`}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs transition hover:border-slate-300 hover:bg-slate-50"
+                  className="flex items-center justify-between gap-2 border border-zinc-300 bg-white px-3 py-2 text-xs transition hover:border-zinc-950 hover:bg-zinc-50"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-slate-900">
+                      <span className="font-mono font-bold text-zinc-950">
                         {o.short_id ?? o.os_number}
                       </span>
-                      <span className="truncate font-medium text-slate-700">
+                      <span className="truncate font-medium text-zinc-800">
                         {o.customer_name}
                       </span>
                     </div>
-                    <p className="truncate text-[11px] text-slate-500">
+                    <p className="truncate text-[11px] font-mono text-zinc-500">
                       {eqLabel || 'Equipamento'}
                     </p>
                   </div>
@@ -477,12 +477,12 @@ export default async function DashboardPage() {
             })}
           </div>
         ) : (
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs font-mono text-zinc-500">
             Nenhuma OS ativa atribuída a você no momento.{' '}
             {unassignedBenchCount > 0 && (
               <Link
                 href="/admin/os?tech=unassigned"
-                className="font-semibold text-amber-700 underline hover:text-amber-800"
+                className="font-bold text-amber-700 underline hover:text-amber-800"
               >
                 Ver {unassignedBenchCount} OS aguardando atribuição →
               </Link>
@@ -491,29 +491,27 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      {/* Painel "hoje" — o que precisa de atenção, não só contador. Os
-          cards de números abaixo já existiam; isso junta o que dá pra
-          fazer alguma coisa a respeito agora, num lugar só. */}
+      {/* Painel "hoje" — o que precisa de atenção */}
       {attentionCount > 0 && (
-        <section className="rounded-lg border-2 border-orange-200 bg-orange-50/60 p-4 sm:p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-orange-800">
+        <section className="border-2 border-amber-500 bg-amber-50/60 p-4 sm:p-5">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-amber-900">
             ⚠️ Precisa de atenção hoje
           </h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {staleItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <div className="border border-amber-300 bg-white p-3 font-mono">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-700">
                   OS parada
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {staleItems.map((o) => (
                     <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-xs hover:underline">
                         <span className="truncate">
-                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
+                          <span className="font-bold text-zinc-950">{o.short_id ?? o.os_number}</span>
                           {' '}{o.customer_name}
                         </span>
-                        <span className="shrink-0 text-xs text-orange-700">{o.days_since_update}d</span>
+                        <span className="shrink-0 text-xs font-bold text-amber-700">{o.days_since_update}d</span>
                       </Link>
                     </li>
                   ))}
@@ -521,19 +519,19 @@ export default async function DashboardPage() {
               </div>
             )}
             {readyItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <div className="border border-amber-300 bg-white p-3 font-mono">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-700">
                   Pronta, sem retirada
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {readyItems.map((o) => (
                     <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-xs hover:underline">
                         <span className="truncate">
-                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
+                          <span className="font-bold text-zinc-950">{o.short_id ?? o.os_number}</span>
                           {' '}{o.customer_name}
                         </span>
-                        <span className="shrink-0 text-xs text-orange-700">{o.daysReady}d</span>
+                        <span className="shrink-0 text-xs font-bold text-amber-700">{o.daysReady}d</span>
                       </Link>
                     </li>
                   ))}
@@ -541,19 +539,19 @@ export default async function DashboardPage() {
               </div>
             )}
             {unpaidItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <div className="border border-amber-300 bg-white p-3 font-mono">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-700">
                   Entregue, não pago
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {unpaidItems.map((o) => (
                     <li key={o.id}>
-                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
+                      <Link href={`/admin/os/${o.id}`} className="flex items-center justify-between gap-2 text-xs hover:underline">
                         <span className="truncate">
-                          <span className="font-mono font-medium">{o.short_id ?? o.os_number}</span>
+                          <span className="font-bold text-zinc-950">{o.short_id ?? o.os_number}</span>
                           {' '}{o.customer_name}
                         </span>
-                        <span className="shrink-0 text-xs text-orange-700">{o.daysUnpaid}d</span>
+                        <span className="shrink-0 text-xs font-bold text-amber-700">{o.daysUnpaid}d</span>
                       </Link>
                     </li>
                   ))}
@@ -561,18 +559,18 @@ export default async function DashboardPage() {
               </div>
             )}
             {partsWaitingItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-white p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <div className="border border-amber-300 bg-white p-3 font-mono">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-700">
                   Peça pedida, sem chegar
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {partsWaitingItems.map((p) => (
                     <li key={p.id}>
-                      <Link href={`/admin/pecas/${p.id}`} className="flex items-center justify-between gap-2 text-sm hover:text-black hover:underline">
+                      <Link href={`/admin/pecas/${p.id}`} className="flex items-center justify-between gap-2 text-xs hover:underline">
                         <span className="truncate">
-                          {p.part_description} <span className="text-slate-500">· {p.supplier_name}</span>
+                          {p.part_description} <span className="text-zinc-500">· {p.supplier_name}</span>
                         </span>
-                        <span className="shrink-0 text-xs text-orange-700">{p.daysWaiting}d</span>
+                        <span className="shrink-0 text-xs font-bold text-amber-700">{p.daysWaiting}d</span>
                       </Link>
                     </li>
                   ))}
@@ -585,59 +583,55 @@ export default async function DashboardPage() {
 
       {/* Numeros da bancada (OS) */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="mb-2 text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
           Bancada
         </h2>
         <div className="grid gap-3 sm:grid-cols-4">
           <Link
             href="/admin/os"
-            className="block rounded-lg border-2 border-slate-200 bg-white p-4 transition hover:shadow-md"
+            className="block border-2 border-zinc-950 bg-white p-4 transition hover:bg-zinc-50 shadow-sm"
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Abertas</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{osOpenCount}</p>
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">Abertas</p>
+            <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{osOpenCount}</p>
           </Link>
           <Link
             href="/admin/os?status=all"
-            className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${
-              osStaleCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white'
+            className={`block border-2 p-4 transition hover:bg-zinc-50 shadow-sm ${
+              osStaleCount > 0 ? 'border-amber-500 bg-amber-50' : 'border-zinc-950 bg-white'
             }`}
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Paradas (≥ 3 dias)
             </p>
-            <p className={`mt-1 text-2xl font-bold ${osStaleCount > 0 ? 'text-orange-700' : 'text-slate-900'}`}>
+            <p className={`mt-1 text-2xl font-black font-mono ${osStaleCount > 0 ? 'text-amber-800' : 'text-zinc-950'}`}>
               {osStaleCount}
             </p>
           </Link>
           <Link
             href="/admin/os?status=ready"
-            className="block rounded-lg border-2 border-zinc-300 bg-white p-4 transition hover:border-black hover:shadow-md"
+            className="block border-2 border-zinc-950 bg-white p-4 transition hover:bg-zinc-50 shadow-sm"
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Prontas p/ retirada
             </p>
-            <p className="mt-1 text-2xl font-bold text-zinc-950">{osReadyCount}</p>
+            <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{osReadyCount}</p>
           </Link>
-          <div className="block rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+          <div className="block border-2 border-zinc-950 bg-zinc-50 p-4 shadow-sm">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Serviços / Mão de obra (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(laborRevenueMonth)}</p>
+            <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{fmtBRL(laborRevenueMonth)}</p>
           </div>
         </div>
       </section>
 
-      {/* Vendas: gráfico primeiro (visão geral da tendência), cards de
-          totais depois (números exatos + comparação vs período anterior).
-          Todos os 3 cards usam a mesma cor — são a mesma métrica em 3
-          janelas de tempo diferentes, não categorias diferentes; variar a
-          cor aqui só criava a impressão de que eram coisas distintas. */}
+      {/* Vendas */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="mb-2 text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
           Vendas (PDV)
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-          <p className="mb-2 text-xs font-medium text-slate-500">Últimos {CHART_DAYS} dias</p>
+        <div className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+          <p className="mb-2 text-xs font-mono uppercase text-zinc-600">Últimos {CHART_DAYS} dias</p>
           <SalesChart data={chartData} />
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -666,85 +660,82 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Peças de fornecedores — SEPARADO de Vendas (PDV) de propósito.
-          Isso não é receita nem é venda: é o que a loja encomendou de
-          fornecedor pra consertar OS de cliente. O que disso vira venda
-          o dono calcula à parte, por fora daqui. */}
+      {/* Peças de fornecedores */}
       <section>
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
             Peças de fornecedores
           </h2>
           <Link
             href="/admin/pecas"
-            className="text-xs font-medium text-slate-700 hover:text-black hover:underline"
+            className="text-xs font-mono font-bold uppercase text-zinc-950 hover:underline"
           >
             Ver todos →
           </Link>
         </div>
-        <p className="mt-1 text-xs text-slate-500">
-          Fluxo de encomendas a fornecedores — não é venda. O que vira venda pro cliente, o dono calcula à parte.
+        <p className="mt-1 text-xs font-mono text-zinc-500">
+          Fluxo de encomendas a fornecedores — não é venda direta.
         </p>
         <div className="mt-2 grid gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border-2 border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+          <div className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-sm">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Pedido (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{fmtBRL(partsOrderedTotal)}</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{fmtBRL(partsOrderedTotal)}</p>
+            <p className="mt-1 text-xs font-mono text-zinc-600">
               {partsOrderedCount} pedido{partsOrderedCount === 1 ? '' : 's'}
             </p>
           </div>
-          <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+          <div className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-sm">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Aplicado (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(partsAppliedTotal)}</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{fmtBRL(partsAppliedTotal)}</p>
+            <p className="mt-1 text-xs font-mono text-zinc-600">
               {partsAppliedCount} peça{partsAppliedCount === 1 ? '' : 's'} usada{partsAppliedCount === 1 ? '' : 's'}
             </p>
           </div>
-          <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+          <div className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-sm">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Devolvido (mês)
             </p>
-            <p className="mt-1 text-2xl font-bold text-slate-700">{fmtBRL(partsReturnedTotal)}</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-2xl font-black font-mono text-zinc-700">{fmtBRL(partsReturnedTotal)}</p>
+            <p className="mt-1 text-xs font-mono text-zinc-600">
               {partsReturnedCount} devolução{partsReturnedCount === 1 ? '' : 's'}
             </p>
           </div>
           <Link
             href="/admin/pecas"
-            className={`block rounded-lg border-2 p-4 transition hover:shadow-md ${
-              partsOpenCount > 0 ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-white'
+            className={`block border-2 p-4 transition hover:bg-zinc-50 shadow-sm ${
+              partsOpenCount > 0 ? 'border-amber-500 bg-amber-50' : 'border-zinc-950 bg-white'
             }`}
           >
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Em aberto agora
             </p>
-            <p className={`mt-1 text-2xl font-bold ${partsOpenCount > 0 ? 'text-orange-700' : 'text-slate-900'}`}>
+            <p className={`mt-1 text-2xl font-black font-mono ${partsOpenCount > 0 ? 'text-amber-800' : 'text-zinc-950'}`}>
               {fmtBRL(partsOpenTotal)}
             </p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs font-mono text-zinc-600">
               {partsOpenCount} pedido{partsOpenCount === 1 ? '' : 's'} não resolvido{partsOpenCount === 1 ? '' : 's'}
             </p>
           </Link>
         </div>
 
         {supplierTotalsSorted.length > 0 && (
-          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="mt-3 border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
               Pedido no mês, por fornecedor
             </h3>
-            <ul className="mt-2 divide-y divide-slate-200">
+            <ul className="mt-2 divide-y divide-zinc-200">
               {supplierTotalsSorted.map((s) => (
-                <li key={s.name} className="flex items-center justify-between gap-3 py-1.5 text-sm">
-                  <span className="text-slate-900">{s.name}</span>
+                <li key={s.name} className="flex items-center justify-between gap-3 py-1.5 text-sm font-mono">
+                  <span className="font-bold text-zinc-950">{s.name}</span>
                   <span className="flex items-center gap-3 text-xs">
-                    <span className="text-slate-500">
+                    <span className="text-zinc-500">
                       {s.count} pedido{s.count === 1 ? '' : 's'}
                     </span>
-                    <span className="font-mono font-medium text-slate-900">{fmtBRL(s.total)}</span>
+                    <span className="font-bold text-zinc-950">{fmtBRL(s.total)}</span>
                   </span>
                 </li>
               ))}
@@ -754,35 +745,35 @@ export default async function DashboardPage() {
       </section>
 
       {/* Top itens vendidos no mes */}
-      <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
             Top 5 itens vendidos (este mês)
           </h2>
-          <span className="text-xs text-slate-500">
+          <span className="font-mono text-xs text-zinc-500">
             {topItemsSorted.length} {topItemsSorted.length === 1 ? 'item' : 'itens'}
           </span>
         </div>
         {topItemsSorted.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">
-            Nenhuma venda no mes ainda.
+          <p className="mt-3 font-mono text-xs text-zinc-500">
+            Nenhuma venda no mês ainda.
           </p>
         ) : (
-          <ol className="mt-3 space-y-2">
+          <ol className="mt-3 divide-y divide-zinc-100">
             {topItemsSorted.map((item, i) => (
               <li
                 key={item.name}
-                className="flex items-center justify-between gap-3 text-sm"
+                className="flex items-center justify-between gap-3 py-2 text-sm font-mono"
               >
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                  <span className="flex h-6 w-6 items-center justify-center border border-zinc-950 bg-zinc-950 text-xs font-bold text-white">
                     {i + 1}
                   </span>
-                  <span className="font-medium text-slate-900">{item.name}</span>
+                  <span className="font-bold text-zinc-950">{item.name}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs">
-                  <span className="text-slate-500">{item.qty} un</span>
-                  <span className="font-mono font-medium text-slate-900">
+                  <span className="text-zinc-500">{item.qty} un</span>
+                  <span className="font-bold text-zinc-950">
                     {fmtBRL(item.total)}
                   </span>
                 </div>
@@ -793,40 +784,40 @@ export default async function DashboardPage() {
       </section>
 
       {/* Últimas vendas */}
-      <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
             Últimas vendas
           </h2>
           <Link
             href="/admin/vendas"
-            className="text-xs font-medium text-slate-700 hover:text-black hover:underline"
+            className="text-xs font-mono font-bold uppercase text-zinc-950 hover:underline"
           >
             Ver todas →
           </Link>
         </div>
         {(lastSales.data ?? []).length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">Nenhuma venda ainda.</p>
+          <p className="mt-3 font-mono text-xs text-zinc-500">Nenhuma venda ainda.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-200">
+          <ul className="mt-3 divide-y divide-zinc-200">
             {(lastSales.data ?? []).map((s) => {
               const payMeta = PAYMENT_METHODS.find((m) => m.value === s.payment_method);
               return (
-                <li key={s.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                <li key={s.id} className="flex items-center justify-between gap-2 py-2 text-sm font-mono">
                   <div className="flex-1">
                     <Link
                       href={`/admin/vendas/${s.id}`}
-                      className="font-mono font-medium text-slate-900 hover:text-black hover:underline"
+                      className="font-bold text-zinc-950 hover:underline"
                     >
                       {s.sale_number}
                     </Link>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-zinc-500">
                       {formatDateTimeBR(s.created_at)} ·{' '}
                       {s.author?.full_name ?? '—'} · {payMeta?.label ?? s.payment_method}
                       {s.customer_name && ` · ${s.customer_name}`}
                     </p>
                   </div>
-                  <span className="font-mono font-medium text-slate-900">
+                  <span className="font-bold text-zinc-950">
                     {fmtBRL(s.total)}
                   </span>
                 </li>
@@ -858,16 +849,16 @@ function Card({
   return (
     <Link
       href={href}
-      className="block rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4 transition hover:border-black hover:shadow-md"
+      className="block border-2 border-zinc-950 bg-white p-4 transition hover:bg-zinc-50 shadow-sm"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+      <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">
         {title}
       </p>
-      <p className="mt-1 text-2xl font-bold text-slate-900">{fmtBRL(total)}</p>
-      <p className="mt-1 text-xs text-slate-600">
+      <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{fmtBRL(total)}</p>
+      <p className="mt-1 text-xs font-mono text-zinc-600">
         {count} venda{count === 1 ? '' : 's'}
         {trend && (
-          <span className={`ml-2 font-medium ${trend.up ? 'text-emerald-700' : 'text-red-600'}`}>
+          <span className={`ml-2 font-bold ${trend.up ? 'text-emerald-700' : 'text-red-600'}`}>
             {trend.up ? '▲' : '▼'} {Math.abs(trend.pct)}% {trendLabel}
           </span>
         )}

@@ -999,50 +999,50 @@ export function WhatsAppLeadsClient({
     <div className="space-y-6">
       {/* KPIs da Central de Leads Quentes & Suporte em TI */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <div className="rounded-lg border-2 border-black bg-white p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+        <div className="border-2 border-black bg-white p-4">
+          <p className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-900">
             🔥 Conversas 1-a-1 (Loja)
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">{stats.hot}</p>
+          <p className="mt-1 font-mono text-2xl font-bold text-zinc-950">{stats.hot}</p>
           <p className="mt-0.5 text-xs text-zinc-600">
             {stats.hotNamed} com nome de perfil + {stats.hot - stats.hotNamed} números
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        <div className="border border-zinc-300 bg-white p-4">
+          <p className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-500">
             Empresas B2B (Região)
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">
+          <p className="mt-1 font-mono text-2xl font-bold text-zinc-950">
             {stats.b2bRegional}
           </p>
           <p className="mt-0.5 text-xs text-zinc-500">
             DDD 11, 19, 12 e 35 ({stats.b2b} no total)
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        <div className="border border-zinc-300 bg-white p-4">
+          <p className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-500">
             Já Abordados no Funil
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">
+          <p className="mt-1 font-mono text-2xl font-bold text-zinc-950">
             {stats.contacted}
           </p>
           <p className="mt-0.5 text-xs text-zinc-500">
             Sincronizados no Supabase
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        <div className="border border-zinc-300 bg-white p-4">
+          <p className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-500">
             Em Negociação / Fechados
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">
+          <p className="mt-1 font-mono text-2xl font-bold text-zinc-950">
             {stats.negotiating}
           </p>
           <p className="mt-0.5 text-xs text-zinc-500">
             Responderam, Proposta ou Fechado
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-4 text-white">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+        <div className="border border-zinc-900 bg-zinc-950 p-4 text-white">
+          <p className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-400">
             Página Comercial B2B
           </p>
           <p className="mt-1 text-sm font-semibold text-white">
@@ -1051,7 +1051,7 @@ export function WhatsAppLeadsClient({
           <Link
             href="/suporte-ti"
             target="_blank"
-            className="mt-2 inline-block rounded bg-white px-2.5 py-1 text-xs font-semibold text-black hover:bg-zinc-200"
+            className="mt-2 inline-block bg-white px-2.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-black hover:bg-zinc-200"
           >
             Abrir /suporte-ti ↗
           </Link>
@@ -1059,10 +1059,10 @@ export function WhatsAppLeadsClient({
       </div>
 
       {/* Atalhos Rápidos de Campanha (1 clique configura Público + Script) */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="border border-zinc-300 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-sm font-bold text-zinc-950">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               Escolha o Modo de Campanha (Configura Filtro + Mensagem Automaticamente)
             </h2>
             <p className="text-xs text-zinc-600">
@@ -1074,13 +1074,13 @@ export function WhatsAppLeadsClient({
           <button
             type="button"
             onClick={() => applyQuickCampaign('google_review')}
-            className={`rounded-md border p-3 text-left transition ${
+            className={`border p-3 text-left transition cursor-pointer ${
               templateKey === 'avaliacao_google' && filterSegment === 'hot'
                 ? 'border-black bg-black text-white'
                 : 'border-zinc-300 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
             }`}
           >
-            <div className="text-xs font-bold">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider">
               ⭐ 1. Pedir Avaliação no Google (Pós-Venda)
             </div>
             <p
@@ -1097,14 +1097,14 @@ export function WhatsAppLeadsClient({
           <button
             type="button"
             onClick={() => applyQuickCampaign('hot_services')}
-            className={`rounded-md border p-3 text-left transition ${
+            className={`border p-3 text-left transition cursor-pointer ${
               templateKey === 'clientes_quentes_servicos' &&
               filterSegment === 'hot'
                 ? 'border-black bg-black text-white'
                 : 'border-zinc-300 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
             }`}
           >
-            <div className="text-xs font-bold">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider">
               🔥 2. Oferecer Novos Serviços (Clientes Quentes)
             </div>
             <p
@@ -1122,13 +1122,13 @@ export function WhatsAppLeadsClient({
           <button
             type="button"
             onClick={() => applyQuickCampaign('b2b_it_support')}
-            className={`rounded-md border p-3 text-left transition ${
+            className={`border p-3 text-left transition cursor-pointer ${
               filterSegment === 'b2b'
                 ? 'border-black bg-black text-white'
                 : 'border-zinc-300 bg-zinc-50 text-zinc-900 hover:bg-zinc-100'
             }`}
           >
-            <div className="text-xs font-bold">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider">
               🏢 3. Prospecção B2B por Sub-Nicho (Suporte TI)
             </div>
             <p
@@ -1145,16 +1145,16 @@ export function WhatsAppLeadsClient({
       {/* Seletor de Sub-Nichos Estratégicos + Script de Abordagem */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Coluna Esquerda: Sub-Nichos de Ataque */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-5 lg:col-span-5">
+        <div className="border border-zinc-300 bg-white p-5 lg:col-span-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-zinc-950">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               1. Filtrar por Ramo / Sub-Nicho
             </h2>
-            <div className="inline-flex rounded-md border border-zinc-300 bg-zinc-50 p-0.5 text-xs">
+            <div className="inline-flex border border-zinc-300 bg-zinc-50 p-0.5 font-mono text-xs">
               <button
                 type="button"
                 onClick={() => setFilterRegion('regional')}
-                className={`rounded px-2 py-1 font-medium ${
+                className={`px-2 py-1 font-medium transition cursor-pointer ${
                   filterRegion === 'regional'
                     ? 'bg-black text-white'
                     : 'text-zinc-700 hover:text-black'
@@ -1165,7 +1165,7 @@ export function WhatsAppLeadsClient({
               <button
                 type="button"
                 onClick={() => setFilterRegion('all')}
-                className={`rounded px-2 py-1 font-medium ${
+                className={`px-2 py-1 font-medium transition cursor-pointer ${
                   filterRegion === 'all'
                     ? 'bg-black text-white'
                     : 'text-zinc-700 hover:text-black'
@@ -1184,14 +1184,14 @@ export function WhatsAppLeadsClient({
             <button
               type="button"
               onClick={() => selectNicheFilter('all')}
-              className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-xs font-semibold transition ${
+              className={`flex w-full items-center justify-between border px-3 py-2 text-left text-xs font-semibold transition cursor-pointer ${
                 filterNiche === 'all'
                   ? 'border-black bg-black text-white'
-                  : 'border-zinc-200 bg-zinc-50 text-zinc-800 hover:bg-zinc-100'
+                  : 'border-zinc-300 bg-zinc-50 text-zinc-800 hover:bg-zinc-100'
               }`}
             >
               <span>Todos os Ramos (No Filtro Atual)</span>
-              <span className="rounded bg-white/20 px-1.5 py-0.5 text-[11px]">
+              <span className="bg-white/20 px-1.5 py-0.5 font-mono text-[11px]">
                 {Object.values(stats.byNiche).reduce((a, b) => a + b, 0)}
               </span>
             </button>
@@ -1215,15 +1215,15 @@ export function WhatsAppLeadsClient({
                   onClick={() => {
                     selectNicheFilter(nicheKey);
                   }}
-                  className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-xs font-medium transition ${
+                  className={`flex w-full items-center justify-between border px-3 py-2 text-left text-xs font-medium transition cursor-pointer ${
                     active
                       ? 'border-black bg-black text-white'
-                      : 'border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50'
+                      : 'border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50'
                   }`}
                 >
                   <span>{MESSAGE_TEMPLATES[nicheKey]?.title || NICHE_META[nicheKey].label}</span>
                   <span
-                    className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+                    className={`px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
                       active
                         ? 'bg-white text-black'
                         : 'bg-zinc-100 text-zinc-700'
@@ -1238,16 +1238,16 @@ export function WhatsAppLeadsClient({
         </div>
 
         {/* Coluna Direita: Script Personalizado + Importação/Exportação */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-5 lg:col-span-7">
+        <div className="border border-zinc-300 bg-white p-5 lg:col-span-7">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="text-base font-bold text-zinc-950">
+              <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
                 2. Script de Abordagem no WhatsApp
               </h2>
               <p className="text-xs text-zinc-600">
-                Use <code className="rounded bg-zinc-100 px-1">{'{nome}'}</code>{' '}
+                Use <code className="border border-zinc-300 bg-zinc-100 px-1 font-mono">{'{nome}'}</code>{' '}
                 ou{' '}
-                <code className="rounded bg-zinc-100 px-1">
+                <code className="border border-zinc-300 bg-zinc-100 px-1 font-mono">
                   {'{primeiro_nome}'}
                 </code>{' '}
                 para preencher automaticamente o nome da empresa/cliente.
@@ -1256,7 +1256,7 @@ export function WhatsAppLeadsClient({
             <select
               value={templateKey}
               onChange={(e) => handleTemplateChange(e.target.value)}
-              className="rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-900 focus:border-black focus:outline-none"
+              className="border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs font-semibold text-zinc-900 focus:border-black focus:outline-none"
             >
               {Object.entries(MESSAGE_TEMPLATES).map(([k, tpl]) => (
                 <option key={k} value={k}>
@@ -1270,7 +1270,7 @@ export function WhatsAppLeadsClient({
             rows={7}
             value={customMessage}
             onChange={(e) => setCustomMessage(e.target.value)}
-            className="mt-3 w-full rounded-md border border-zinc-300 bg-zinc-50 p-3 text-xs leading-relaxed text-zinc-950 focus:border-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-3 w-full border border-zinc-300 bg-zinc-50 p-3 text-xs leading-relaxed text-zinc-950 focus:border-black focus:bg-white focus:outline-none focus:ring-1 focus:ring-black"
           />
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-100 pt-3">
@@ -1278,7 +1278,7 @@ export function WhatsAppLeadsClient({
               <button
                 type="button"
                 onClick={exportNamedJSON}
-                className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
+                className="bg-black px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
               >
                 📥 Baixar JSON Limpo (Leads + Nomes: {stats.named})
               </button>
@@ -1286,12 +1286,12 @@ export function WhatsAppLeadsClient({
               <button
                 type="button"
                 onClick={exportFilteredCSV}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50"
+                className="border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-zinc-800 hover:bg-zinc-50 cursor-pointer"
               >
                 Baixar Planilha CSV ({filteredLeads.length})
               </button>
 
-              <label className="cursor-pointer rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50">
+              <label className="cursor-pointer border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-zinc-800 hover:bg-zinc-50">
                 Importar Arquivo (.json, .csv, .vcf)
                 <input
                   type="file"
@@ -1305,7 +1305,7 @@ export function WhatsAppLeadsClient({
                 type="button"
                 onClick={saveNewLeadsToERP}
                 disabled={savingToDb}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 disabled:opacity-50"
+                className="border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-zinc-800 hover:bg-zinc-50 disabled:opacity-50 cursor-pointer"
               >
                 {savingToDb ? 'Salvando…' : 'Cadastrar Novos em Clientes'}
               </button>
@@ -1314,7 +1314,7 @@ export function WhatsAppLeadsClient({
             <button
               type="button"
               onClick={() => setShowInstructions((v) => !v)}
-              className="text-xs font-medium text-zinc-500 underline hover:text-black"
+              className="text-xs font-medium text-zinc-500 underline hover:text-black cursor-pointer"
             >
               {showInstructions
                 ? 'Ocultar script de extração Web'
@@ -1323,7 +1323,7 @@ export function WhatsAppLeadsClient({
           </div>
 
           {showInstructions && (
-            <div className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-700">
+            <div className="mt-3 border border-zinc-300 bg-zinc-50 p-3 text-xs text-zinc-700">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-zinc-900">
                   Extração rápida via Console do Navegador (F12 no web.whatsapp.com):
@@ -1335,7 +1335,7 @@ export function WhatsAppLeadsClient({
                     setCopiedScript(true);
                     setTimeout(() => setCopiedScript(false), 3000);
                   }}
-                  className="rounded bg-black px-2.5 py-1 text-xs font-semibold text-white hover:bg-zinc-800"
+                  className="bg-black px-2.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
                 >
                   {copiedScript ? '✓ Script Copiado!' : 'Copiar Script F12'}
                 </button>
@@ -1343,7 +1343,7 @@ export function WhatsAppLeadsClient({
               <p className="mt-1 text-[11px] text-zinc-500">
                 Ou no PC da loja com WhatsApp Desktop instalado, execute no
                 terminal:{' '}
-                <code className="rounded bg-zinc-200 px-1 text-zinc-900">
+                <code className="border border-zinc-300 bg-zinc-200 px-1 font-mono text-zinc-900">
                   node tools/whatsapp-leads/extract-whatsapp-desktop.mjs
                 </code>
               </p>
@@ -1351,7 +1351,7 @@ export function WhatsAppLeadsClient({
           )}
 
           {importStatus && (
-            <div className="mt-3 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs font-medium text-zinc-900">
+            <div className="mt-3 border border-zinc-300 bg-zinc-50 px-3 py-2 font-mono text-xs font-medium text-zinc-900">
               {importStatus}
             </div>
           )}
@@ -1359,7 +1359,7 @@ export function WhatsAppLeadsClient({
       </div>
 
       {/* Barra de Filtros da Lista e Funil */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="border border-zinc-300 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Filtro de Segmento */}
           <div className="flex flex-wrap gap-1.5">
@@ -1390,7 +1390,7 @@ export function WhatsAppLeadsClient({
                       | 'all',
                   )
                 }
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                className={`px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider transition cursor-pointer ${
                   filterSegment === tab.id
                     ? 'bg-black text-white'
                     : 'border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50'
@@ -1403,7 +1403,7 @@ export function WhatsAppLeadsClient({
 
           {/* Filtro de Status do Funil */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-zinc-500">
+            <span className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-500">
               Etapa do Funil:
             </span>
             <select
@@ -1411,7 +1411,7 @@ export function WhatsAppLeadsClient({
               onChange={(e) =>
                 setFilterStatus(e.target.value as 'all' | LeadStatus)
               }
-              className="rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-900 focus:border-black focus:outline-none"
+              className="border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs font-semibold text-zinc-900 focus:border-black focus:outline-none"
             >
               <option value="all">Todas as Etapas</option>
               <option value="novo">⏳ Pendentes (Não contatados)</option>
@@ -1427,7 +1427,7 @@ export function WhatsAppLeadsClient({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar empresa, nome, telefone ou nota…"
-              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black sm:w-64"
+              className="w-full border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black sm:w-64"
             />
           </div>
         </div>
@@ -1467,7 +1467,7 @@ export function WhatsAppLeadsClient({
                         {lead.isHotLead && (
                           <span
                             title="Cliente Quente (Já atendido no WhatsApp, Agenda ou ERP)"
-                            className="inline-block rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white"
+                            className="inline-block border border-zinc-900 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-white"
                           >
                             Quente
                           </span>
@@ -1487,7 +1487,7 @@ export function WhatsAppLeadsClient({
                     </td>
                     <td className="px-3 py-2.5">
                       <span
-                        className={`inline-block rounded border px-2 py-0.5 text-[11px] font-medium ${NICHE_META[lead.niche].badgeClass}`}
+                        className={`inline-block border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${NICHE_META[lead.niche].badgeClass}`}
                       >
                         {NICHE_META[lead.niche].shortLabel}
                       </span>
@@ -1497,30 +1497,30 @@ export function WhatsAppLeadsClient({
                         {(lead.inErp ||
                           lead.osCount > 0 ||
                           lead.salesCount > 0) && (
-                          <span className="rounded border border-zinc-900 bg-zinc-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                          <span className="border border-zinc-900 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-white">
                             🛠️ ERP ({lead.osCount} OS · {lead.salesCount} Vendas)
                           </span>
                         )}
                         {lead.totalMessages > 0 ? (
                           <span
                             title={`${lead.msgsSent} mensagens enviadas pela loja · ${lead.msgsReceived} recebidas do cliente`}
-                            className="rounded border border-zinc-400 bg-zinc-100 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-900"
+                            className="border border-zinc-400 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-zinc-900"
                           >
                             💬 {lead.totalMessages} msgs ({lead.msgsSent} env ·{' '}
                             {lead.msgsReceived} rec)
                           </span>
                         ) : lead.hasDirectChat ? (
-                          <span className="rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-800">
+                          <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-zinc-800">
                             💬 Conversa 1-a-1
                           </span>
                         ) : null}
                         {lead.lastChatDate && (
-                          <span className="rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] text-zinc-600">
+                          <span className="border border-zinc-300 bg-zinc-50 px-1.5 py-0.5 font-mono text-[10px] text-zinc-600">
                             📅 {lead.lastChatDate}
                           </span>
                         )}
                         {lead.isAddressBook && (
-                          <span className="rounded border border-zinc-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-zinc-700">
+                          <span className="border border-zinc-300 bg-white px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-zinc-700">
                             📒 Na Agenda
                           </span>
                         )}
@@ -1528,7 +1528,7 @@ export function WhatsAppLeadsClient({
                           !lead.inErp &&
                           !lead.hasDirectChat &&
                           !lead.isAddressBook && (
-                            <span className="rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] text-zinc-400">
+                            <span className="border border-zinc-300 bg-white px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
                               Contato Geral / Grupo
                             </span>
                           )}
@@ -1543,7 +1543,7 @@ export function WhatsAppLeadsClient({
                             status: e.target.value as LeadStatus,
                           })
                         }
-                        className={`rounded border px-2 py-1 text-xs font-semibold focus:outline-none ${STATUS_META[lead.status].badgeClass}`}
+                        className={`border px-2 py-1 font-mono text-xs font-semibold focus:outline-none ${STATUS_META[lead.status].badgeClass}`}
                       >
                         <option value="novo" className="bg-white text-zinc-900">
                           ⏳ Pendente
@@ -1588,7 +1588,7 @@ export function WhatsAppLeadsClient({
                             value={noteDraft}
                             onChange={(e) => setNoteDraft(e.target.value)}
                             placeholder="Ex: Tem 6 PCs, retornar terça…"
-                            className="w-44 rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-900 focus:border-black focus:outline-none"
+                            className="w-44 border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-900 focus:border-black focus:outline-none"
                           />
                           <button
                             type="button"
@@ -1598,14 +1598,14 @@ export function WhatsAppLeadsClient({
                               });
                               setEditingNotePhone(null);
                             }}
-                            className="rounded bg-black px-2 py-1 text-[11px] font-semibold text-white hover:bg-zinc-800"
+                            className="bg-black px-2 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
                           >
                             Salvar
                           </button>
                           <button
                             type="button"
                             onClick={() => setEditingNotePhone(null)}
-                            className="rounded border border-zinc-200 px-1.5 py-1 text-[11px] text-zinc-500 hover:text-black"
+                            className="border border-zinc-300 px-1.5 py-1 text-[11px] text-zinc-500 hover:text-black cursor-pointer"
                           >
                             ✕
                           </button>
@@ -1617,7 +1617,7 @@ export function WhatsAppLeadsClient({
                             setEditingNotePhone(lead.phoneE164);
                             setNoteDraft(lead.notes || '');
                           }}
-                          className="group flex items-center gap-1 text-left text-xs text-zinc-600 hover:text-black"
+                          className="group flex items-center gap-1 text-left text-xs text-zinc-600 hover:text-black cursor-pointer"
                         >
                           {lead.notes ? (
                             <span className="max-w-[200px] truncate font-medium text-zinc-900">
@@ -1646,7 +1646,7 @@ export function WhatsAppLeadsClient({
                             persistLeadUpdate(lead, { markContactedNow: true });
                           }
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800"
+                        className="inline-flex items-center gap-1.5 border border-zinc-950 bg-black px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-zinc-800"
                       >
                         {lead.status === 'novo'
                           ? 'Abordar no WhatsApp'

@@ -81,13 +81,13 @@ export function ChecklistEditor({
                 type="button"
                 onClick={() => toggle(f.key)}
                 disabled={!canEdit}
-                className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left transition-colors ${
+                className={`flex w-full items-center gap-2 border px-2 py-1.5 text-left font-mono text-xs transition-colors ${
                   val
-                    ? 'border-zinc-300 bg-zinc-50 text-zinc-950 font-medium'
-                    : 'border-zinc-200 bg-white text-zinc-500'
-                } ${canEdit ? 'hover:border-zinc-400 cursor-pointer' : 'cursor-default'}`}
+                    ? 'border-2 border-zinc-950 bg-zinc-950 text-white font-bold'
+                    : 'border border-zinc-300 bg-white text-zinc-600'
+                } ${canEdit ? 'hover:border-zinc-950 cursor-pointer' : 'cursor-default'}`}
               >
-                <span className={`font-mono text-xs font-bold ${val ? 'text-black' : 'text-zinc-400'}`}>
+                <span className={`font-mono text-xs font-bold ${val ? 'text-white' : 'text-zinc-400'}`}>
                   {val ? '✓' : '—'}
                 </span>
                 <span>{f.label}</span>
@@ -103,13 +103,13 @@ export function ChecklistEditor({
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+              className="bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
             >
               {saving ? 'Salvando...' : 'Salvar checklist'}
             </button>
           )}
-          {saved && !isDirty && <span className="text-xs font-medium text-zinc-900">✓ Checklist salvo</span>}
-          {error && <span className="text-xs text-red-600">{error}</span>}
+          {saved && !isDirty && <span className="font-mono text-xs font-bold text-zinc-950">✓ Checklist salvo</span>}
+          {error && <span className="font-mono text-xs text-red-600">{error}</span>}
         </div>
       )}
     </div>

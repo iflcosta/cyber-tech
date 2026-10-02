@@ -119,16 +119,16 @@ export default async function ReciboPage({
       {/* Auto-print dispara window.print() 1x apos carregar (400ms) */}
       <AutoPrint />
 
-      <div className="no-print flex flex-wrap items-center justify-between gap-2">
+      <div className="no-print flex flex-wrap items-center justify-between gap-2 border-b-2 border-zinc-950 pb-4">
         <div>
           <Link
             href={`/admin/vendas/${sale.id}`}
-            className="text-sm font-medium text-slate-600 hover:text-black hover:underline"
+            className="font-mono text-xs font-bold uppercase text-zinc-600 hover:text-zinc-950 hover:underline"
           >
             ← Detalhes da venda
           </Link>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">Recibo</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="mt-1 text-2xl font-black uppercase tracking-tight text-zinc-950">Recibo</h1>
+          <p className="text-xs font-mono uppercase text-zinc-600">
             Janela aberta automaticamente — impressão deve ter disparado.
             Se cancelou, clique em <strong>Imprimir novamente</strong>.
           </p>
@@ -136,7 +136,7 @@ export default async function ReciboPage({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/admin/vendas/${sale.id}/nota`}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 transition-colors"
+            className="border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
           >
             📄 Nota / Comprovante (PDF / A4)
           </Link>
@@ -145,7 +145,7 @@ export default async function ReciboPage({
       </div>
 
       {/* Preview do recibo */}
-      <div className="mx-auto max-w-md rounded border border-slate-300 bg-white p-4 shadow-sm">
+      <div className="mx-auto max-w-md border-2 border-zinc-950 bg-white p-4 shadow-xs">
         <pre className="whitespace-pre font-mono text-xs leading-tight text-black">
           {reciboText}
         </pre>
@@ -157,7 +157,7 @@ export default async function ReciboPage({
           body { background: white !important; margin: 0 !important; padding: 4mm !important; }
           main { max-width: none !important; padding: 0 !important; }
           div[class*="space-y"] > *:not(.no-print):not(pre):not(div) { display: none !important; }
-          div[class*="rounded"][class*="border"][class*="bg-white"] {
+          div[class*="border"][class*="bg-white"] {
             box-shadow: none !important;
             border: 0 !important;
             padding: 0 !important;

@@ -36,15 +36,15 @@ export default function TermoRecebimentoPage() {
   return (
     <div className="space-y-4">
       <div className="print:hidden">
-        <h1 className="text-2xl font-bold text-slate-900">Termo de recebimento de produto</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="font-mono text-2xl font-black uppercase text-zinc-950">Termo de recebimento de produto</h1>
+        <p className="mt-1 text-sm text-zinc-600">
           Pra entregar um produto pra avaliação antes do pagamento (ex: cliente só paga se o
           computador servir). Preencha e imprima — o cliente assina, você guarda o papel.
         </p>
       </div>
 
       {/* Formulário — some na impressão */}
-      <div className="print:hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <div className="print:hidden border-2 border-zinc-950 bg-white p-4 shadow-xs sm:p-6">
         <div className="space-y-3">
           <Field label="Nome do cliente/responsável *">
             <input
@@ -126,7 +126,7 @@ export default function TermoRecebimentoPage() {
             type="button"
             onClick={() => window.print()}
             disabled={!recipientName.trim() || !productDescription.trim() || !value.trim()}
-            className="rounded-md bg-black px-5 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-30"
+            className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-30 transition cursor-pointer"
           >
             🖨️ Imprimir termo
           </button>
@@ -135,21 +135,21 @@ export default function TermoRecebimentoPage() {
         <style jsx global>{`
           .form-input {
             width: 100%;
-            border-radius: 0.375rem;
-            border: 1px solid rgb(203 213 225);
+            border-radius: 0;
+            border: 1px solid rgb(212 212 216);
             padding: 0.5rem 0.75rem;
-            font-size: 1rem;
+            font-size: 0.875rem;
             line-height: 1.5;
-            color: rgb(15 23 42);
+            color: rgb(9 9 11);
             background: white;
           }
           .form-input:focus {
             outline: none;
-            border-color: rgb(0 0 0);
-            box-shadow: 0 0 0 1px rgb(0 0 0);
+            border-color: rgb(9 9 11);
+            box-shadow: 0 0 0 1px rgb(9 9 11);
           }
           .form-input::placeholder {
-            color: rgb(148 163 184);
+            color: rgb(161 161 170);
           }
         `}</style>
       </div>
@@ -157,66 +157,66 @@ export default function TermoRecebimentoPage() {
       {/* Documento — só aparece de verdade na impressão, mas fica visível
           na tela também como prévia (sem duplicar: o form some no print,
           isso fica). */}
-      <article className="mx-auto max-w-2xl bg-white p-6 shadow sm:p-8 print:max-w-none print:p-8 print:shadow-none">
-        <header className="border-b border-slate-300 pb-4">
+      <article className="mx-auto max-w-2xl border border-zinc-300 bg-white p-6 shadow-xs sm:p-8 print:max-w-none print:border-0 print:p-8 print:shadow-none">
+        <header className="border-b border-zinc-300 pb-4">
           <div className="flex items-baseline justify-between">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-950">
               Cyber <span className="font-extrabold text-black">Informática</span>
             </h1>
-            <p className="text-sm text-slate-500">{formatDateOnlyBR(today)}</p>
+            <p className="font-mono text-xs text-zinc-500">{formatDateOnlyBR(today)}</p>
           </div>
-          <p className="mt-1 text-xs text-slate-500">Termo de recebimento de produto</p>
+          <p className="mt-1 font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">Termo de recebimento de produto</p>
         </header>
 
         <section className="mt-4 text-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
             Recebedor
           </h2>
-          <p className="mt-1 font-semibold text-slate-900">
-            {recipientName || <span className="text-slate-400">(nome do cliente/responsável)</span>}
+          <p className="mt-1 font-semibold text-zinc-950">
+            {recipientName || <span className="text-zinc-400 font-normal">(nome do cliente/responsável)</span>}
           </p>
-          {recipientDoc && <p className="text-slate-700">CPF/CNPJ: {recipientDoc}</p>}
-          {recipientPhone && <p className="text-slate-700">Telefone: {recipientPhone}</p>}
+          {recipientDoc && <p className="text-zinc-700">CPF/CNPJ: {recipientDoc}</p>}
+          {recipientPhone && <p className="text-zinc-700">Telefone: {recipientPhone}</p>}
         </section>
 
         <section className="mt-4 text-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
             Produto
           </h2>
-          <p className="mt-1 whitespace-pre-wrap text-slate-900">
-            {productDescription || <span className="text-slate-400">(descrição do produto)</span>}
+          <p className="mt-1 whitespace-pre-wrap text-zinc-950">
+            {productDescription || <span className="text-zinc-400 font-normal">(descrição do produto)</span>}
           </p>
-          {serial && <p className="mt-1 font-mono text-xs text-slate-600">Nº de série: {serial}</p>}
+          {serial && <p className="mt-1 font-mono text-xs text-zinc-600">Nº de série: {serial}</p>}
         </section>
 
         <section className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
               Valor combinado
             </h2>
-            <p className="mt-1 font-semibold text-slate-900">
-              {value ? fmtBRLInput(value) : <span className="text-slate-400 font-normal">—</span>}
+            <p className="mt-1 font-semibold text-zinc-950">
+              {value ? fmtBRLInput(value) : <span className="text-zinc-400 font-normal">—</span>}
             </p>
           </div>
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
               Prazo pra pagamento
             </h2>
-            <p className="mt-1 font-semibold text-slate-900">
+            <p className="mt-1 font-semibold text-zinc-950">
               {deadline ? formatDateOnlyBR(deadline) : '—'}
             </p>
           </div>
         </section>
 
         <section className="mt-4 text-sm">
-          <p className="whitespace-pre-wrap text-slate-900">{conditions}</p>
+          <p className="whitespace-pre-wrap text-zinc-950">{conditions}</p>
         </section>
 
-        <section className="mt-10 grid grid-cols-2 gap-8 text-xs text-slate-500">
-          <div className="border-t border-slate-400 pt-1">
+        <section className="mt-10 grid grid-cols-2 gap-8 text-xs text-zinc-500">
+          <div className="border-t border-zinc-400 pt-1">
             <p>Assinatura do cliente/responsável</p>
           </div>
-          <div className="border-t border-slate-400 pt-1">
+          <div className="border-t border-zinc-400 pt-1">
             <p>Responsável Cyber Informática</p>
           </div>
         </section>
@@ -224,9 +224,9 @@ export default function TermoRecebimentoPage() {
 
       <style>{`
         @media print {
-          html, body { background: white !important; color: #0f172a !important; }
-          article { background: white !important; color: #0f172a !important; }
-          article * { color: #0f172a !important; }
+          html, body { background: white !important; color: #09090b !important; }
+          article { background: white !important; color: #09090b !important; }
+          article * { color: #09090b !important; }
           header.sticky, nav { display: none !important; }
         }
       `}</style>
@@ -237,7 +237,7 @@ export default function TermoRecebimentoPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

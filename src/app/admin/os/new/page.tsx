@@ -34,8 +34,8 @@ export default async function NewOSPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Nova OS</h1>
-        <p className="text-sm text-slate-500">Em 3 passos: cliente → aparelho → defeito</p>
+        <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">Nova OS</h1>
+        <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">Em 3 passos: cliente → aparelho → defeito</p>
       </div>
       <NewOSForm
         currentUserId={user.id}

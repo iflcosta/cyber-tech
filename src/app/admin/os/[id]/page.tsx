@@ -159,14 +159,14 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="space-y-6">
       {isFinal && (
-        <div className="rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm text-zinc-700">
+        <div className="border border-zinc-300 bg-zinc-50 p-3 text-sm text-zinc-700">
           <strong>OS finalizada</strong> — status <em>{so.status === 'delivered' ? 'entregue' : 'cancelada'}</em>.
           A OS não aparece na lista de ativas mas pode ser consultada por este link.
         </div>
       )}
 
       {so.status === 'delivered' && normalizedSo.payment_status !== 'paid' && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           <div>
             <p className="font-semibold flex items-center gap-1.5">
               ⚠️ OS entregue com pagamento pendente
@@ -177,7 +177,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </div>
           <a
             href="#pagamento-section"
-            className="flex-shrink-0 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-black transition-colors"
+            className="flex-shrink-0 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-black transition-colors"
           >
             Registrar pagamento agora ↓
           </a>
@@ -187,7 +187,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
       {/* Cabeçalho da OS */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link href="/admin/os" className="text-sm text-zinc-600 hover:text-black">
+          <Link href="/admin/os" className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-black">
             ← Todas as OS
           </Link>
           <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-zinc-950">
@@ -212,21 +212,21 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           <Link
             href={`/admin/os/${normalizedSo.id}/label`}
             target="_blank"
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             🏷️ Etiqueta
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/print`}
             target="_blank"
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             🖨️ Entrada (A4)
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/recibo`}
             target="_blank"
-            className="rounded-md bg-black px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors"
+            className="bg-zinc-950 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition-colors"
           >
             📄 Nota / Recibo (PDF)
           </Link>
@@ -237,7 +237,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
         {/* Coluna Principal (2/3): 3 blocos coesos */}
         <div className="space-y-4 lg:col-span-2">
           {/* BLOCO 1: Entrada & Inspeção do Aparelho */}
-          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+          <section className="border border-zinc-300 bg-white p-4 sm:p-5 space-y-4">
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
                 1. Entrada & Defeito Relatado
@@ -246,7 +246,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 {normalizedSo.reported_defect}
               </p>
               {normalizedSo.blocking_reason && (
-                <div className="mt-3 rounded-md bg-orange-50 p-3 text-sm text-orange-800 ring-1 ring-orange-200">
+                <div className="mt-3 border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
                   <strong>⚠️ Travado em:</strong> {normalizedSo.blocking_reason}
                 </div>
               )}
@@ -279,7 +279,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </section>
 
           {/* BLOCO 2: Bancada — Diagnóstico, Peças & Valores */}
-          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+          <section className="border border-zinc-300 bg-white p-4 sm:p-5 space-y-4">
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
                 2. Bancada — Diagnóstico, Serviço & Peças
@@ -367,7 +367,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </section>
 
           {/* BLOCO 3: Linha do Tempo & Anotações */}
-          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
+          <section className="border border-zinc-300 bg-white p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
                 3. Linha do Tempo & Histórico
@@ -414,7 +414,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           {/* BLOCO 5: Financeiro & Pagamento */}
           <section
             id="pagamento-section"
-            className="scroll-mt-4 rounded-lg border border-zinc-200 bg-white p-4 sm:p-5"
+            className="scroll-mt-4 border border-zinc-300 bg-white p-4 sm:p-5"
           >
             <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
               Financeiro & Pagamento
@@ -433,7 +433,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </section>
 
           {/* BLOCO 6: Ficha do Cliente, Técnico & Aparelho */}
-          <section className="rounded-lg border border-zinc-200 bg-white p-4 sm:p-5 space-y-4">
+          <section className="border border-zinc-300 bg-white p-4 sm:p-5 space-y-4">
             {profile && (
               <div className="border-b border-zinc-100 pb-3.5">
                 <TechnicianAssigner

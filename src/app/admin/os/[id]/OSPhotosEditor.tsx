@@ -119,9 +119,9 @@ export function OSPhotosEditor({
   }
 
   return (
-    <div className="border-t border-zinc-100 pt-3">
+    <div className="border-t-2 border-zinc-950 pt-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
           Fotos na entrada ({photos.length})
         </p>
 
@@ -130,12 +130,12 @@ export function OSPhotosEditor({
             <button
               type="button"
               onClick={() => setCameraSyncOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition"
+              className="inline-flex items-center gap-1.5 border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm"
             >
               <span>📱 Cyber Camera Sync (QR Code)</span>
             </button>
 
-            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition">
               <span>{uploading ? 'Enviando…' : '💻 Upload do PC'}</span>
               <input
                 type="file"
@@ -153,10 +153,10 @@ export function OSPhotosEditor({
         )}
       </div>
 
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-2 font-mono text-xs font-bold uppercase text-red-600">{error}</p>}
 
       {photos.length === 0 ? (
-        <p className="mt-2 text-xs text-zinc-400">
+        <p className="mt-2 font-mono text-xs text-zinc-500">
           Nenhuma foto anexada ainda. Use o botão <strong>Cyber Camera Sync (QR Code)</strong> para fotografar pelo celular ou envie do PC.
         </p>
       ) : (
@@ -164,7 +164,7 @@ export function OSPhotosEditor({
           {photos.map((url, idx) => (
             <div
               key={`${idx}-${url.slice(0, 24)}`}
-              className="group relative aspect-square overflow-hidden rounded-md border border-zinc-200 bg-zinc-50"
+              className="group relative aspect-square overflow-hidden border border-zinc-950 bg-zinc-100"
             >
               <a href={url} target="_blank" rel="noopener noreferrer" className="block h-full w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -178,7 +178,7 @@ export function OSPhotosEditor({
                 <button
                   type="button"
                   onClick={() => handleRemovePhoto(url)}
-                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900/75 text-xs text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition"
+                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center border border-zinc-950 bg-zinc-950 text-xs text-white opacity-0 group-hover:opacity-100 hover:bg-red-600 transition"
                   title="Remover foto"
                 >
                   ✕

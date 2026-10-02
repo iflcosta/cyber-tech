@@ -156,8 +156,8 @@ export function StatusQuickActions({
   const nextOrNull = STATUS_FLOW[currentStatus as OSStatusValue];
   if (!nextOrNull) {
     return (
-      <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-center">
-        <p className="text-xs text-zinc-500">OS em status final ({currentStatus}).</p>
+      <section className="border border-zinc-300 bg-zinc-50 p-3 text-center">
+        <p className="font-mono text-xs text-zinc-500 uppercase">OS em status final ({currentStatus}).</p>
       </section>
     );
   }
@@ -335,12 +335,12 @@ export function StatusQuickActions({
   const modalTotalVal = modalServiceVal + partsTotal;
 
   return (
-    <section className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
+    <section className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-xs">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+        <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
           Fluxo da OS
         </h2>
-        <span className="text-xs font-medium text-zinc-600">
+        <span className="font-mono text-xs font-medium text-zinc-600">
           Atual:{' '}
           <strong className="text-zinc-950">
             {currentStatus === 'awaiting_approval' && effectiveGrandTotal === 0
@@ -351,7 +351,7 @@ export function StatusQuickActions({
       </div>
 
       {isApprovalStep && effectiveGrandTotal === 0 && (
-        <p className="mt-2 rounded border border-amber-200 bg-amber-50/80 px-2.5 py-1.5 text-[11px] leading-snug text-amber-900">
+        <p className="mt-2 border border-amber-300 bg-amber-50/80 px-2.5 py-1.5 font-mono text-[11px] leading-snug text-amber-900">
           💡 <strong>Em triagem:</strong> preencha o diagnóstico e valor no bloco <strong>2. Bancada</strong> para liberar o orçamento no portal do cliente, ou aprove direto abaixo.
         </p>
       )}
@@ -360,7 +360,7 @@ export function StatusQuickActions({
         type="button"
         onClick={handleNextClick}
         disabled={pending || activeStatus !== null}
-        className="mt-3 w-full rounded-md bg-black px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50 cursor-pointer"
+        className="mt-3 w-full bg-zinc-950 px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50 cursor-pointer"
       >
         {activeStatus === next
           ? 'Salvando…'
@@ -373,7 +373,7 @@ export function StatusQuickActions({
         <button
           type="button"
           onClick={() => sendQuoteWhatsApp()}
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-100 cursor-pointer"
+          className="mt-2 w-full border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-900 transition hover:bg-zinc-100 cursor-pointer"
         >
           📲 Enviar orçamento no WhatsApp ({fmtBRL(effectiveGrandTotal)})
         </button>
@@ -386,22 +386,22 @@ export function StatusQuickActions({
             type="button"
             onClick={() => handleSecondaryClick(s)}
             disabled={pending || activeStatus !== null}
-            className="rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-[11px] font-medium text-zinc-700 transition hover:bg-zinc-100 active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="border border-zinc-300 bg-white px-2 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-700 transition hover:bg-zinc-100 active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {activeStatus === s ? '…' : STATUS_QUICK_LABEL[s] ?? OS_STATUSES.find((x) => x.value === s)?.label}
           </button>
         ))}
       </div>
 
-      {error && <p className="mt-2 rounded-md bg-red-50 p-2 text-xs text-red-700">{error}</p>}
+      {error && <p className="mt-2 border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
 
-      <p className="mt-2 text-[10px] leading-tight text-zinc-500">
+      <p className="mt-2 font-mono text-[10px] leading-tight text-zinc-500">
         Operador: <strong>{currentUserName}</strong> · Registrado automaticamente na linha do tempo.
       </p>
 
       {/* MODAL UNIFICADO DE APROVAÇÃO E ORÇAMENTO */}
       <Modal open={approving} onClose={() => setApproving(false)} titleId={approvalTitleId}>
-        <h2 id={approvalTitleId} className="text-lg font-bold text-zinc-950">
+        <h2 id={approvalTitleId} className="font-mono text-lg font-black uppercase text-zinc-950">
           Aprovar Orçamento {osLabel ? `· OS ${osLabel}` : ''}
         </h2>
         <p className="mt-1 text-xs text-zinc-600">
@@ -410,11 +410,11 @@ export function StatusQuickActions({
 
         <div className="mt-4 space-y-3.5">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wide text-zinc-600">
+            <label className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">
               Valor do Serviço / Mão de Obra (R$)
             </label>
             <div className="relative mt-1">
-              <span className="pointer-events-none absolute left-3 top-2 text-sm text-zinc-500">
+              <span className="pointer-events-none absolute left-3 top-2 font-mono text-sm text-zinc-500">
                 R$
               </span>
               <input
@@ -424,11 +424,11 @@ export function StatusQuickActions({
                 value={approvalServiceInput}
                 onChange={(e) => setApprovalServiceInput(e.target.value)}
                 placeholder="0,00"
-                className="block w-full rounded-md border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="block w-full border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               />
             </div>
 
-            <div className="mt-2 flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
+            <div className="mt-2 flex items-center justify-between border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs">
               <span className="text-zinc-600">
                 Serviço ({fmtBRL(modalServiceVal)}) + Peças ({fmtBRL(partsTotal)})
               </span>
@@ -441,7 +441,7 @@ export function StatusQuickActions({
               <button
                 type="button"
                 onClick={() => sendQuoteWhatsApp(modalTotalVal)}
-                className="mt-1.5 text-xs font-semibold text-zinc-900 underline hover:text-black cursor-pointer"
+                className="mt-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-900 underline hover:text-black cursor-pointer"
               >
                 📲 Enviar este valor ({fmtBRL(modalTotalVal)}) no WhatsApp do cliente →
               </button>
@@ -449,7 +449,7 @@ export function StatusQuickActions({
           </div>
 
           <div>
-            <span className="block text-xs font-semibold uppercase tracking-wide text-zinc-600">
+            <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">
               Como o cliente aprovou?
             </span>
             <div className="mt-1 grid grid-cols-2 gap-2">
@@ -458,9 +458,9 @@ export function StatusQuickActions({
                   key={m.value}
                   type="button"
                   onClick={() => setApprovalMethod(m.value)}
-                  className={`rounded-md border-2 px-3 py-2 text-xs font-medium cursor-pointer ${
+                  className={`border-2 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider cursor-pointer ${
                     approvalMethod === m.value
-                      ? 'border-black bg-zinc-100 text-black font-semibold'
+                      ? 'border-zinc-950 bg-zinc-950 text-white'
                       : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
                   }`}
                 >
@@ -470,12 +470,12 @@ export function StatusQuickActions({
             </div>
           </div>
 
-          <label className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-medium text-zinc-900 cursor-pointer">
+          <label className="flex items-center gap-2 border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-medium text-zinc-900 cursor-pointer">
             <input
               type="checkbox"
               checked={startBenchImmediately}
               onChange={(e) => setStartBenchImmediately(e.target.checked)}
-              className="h-4 w-4 rounded border-zinc-300 accent-black text-black"
+              className="h-4 w-4 border-zinc-300 accent-black text-black"
             />
             <span>Já mover direto para <strong>Em bancada</strong> (iniciar reparo)</span>
           </label>
@@ -486,7 +486,7 @@ export function StatusQuickActions({
             type="button"
             onClick={() => setApproving(false)}
             disabled={activeStatus !== null}
-            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 cursor-pointer"
+            className="border border-zinc-300 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 cursor-pointer"
           >
             Cancelar
           </button>
@@ -494,7 +494,7 @@ export function StatusQuickActions({
             type="button"
             onClick={confirmApproval}
             disabled={activeStatus !== null}
-            className="rounded-md bg-black px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
+            className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
           >
             {activeStatus !== null ? 'Salvando…' : 'Confirmar aprovação'}
           </button>
@@ -503,7 +503,7 @@ export function StatusQuickActions({
 
       {/* MODAL DE ENTREGA E RECEBIMENTO */}
       <Modal open={delivering} onClose={() => setDelivering(false)} titleId={deliveryTitleId}>
-        <h2 id={deliveryTitleId} className="text-lg font-bold text-zinc-950">
+        <h2 id={deliveryTitleId} className="font-mono text-lg font-black uppercase text-zinc-950">
           Entregar aparelho {osLabel ? `· OS ${osLabel}` : ''}
         </h2>
         <p className="mt-1 text-xs text-zinc-600">
@@ -512,7 +512,7 @@ export function StatusQuickActions({
 
         <div className="mt-4 space-y-3">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wide text-zinc-600">
+            <label className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">
               Quem está retirando? *
             </label>
             <input
@@ -520,17 +520,17 @@ export function StatusQuickActions({
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
               placeholder="Nome de quem retirou"
-              className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-600">
+          <div className="border border-zinc-200 bg-zinc-50 p-3">
+            <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">
               Pagamento na Entrega
             </h3>
 
             {isAlreadyPaid ? (
-              <p className="mt-2 text-sm font-medium text-zinc-900">
+              <p className="mt-2 font-mono text-sm font-bold text-zinc-900">
                 ✓ Esta OS já está com pagamento concluído ({fmtBRL(totalPaid)}).
               </p>
             ) : (
@@ -561,9 +561,9 @@ export function StatusQuickActions({
                 {registerPaymentOnDelivery && (
                   <div className="space-y-2 border-t border-zinc-200 pt-2">
                     <div>
-                      <span className="block text-xs font-medium text-zinc-600">Valor a receber</span>
+                      <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Valor a receber</span>
                       <div className="relative mt-1">
-                        <span className="pointer-events-none absolute left-3 top-2 text-sm text-zinc-500">
+                        <span className="pointer-events-none absolute left-3 top-2 font-mono text-sm text-zinc-500">
                           R$
                         </span>
                         <input
@@ -571,27 +571,27 @@ export function StatusQuickActions({
                           onChange={(e) => setPaymentAmount(e.target.value)}
                           placeholder="0,00"
                           inputMode="decimal"
-                          className="block w-full rounded-md border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                          className="block w-full border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
                         />
                       </div>
                       {remainingToPay > 0 && (
-                        <p className="mt-1 text-[11px] text-zinc-500">
+                        <p className="mt-1 font-mono text-[11px] text-zinc-500">
                           Saldo restante da OS: <strong>{fmtBRL(remainingToPay)}</strong>
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <span className="block text-xs font-medium text-zinc-600">Forma de pagamento</span>
+                      <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">Forma de pagamento</span>
                       <div className="mt-1 grid grid-cols-3 gap-1.5">
                         {PAYMENT_METHODS.map((m) => (
                           <button
                             key={m.value}
                             type="button"
                             onClick={() => setDeliveryPayMethod(m.value)}
-                            className={`rounded-md border-2 px-2 py-1.5 text-xs font-medium cursor-pointer ${
+                            className={`border-2 px-2 py-1.5 font-mono text-xs font-bold uppercase tracking-wider cursor-pointer ${
                               deliveryPayMethod === m.value
-                                ? 'border-black bg-zinc-100 text-black font-semibold'
+                                ? 'border-zinc-950 bg-zinc-950 text-white'
                                 : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
                             }`}
                           >
@@ -604,7 +604,7 @@ export function StatusQuickActions({
                 )}
 
                 {!registerPaymentOnDelivery && (
-                  <p className="rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
+                  <p className="border border-amber-300 bg-amber-50 p-2 font-mono text-xs text-amber-900">
                     Aparelho será entregue e a OS constará como <strong>&quot;Entregue, não pago&quot;</strong> no painel até que o pagamento seja registrado.
                   </p>
                 )}
@@ -613,14 +613,14 @@ export function StatusQuickActions({
           </div>
         </div>
 
-        {error && <p className="mt-3 rounded-md bg-red-50 p-2 text-xs text-red-700">{error}</p>}
+        {error && <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
 
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             onClick={() => setDelivering(false)}
             disabled={activeStatus !== null}
-            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 cursor-pointer"
+            className="border border-zinc-300 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 cursor-pointer"
           >
             Cancelar
           </button>
@@ -628,7 +628,7 @@ export function StatusQuickActions({
             type="button"
             onClick={confirmDelivery}
             disabled={activeStatus !== null}
-            className="rounded-md bg-black px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
+            className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
           >
             {activeStatus === 'delivered'
               ? 'Salvando…'

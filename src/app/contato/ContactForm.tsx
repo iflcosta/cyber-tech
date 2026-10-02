@@ -163,7 +163,7 @@ export function ContactForm() {
                 key={opt.value}
                 type="button"
                 onClick={() => setType(opt.value)}
-                className={`rounded-lg border p-3 text-left transition-all ${
+                className={`border p-3 text-left transition-all ${
                   isActive
                     ? "border-[var(--color-cyber-blue)] bg-[var(--color-cyber-blue)]/10"
                     : "border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] hover:border-[var(--color-border-on-dark-active)]"
@@ -197,7 +197,7 @@ export function ContactForm() {
             minLength={2}
             maxLength={200}
             autoComplete="name"
-            className="w-full rounded-md border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition"
+            className="w-full border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition"
             placeholder="Seu nome completo"
           />
         </Field>
@@ -210,7 +210,7 @@ export function ContactForm() {
             required
             maxLength={200}
             autoComplete="email"
-            className="w-full rounded-md border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition"
+            className="w-full border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition"
             placeholder="seu@email.com"
           />
         </Field>
@@ -222,7 +222,7 @@ export function ContactForm() {
             onChange={(e) => setPhone(e.target.value)}
             maxLength={50}
             autoComplete="tel"
-            className="w-full rounded-md border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition"
+            className="w-full border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition"
             placeholder="(11) 99999-9999"
           />
         </Field>
@@ -235,7 +235,7 @@ export function ContactForm() {
             minLength={10}
             maxLength={5000}
             rows={5}
-            className="w-full rounded-md border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition resize-y"
+            className="w-full border border-[var(--color-border-on-dark)] bg-[var(--bg-secondary)] px-3 py-2.5 text-base text-[var(--color-text-on-dark)] placeholder:text-[var(--color-text-on-dark-muted)]/60 focus:border-[var(--color-cyber-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-cyber-blue)]/30 transition resize-y"
             placeholder="Conta o que você precisa. Quanto mais detalhe, melhor a gente te ajuda."
           />
           <p className="text-xs text-[var(--color-text-on-dark-muted)] mt-1 text-right">
@@ -244,7 +244,7 @@ export function ContactForm() {
         </Field>
 
         {error && (
-          <div className="flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 p-3">
+          <div className="flex items-start gap-2 border border-red-500/30 bg-red-500/10 p-3">
             <AlertCircle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-red-200">{error}</p>
           </div>

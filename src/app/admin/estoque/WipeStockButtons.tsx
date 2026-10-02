@@ -100,21 +100,21 @@ export function WipeStockButtons() {
         <button
           type="button"
           onClick={() => open('wipe_stock')}
-          className="rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
+          className="border-2 border-red-500 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 transition cursor-pointer"
         >
           {COPY.wipe_stock.buttonLabel}
         </button>
         <button
           type="button"
           onClick={() => open('reset_quantities')}
-          className="rounded-md border border-orange-300 bg-white px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-50"
+          className="border-2 border-amber-500 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-amber-700 hover:bg-amber-50 transition cursor-pointer"
         >
           {COPY.reset_quantities.buttonLabel}
         </button>
       </div>
 
       {success && (
-        <div className="mt-2 rounded-md bg-emerald-50 p-2 text-xs text-emerald-800">
+        <div className="mt-2 border border-emerald-500 bg-emerald-50 p-2 font-mono text-xs font-bold text-emerald-950">
           ✓ {success}
         </div>
       )}
@@ -122,37 +122,37 @@ export function WipeStockButtons() {
       <Modal open={!!active} onClose={close} titleId={titleId}>
         {active && (
           <>
-            <h2 id={titleId} className="text-lg font-bold text-red-700">{COPY[active].title}</h2>
-            <div className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+            <h2 id={titleId} className="font-mono text-lg font-black uppercase tracking-tight text-red-700">{COPY[active].title}</h2>
+            <div className="mt-3 border border-amber-300 bg-amber-50 p-3 font-mono text-xs text-amber-950">
               {COPY[active].warning}
             </div>
 
             <label className="mt-4 block">
-              <span className="block text-sm font-medium text-slate-700">
-                Digite <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-red-700">{COPY[active].confirmText}</code> pra confirmar
+              <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
+                Digite <code className="border border-zinc-300 bg-zinc-100 px-1 py-0.5 font-mono text-red-700 font-bold">{COPY[active].confirmText}</code> pra confirmar
               </span>
               <input
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder={COPY[active].confirmText}
-                className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                className="mt-2 block w-full border-2 border-zinc-950 px-3 py-2 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:outline-none"
                 autoFocus
               />
             </label>
 
             {error && (
-              <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">
+              <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs font-bold text-red-700">
                 {error}
               </p>
             )}
 
-            <div className="mt-5 flex justify-end gap-2">
+            <div className="mt-5 flex justify-end gap-2 border-t-2 border-zinc-200 pt-4">
               <button
                 type="button"
                 onClick={close}
                 disabled={submitting}
-                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+                className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
               >
                 Cancelar
               </button>
@@ -160,7 +160,7 @@ export function WipeStockButtons() {
                 type="button"
                 onClick={execute}
                 disabled={submitting}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                className="border-2 border-red-600 bg-red-600 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-red-700 disabled:opacity-50 transition cursor-pointer"
               >
                 {submitting ? 'Apagando…' : COPY[active].confirmText}
               </button>

@@ -56,59 +56,59 @@ export function EditCustomerForm({
 
   if (!editing) {
     return (
-      <div className="mt-2 space-y-1 text-sm">
-        <p className="text-slate-900">{initialPhone || <span className="text-slate-400">Sem telefone</span>}</p>
-        <p className="text-slate-700">{initialEmail || <span className="text-slate-400">Sem e-mail</span>}</p>
-        {initialNotes && <p className="text-slate-600">{initialNotes}</p>}
+      <div className="mt-2 space-y-1 font-mono text-xs">
+        <p className="text-zinc-950">{initialPhone || <span className="text-zinc-400">Sem telefone</span>}</p>
+        <p className="text-zinc-700">{initialEmail || <span className="text-zinc-400">Sem e-mail</span>}</p>
+        {initialNotes && <p className="text-zinc-600">{initialNotes}</p>}
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-2 text-xs font-semibold text-zinc-800 hover:text-black hover:underline"
+          className="mt-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline hover:text-zinc-700 cursor-pointer"
         >
-          Editar
+          Editar dados
         </button>
       </div>
     );
   }
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-2 space-y-3">
       <label className="block">
-        <span className="block text-xs font-medium text-slate-600">Nome</span>
+        <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-700">Nome</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
         />
       </label>
       <label className="block">
-        <span className="block text-xs font-medium text-slate-600">Telefone</span>
+        <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-700">Telefone</span>
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
         />
       </label>
       <label className="block">
-        <span className="block text-xs font-medium text-slate-600">E-mail</span>
+        <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-700">E-mail</span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
         />
       </label>
       <label className="block">
-        <span className="block text-xs font-medium text-slate-600">Observações</span>
+        <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-700">Observações</span>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
         />
       </label>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <div className="flex gap-2">
+      {error && <p className="font-mono text-xs font-bold text-red-600">{error}</p>}
+      <div className="flex gap-2 pt-1">
         <button
           type="button"
           onClick={() => {
@@ -120,7 +120,7 @@ export function EditCustomerForm({
             setError(null);
           }}
           disabled={saving}
-          className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+          className="border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
         >
           Cancelar
         </button>
@@ -128,7 +128,7 @@ export function EditCustomerForm({
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="bg-zinc-950 px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
         >
           {saving ? 'Salvando…' : 'Salvar'}
         </button>

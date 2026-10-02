@@ -202,7 +202,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
         </div>
 
         {/* Alerta de Configuração Crítica do Chrome */}
-        <div className="mt-4 rounded border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
+        <div className="mt-4 border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
           <div className="flex items-center gap-1.5 font-bold text-amber-900">
             <span className="text-base">⚠️</span> Para não gerar 3 páginas nem cortar a etiqueta:
           </div>
@@ -233,7 +233,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
       {/* Dica visual informativa sobre o Modo Paisagem */}
       {is40x60Landscape && (
-        <div className="print:hidden mx-auto mb-4 max-w-2xl rounded border border-blue-200 bg-blue-50 px-3 py-2 text-center font-mono text-[11px] text-blue-900">
+        <div className="print:hidden mx-auto mb-4 max-w-2xl border-2 border-zinc-950 bg-zinc-100 px-3 py-2 text-center font-mono text-[11px] font-bold uppercase text-zinc-950">
           🔄 <strong>Modo Paisagem Ativo:</strong> A etiqueta sai <strong>girada 90° de lado</strong> na bobina de 40mm. Ao colar no produto, você cola na <strong>horizontal (60mm de largura × 40mm de altura)</strong>!
         </div>
       )}

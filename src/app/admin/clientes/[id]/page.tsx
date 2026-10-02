@@ -58,22 +58,22 @@ export default async function ClienteDetailPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <Link href="/admin/clientes" className="text-sm font-medium text-slate-600 hover:text-black hover:underline">
+      <div className="border-b-2 border-zinc-950 pb-4">
+        <Link href="/admin/clientes" className="font-mono text-xs font-bold uppercase text-zinc-600 hover:text-zinc-950 hover:underline">
           ← Todos os clientes
         </Link>
         <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-          <h1 className="text-2xl font-bold text-slate-900">{customer.name}</h1>
+          <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-950">{customer.name}</h1>
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/admin/os/new?customer=${customer.id}`}
-              className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800"
+              className="border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm"
             >
               + Nova OS
             </Link>
             <Link
               href={`/admin/vender?customer=${customer.id}`}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-100"
+              className="border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition shadow-sm"
             >
               + Nova venda
             </Link>
@@ -83,8 +83,8 @@ export default async function ClienteDetailPage({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border-2 border-slate-200 bg-white p-4 sm:col-span-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contato</h2>
+        <div className="border-2 border-zinc-950 bg-white p-4 sm:col-span-1 shadow-sm">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-200 pb-2">Contato</h2>
           <EditCustomerForm
             customerId={customer.id}
             initialName={customer.name}
@@ -92,61 +92,61 @@ export default async function ClienteDetailPage({
             initialEmail={customer.email ?? ''}
             initialNotes={customer.notes ?? ''}
           />
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 font-mono text-[11px] text-zinc-500">
             Cliente desde {formatDateBR(customer.created_at)}
           </p>
         </div>
 
-        <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Ordens de serviço</p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">{ordersWithWarranty.length}</p>
+        <div className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-sm">
+          <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">Ordens de serviço</p>
+          <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{ordersWithWarranty.length}</p>
           {ordersWithWarranty.some((o) => o.warrantyActive) && (
-            <p className="mt-1 text-xs font-semibold text-zinc-700">
+            <p className="mt-1 text-xs font-mono font-bold uppercase text-emerald-700">
               {ordersWithWarranty.filter((o) => o.warrantyActive).length} em garantia
             </p>
           )}
         </div>
 
-        <div className="rounded-lg border-2 border-zinc-300 bg-zinc-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Total em compras</p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">{fmtBRL(totalSpent)}</p>
-          <p className="mt-1 text-xs text-slate-600">
+        <div className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-sm">
+          <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-600">Total em compras</p>
+          <p className="mt-1 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalSpent)}</p>
+          <p className="mt-1 text-xs font-mono text-zinc-600">
             {activeSales.length} venda{activeSales.length === 1 ? '' : 's'}
           </p>
         </div>
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+        <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-200 pb-2">
           Histórico de OS
         </h2>
         {ordersWithWarranty.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">Nenhuma OS ainda.</p>
+          <p className="mt-3 font-mono text-xs text-zinc-500">Nenhuma OS ainda.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-200">
+          <ul className="mt-3 divide-y divide-zinc-200 font-mono text-xs">
             {ordersWithWarranty.map((o) => (
-              <li key={o.id} className="py-2">
+              <li key={o.id} className="py-2.5">
                 <Link
                   href={`/admin/os/${o.id}`}
-                  className="flex flex-wrap items-center justify-between gap-2 hover:text-black"
+                  className="flex flex-wrap items-center justify-between gap-2 hover:bg-zinc-50 transition p-1"
                 >
                   <div>
-                    <span className="font-mono text-sm font-medium text-slate-900">
+                    <span className="font-bold text-zinc-950">
                       {o.short_id ?? o.os_number}
                     </span>
-                    <span className="ml-2 text-sm text-slate-600">
+                    <span className="ml-2 font-medium text-zinc-700">
                       {[o.equipment_brand, o.equipment_model].filter(Boolean).join(' ') || o.equipment_type}
                     </span>
-                    <p className="text-xs text-slate-500">{o.reported_defect}</p>
+                    <p className="text-xs text-zinc-500">{o.reported_defect}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {o.warrantyActive && (
-                      <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-xs font-medium text-zinc-900">
-                        Em garantia até {formatDateBR(o.warrantyEnd!.toISOString())}
+                      <span className="border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-xs font-bold text-emerald-800">
+                        Garantia até {formatDateBR(o.warrantyEnd!.toISOString())}
                       </span>
                     )}
                     <StatusBadge status={o.status} />
-                    <span className="text-xs text-slate-500">{formatDateBR(o.created_at)}</span>
+                    <span className="text-xs text-zinc-500">{formatDateBR(o.created_at)}</span>
                   </div>
                 </Link>
               </li>
@@ -155,36 +155,36 @@ export default async function ClienteDetailPage({
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm">
+        <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-200 pb-2">
           Histórico de compras (PDV)
         </h2>
         {(sales ?? []).length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">Nenhuma compra ainda.</p>
+          <p className="mt-3 font-mono text-xs text-zinc-500">Nenhuma compra ainda.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-200">
+          <ul className="mt-3 divide-y divide-zinc-200 font-mono text-xs">
             {(sales ?? []).map((s) => {
               const payMeta = PAYMENT_METHODS.find((m) => m.value === s.payment_method);
               return (
-                <li key={s.id} className="py-2">
+                <li key={s.id} className="py-2.5">
                   <Link
                     href={`/admin/vendas/${s.id}`}
-                    className="flex flex-wrap items-center justify-between gap-2 hover:text-black"
+                    className="flex flex-wrap items-center justify-between gap-2 hover:bg-zinc-50 transition p-1"
                   >
                     <div>
-                      <span className="font-mono text-sm font-medium text-slate-900">
+                      <span className="font-bold text-zinc-950">
                         {s.sale_number}
                       </span>
                       {s.voided_at && (
-                        <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">
+                        <span className="ml-2 border border-red-300 bg-red-50 px-1.5 py-0.5 text-xs font-bold text-red-700">
                           Cancelada
                         </span>
                       )}
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-zinc-500">
                         {formatDateTimeBR(s.created_at)} · {payMeta?.label ?? s.payment_method}
                       </p>
                     </div>
-                    <span className="font-mono font-medium text-slate-900">{fmtBRL(s.total)}</span>
+                    <span className="font-bold text-zinc-950">{fmtBRL(s.total)}</span>
                   </Link>
                 </li>
               );

@@ -47,7 +47,7 @@ export function OSFilter({
   return (
     <div className="space-y-3">
       {/* 1. Seletor de Bancada / Técnico (Destaque Principal) */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 shadow-2xs">
+      <div className="flex flex-wrap items-center gap-2 border border-zinc-300 bg-white p-2.5 shadow-xs">
         <span className="px-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
           Bancada:
         </span>
@@ -162,9 +162,9 @@ function TechScopeButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition cursor-pointer ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
         active
-          ? 'bg-zinc-950 text-white shadow-xs ring-2 ring-zinc-950/20'
+          ? 'bg-zinc-950 text-white shadow-xs'
           : warn
             ? 'border border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100'
             : highlight
@@ -175,7 +175,7 @@ function TechScopeButton({
       <span>{icon}</span>
       <span>{label}</span>
       <span
-        className={`ml-0.5 rounded px-1.5 py-0.2 text-[11px] font-extrabold ${
+        className={`ml-0.5 px-1.5 py-0.2 text-[11px] font-extrabold ${
           active
             ? 'bg-white text-zinc-950'
             : warn

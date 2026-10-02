@@ -24,9 +24,9 @@ export default async function NewMovementPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Movimentar estoque</h1>
-        <p className="text-sm text-slate-500">
-          {item.name} · atual: <strong>{item.current_stock}</strong>
+        <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">Movimentar estoque</h1>
+        <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+          {item.name} · atual: <strong className="text-zinc-950">{item.current_stock}</strong>
         </p>
       </div>
       <MovementForm

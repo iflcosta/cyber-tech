@@ -55,37 +55,37 @@ export function PixQRButton({
         onClick={() => setOpen((v) => !v)}
         className={
           buttonClassName ??
-          'inline-flex items-center gap-2 rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800'
+          'inline-flex items-center gap-2 border border-zinc-950 bg-black px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 cursor-pointer'
         }
       >
         💰 {buttonLabel}
       </button>
 
       {open && !PIX_CONFIG.key && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Chave PIX não configurada (env var <code className="font-mono text-xs">NEXT_PUBLIC_PIX_KEY</code> vazia). Configure no Vercel pra esse QR code funcionar.
+        <div className="border border-amber-300 bg-amber-50 p-3 font-mono text-xs text-amber-800">
+          Chave PIX não configurada (env var <code>NEXT_PUBLIC_PIX_KEY</code> vazia). Configure no Vercel pra esse QR code funcionar.
         </div>
       )}
 
       {open && PIX_CONFIG.key && (
-        <div className="rounded-md border border-zinc-200 bg-white p-3 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="border-2 border-zinc-950 bg-white p-4 shadow-xs">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start font-mono">
             <div className="flex flex-col items-center gap-1">
               <QRCodeImage
                 value={brCode}
                 size={200}
                 alt="QR Code PIX"
-                className="rounded border border-zinc-200"
+                className="border-2 border-zinc-950 bg-white p-1"
               />
-              <p className="text-[10px] text-zinc-500">QR Code PIX</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">QR Code PIX</p>
             </div>
-            <div className="flex-1 space-y-2">
-              <p className="text-xs font-medium text-zinc-700">
+            <div className="flex-1 space-y-2.5">
+              <p className="text-xs font-bold uppercase tracking-wider text-zinc-950">
                 Cliente escaneia com o app do banco pra pagar.
               </p>
 
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-600">
                   Valor (R$)
                 </label>
                 <input
@@ -94,12 +94,12 @@ export function PixQRButton({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0,00 (deixe vazio pra valor aberto)"
-                  className="mt-1 block w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                  className="mt-1 block w-full border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-600">
                   Descrição (opcional)
                 </label>
                 <input
@@ -107,21 +107,21 @@ export function PixQRButton({
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
                   placeholder={customerName ? `Pagamento OS - ${customerName}` : 'Pagamento OS'}
-                  className="mt-1 block w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                  className="mt-1 block w-full border border-zinc-300 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={copyCode}
-                className="w-full rounded-md border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                className="w-full border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
               >
                 📋 Copiar código PIX (copia e cola)
               </button>
 
-              <details className="text-[10px] text-slate-500">
-                <summary className="cursor-pointer">Ver código bruto</summary>
-                <pre className="mt-1 max-h-20 overflow-auto break-all rounded bg-slate-50 p-1 font-mono text-[9px]">
+              <details className="text-[10px] text-zinc-500">
+                <summary className="cursor-pointer font-bold uppercase tracking-wider">Ver código bruto</summary>
+                <pre className="mt-1 max-h-20 overflow-auto break-all border border-zinc-300 bg-zinc-50 p-2 font-mono text-[9px] text-zinc-800">
 {brCode}
                 </pre>
               </details>
@@ -141,10 +141,10 @@ export function PixQRInline({ amount, txid, description }: { amount?: number; tx
   );
   if (!PIX_CONFIG.key) return null; // sem chave configurada, nao gera QR quebrado
   return (
-    <div className="flex flex-col items-center gap-1 rounded-md border border-slate-200 bg-white p-2">
-      <QRCodeImage value={brCode} size={140} alt="QR PIX" className="rounded" />
-      <p className="text-[9px] text-slate-500">Pagar com PIX</p>
-      <p className="text-[9px] font-mono text-slate-600">Chave: {PIX_CONFIG.key}</p>
+    <div className="flex flex-col items-center gap-1 border-2 border-zinc-950 bg-white p-2.5 font-mono">
+      <QRCodeImage value={brCode} size={140} alt="QR PIX" className="border border-zinc-950" />
+      <p className="text-[10px] font-bold uppercase text-zinc-950">Pagar com PIX</p>
+      <p className="text-[10px] text-zinc-600">Chave: {PIX_CONFIG.key}</p>
     </div>
   );
 }

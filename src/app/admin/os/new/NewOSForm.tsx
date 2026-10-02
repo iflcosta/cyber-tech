@@ -399,7 +399,7 @@ export function NewOSForm({
 
   return (
     <>
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-slate-900 sm:p-6">
+      <div className="border-2 border-zinc-950 bg-white p-5 shadow-xs text-zinc-950 sm:p-6">
         {/* Stepper Modern Retail Studio */}
         <div className="mb-6 flex items-center gap-2">
           {[1, 2, 3].map((n) => (
@@ -409,28 +409,28 @@ export function NewOSForm({
                 onClick={() => {
                   if (n < step) setStep(n);
                 }}
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center font-mono text-xs font-bold transition ${
                   n === step
-                    ? 'bg-sky-600 text-white shadow-xs'
+                    ? 'bg-zinc-950 text-white shadow-xs'
                     : n < step
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200'
+                      ? 'bg-zinc-800 text-white'
+                      : 'bg-zinc-100 text-zinc-500 border border-zinc-300'
                 }`}
               >
                 {n < step ? '✓' : n}
               </button>
               <div
-                className={`text-sm ${
+                className={`font-mono text-xs uppercase tracking-wider ${
                   n === step
-                    ? 'font-bold text-slate-900'
+                    ? 'font-bold text-zinc-950'
                     : n < step
-                      ? 'font-semibold text-emerald-700'
-                      : 'font-medium text-slate-400'
+                      ? 'font-semibold text-zinc-700'
+                      : 'font-medium text-zinc-400'
                 }`}
               >
                 {n === 1 ? '1. Cliente' : n === 2 ? '2. Aparelho & Fotos' : '3. Sintoma & Etiqueta'}
               </div>
-              {n < 3 && <div className="h-px flex-1 bg-slate-200" />}
+              {n < 3 && <div className="h-px flex-1 bg-zinc-200" />}
             </div>
           ))}
         </div>
@@ -439,23 +439,23 @@ export function NewOSForm({
         {step === 1 && (
           <div className="space-y-4">
             {selectedCustomer ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+              <div className="border-2 border-zinc-950 bg-zinc-50 p-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                  <p className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
                     ✓ Cliente Recorrente Identificado
                   </p>
                   {selectedCustomer.osCount > 0 && (
-                    <span className="rounded-md bg-emerald-100 px-2 py-0.5 font-mono text-xs font-bold text-emerald-800 border border-emerald-200">
+                    <span className="bg-zinc-950 px-2 py-0.5 font-mono text-xs font-bold text-white uppercase">
                       {selectedCustomer.osCount} OS anterior{selectedCustomer.osCount === 1 ? '' : 'es'}
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-base font-bold text-slate-900">{selectedCustomer.name}</p>
-                <p className="text-sm text-slate-600">{selectedCustomer.phone || 'Sem telefone'}</p>
+                <p className="mt-1 text-base font-bold text-zinc-950">{selectedCustomer.name}</p>
+                <p className="font-mono text-sm text-zinc-600">{selectedCustomer.phone || 'Sem telefone'}</p>
                 <button
                   type="button"
                   onClick={clearCustomerSelection}
-                  className="mt-2 text-xs font-semibold text-sky-700 underline hover:text-sky-800"
+                  className="mt-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline hover:text-zinc-700 cursor-pointer"
                 >
                   Não é esse cliente — trocar
                 </button>
@@ -484,11 +484,11 @@ export function NewOSForm({
                 </div>
 
                 {searchingCustomer && (
-                  <p className="text-xs text-slate-500">Buscando cliente cadastrado…</p>
+                  <p className="font-mono text-xs text-zinc-500">Buscando cliente cadastrado…</p>
                 )}
                 {customerMatches.length > 0 && (
-                  <div className="rounded-xl border border-sky-200 bg-sky-50/60 p-3">
-                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-sky-800">
+                  <div className="border-2 border-zinc-950 bg-zinc-50 p-3">
+                    <p className="mb-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
                       Encontramos {customerMatches.length === 1 ? 'este cadastro' : 'estes cadastros'} (clique para preencher em 1s):
                     </p>
                     <ul className="space-y-1.5">
@@ -497,14 +497,14 @@ export function NewOSForm({
                           <button
                             type="button"
                             onClick={() => pickCustomer(m)}
-                            className="flex w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-800 shadow-2xs hover:border-sky-300 hover:bg-sky-50/40 transition"
+                            className="flex w-full items-center justify-between gap-2 border border-zinc-300 bg-white px-3 py-2 text-left text-sm text-zinc-900 shadow-2xs hover:border-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
                           >
                             <span>
-                              <span className="font-semibold text-slate-900">{m.name}</span>
-                              {m.phone && <span className="ml-2 text-slate-500">{m.phone}</span>}
+                              <span className="font-bold text-zinc-950">{m.name}</span>
+                              {m.phone && <span className="ml-2 font-mono text-zinc-500">{m.phone}</span>}
                             </span>
                             {m.osCount > 0 && (
-                              <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-600">
+                              <span className="bg-zinc-100 px-2 py-0.5 font-mono text-xs font-bold text-zinc-800 border border-zinc-300">
                                 {m.osCount} OS
                               </span>
                             )}
@@ -539,10 +539,10 @@ export function NewOSForm({
                     key={t.value}
                     type="button"
                     onClick={() => setEquipment({ ...equipment, type: t.value })}
-                    className={`rounded-lg border-2 px-3 py-2 text-sm font-semibold transition ${
+                    className={`border-2 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
                       equipment.type === t.value
-                        ? 'border-sky-600 bg-sky-50 text-sky-800 shadow-2xs'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                        : 'border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100'
                     }`}
                   >
                     {t.label}
@@ -653,17 +653,17 @@ export function NewOSForm({
                   return (
                     <label
                       key={f.key}
-                      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                      className={`flex cursor-pointer items-center gap-2 border px-3 py-2 font-mono text-xs font-semibold transition ${
                         checked
-                          ? 'border-sky-300 bg-sky-50/70 text-sky-900 font-semibold'
-                          : 'border-slate-200 bg-slate-50/60 text-slate-700 hover:bg-slate-100/70'
+                          ? 'border-2 border-zinc-950 bg-zinc-950 text-white'
+                          : 'border border-zinc-300 bg-zinc-50 text-zinc-800 hover:bg-zinc-100'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={(e) => setChecklist({ ...checklist, [f.key]: e.target.checked })}
-                        className="h-4 w-4 rounded border-slate-300 text-sky-600"
+                        className="h-4 w-4 border-zinc-300 accent-zinc-950"
                       />
                       <span>{f.label}</span>
                     </label>
@@ -674,7 +674,7 @@ export function NewOSForm({
 
             <Field label="Acessórios deixados no balcão (digite livremente ou use os atalhos)">
               <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-medium text-slate-400 mr-1">
+                <span className="font-mono text-[11px] font-bold uppercase text-zinc-500 mr-1">
                   Atalhos opcionais:
                 </span>
                 {QUICK_ACCESSORY_CHIPS.map((chip) => (
@@ -682,7 +682,7 @@ export function NewOSForm({
                     key={chip}
                     type="button"
                     onClick={() => setAccessories((prev) => appendChipText(prev, chip))}
-                    className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 transition"
+                    className="border border-zinc-300 bg-zinc-50 px-2.5 py-1 font-mono text-xs font-semibold text-zinc-800 hover:border-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
                   >
                     + {chip}
                   </button>
@@ -691,7 +691,7 @@ export function NewOSForm({
                   <button
                     type="button"
                     onClick={() => setAccessories('')}
-                    className="ml-auto text-[11px] font-medium text-slate-400 underline hover:text-slate-700"
+                    className="ml-auto font-mono text-[11px] font-bold uppercase text-zinc-400 underline hover:text-zinc-900 cursor-pointer"
                   >
                     Limpar
                   </button>
@@ -706,13 +706,13 @@ export function NewOSForm({
             </Field>
 
             {/* BLOCO DE FOTOS DA CARCAÇA COM CYBER CAMERA SYNC (OPÇÃO 1) */}
-            <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-4">
+            <div className="border-2 border-zinc-950 bg-zinc-50 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-sky-800">
+                  <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
                     📸 Fotos da Carcaça no Check-in ({photos.length})
                   </span>
-                  <p className="text-xs text-slate-600">
+                  <p className="mt-0.5 text-xs text-zinc-600">
                     Tire fotos em 15 segundos com seu celular escaneando o QR Code na tela ou selecione arquivos.
                   </p>
                 </div>
@@ -721,15 +721,15 @@ export function NewOSForm({
                   <button
                     type="button"
                     onClick={openCameraSync}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition"
+                    className="inline-flex items-center gap-1.5 bg-zinc-950 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition cursor-pointer"
                   >
                     <span>📱 Cyber Camera Sync (QR Code)</span>
-                    <span className="rounded bg-sky-800/60 px-1.5 py-0.5 font-mono text-[10px]">
+                    <span className="bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-white">
                       Alt+C
                     </span>
                   </button>
 
-                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition">
                     <span>{uploadingPhotos ? 'Enviando…' : '💻 Upload do PC'}</span>
                     <input
                       type="file"
@@ -751,14 +751,14 @@ export function NewOSForm({
                   {photos.map((url, idx) => (
                     <div
                       key={`${idx}-${url.slice(0, 24)}`}
-                      className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xs"
+                      className="group relative aspect-square overflow-hidden border-2 border-zinc-950 bg-white"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={url} alt="Foto do aparelho" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removePhoto(url)}
-                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/75 text-xs text-white hover:bg-red-600"
+                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center bg-zinc-950/80 font-mono text-xs text-white hover:bg-red-600 transition"
                         aria-label="Remover foto"
                       >
                         ✕
@@ -776,15 +776,15 @@ export function NewOSForm({
           <div className="space-y-4">
             <Field label="Defeito / Serviço relatado pelo cliente * (digite livremente ou use os atalhos)">
               <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-medium text-slate-400 mr-1">
-                  Atalhos opcionais:
+                <span className="text-[11px] font-mono font-bold uppercase text-zinc-500 mr-1">
+                  Atalhos:
                 </span>
                 {QUICK_SYMPTOM_CHIPS.map((chip) => (
                   <button
                     key={chip}
                     type="button"
                     onClick={() => setDefect((prev) => appendChipText(prev, chip))}
-                    className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 transition"
+                    className="border border-zinc-300 bg-zinc-100 px-2 py-0.5 font-mono text-xs font-semibold text-zinc-800 hover:border-zinc-950 hover:bg-zinc-200 hover:text-zinc-950 transition"
                   >
                     + {chip}
                   </button>
@@ -793,9 +793,9 @@ export function NewOSForm({
                   <button
                     type="button"
                     onClick={() => setDefect('')}
-                    className="ml-auto text-[11px] font-medium text-slate-400 underline hover:text-slate-700"
+                    className="ml-auto text-[11px] font-mono text-zinc-500 underline hover:text-zinc-950"
                   >
-                    Limpar texto
+                    Limpar
                   </button>
                 )}
               </div>
@@ -826,7 +826,7 @@ export function NewOSForm({
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-[11px] text-slate-500">
+                <p className="mt-1 font-mono text-[11px] text-zinc-500">
                   Iago (30% balcão) · Jefferson (50/50 mezanino) · Felipe/Loja (100% retido).
                 </p>
               </Field>
@@ -850,14 +850,14 @@ export function NewOSForm({
               />
             </Field>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
-              <span className="font-semibold text-slate-700">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-zinc-950 bg-zinc-50 p-3 text-xs">
+              <span className="font-mono font-bold uppercase text-zinc-950">
                 📸 Fotos anexadas nesta OS: <strong>{photos.length}</strong>
               </span>
               <button
                 type="button"
                 onClick={openCameraSync}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-1.5 font-bold text-sky-700 hover:bg-sky-50 transition"
+                className="inline-flex items-center gap-1.5 border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
               >
                 📱 + Fotos via Cyber Camera Sync
               </button>
@@ -866,17 +866,17 @@ export function NewOSForm({
         )}
 
         {error && (
-          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <p className="mt-4 border-2 border-red-500 bg-red-50 p-3 font-mono text-xs font-bold text-red-950">
             {error}
           </p>
         )}
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t-2 border-zinc-200 pt-4">
           <button
             type="button"
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1 || submitting}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-30"
+            className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition disabled:opacity-30 cursor-pointer"
           >
             ← Voltar
           </button>
@@ -885,7 +885,7 @@ export function NewOSForm({
             <button
               type="button"
               onClick={next}
-              className="rounded-lg bg-sky-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-sky-700 transition"
+              className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer"
             >
               Próximo passo →
             </button>
@@ -895,7 +895,7 @@ export function NewOSForm({
                 type="button"
                 onClick={() => submit(false)}
                 disabled={submitting}
-                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
+                className="border-2 border-zinc-950 bg-white px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? 'Salvando…' : 'Criar OS e Abrir Ficha'}
               </button>
@@ -903,7 +903,7 @@ export function NewOSForm({
                 type="button"
                 onClick={() => submit(true)}
                 disabled={submitting}
-                className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition disabled:opacity-50"
+                className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? 'Salvando…' : '🖨️ Criar OS + Etiqueta 58mm'}
               </button>
@@ -914,22 +914,21 @@ export function NewOSForm({
         <style jsx global>{`
           .form-input {
             width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid rgb(203 213 225);
+            border: 1px solid #d4d4d8;
             padding: 0.55rem 0.85rem;
             font-size: 0.9rem;
             line-height: 1.5;
-            color: rgb(15 23 42);
+            color: #09090b;
             background: white;
-            transition: border-color 0.15s ease;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
           }
           .form-input:focus {
             outline: none;
-            border-color: rgb(2 132 199);
-            box-shadow: 0 0 0 1px rgb(2 132 199);
+            border-color: #09090b;
+            box-shadow: 0 0 0 2px rgba(9, 9, 11, 0.12);
           }
           .form-input::placeholder {
-            color: rgb(148 163 184);
+            color: #a1a1aa;
           }
         `}</style>
       </div>
@@ -948,7 +947,7 @@ export function NewOSForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+      <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
         {label}
       </span>
       <div className="mt-1">{children}</div>

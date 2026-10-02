@@ -43,8 +43,8 @@ export default async function NewPartOrderPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Novo Pedido de Peça</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">Novo Pedido de Peça</h1>
+        <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">
           Registre depois de já ter fechado com o fornecedor (peça, variação e valor confirmados).
         </p>
       </div>

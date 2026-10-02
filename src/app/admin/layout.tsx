@@ -22,13 +22,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Fallback amigavel se o servidor estiver sem env vars (deploy sem NEXT_PUBLIC_SUPABASE_CRM_*)
   if (configError) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4">
-        <div className="w-full max-w-xl rounded-lg border border-amber-300 bg-amber-50 p-6">
+      <div className="flex min-h-dvh items-center justify-center bg-zinc-50 px-4">
+        <div className="w-full max-w-xl border-2 border-amber-400 bg-amber-50 p-6">
           <h1 className="text-xl font-bold text-amber-900">ERP ainda nao configurado</h1>
           <p className="mt-2 text-sm text-amber-800">
             Faltam variaveis de ambiente do Supabase do CRM neste ambiente.
           </p>
-          <pre className="mt-3 overflow-x-auto rounded bg-amber-100 p-3 text-xs text-amber-900">
+          <pre className="mt-3 overflow-x-auto border border-amber-300 bg-amber-100 p-3 font-mono text-xs text-amber-900">
             {configError}
           </pre>
           <p className="mt-3 text-xs text-amber-800">
@@ -56,10 +56,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const showLeadsTab = isIagoUser(user, profile);
 
   return (
-    <div className="min-h-dvh print:min-h-0 print:h-auto bg-[#FAFAFA] text-slate-900 antialiased">
-      <header className="print:hidden sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
+    <div className="min-h-dvh print:min-h-0 print:h-auto bg-zinc-50 text-zinc-950 antialiased font-body">
+      <header className="print:hidden sticky top-0 z-30 border-b-2 border-zinc-950 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/admin/os" className="flex items-center gap-2 text-base font-bold tracking-tight text-zinc-950 group">
+          <Link href="/admin/os" className="flex items-center gap-2 text-base font-black tracking-tight text-zinc-950 group">
             <span className="font-extrabold uppercase tracking-wider text-zinc-950">CYBER</span>
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-white">
               ERP

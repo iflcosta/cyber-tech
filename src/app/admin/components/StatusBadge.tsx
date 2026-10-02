@@ -1,13 +1,13 @@
 import { OS_STATUSES, type OSStatusValue } from '../types/database';
 
 const COLOR_CLASSES: Record<string, string> = {
-  amber: 'bg-amber-100 text-amber-800 ring-amber-200',
-  blue: 'bg-zinc-100 text-zinc-800 ring-zinc-300',
-  indigo: 'bg-zinc-900 text-white ring-zinc-900',
-  orange: 'bg-orange-100 text-orange-800 ring-orange-200',
-  emerald: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
-  slate: 'bg-slate-100 text-slate-700 ring-slate-200',
-  red: 'bg-red-100 text-red-800 ring-red-200',
+  amber: 'bg-amber-50 text-amber-950 border border-amber-300',
+  blue: 'bg-zinc-100 text-zinc-900 border border-zinc-300',
+  indigo: 'bg-zinc-950 text-white border border-zinc-950',
+  orange: 'bg-orange-50 text-orange-950 border border-orange-300',
+  emerald: 'bg-emerald-50 text-emerald-950 border border-emerald-300',
+  slate: 'bg-zinc-100 text-zinc-800 border border-zinc-300',
+  red: 'bg-red-50 text-red-950 border border-red-300',
 };
 
 export function StatusBadge({
@@ -22,7 +22,7 @@ export function StatusBadge({
   const meta = OS_STATUSES.find((s) => s.value === status);
   if (!meta) {
     return (
-      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-slate-100 text-slate-700 ${className}`}>
+      <span className={`inline-flex items-center px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-800 border border-zinc-300 ${className}`}>
         {status}
       </span>
     );
@@ -32,7 +32,7 @@ export function StatusBadge({
       ? 'Em triagem / diagnóstico'
       : meta.label;
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${COLOR_CLASSES[meta.color]} ${className}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider ${COLOR_CLASSES[meta.color] ?? 'bg-zinc-100 text-zinc-800 border border-zinc-300'} ${className}`}>
       {label}
     </span>
   );

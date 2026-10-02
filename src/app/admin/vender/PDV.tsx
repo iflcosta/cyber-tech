@@ -378,11 +378,11 @@ export function PDV({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex items-center justify-between border-b-2 border-zinc-950 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">PDV Rápido · Balcão Cyber</h1>
-          <p className="text-xs text-slate-500">
-            Bipe o código de barras/SKU ou digite o nome. Operador: <span className="font-semibold text-slate-700">{currentUserName}</span>.
+          <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-950">PDV Rápido · Balcão Cyber</h1>
+          <p className="text-xs font-mono uppercase text-zinc-600">
+            Bipe o código de barras/SKU ou digite o nome. Operador: <span className="font-bold text-zinc-950">{currentUserName}</span>.
           </p>
         </div>
       </div>
@@ -390,10 +390,10 @@ export function PDV({
       {/* Input de bipagem — SEMPRE com autofocus (leitor envia rapido) */}
       <form
         onSubmit={submitCode}
-        className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
+        className="border-2 border-zinc-950 bg-white p-4 shadow-sm"
       >
         <label className="block">
-          <span className="block text-xs font-mono font-bold uppercase tracking-wider text-sky-700">
+          <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
             Bipar / buscar (EAN-13 ou SKU Interno)
           </span>
           <input
@@ -406,42 +406,42 @@ export function PDV({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-mono text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600/20"
+            className="mt-2 w-full border border-zinc-300 bg-zinc-50 px-4 py-3 text-lg font-mono text-zinc-950 placeholder-zinc-400 focus:border-zinc-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
           />
         </label>
         {flash && (
-          <p className="mt-2 text-sm font-semibold text-emerald-700">{flash}</p>
+          <p className="mt-2 text-xs font-mono font-bold uppercase text-emerald-700">{flash}</p>
         )}
       </form>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>
+        <div className="border-2 border-red-600 bg-red-50 p-3 text-xs font-mono font-bold uppercase text-red-700">{error}</div>
       )}
 
       {/* Busca manual (caso leitor nao funcione) */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="border border-zinc-300 bg-white p-4 shadow-sm">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Ou busque manualmente por nome, marca ou SKU…"
           aria-label="Buscar item por nome ou marca"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-600/20"
+          className="w-full border border-zinc-300 bg-white px-3.5 py-2 text-sm font-mono text-zinc-950 placeholder-zinc-400 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
         />
         <button
           type="button"
           onClick={openAddPart}
-          className="mt-2 text-xs font-semibold text-sky-700 hover:text-sky-800 transition cursor-pointer"
+          className="mt-2 text-xs font-mono font-bold uppercase text-zinc-950 hover:underline transition cursor-pointer"
         >
           ➕ Não achou? Cadastrar peça nova e vender
-          {search.trim() && <span className="text-slate-500"> — &quot;{search.trim()}&quot;</span>}
+          {search.trim() && <span className="text-zinc-500"> — &quot;{search.trim()}&quot;</span>}
         </button>
         {searchSuggestions.length > 0 && (
-          <ul className="mt-3 divide-y divide-slate-100 border-t border-slate-100 pt-2">
+          <ul className="mt-3 divide-y divide-zinc-200 border-t border-zinc-200 pt-2">
             {searchSuggestions.map((i) => (
               <li
                 key={i.id}
-                className="flex items-center justify-between gap-2 py-2 text-sm hover:bg-slate-50 px-2 rounded-lg transition"
+                className="flex items-center justify-between gap-2 py-2 text-sm hover:bg-zinc-50 px-2 transition"
               >
                 <button
                   type="button"
@@ -449,30 +449,30 @@ export function PDV({
                     addItem(i);
                     setSearch('');
                   }}
-                  className="flex-1 text-left hover:text-sky-700 transition cursor-pointer"
+                  className="flex-1 text-left hover:text-zinc-950 transition cursor-pointer"
                 >
-                  <span className="font-bold text-slate-900">{i.name}</span>
+                  <span className="font-bold text-zinc-950">{i.name}</span>
                   {i.brand && (
-                    <span className="ml-1 text-xs text-slate-500">· {i.brand}</span>
+                    <span className="ml-1 text-xs text-zinc-500">· {i.brand}</span>
                   )}
                   {i.internal_sku && (
-                    <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
+                    <span className="ml-2 border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] font-bold text-zinc-900">
                       {i.internal_sku}
                     </span>
                   )}
                   {i.shelf_location && (
-                    <span className="ml-1.5 rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-semibold text-sky-700 border border-sky-200">
+                    <span className="ml-1.5 border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] font-bold text-zinc-900">
                       📍 {i.shelf_location}
                     </span>
                   )}
                   {i.ean13 && (
-                    <span className="ml-2 font-mono text-xs text-slate-400">
+                    <span className="ml-2 font-mono text-xs text-zinc-400">
                       {i.ean13}
                     </span>
                   )}
                 </button>
-                <span className="text-xs font-semibold text-slate-600">
-                  {i.current_stock} em estoque · <span className="font-mono text-emerald-700">{fmtBRL(i.unit_price)}</span>
+                <span className="text-xs font-mono font-semibold text-zinc-600">
+                  {i.current_stock} em estoque · <span className="font-mono font-bold text-zinc-950">{fmtBRL(i.unit_price)}</span>
                 </span>
               </li>
             ))}
@@ -481,24 +481,24 @@ export function PDV({
       </div>
 
       {/* Carrinho */}
-      <section className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-        <header className="border-b border-slate-200 px-4 py-3 bg-slate-50">
-          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600">
+      <section className="border-2 border-zinc-950 bg-white shadow-sm overflow-hidden">
+        <header className="border-b-2 border-zinc-950 px-4 py-3 bg-zinc-100">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
             Carrinho ({cart.length})
           </h2>
         </header>
         {cart.length === 0 ? (
-          <p className="p-8 text-center text-xs font-mono text-slate-500">
+          <p className="p-8 text-center text-xs font-mono uppercase text-zinc-500">
             Bipe um código ou adicione um item acima para começar.
           </p>
         ) : (
           <>
-            <ul className="divide-y divide-slate-200 font-mono text-xs text-slate-700">
+            <ul className="divide-y divide-zinc-200 font-mono text-xs text-zinc-800">
               {cart.map((c) => (
-                <li key={c.stock_item_id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50/80">
+                <li key={c.stock_item_id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50">
                   <div className="flex-1">
-                    <p className="font-bold text-slate-900">{c.name}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="font-bold text-zinc-950">{c.name}</p>
+                    <p className="text-xs text-zinc-500">
                       {fmtBRL(c.unit_price)} cada · {c.stock_available} em estoque
                     </p>
                   </div>
@@ -508,15 +508,15 @@ export function PDV({
                     max={c.stock_available}
                     value={c.quantity}
                     onChange={(e) => updateQty(c.stock_item_id, Number(e.target.value))}
-                    className="w-16 rounded-md border border-slate-300 bg-white px-2 py-1 text-center font-mono text-sm text-slate-900 focus:border-sky-600 focus:outline-none"
+                    className="w-16 border border-zinc-300 bg-white px-2 py-1 text-center font-mono text-sm text-zinc-950 focus:border-zinc-950 focus:outline-none"
                   />
-                  <span className="w-24 text-right font-mono font-bold text-emerald-700">
+                  <span className="w-24 text-right font-mono font-bold text-zinc-950">
                     {fmtBRL(c.unit_price * c.quantity)}
                   </span>
                   <button
                     type="button"
                     onClick={() => removeItem(c.stock_item_id)}
-                    className="rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                    className="p-1 font-mono text-zinc-400 hover:bg-red-50 hover:text-red-600 cursor-pointer"
                     aria-label="Remover"
                   >
                     ✕
@@ -524,11 +524,11 @@ export function PDV({
                 </li>
               ))}
             </ul>
-            <footer className="border-t border-slate-200 bg-slate-50 px-4 py-3">
+            <footer className="border-t-2 border-zinc-950 bg-zinc-50 px-4 py-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs text-slate-500">Subtotal</p>
-                  <p className="text-xl font-black font-mono text-emerald-700">
+                  <p className="text-xs font-mono uppercase text-zinc-500">Subtotal</p>
+                  <p className="text-xl font-black font-mono text-zinc-950">
                     {fmtBRL(subtotal)}
                   </p>
                 </div>
@@ -536,7 +536,7 @@ export function PDV({
                   type="button"
                   onClick={() => setFinalizing(true)}
                   disabled={cart.length === 0}
-                  className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-xs hover:bg-emerald-700 transition disabled:opacity-30 cursor-pointer"
+                  className="bg-zinc-950 hover:bg-zinc-800 text-white font-mono text-xs font-bold uppercase tracking-wider px-5 py-2.5 shadow-sm transition disabled:opacity-30 cursor-pointer"
                 >
                   Finalizar venda →
                 </button>
@@ -548,15 +548,15 @@ export function PDV({
 
       {/* Modal de finalizacao */}
       <Modal open={finalizing} onClose={() => setFinalizing(false)} titleId={finalizeTitleId}>
-            <h2 id={finalizeTitleId} className="text-lg font-bold text-slate-900">Finalizar venda</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 id={finalizeTitleId} className="text-lg font-black uppercase tracking-tight text-zinc-950">Finalizar venda</h2>
+            <p className="mt-1 text-xs font-mono uppercase text-zinc-600">
               {cart.length} {cart.length === 1 ? 'item' : 'itens'} ·{' '}
               {fmtBRL(subtotal)}
             </p>
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
                   Forma de pagamento
                 </label>
                 <div className="mt-1 grid grid-cols-3 gap-2">
@@ -565,10 +565,10 @@ export function PDV({
                       key={m.value}
                       type="button"
                       onClick={() => setPaymentMethod(m.value)}
-                      className={`rounded-md border-2 px-3 py-2 text-sm font-medium ${
+                      className={`border-2 px-3 py-2 text-xs font-mono font-bold uppercase tracking-wider transition ${
                         paymentMethod === m.value
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          ? 'border-zinc-950 bg-zinc-950 text-white'
+                          : 'border-zinc-300 bg-white text-zinc-700 hover:border-zinc-950'
                       }`}
                     >
                       {m.label}
@@ -578,7 +578,7 @@ export function PDV({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
                   Desconto (opcional)
                 </label>
                 <input
@@ -586,26 +586,26 @@ export function PDV({
                   onChange={(e) => setDiscount(e.target.value)}
                   placeholder="0,00"
                   inputMode="decimal"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
                   Cliente (opcional)
                 </label>
                 {selectedCustomer ? (
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2">
+                  <div className="mt-1 flex items-center justify-between gap-2 border-2 border-zinc-950 bg-zinc-100 px-3 py-2">
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{selectedCustomer.name}</p>
+                      <p className="text-sm font-bold text-zinc-950">{selectedCustomer.name}</p>
                       {selectedCustomer.phone && (
-                        <p className="text-xs text-slate-600">{selectedCustomer.phone}</p>
+                        <p className="text-xs font-mono text-zinc-600">{selectedCustomer.phone}</p>
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={clearCustomerSelection}
-                      className="text-xs font-medium text-slate-600 underline hover:text-slate-800"
+                      className="text-xs font-mono font-bold uppercase text-zinc-700 underline hover:text-zinc-950"
                     >
                       Trocar
                     </button>
@@ -616,34 +616,34 @@ export function PDV({
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       placeholder="Nome"
-                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
                     />
                     <input
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       placeholder="Telefone"
-                      className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="mt-2 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
                     />
                     {searchingCustomer && (
-                      <p className="mt-1 text-xs text-slate-500">Buscando cliente cadastrado…</p>
+                      <p className="mt-1 text-xs font-mono text-zinc-500">Buscando cliente cadastrado…</p>
                     )}
                     {customerMatches.length > 0 && (
-                      <ul className="mt-1 space-y-1 rounded-md border border-blue-200 bg-blue-50/60 p-1.5">
+                      <ul className="mt-1 space-y-1 border border-zinc-300 bg-zinc-50 p-1.5">
                         {customerMatches.map((m) => (
                           <li key={m.id}>
                             <button
                               type="button"
                               onClick={() => pickCustomer(m)}
-                              className="flex w-full items-center justify-between gap-2 rounded-md border border-blue-200 bg-white px-2.5 py-1.5 text-left text-xs hover:border-blue-400 hover:bg-blue-50"
+                              className="flex w-full items-center justify-between gap-2 border border-zinc-200 bg-white px-2.5 py-1.5 text-left text-xs font-mono hover:border-zinc-950 hover:bg-zinc-100"
                             >
-                              <span className="font-medium text-slate-900">{m.name}</span>
-                              <span className="text-slate-500">{m.phone}</span>
+                              <span className="font-bold text-zinc-950">{m.name}</span>
+                              <span className="text-zinc-500">{m.phone}</span>
                             </button>
                           </li>
                         ))}
                       </ul>
                     )}
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs font-mono text-zinc-500">
                       Sem cliente cadastrado? Só digite o nome — a venda fica de balcão.
                     </p>
                   </>
@@ -651,33 +651,33 @@ export function PDV({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
                   Observações (opcional)
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
                 />
               </div>
 
-              <div className="rounded-md bg-slate-50 p-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Subtotal</span>
-                  <span className="font-medium">{fmtBRL(subtotal)}</span>
+              <div className="border border-zinc-300 bg-zinc-50 p-3 font-mono">
+                <div className="flex justify-between text-xs uppercase text-zinc-600">
+                  <span>Subtotal</span>
+                  <span className="font-bold text-zinc-950">{fmtBRL(subtotal)}</span>
                 </div>
                 {discountNum > 0 && (
-                  <div className="mt-1 flex justify-between text-sm">
-                    <span className="text-slate-600">Desconto</span>
-                    <span className="font-medium text-red-600">
+                  <div className="mt-1 flex justify-between text-xs uppercase text-red-600">
+                    <span>Desconto</span>
+                    <span className="font-bold">
                       − {fmtBRL(discountNum)}
                     </span>
                   </div>
                 )}
-                <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-base">
-                  <span className="font-bold text-slate-900">Total</span>
-                  <span className="font-bold text-slate-900">{fmtBRL(total)}</span>
+                <div className="mt-2 flex justify-between border-t border-zinc-300 pt-2 text-sm uppercase">
+                  <span className="font-black text-zinc-950">Total</span>
+                  <span className="font-black text-zinc-950">{fmtBRL(total)}</span>
                 </div>
               </div>
             </div>
@@ -687,7 +687,7 @@ export function PDV({
                 type="button"
                 onClick={() => setFinalizing(false)}
                 disabled={submitting}
-                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+                className="border border-zinc-300 bg-white px-4 py-2 font-mono text-xs font-bold uppercase text-zinc-700 hover:bg-zinc-100 hover:border-zinc-950 disabled:opacity-30"
               >
                 Cancelar
               </button>
@@ -695,7 +695,7 @@ export function PDV({
                 type="button"
                 onClick={finalizarVenda}
                 disabled={submitting || total <= 0}
-                className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+                className="bg-zinc-950 hover:bg-zinc-800 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50"
               >
                 {submitting ? 'Salvando…' : 'Confirmar venda'}
               </button>
@@ -704,35 +704,34 @@ export function PDV({
 
       {/* Modal "cadastrar peça e vender" — montagem de computador */}
       <Modal open={addingPart} onClose={() => setAddingPart(false)} titleId={newPartTitleId}>
-        <h2 id={newPartTitleId} className="text-lg font-bold text-slate-900">
+        <h2 id={newPartTitleId} className="text-lg font-black uppercase tracking-tight text-zinc-950">
           Cadastrar peça e vender
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-xs font-mono uppercase text-zinc-600">
           Pra montagem de computador: cadastra a peça no catálogo, registra a entrada
-          (compra pra essa montagem) e já bota no carrinho. A saída acontece normal, junto
-          com o resto da venda.
+          (compra pra essa montagem) e já bota no carrinho.
         </p>
 
         <div className="mt-4 space-y-3">
           <label className="block">
-            <span className="block text-sm font-medium text-slate-700">Nome *</span>
+            <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">Nome *</span>
             <input
               autoFocus
               value={newPartName}
               onChange={(e) => setNewPartName(e.target.value)}
               placeholder="Ex: Processador Ryzen 5 5600"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
             />
           </label>
 
           <label className="block">
-            <span className="block text-sm font-medium text-slate-700">Categoria (opcional)</span>
+            <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">Categoria (opcional)</span>
             <input
               list="pdv-new-part-category-suggestions"
               value={newPartCategory}
               onChange={(e) => setNewPartCategory(e.target.value)}
               placeholder="Ex: Processadores"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
             />
             <datalist id="pdv-new-part-category-suggestions">
               {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
@@ -743,30 +742,30 @@ export function PDV({
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="block text-sm font-medium text-slate-700">Preço de venda *</span>
+              <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">Preço de venda *</span>
               <input
                 value={newPartPrice}
                 onChange={(e) => setNewPartPrice(e.target.value)}
                 placeholder="0,00"
                 inputMode="decimal"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
               />
             </label>
             <label className="block">
-              <span className="block text-sm font-medium text-slate-700">Quantidade</span>
+              <span className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">Quantidade</span>
               <input
                 type="number"
                 min="1"
                 value={newPartQty}
                 onChange={(e) => setNewPartQty(e.target.value)}
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 w-full border border-zinc-300 bg-white px-3 py-2 text-sm font-mono text-zinc-950 focus:border-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/10"
               />
             </label>
           </div>
         </div>
 
         {newPartError && (
-          <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{newPartError}</p>
+          <p className="mt-3 border border-red-600 bg-red-50 p-2 text-xs font-mono font-bold uppercase text-red-700">{newPartError}</p>
         )}
 
         <div className="mt-5 flex justify-end gap-2">
@@ -774,7 +773,7 @@ export function PDV({
             type="button"
             onClick={() => setAddingPart(false)}
             disabled={newPartSubmitting}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+            className="border border-zinc-300 bg-white px-4 py-2 font-mono text-xs font-bold uppercase text-zinc-700 hover:bg-zinc-100 hover:border-zinc-950 disabled:opacity-30"
           >
             Cancelar
           </button>
@@ -782,7 +781,7 @@ export function PDV({
             type="button"
             onClick={submitNewPart}
             disabled={newPartSubmitting}
-            className="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+            className="bg-zinc-950 hover:bg-zinc-800 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white disabled:opacity-50"
           >
             {newPartSubmitting ? 'Cadastrando…' : 'Cadastrar e adicionar'}
           </button>

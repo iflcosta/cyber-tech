@@ -67,10 +67,10 @@ export function ReciboActionButtons({
   }
 
   return (
-    <div className="print:hidden mb-6 rounded-lg border border-zinc-300 bg-white p-4 shadow-sm">
+    <div className="print:hidden mb-6 border-2 border-zinc-950 bg-white p-4 shadow-xs">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-bold text-zinc-950 flex items-center gap-1.5">
+          <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 flex items-center gap-1.5">
             📄 Nota de Serviço / Comprovante para o Cliente (PDF / A4)
           </h2>
           <p className="mt-0.5 text-xs text-zinc-600">
@@ -82,7 +82,7 @@ export function ReciboActionButtons({
           <button
             type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 rounded-md bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 border border-zinc-950 bg-black px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             🖨️ Salvar como PDF / Imprimir
           </button>
@@ -90,7 +90,7 @@ export function ReciboActionButtons({
           <button
             type="button"
             onClick={handleWhatsApp}
-            className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 border border-zinc-950 bg-zinc-100 px-3 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-zinc-900 hover:bg-zinc-200 transition-colors cursor-pointer"
           >
             📲 Abrir WhatsApp do Cliente
           </button>
@@ -98,14 +98,14 @@ export function ReciboActionButtons({
           <Link
             href={`/admin/os/${osId}/recibo/mpt`}
             target="_blank"
-            className="inline-flex items-center gap-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="inline-flex items-center gap-1 border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-medium uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             🧾 Cupom 58mm
           </Link>
 
           <Link
             href={`/admin/os/${osId}`}
-            className="inline-flex items-center gap-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="inline-flex items-center gap-1 border border-zinc-300 bg-white px-3 py-2 font-mono text-xs font-medium uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             ← Voltar para OS
           </Link>

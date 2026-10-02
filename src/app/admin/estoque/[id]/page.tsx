@@ -57,25 +57,25 @@ export default async function StockItemDetailPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/admin/estoque" className="text-sm text-slate-600 hover:text-black">
+        <Link href="/admin/estoque" className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600 underline hover:text-zinc-950">
           ← Todo o estoque
         </Link>
-        <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
+        <h1 className="mt-2 flex flex-wrap items-center gap-2 font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">
           <span>{item.name}</span>
           {!item.active && (
-            <span className="rounded bg-slate-200 px-2 py-0.5 text-xs text-slate-700">Inativo</span>
+            <span className="border border-zinc-400 bg-zinc-200 px-2 py-0.5 font-mono text-xs font-bold uppercase text-zinc-800">Inativo</span>
           )}
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">
           {[item.brand, item.model].filter(Boolean).join(' ') || 'Sem marca/modelo'}
         </p>
       </div>
 
       {/* Acoes perigosas (so quem tem can_delete) */}
       {canDelete && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Acoes:
+        <div className="flex flex-wrap items-center gap-2 border-2 border-zinc-950 bg-zinc-50 p-3">
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600">
+            Ações:
           </span>
           <ToggleActiveButton
             itemId={item.id}
@@ -93,65 +93,65 @@ export default async function StockItemDetailPage({
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
                 Estoque atual
               </h2>
               <div className="flex items-center gap-2">
                 <Link
                   href={`/admin/estoque/${item.id}/label`}
                   target="_blank"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-800 hover:bg-zinc-50"
+                  className="border-2 border-zinc-950 bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
                 >
                   🏷️ Etiqueta (Térmica)
                 </Link>
                 <Link
                   href={`/admin/estoque/${item.id}/movimentar`}
-                  className="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white hover:bg-zinc-800"
+                  className="border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
                 >
                   + Movimentar
                 </Link>
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-3">
+            <div className="mt-4 flex items-baseline gap-3">
               <span
-                className={`text-4xl font-bold ${
-                  isOut ? 'text-red-600' : isLow ? 'text-orange-600' : 'text-slate-900'
+                className={`font-mono text-4xl font-black ${
+                  isOut ? 'text-red-600' : isLow ? 'text-orange-600' : 'text-zinc-950'
                 }`}
               >
                 {item.current_stock}
               </span>
-              <span className="text-sm text-slate-500">
+              <span className="font-mono text-xs text-zinc-500">
                 / mínimo {item.min_stock}
               </span>
               {isOut ? (
-                <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                <span className="border border-red-500 bg-red-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-900">
                   Em falta
                 </span>
               ) : isLow ? (
-                <span className="rounded bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+                <span className="border border-amber-500 bg-amber-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-900">
                   Estoque baixo
                 </span>
               ) : (
-                <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
+                <span className="border border-emerald-500 bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-900">
                   OK
                 </span>
               )}
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
+            <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
               Histórico de movimentações
             </h2>
             {(movements ?? []).length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 font-mono text-xs text-zinc-500">
                 Nenhuma movimentação registrada. Use o botão <strong>+ Movimentar</strong> acima
                 para registrar entrada inicial ou saída.
               </p>
             ) : (
-              <ul className="mt-3 divide-y divide-slate-200">
+              <ul className="mt-3 divide-y divide-zinc-200">
                 {(movements ?? []).map((m) => {
                   const meta = STOCK_MOVEMENT_TYPES.find((t) => t.value === m.movement_type);
                   const sign =
@@ -164,47 +164,47 @@ export default async function StockItemDetailPage({
                         : '-';
                   const signColor =
                     m.movement_type === 'in'
-                      ? 'text-emerald-600'
+                      ? 'text-emerald-700'
                       : m.movement_type === 'sale'
-                        ? 'text-zinc-900 font-bold'
+                        ? 'text-zinc-950 font-black'
                         : m.movement_type === 'out'
-                          ? 'text-orange-600'
-                          : 'text-slate-600';
+                          ? 'text-amber-700'
+                          : 'text-zinc-600';
                   return (
-                    <li key={m.id} className="flex items-start justify-between gap-3 py-2 text-sm">
+                    <li key={m.id} className="flex items-start justify-between gap-3 py-2.5 font-mono text-xs">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className={`font-mono font-semibold ${signColor}`}>
+                          <span className={`font-mono font-bold ${signColor}`}>
                             {sign}
                             {m.quantity}
                           </span>
                           <span
-                            className={`rounded px-2 py-0.5 text-xs ${
+                            className={`border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
                               meta?.color === 'emerald'
-                                ? 'bg-emerald-100 text-emerald-700'
+                                ? 'border-emerald-700 bg-emerald-100 text-emerald-950'
                                 : meta?.color === 'orange'
-                                  ? 'bg-orange-100 text-orange-700'
+                                  ? 'border-amber-700 bg-amber-100 text-amber-950'
                                   : meta?.color === 'blue'
-                                    ? 'bg-zinc-200 text-zinc-900'
-                                    : 'bg-slate-100 text-slate-700'
+                                    ? 'border-zinc-950 bg-zinc-950 text-white'
+                                    : 'border-zinc-300 bg-zinc-100 text-zinc-700'
                             }`}
                           >
                             {meta?.label}
                           </span>
                           {m.reference && (
-                            <span className="font-mono text-xs text-slate-500">
+                            <span className="font-mono text-xs text-zinc-500">
                               {m.reference}
                             </span>
                           )}
                         </div>
-                        {m.notes && <p className="mt-1 text-slate-600">{m.notes}</p>}
-                        <p className="mt-1 text-xs text-slate-500">
+                        {m.notes && <p className="mt-1 font-mono text-xs text-zinc-700">{m.notes}</p>}
+                        <p className="mt-1 font-mono text-[11px] text-zinc-500">
                           {formatDateTimeBR(m.created_at)} ·{' '}
                           {m.author?.full_name ?? '—'}
                         </p>
                       </div>
                       {m.total_amount !== null && (
-                        <div className="text-right text-sm font-medium text-slate-900">
+                        <div className="text-right font-mono text-xs font-bold text-zinc-950">
                           {m.total_amount.toLocaleString('pt-BR', {
                             style: 'currency',
                             currency: 'BRL',
@@ -220,9 +220,9 @@ export default async function StockItemDetailPage({
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
                 Dados do item
               </h2>
               <StockItemEditor
@@ -240,16 +240,16 @@ export default async function StockItemDetailPage({
                 }}
               />
             </div>
-            <dl className="mt-2 space-y-1.5 text-sm">
+            <dl className="mt-3 space-y-2 font-mono text-xs">
               {item.internal_sku && (
-                <Row label="SKU Interno" value={<span className="font-mono font-semibold text-sky-700">{item.internal_sku}</span>} />
+                <Row label="SKU Interno" value={<span className="font-bold text-zinc-950">{item.internal_sku}</span>} />
               )}
               {item.ean13 && (
-                <Row label="EAN-13" value={<span className="font-mono">{item.ean13}</span>} />
+                <Row label="EAN-13" value={<span>{item.ean13}</span>} />
               )}
               {item.category && <Row label="Categoria" value={item.category} />}
               {item.shelf_location && (
-                <Row label="Localização" value={<span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">📍 {item.shelf_location}</span>} />
+                <Row label="Localização" value={<span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5">📍 {item.shelf_location}</span>} />
               )}
               {item.brand && <Row label="Marca" value={item.brand} />}
               {item.model && <Row label="Modelo" value={item.model} />}
@@ -258,10 +258,10 @@ export default async function StockItemDetailPage({
               )}
               <Row
                 label="Preço"
-                value={item.unit_price.toLocaleString('pt-BR', {
+                value={<span className="font-bold text-zinc-950">{item.unit_price.toLocaleString('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',
-                })}
+                })}</span>}
               />
               {item.unit_cost !== null && (
                 <Row
@@ -282,13 +282,13 @@ export default async function StockItemDetailPage({
             </dl>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5 text-xs text-slate-500">
+          <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 font-mono text-xs text-zinc-500">
             <p>
-              <strong>Criado em:</strong>{' '}
+              <strong className="text-zinc-950">Criado em:</strong>{' '}
               {formatDateBR(item.created_at)}
             </p>
             <p className="mt-1">
-              <strong>Atualizado em:</strong>{' '}
+              <strong className="text-zinc-950">Atualizado em:</strong>{' '}
               {formatDateBR(item.updated_at)}
             </p>
           </section>
@@ -300,9 +300,9 @@ export default async function StockItemDetailPage({
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-2">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-right text-slate-900">{value}</dd>
+    <div className="flex justify-between gap-2 border-b border-zinc-100 pb-1">
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className="text-right text-zinc-950">{value}</dd>
     </div>
   );
 }

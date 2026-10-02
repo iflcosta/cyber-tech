@@ -124,8 +124,8 @@ export function NewPartOrderForm({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-      <div className="space-y-3">
+    <div className="border-2 border-zinc-950 bg-white p-4 sm:p-6">
+      <div className="space-y-4">
         <Field label="Peça *">
           <input
             autoFocus
@@ -143,10 +143,10 @@ export function NewPartOrderForm({
                 key={opt}
                 type="button"
                 onClick={() => setFrame(frame === opt ? null : opt)}
-                className={`rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition ${
+                className={`px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
                   frame === opt
-                    ? 'bg-black text-white ring-black'
-                    : 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50'
+                    ? 'border-2 border-zinc-950 bg-zinc-950 text-white font-bold'
+                    : 'border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 font-medium'
                 }`}
               >
                 {opt}
@@ -162,10 +162,10 @@ export function NewPartOrderForm({
                 key={opt}
                 type="button"
                 onClick={() => setFinish(finish === opt ? null : opt)}
-                className={`rounded-full px-3 py-1.5 text-sm font-medium ring-1 transition ${
+                className={`px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
                   finish === opt
-                    ? 'bg-black text-white ring-black'
-                    : 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50'
+                    ? 'border-2 border-zinc-950 bg-zinc-950 text-white font-bold'
+                    : 'border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 font-medium'
                 }`}
               >
                 {opt}
@@ -184,8 +184,8 @@ export function NewPartOrderForm({
         </Field>
 
         {partVariant && (
-          <p className="text-xs text-slate-500">
-            Variação final: <strong className="text-slate-700">{partVariant}</strong>
+          <p className="font-mono text-xs text-zinc-500">
+            Variação final: <strong className="text-zinc-950">{partVariant}</strong>
           </p>
         )}
 
@@ -201,13 +201,13 @@ export function NewPartOrderForm({
               <button
                 type="button"
                 onClick={() => setAddingSupplier(true)}
-                className="text-xs font-semibold text-zinc-800 hover:text-black hover:underline"
+                className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 underline hover:text-zinc-700 cursor-pointer"
               >
                 + Cadastrar novo fornecedor
               </button>
             </div>
           ) : (
-            <div className="space-y-2 rounded-md border border-zinc-300 bg-zinc-50 p-2.5">
+            <div className="space-y-2 border border-zinc-300 bg-zinc-50 p-3">
               <input
                 value={newSupplierName}
                 onChange={(e) => setNewSupplierName(e.target.value)}
@@ -224,7 +224,7 @@ export function NewPartOrderForm({
                 <button
                   type="button"
                   onClick={() => setAddingSupplier(false)}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-800"
+                  className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600 underline hover:text-zinc-950 cursor-pointer"
                 >
                   ← Usar fornecedor já cadastrado
                 </button>
@@ -248,8 +248,8 @@ export function NewPartOrderForm({
             <button
               type="button"
               onClick={() => setHasOS(true)}
-              className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
-                hasOS ? 'border-black bg-zinc-100 text-black font-semibold' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              className={`border-2 p-2.5 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
+                hasOS ? 'border-zinc-950 bg-zinc-950 text-white font-bold' : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100'
               }`}
             >
               Tem OS
@@ -257,8 +257,8 @@ export function NewPartOrderForm({
             <button
               type="button"
               onClick={() => setHasOS(false)}
-              className={`rounded-md border-2 px-3 py-2 text-sm font-medium transition ${
-                !hasOS ? 'border-black bg-zinc-100 text-black font-semibold' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              className={`border-2 p-2.5 font-mono text-xs uppercase tracking-wider transition cursor-pointer ${
+                !hasOS ? 'border-zinc-950 bg-zinc-950 text-white font-bold' : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100'
               }`}
             >
               Sem OS (lojista parceiro, etc)
@@ -275,7 +275,7 @@ export function NewPartOrderForm({
               ))}
             </select>
             {serviceOrders.length === 0 && (
-              <p className="mt-1 text-xs text-slate-500">Nenhuma OS ativa encontrada.</p>
+              <p className="mt-1 font-mono text-xs text-zinc-500">Nenhuma OS ativa encontrada.</p>
             )}
           </Field>
         ) : (
@@ -290,14 +290,14 @@ export function NewPartOrderForm({
         )}
       </div>
 
-      {error && <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs font-bold text-red-700">{error}</p>}
 
-      <div className="mt-5 flex justify-end gap-2">
+      <div className="mt-6 flex justify-end gap-2 border-t-2 border-zinc-200 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
           disabled={submitting}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-30"
+          className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
         >
           Cancelar
         </button>
@@ -305,7 +305,7 @@ export function NewPartOrderForm({
           type="button"
           onClick={submit}
           disabled={submitting}
-          className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="border-2 border-zinc-950 bg-zinc-950 px-5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
         >
           {submitting ? 'Salvando…' : 'Registrar pedido'}
         </button>
@@ -314,21 +314,20 @@ export function NewPartOrderForm({
       <style jsx global>{`
         .form-input {
           width: 100%;
-          border-radius: 0.375rem;
-          border: 1px solid rgb(203 213 225);
-          padding: 0.5rem 0.75rem;
-          font-size: 1rem;
+          border: 1px solid #d4d4d8;
+          padding: 0.55rem 0.85rem;
+          font-size: 0.9rem;
+          font-family: inherit;
           line-height: 1.5;
-          color: rgb(15 23 42);
+          color: #09090b;
           background: white;
         }
         .form-input:focus {
           outline: none;
-          border-color: rgb(0 0 0);
-          box-shadow: 0 0 0 1px rgb(0 0 0);
+          border-color: #09090b;
         }
         .form-input::placeholder {
-          color: rgb(148 163 184);
+          color: #a1a1aa;
         }
       `}</style>
     </div>
@@ -338,7 +337,7 @@ export function NewPartOrderForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );
