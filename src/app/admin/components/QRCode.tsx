@@ -12,7 +12,7 @@ import QRCode from 'qrcode';
  */
 export function QRCodeImage({
   value,
-  size = 200,
+  size = 256,
   alt,
   className,
 }: {
@@ -25,7 +25,12 @@ export function QRCodeImage({
 
   useEffect(() => {
     let cancelled = false;
-    QRCode.toDataURL(value, { width: size, margin: 1 })
+    const renderWidth = Math.max(size, 256);
+    QRCode.toDataURL(value, {
+      width: renderWidth,
+      margin: 1,
+      errorCorrectionLevel: 'L',
+    })
       .then((url) => {
         if (!cancelled) setDataUrl(url);
       })
@@ -49,5 +54,14 @@ export function QRCodeImage({
   }
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={dataUrl} alt={alt} width={size} height={size} className={className} />;
+  return (
+    <img
+      src={dataUrl}
+      alt={alt}
+      width={size}
+      height={size}
+      className={className}
+      style={{ imageRendering: 'pixelated' }}
+    />
+  );
 }

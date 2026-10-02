@@ -327,17 +327,6 @@ export function OSLabelClient({
                           {customerPhone}
                         </div>
                       )}
-                      <div
-                        className="mt-[0.5mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {equipmentTitle}
-                      </div>
                     </div>
                   </div>
 
@@ -364,54 +353,56 @@ export function OSLabelClient({
                 </div>
               ) : mode === '40x60' ? (
                 <>
-                  {/* Layout Vertical 40x60mm (Preenchimento Sob Medida para Bobina 40x60mm) */}
-                  {/* 1. Cabeçalho: Loja + Data / Identificação */}
-                  <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.2pt] font-black uppercase leading-none">
+                  {/* Layout Vertical 40x60mm Ultra Limpo */}
+                  {/* 1. Cabeçalho: Loja + Data */}
+                  <div className="flex items-center justify-between border-b border-black pb-[0.5mm] font-mono text-[6.5pt] font-black uppercase leading-none">
                     <span>CYBER INFORMÁTICA</span>
-                    <span>
-                      {copies > 1
-                        ? (idx === 0 ? '1/2 · APARELHO' : idx === 1 ? '2/2 · ACESSÓRIO' : `${idx + 1}/${copies}`)
-                        : createdDate}
-                    </span>
+                    <span>{createdDate}</span>
                   </div>
 
                   {/* 2. Destaque da OS (Box Fechado) */}
-                  <div className="my-[0.5mm] border-2 border-black p-[0.6mm] text-center bg-zinc-50">
-                    <div className="font-mono text-[5.2pt] font-black uppercase tracking-wider text-black leading-none">
+                  <div className="my-[0.8mm] border-2 border-black p-[0.8mm] text-center bg-zinc-50">
+                    <div className="font-mono text-[5.5pt] font-black uppercase tracking-wider text-black leading-none">
                       ORDEM DE SERVIÇO
                     </div>
-                    <div className="mt-[0.3mm] font-mono text-[11pt] font-black tracking-tight leading-none text-black">
+                    <div className="mt-[0.4mm] font-mono text-[12pt] font-black tracking-tight leading-none text-black">
                       {osNumberStr}
                     </div>
                   </div>
 
-                  {/* 3. QR Code Centralizado em Destaque */}
-                  <div className="my-[0.4mm] flex flex-col items-center justify-center">
-                    <div className="border border-black p-[0.4mm] bg-white">
+                  {/* 3. QR Code Centralizado em Destaque (alta definição e legibilidade) */}
+                  <div className="my-[1mm] flex items-center justify-center">
+                    <div className="border-2 border-black p-[0.6mm] bg-white">
                       <QRCodeImage
                         value={qrUrl}
-                        size={64}
+                        size={256}
                         alt={`QR Code ${osNumberStr}`}
-                        className="block w-[15mm] h-[15mm]"
+                        className="block w-[20mm] h-[20mm]"
                       />
-                    </div>
-                    <div className="mt-[0.3mm] font-mono text-[5pt] font-black tracking-wider uppercase text-black leading-none">
-                      BIPE P/ ABRIR NO SISTEMA
                     </div>
                   </div>
 
-                  {/* 4. Dados do Cliente e Aparelho */}
-                  <div className="border-t border-black pt-[0.5mm] leading-tight">
-                    <div className="truncate font-sans text-[7.5pt] font-black uppercase text-black">
+                  {/* 4. Dados do Cliente */}
+                  <div className="border-t border-black pt-[0.8mm] leading-tight space-y-[0.4mm]">
+                    <div className="truncate font-sans text-[8pt] font-black uppercase text-black">
                       CLI: {customerName}
                     </div>
                     {customerPhone && (
-                      <div className="truncate font-mono text-[6pt] text-zinc-900">
+                      <div className="truncate font-mono text-[6.5pt] font-bold text-zinc-900">
                         TEL: {customerPhone}
                       </div>
                     )}
+                  </div>
+
+                  {/* 5. Senha (se informada) e Defeito Relatado */}
+                  <div className="border-t border-dashed border-black pt-[0.6mm] font-mono text-[6.5pt] font-bold leading-tight text-black">
+                    {equipmentPassword ? (
+                      <div className="truncate mb-[0.3mm]">
+                        <strong className="uppercase">SENHA:</strong> {equipmentPassword}
+                      </div>
+                    ) : null}
                     <div
-                      className="mt-[0.3mm] font-sans text-[6.8pt] font-black uppercase leading-[1.08] text-black"
+                      className="font-sans text-[6.5pt] leading-[1.1] text-black"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -419,40 +410,9 @@ export function OSLabelClient({
                         overflow: 'hidden',
                       }}
                     >
-                      EQ: {equipmentTitle}
+                      <strong className="font-mono uppercase">DEF:</strong>{' '}
+                      {reportedDefect || 'Verificar em bancada'}
                     </div>
-                  </div>
-
-                  {/* 5. Senha / Acessórios / S/N */}
-                  <div className="border-t border-dashed border-black pt-[0.4mm] font-mono text-[5.8pt] font-bold leading-tight text-black truncate">
-                    {idx === 1 && accessoriesInfo ? (
-                      <span className="font-black bg-zinc-100 border border-black px-1">ACESSÓRIO: {accessoriesInfo}</span>
-                    ) : (
-                      <>
-                        {equipmentPassword ? `SENHA: ${equipmentPassword}` : 'SENHA: —'}
-                        {accessoriesInfo ? ` · ${accessoriesInfo}` : ''}
-                        {equipmentSerial ? ` · S/N:${equipmentSerial}` : ''}
-                      </>
-                    )}
-                  </div>
-
-                  {/* 6. Defeito Relatado */}
-                  <div
-                    className="border-t border-black pt-[0.4mm] font-sans text-[6.2pt] leading-[1.08] text-black"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <strong className="font-mono uppercase">DEF:</strong>{' '}
-                    {reportedDefect || 'Verificar em bancada'}
-                  </div>
-
-                  {/* 7. Rodapé */}
-                  <div className="mt-[0.4mm] border-t border-black pt-[0.4mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
-                    ✦ BANCADA TÉCNICA · CYBER ✦
                   </div>
                 </>
               ) : (
@@ -487,17 +447,6 @@ export function OSLabelClient({
                           {customerPhone}
                         </div>
                       )}
-                      <div
-                        className="mt-[0.6mm] font-sans text-[7pt] font-black uppercase leading-[1.05] text-black"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {equipmentTitle}
-                      </div>
                     </div>
                   </div>
 
