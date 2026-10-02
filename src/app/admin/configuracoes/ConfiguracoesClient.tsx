@@ -267,93 +267,45 @@ export function ConfiguracoesClient({
         </div>
 
         {/* SEÇÃO 3: RECIBOS TÉRMICOS MPT-II (58mm) & AGENTE LOCAL */}
+        {/* SEÇÃO 3: RECIBOS TÉRMICOS MPT-II (58mm) */}
         <div className="border-2 border-zinc-950 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-zinc-950 flex items-center gap-2">
-                <span>🧾</span> Recibos MPT-II (58mm) & Agente
+                <span>🧾</span> Recibos MPT-II (58mm)
               </h2>
-              <span
-                className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase border ${
-                  agentStatus === 'online'
-                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                    : agentStatus === 'checking'
-                    ? 'bg-amber-100 text-amber-900 border-amber-300'
-                    : 'bg-zinc-100 text-zinc-700 border-zinc-300'
-                }`}
-              >
-                {agentStatus === 'online'
-                  ? '🟢 Agente Ativo'
-                  : agentStatus === 'checking'
-                  ? '🟡 Verificando…'
-                  : '⚪ Agente Standby (Opcional)'}
+              <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
+                USB006 · 58mm
               </span>
             </div>
             <p className="mt-2 text-xs text-zinc-700 leading-relaxed">
-              <strong>Importante:</strong> A Knup KP-IM608 e a MPT-II já imprimem nativamente pelo botão padrão <strong>Imprimir</strong> via Windows. O agente local abaixo é apenas um canal opcional para comandos ESC/POS.
+              Impressora térmica de bobina para comprovantes de entrada de OS e recibos de vendas no balcão.
             </p>
 
-            <form onSubmit={handleSaveAgentUrl} className="mt-4 space-y-2">
-              <label className="block font-mono text-[11px] font-bold uppercase text-zinc-800">
-                Endereço do Agente Local (Bancada):
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={agentUrl}
-                  onChange={(e) => setAgentUrlState(e.target.value)}
-                  className="flex-1 border-2 border-zinc-950 px-3 py-1.5 font-mono text-xs text-zinc-950 bg-white"
-                  placeholder="http://127.0.0.1:9100"
-                />
-                <button
-                  type="submit"
-                  className="border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase text-white hover:bg-zinc-800 transition cursor-pointer"
-                >
-                  Salvar
-                </button>
-              </div>
-              {agentSavedNotice && (
-                <p className="font-mono text-xs font-bold text-emerald-700">✓ Endereço salvo!</p>
-              )}
-            </form>
-
-            <div className="mt-3 text-[11px] font-mono text-zinc-500">
-              Inicialização: o atalho <code className="bg-zinc-100 px-1 py-0.5 border border-zinc-300 text-zinc-800">CyberERP-PrintAgent.vbs</code> na pasta Startup do Windows sobe o agente local automaticamente.
+            <div className="mt-4 border-2 border-zinc-950 bg-zinc-50 p-3 space-y-2 text-xs">
+              <p className="font-mono font-bold uppercase text-[11px] text-zinc-950">
+                Driver Windows Ativo no Computador:
+              </p>
+              <ul className="space-y-1 font-mono text-[11px] text-zinc-700">
+                <li>• <strong>Dispositivo:</strong> MPT-II (Generic / Text Only)</li>
+                <li>• <strong>Porta Física:</strong> USB006</li>
+                <li>• <strong>Largura da Bobina:</strong> 58mm (30 colunas de texto)</li>
+                <li>• <strong>Método:</strong> Impressão Direta do Sistema (sem bloqueio de rede)</li>
+              </ul>
             </div>
 
-            {agentStatus === 'offline' && (
-              <div className="mt-3 border border-amber-300 bg-amber-50 p-2.5 text-[11px] text-amber-950 font-mono space-y-1">
-                <p className="font-bold text-amber-900">⚠️ Se o agente estiver rodando mas o navegador bloquear:</p>
-                <p>1. Clique no ícone de ajustes/cadeado à esquerda da URL (ao lado de <code>cyberinformatica.tech</code>).</p>
-                <p>2. Clique em <strong>Configurações do site</strong>.</p>
-                <p>3. Na opção <strong>Conteúdo não seguro</strong>, mude para <strong>Permitir</strong> e dê F5.</p>
-                <p className="text-[10px] text-zinc-600 pt-0.5"><em>(Dica: Ao abrir pelo atalho <strong>iniciar_cyber_balcao_kiosk</strong> na Área de Trabalho, isso já é liberado automaticamente!)</em></p>
-              </div>
-            )}
-
-            {receiptFeedback && (
-              <p className={`mt-3 p-2 font-mono text-xs font-bold border ${receiptFeedback.startsWith('✓') ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : 'bg-red-50 text-red-900 border-red-300'}`}>
-                {receiptFeedback}
-              </p>
-            )}
+            <p className="mt-3 text-[11px] font-mono text-zinc-500">
+              A MPT-II imprime diretamente pelo Windows através do botão &quot;Imprimir&quot;, funcionando 100% no aplicativo desktop sem precisar de conexão de rede ou portas externas.
+            </p>
           </div>
 
-          <div className="mt-5 flex gap-2 border-t border-zinc-200 pt-3">
-            <button
-              type="button"
-              onClick={pingAgent}
-              className="flex-1 border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
+          <div className="mt-5 space-y-2 border-t border-zinc-200 pt-3">
+            <Link
+              href="/admin/configuracoes/recibo-teste"
+              className="block w-full border-2 border-zinc-950 bg-zinc-950 px-4 py-2 text-center font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
             >
-              🔄 Testar Conexão
-            </button>
-            <button
-              type="button"
-              onClick={handlePrintTestReceipt}
-              disabled={printingReceipt}
-              className="flex-1 border-2 border-zinc-950 bg-zinc-950 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
-            >
-              {printingReceipt ? 'Enviando…' : '🖨️ Imprimir Recibo'}
-            </button>
+              🖨️ Imprimir Recibo de Teste (58mm)
+            </Link>
           </div>
         </div>
 
