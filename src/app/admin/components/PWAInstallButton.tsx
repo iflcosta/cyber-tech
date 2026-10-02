@@ -136,38 +136,51 @@ export function PWAInstallButton({ mobile = false }: { mobile?: boolean }) {
               </button>
             </div>
 
-            <div className="mt-4 space-y-3 text-xs text-slate-700">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="font-bold text-slate-900">
-                  Opção 1 — Ícone na barra de endereços (Mais rápido)
+            <div className="mt-4 space-y-2.5 text-xs text-slate-700">
+              {/* iPhone / Safari */}
+              <div className="rounded-lg border border-sky-200 bg-sky-50/70 p-3">
+                <p className="font-bold text-sky-950 flex items-center gap-1.5">
+                  <span>📱</span>
+                  <span>No iPhone / iPad (Safari)</span>
                 </p>
-                <p className="mt-1 text-slate-600">
-                  Olhe no canto direito da barra de endereço do navegador (ao lado
-                  da estrela de favoritos) e clique no ícone de{' '}
-                  <strong>computador com uma seta para baixo</strong>{' '}
-                  (<em>&ldquo;Instalar Cyber ERP&rdquo;</em>).
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="font-bold text-slate-900">
-                  Opção 2 — Pelo menu do Chrome ou Edge
-                </p>
-                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-slate-600">
+                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-sky-900">
                   <li>
-                    Clique nos <strong>3 pontinhos (⋮)</strong> no canto superior
-                    direito do navegador.
+                    Toque no ícone de <strong>Compartilhar</strong> (o quadrado com a seta para cima na barra inferior).
                   </li>
                   <li>
-                    No <strong>Chrome</strong>: vá em{' '}
-                    <strong>Transmitir, salvar e compartilhar</strong> &rarr;{' '}
-                    <strong>Instalar página como app...</strong>
+                    Role as opções e toque em <strong>&ldquo;Adicionar à Tela de Início&rdquo;</strong> (ícone com sinal de <strong>+</strong>).
                   </li>
                   <li>
-                    No <strong>Edge</strong>: vá em <strong>Aplicativos</strong>{' '}
-                    &rarr; <strong>Instalar este site como um aplicativo</strong>.
+                    Toque em <strong>&ldquo;Adicionar&rdquo;</strong> no canto superior direito. O app abrirá em tela cheia sem barra de navegador!
                   </li>
                 </ol>
+              </div>
+
+              {/* Android / Chrome */}
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-3">
+                <p className="font-bold text-emerald-950 flex items-center gap-1.5">
+                  <span>🤖</span>
+                  <span>No Android (Chrome)</span>
+                </p>
+                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-emerald-900">
+                  <li>
+                    Toque nos <strong>3 pontinhos (⋮)</strong> no canto superior direito do Chrome.
+                  </li>
+                  <li>
+                    Selecione <strong>&ldquo;Instalar aplicativo&rdquo;</strong> ou <strong>&ldquo;Adicionar à tela inicial&rdquo;</strong>.
+                  </li>
+                </ol>
+              </div>
+
+              {/* Computador / Windows / Mac */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="font-bold text-slate-900 flex items-center gap-1.5">
+                  <span>🖥️</span>
+                  <span>No Computador (Chrome / Edge)</span>
+                </p>
+                <p className="mt-1 text-slate-600">
+                  Clique no ícone de <strong>computador com seta</strong> no canto direito da barra de endereços (ao lado dos favoritos) ou acesse o menu <strong>⋮ &rarr; Instalar página como app</strong>.
+                </p>
               </div>
             </div>
 

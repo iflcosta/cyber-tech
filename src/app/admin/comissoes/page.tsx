@@ -272,7 +272,13 @@ export default async function ComissoesPage({
 
   const storeRetainedLabor = Math.max(0, totalLabor - totalCommission);
 
-  const DAILY_BALCAO_RATE = 50;
+  // Política de remuneração do Iago:
+  // - Até 02/10/2026: 30% mão de obra + R$ 50/dia balcão (R$ 250/semana de 5 dias)
+  // - A partir de 05/10/2026 (Segunda-Feira): 30% mão de obra + R$ 200/semana fixa
+  const isNewPolicyFromOct5 = startDate >= new Date('2026-10-03T00:00:00');
+  const DAILY_BALCAO_RATE = isNewPolicyFromOct5 ? 40 : 50;
+  const WEEKLY_FIXED_RATE = isNewPolicyFromOct5 ? 200 : 250;
+
   const defaultBalcaoDays =
     selectedPeriodo === 'semana' || selectedPeriodo === 'semana_anterior'
       ? 5
@@ -282,7 +288,13 @@ export default async function ComissoesPage({
   const parsedBalcaoDays =
     params.dias_balcao !== undefined ? parseInt(params.dias_balcao, 10) : defaultBalcaoDays;
   const iagoBalcaoDays = Number.isFinite(parsedBalcaoDays) && parsedBalcaoDays >= 0 ? parsedBalcaoDays : defaultBalcaoDays;
-  const iagoBalcaoAllowance = iagoBalcaoDays * DAILY_BALCAO_RATE;
+  const iagoBalcaoAllowance =
+    isNewPolicyFromOct5 && (selectedPeriodo === 'semana' || selectedPeriodo === 'semana_anterior') && params.dias_balcao === undefined
+      ? WEEKLY_FIXED_RATE
+      : iagoBalcaoDays * DAILY_BALCAO_RATE;
+
+  const iagoPolicyBadge = isNewPolicyFromOct5 ? '30% + R$ 200/sem' : '30% + R$ 50/d';
+  const iagoPolicyDesc = isNewPolicyFromOct5 ? 'Iago 30% + R$ 200/sem fixo' : 'Iago 30% + R$ 50/dia (Balcão)';
 
   const iagoPending = records
     .filter((r) => r.technician_name.toLowerCase().includes('iago') && r.status === 'pending')
@@ -333,7 +345,7 @@ export default async function ComissoesPage({
           </div>
           <p className="mt-1 font-mono text-xs text-zinc-600">
             Regras de rateio:{' '}
-            <strong className="text-zinc-950">Iago 30% + R$ 50/dia</strong> (Balcão) ·{' '}
+            <strong className="text-zinc-950">{iagoPolicyDesc}</strong> ·{' '}
             <strong className="text-zinc-950">Jefferson 50/50</strong> (Mezanino/Telas/GPU) ·{' '}
             <strong className="text-zinc-950">Felipe/Loja 0%</strong> (Margem Retida) ·{' '}
             <span>
@@ -426,25 +438,27 @@ export default async function ComissoesPage({
 
       {/* Grid de Repasse por Técnico */}
       <div className="grid grid-cols-1 sm:grid-cols-3 border-2 border-zinc-950 bg-zinc-950 gap-[1px]">
-        {/* Iago 30% + Diária de Balcão R$ 50/dia */}
+        {/* Iago 30% + Ajuda de Custo */}
         <div className="bg-white p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
                 Iago // Balcão &amp; Bancada
               </p>
-              <p className="font-mono text-[11px] text-zinc-500">30% mão de obra + R$ 50/dia balcão</p>
+              <p className="font-mono text-[11px] text-zinc-500">{iagoPolicyDesc}</p>
             </div>
             <span className="border border-zinc-950 bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold text-white">
-              30% + R$ 50/d
+              {iagoPolicyBadge}
             </span>
           </div>
           <div className="mt-4 flex items-baseline justify-between">
             <div>
-              <p className="font-mono text-[11px] text-zinc-500">Total Sexta (Comissão + {iagoBalcaoDays}d):</p>
+              <p className="font-mono text-[11px] text-zinc-500">
+                Total Sexta (Comissão + {isNewPolicyFromOct5 ? 'Fixo R$ 200' : `${iagoBalcaoDays}d Balcão`}):
+              </p>
               <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(iagoFridayTotalWithAllowance)}</p>
               <p className="text-[11px] font-mono text-zinc-600 mt-0.5">
-                OS 30%: {fmtBRL(iagoPending)} + Balcão: {fmtBRL(iagoBalcaoAllowance)}
+                OS 30%: {fmtBRL(iagoPending)} + {isNewPolicyFromOct5 ? 'Fixo Semanal' : 'Balcão'}: {fmtBRL(iagoBalcaoAllowance)}
               </p>
             </div>
             <div className="text-right">
