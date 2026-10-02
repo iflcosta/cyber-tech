@@ -192,6 +192,7 @@ export function NewOSForm({
   });
   const [checklist, setChecklist] = useState<Record<string, boolean>>(
     Object.fromEntries(ENTRY_CHECKLIST_FIELDS.map((f) => [f.key, false])),
+  );
   const [accessories, setAccessories] = useState('');
   const [printAccessoryLabel, setPrintAccessoryLabel] = useState(false);
   const [userToggledAccessoryLabel, setUserToggledAccessoryLabel] = useState(false);
