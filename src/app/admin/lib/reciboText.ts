@@ -17,11 +17,9 @@ export function fmtBRLRecibo(n: number): string {
 }
 
 export function buildReciboText(sale: Sale, items: SaleItem[]): string {
-  // MPT-II com Generic/Text Only:
-  //   - wrap em ~30-31 chars VISUAIS (nao logicos)
-  //   - colapsa multiplos espacos em 1 (padding visual nao acumula)
-  // Solucao: cols=30 + remover coluna UNIT + usar 'Nx' no lugar de multiplicacao
-  const cols = 30;
+  // MPT-II com Generic / Text Only em bobina 58mm:
+  // Largura máxima imprimível física sem quebra de linha: 22 caracteres
+  const cols = 22;
   const eq = '='.repeat(cols);
   const dash = '-'.repeat(cols);
   const dateStr = formatDateBR(sale.created_at);
@@ -36,41 +34,48 @@ export function buildReciboText(sale: Sale, items: SaleItem[]): string {
   };
 
   const lines: string[] = [];
-  // Header
+  // Header centralizado em 22 colunas
   lines.push(eq);
-  lines.push(padRecibo('CYBER INFORMATICA', cols));
-  lines.push(padRecibo('RECIBO DE VENDA', cols));
+  lines.push('  CYBER INFORMATICA   ');
+  lines.push('   RECIBO DE VENDA    ');
   lines.push(eq);
+
   // Numero + data em linhas SEPARADAS (evita wrap)
   lines.push(padRecibo(sale.sale_number, cols));
-  lines.push(padRecibo(dateStr + ' ' + timeStr, cols));
+  lines.push(padRecibo(`${dateStr} ${timeStr}`, cols));
   lines.push(dash);
-  // Cabecalho das colunas (sem UNIT - ambiguidade resolvida com 'Nx')
-  lines.push(padRecibo('ITEM', 16) + padRecibo('QTD', 4) + padRecibo('TOTAL', 10, 'right'));
+
+  // Cabecalho das colunas (ITEM 10 + QTD 4 + TOTAL 8 = 22)
+  lines.push(padRecibo('ITEM', 10) + padRecibo('QTD', 4) + padRecibo('TOTAL', 8, 'right'));
   lines.push(dash);
-  // Itens: nome(16) + ' Nx' (4) + total(10, 'XX,XX') = 30
+
+  // Itens: nome(10) + qtd(4) + total(8)
   for (const item of items) {
-    const nome = normRecibo(item.item_name).substring(0, 16).padEnd(16);
+    const nome = normRecibo(item.item_name).substring(0, 10).padEnd(10);
     const qtd = `${item.quantity}x`.padStart(4);
-    const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(10);
+    const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(8);
     lines.push(nome + qtd + sub);
   }
   lines.push(dash);
+
   // Totais (subtotal so se tiver desconto)
   if (sale.discount > 0) {
-    lines.push(padRecibo('Subtotal:', 20) + padRecibo(fmtBRLRecibo(sale.subtotal), 10, 'right'));
-    lines.push(padRecibo('Desconto:', 20) + padRecibo('-' + fmtBRLRecibo(sale.discount), 10, 'right'));
+    lines.push(padRecibo('Subtotal:', 12) + padRecibo(fmtBRLRecibo(sale.subtotal), 10, 'right'));
+    lines.push(padRecibo('Desconto:', 12) + padRecibo('-' + fmtBRLRecibo(sale.discount), 10, 'right'));
   }
   lines.push(eq);
-  lines.push(padRecibo('TOTAL:', 20) + padRecibo(fmtBRLRecibo(sale.total), 10, 'right'));
+  lines.push(padRecibo('TOTAL:', 10) + padRecibo(fmtBRLRecibo(sale.total), 12, 'right'));
   lines.push(eq);
-  // Pagamento + cliente (sem operador)
+
+  // Pagamento + cliente
   lines.push(padRecibo('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
   if (sale.customer_name) {
-    lines.push(padRecibo('Cliente: ' + normRecibo(sale.customer_name).substring(0, 19), cols));
+    lines.push(padRecibo('Cliente: ' + normRecibo(sale.customer_name).substring(0, 13), cols));
   }
-  lines.push(padRecibo('OBRIGADO PELA PREFERENCIA!', cols));
-  // Avanco de papel na MPT-II
+  lines.push(dash);
+  lines.push('      OBRIGADO!       ');
+
+  // Avanco de papel na MPT-II para guilhotina/serrilha
   for (let i = 0; i < 8; i++) {
     lines.push('.');
   }

@@ -3,91 +3,11 @@ import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
 import { formatDateBR, formatTimeBR } from '@/app/admin/lib/datetime';
 import type { Sale, SaleItem } from '@/app/admin/types/database';
+import { buildReciboText } from '@/app/admin/lib/reciboText';
 import { ReciboPrintButton } from './ReciboPrintButton';
 import { AutoPrint } from './AutoPrint';
 
 export const dynamic = 'force-dynamic';
-
-// Remove acentos (driver Generic / Text Only da MPT-II nao renderiza UTF-8)
-function norm(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-function pad(s: string, width: number, align: 'left' | 'right' = 'left'): string {
-  if (s.length >= width) return s.substring(0, width);
-  const spaces = ' '.repeat(width - s.length);
-  return align === 'left' ? s + spaces : spaces + s;
-}
-
-function fmtBRL(n: number): string {
-  return 'R$ ' + n.toFixed(2).replace('.', ',');
-}
-
-function buildRecibo(sale: Sale, items: SaleItem[]): string {
-  // MPT-II com Generic/Text Only:
-  //   - wrap em ~30-31 chars VISUAIS (nao logicos)
-  //   - colapsa multiplos espacos em 1 (padding visual nao acumula)
-  // Solucao: cols=30 + remover coluna UNIT + usar 'Nx' no lugar de multiplicacao
-  const cols = 30;
-  const eq = '='.repeat(cols);
-  const dash = '-'.repeat(cols);
-  const dateStr = formatDateBR(sale.created_at);
-  const timeStr = formatTimeBR(sale.created_at);
-
-  const payLabel: Record<string, string> = {
-    cash: 'Dinheiro',
-    pix: 'PIX',
-    card: 'Cartao',
-    transfer: 'Transferencia',
-    other: 'Outro',
-  };
-
-  const lines: string[] = [];
-  // Header
-  lines.push(eq);
-  lines.push(pad('CYBER INFORMATICA', cols));
-  lines.push(pad('RECIBO', cols));
-  lines.push(eq);
-  // Numero + data em linhas SEPARADAS (evita wrap)
-  lines.push(pad(sale.sale_number, cols));
-  lines.push(pad(dateStr + ' ' + timeStr, cols));
-  lines.push(dash);
-  // Cabecalho das colunas (sem UNIT - ambiguidade resolvida com 'Nx')
-  lines.push(pad('ITEM', 16) + pad('QTD', 4) + pad('TOTAL', 10, 'right'));
-  lines.push(dash);
-  // Itens: nome(16) + ' Nx' (4) + total(10, 'XX,XX') = 30
-  for (const item of items) {
-    const nome = norm(item.item_name).substring(0, 16).padEnd(16);
-    const qtd = `${item.quantity}x`.padStart(4);  // ' 2x' ou ' 12x'
-    const sub = item.subtotal.toFixed(2).replace('.', ',').padStart(10);  // '    60,00'
-    lines.push(nome + qtd + sub);
-  }
-  lines.push(dash);
-  // Totais (subtotal so se tiver desconto)
-  if (sale.discount > 0) {
-    lines.push(pad('Subtotal:', 20) + pad(fmtBRL(sale.subtotal), 10, 'right'));
-    lines.push(pad('Desconto:', 20) + pad('-' + fmtBRL(sale.discount), 10, 'right'));
-  }
-  lines.push(eq);
-  lines.push(pad('TOTAL:', 20) + pad(fmtBRL(sale.total), 10, 'right'));
-  lines.push(eq);
-  // Pagamento + cliente (sem operador)
-  lines.push(pad('Pgto: ' + (payLabel[sale.payment_method] ?? sale.payment_method), cols));
-  if (sale.customer_name) {
-    lines.push(pad('Cliente: ' + norm(sale.customer_name).substring(0, 19), cols));
-  }
-  lines.push(pad('OBRIGADO!', cols));
-  // Avanco forcado de papel. Em testes (2026-06-22):
-  // 6 pontos nao foram suficientes - OBRIGADO + pontos foram juntos
-  // pro "preso" e so sairam na proxima impressao.
-  // Aumentado pra 10 pontos (~16mm) + 4 newlines extras no fim
-  // (caso o driver aceite newlines como line feeds tambem).
-  for (let i = 0; i < 10; i++) {
-    lines.push('.');
-  }
-
-  return lines.join('\n') + '\n\n\n\n';
-}
 
 export default async function ReciboPage({
   params,
@@ -112,7 +32,7 @@ export default async function ReciboPage({
     .eq('sale_id', id)
     .order('created_at');
 
-  const reciboText = buildRecibo(sale, items ?? []);
+  const reciboText = buildReciboText(sale, items ?? []);
 
   return (
     <div className="space-y-4">
