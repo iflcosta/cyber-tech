@@ -98,7 +98,6 @@ export default function PCBuilderSection() {
   const [ssd, setSsd] = useState(SSDS[1].id);
   const [cabinet, setCabinet] = useState(CABINETS[0].id);
   const [peripherals, setPeripherals] = useState<"somente_pc" | "completo">("somente_pc");
-  const [notes, setNotes] = useState("");
 
   const selectedPurpose = PURPOSES.find((p) => p.id === purpose) || PURPOSES[0];
   const selectedCpu = CPUS.find((c) => c.id === cpu) || CPUS[0];
@@ -122,7 +121,6 @@ export default function PCBuilderSection() {
   const resetBuilder = () => {
     handlePresetPurpose("gamer_fhd");
     setPeripherals("somente_pc");
-    setNotes("");
     setActiveStep(1);
   };
 
@@ -135,7 +133,6 @@ export default function PCBuilderSection() {
     `• *Armazenamento:* ${selectedSsd.label}`,
     `• *Gabinete:* ${selectedCabinet.label}`,
     `• *Formato:* ${peripherals === "completo" ? "PC + Monitor, Teclado e Mouse" : "Somente o Gabinete Completo"}`,
-    notes.trim() ? `• *Obs / Orçamento alvo:* ${notes.trim()}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -438,52 +435,33 @@ export default function PCBuilderSection() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                      <div>
-                        <label className="block font-mono text-[11px] uppercase text-zinc-400 mb-1.5">
-                          PRECISA DE MONITOR E KIT?
-                        </label>
-                        <div className="grid grid-cols-2 border border-zinc-700">
-                          <button
-                            type="button"
-                            onClick={() => setPeripherals("somente_pc")}
-                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer min-h-[42px] ${
-                              peripherals === "somente_pc"
-                                ? "bg-white text-black"
-                                : "bg-zinc-900 text-zinc-400 hover:text-white"
-                            }`}
-                          >
-                            Só o PC
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPeripherals("completo")}
-                            className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer min-h-[42px] ${
-                              peripherals === "completo"
-                                ? "bg-white text-black"
-                                : "bg-zinc-900 text-zinc-400 hover:text-white"
-                            }`}
-                          >
-                            PC + Monitor
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="pc-builder-notes"
-                          className="block font-mono text-[11px] uppercase text-zinc-400 mb-1.5"
+                    <div className="pt-1 max-w-sm">
+                      <label className="block font-mono text-[11px] uppercase text-zinc-400 mb-1.5">
+                        PRECISA DE MONITOR E KIT?
+                      </label>
+                      <div className="grid grid-cols-2 border border-zinc-700">
+                        <button
+                          type="button"
+                          onClick={() => setPeripherals("somente_pc")}
+                          className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer min-h-[42px] ${
+                            peripherals === "somente_pc"
+                              ? "bg-white text-black"
+                              : "bg-zinc-900 text-zinc-400 hover:text-white"
+                          }`}
                         >
-                          ORÇAMENTO ALVO OU USADO NA TROCA (OPCIONAL)
-                        </label>
-                        <input
-                          id="pc-builder-notes"
-                          type="text"
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          placeholder="Ex: Até R$ 4.500 / Tenho notebook p/ troca"
-                          className="w-full bg-zinc-900 border border-zinc-700 px-3.5 py-2.5 text-base sm:text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-white min-h-[42px]"
-                        />
+                          Só o PC
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPeripherals("completo")}
+                          className={`py-2.5 px-3 font-mono text-xs font-bold uppercase cursor-pointer min-h-[42px] ${
+                            peripherals === "completo"
+                              ? "bg-white text-black"
+                              : "bg-zinc-900 text-zinc-400 hover:text-white"
+                          }`}
+                        >
+                          PC + Monitor
+                        </button>
                       </div>
                     </div>
                   </div>
