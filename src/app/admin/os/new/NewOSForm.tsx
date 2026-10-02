@@ -9,6 +9,7 @@ import {
   getChecklistFieldsForEquipment,
   getQuickSymptomChips,
   getQuickAccessoryChips,
+  shouldPrintAccessoryLabel,
   type EquipmentTypeValue,
 } from '@/app/admin/types/database';
 import { CameraSyncModal } from './CameraSyncModal';
@@ -191,8 +192,20 @@ export function NewOSForm({
   });
   const [checklist, setChecklist] = useState<Record<string, boolean>>(
     Object.fromEntries(ENTRY_CHECKLIST_FIELDS.map((f) => [f.key, false])),
-  );
   const [accessories, setAccessories] = useState('');
+  const [printAccessoryLabel, setPrintAccessoryLabel] = useState(false);
+  const [userToggledAccessoryLabel, setUserToggledAccessoryLabel] = useState(false);
+
+  // Sincroniza automaticamente a necessidade de 2ª etiqueta (ignora capinhas/películas)
+  // a menos que o operador tenha marcado/desmarcado manualmente.
+  useEffect(() => {
+    if (!userToggledAccessoryLabel) {
+      setPrintAccessoryLabel(
+        shouldPrintAccessoryLabel(Boolean(checklist.carregador), accessories),
+      );
+    }
+  }, [checklist.carregador, accessories, userToggledAccessoryLabel]);
+
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -387,8 +400,7 @@ export function NewOSForm({
       });
 
       if (redirectToLabel) {
-        const hasAccessories = Boolean(accessories.trim() || checklist.carregador);
-        const copiesParam = hasAccessories ? '&copies=2' : '&copies=1';
+        const copiesParam = printAccessoryLabel ? '&copies=2' : '&copies=1';
         router.push(`/admin/os/${newOS.id}/label?autoprint=1${copiesParam}`);
       } else {
         router.push(`/admin/os/${newOS.id}`);
@@ -683,7 +695,10 @@ export function NewOSForm({
                   <button
                     key={chip}
                     type="button"
-                    onClick={() => setAccessories((prev) => appendChipText(prev, chip))}
+                    onClick={() => {
+                      setUserToggledAccessoryLabel(false);
+                      setAccessories((prev) => appendChipText(prev, chip));
+                    }}
                     className="border border-zinc-300 bg-zinc-50 px-2.5 py-1 font-mono text-xs font-semibold text-zinc-800 hover:border-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
                   >
                     + {chip}
@@ -692,7 +707,10 @@ export function NewOSForm({
                 {accessories.trim() && (
                   <button
                     type="button"
-                    onClick={() => setAccessories('')}
+                    onClick={() => {
+                      setUserToggledAccessoryLabel(false);
+                      setAccessories('');
+                    }}
                     className="ml-auto font-mono text-[11px] font-bold uppercase text-zinc-400 underline hover:text-zinc-900 cursor-pointer"
                   >
                     Limpar
@@ -701,10 +719,38 @@ export function NewOSForm({
               </div>
               <input
                 value={accessories}
-                onChange={(e) => setAccessories(e.target.value)}
+                onChange={(e) => {
+                  setUserToggledAccessoryLabel(false);
+                  setAccessories(e.target.value);
+                }}
                 className="form-input"
                 placeholder="Digite livremente qualquer acessório deixado pelo cliente…"
               />
+
+              {/* Checkbox inteligente de 2ª etiqueta para acessório */}
+              <div className="mt-2.5 flex items-center gap-2.5 border-2 border-zinc-950 bg-zinc-50 p-2.5">
+                <input
+                  type="checkbox"
+                  id="printAccessoryLabel"
+                  checked={printAccessoryLabel}
+                  onChange={(e) => {
+                    setUserToggledAccessoryLabel(true);
+                    setPrintAccessoryLabel(e.target.checked);
+                  }}
+                  className="h-4 w-4 border-zinc-400 accent-zinc-950 cursor-pointer"
+                />
+                <label
+                  htmlFor="printAccessoryLabel"
+                  className="cursor-pointer font-mono text-xs font-bold text-zinc-900 select-none"
+                >
+                  Imprimir 2ª etiqueta para acessório separado (1/2 Aparelho e 2/2 Acessório)
+                  <span className="block font-normal text-zinc-600 text-[11px] mt-0.5">
+                    {printAccessoryLabel
+                      ? '✓ Serão impressas 2 etiquetas na Knup (1 no aparelho e 1 no acessório separado).'
+                      : 'Será impressa apenas 1 etiqueta na Knup (para colar no aparelho/capinha).'}
+                  </span>
+                </label>
+              </div>
             </Field>
 
             {/* BLOCO DE FOTOS DA CARCAÇA COM CYBER CAMERA SYNC (OPÇÃO 1) */}
@@ -892,26 +938,26 @@ export function NewOSForm({
               Próximo passo →
             </button>
           ) : (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={() => submit(false)}
                 disabled={submitting}
-                className="border-2 border-zinc-950 bg-white px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition disabled:opacity-50 cursor-pointer"
+                className="font-mono text-xs font-semibold text-zinc-500 underline hover:text-zinc-950 transition disabled:opacity-50 cursor-pointer"
               >
-                {submitting ? 'Salvando…' : 'Criar OS e Abrir Ficha'}
+                Salvar sem imprimir etiqueta
               </button>
               <button
                 type="button"
                 onClick={() => submit(true)}
                 disabled={submitting}
-                className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+                className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
               >
                 {submitting
-                  ? 'Salvando…'
-                  : accessories.trim() || checklist.carregador
+                  ? 'Salvando OS…'
+                  : printAccessoryLabel
                     ? '🖨️ Criar OS + 2x Etiquetas (Aparelho + Acessório)'
-                    : '🖨️ Criar OS + Etiqueta 58mm'}
+                    : '🖨️ Criar OS + Etiqueta 58mm (Knup 40x60)'}
               </button>
             </div>
           )}

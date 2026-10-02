@@ -862,6 +862,44 @@ export function getQuickAccessoryChips(
   }
 }
 
+/**
+ * Determina se a entrada de equipamento requer uma segunda etiqueta física
+ * (ex: para colar no carregador, fonte, cabo ou controle deixado na loja).
+ *
+ * Itens passivos que ficam acoplados ao aparelho (como capinha, capa, case, película)
+ * NÃO demandam 2ª etiqueta, imprimindo apenas 1 etiqueta para o aparelho/capinha.
+ */
+export function shouldPrintAccessoryLabel(
+  checklistCarregador: boolean,
+  accessoriesText?: string | null,
+): boolean {
+  if (checklistCarregador) return true;
+  const raw = (accessoriesText || '').trim().toLowerCase();
+  if (!raw) return false;
+
+  const ignorePatterns = [
+    /^(apenas\s+)?capinha(\s+case)?$/i,
+    /^(apenas\s+)?case$/i,
+    /^(apenas\s+)?capa$/i,
+    /^(apenas\s+)?pel[ií]cula(\s+(de\s+)?(vidro|gel|3d|cer[aâ]mica))?$/i,
+    /^capinha\s*\/\s*case$/i,
+    /^case\s*\/\s*capa/i,
+    /^sem\s+acess[oó]rios?/i,
+    /^s[oó]\s+aparelho/i,
+    /^nenhum/i,
+  ];
+
+  if (ignorePatterns.some((pattern) => pattern.test(raw))) return false;
+
+  const words = raw.split(/[\s,;+/]+/).filter(Boolean);
+  const passiveWords = new Set([
+    'com', 'de', 'e', 'em', 'para', 'a', 'o',
+    'capinha', 'case', 'capa', 'pelicula', 'película', 'vidro', 'gel', '3d', 'ceramica', 'cerâmica',
+    'sem', 'so', 'só', 'aparelho', 'apenas', 'nenhum',
+  ]);
+  return words.some((w) => !passiveWords.has(w));
+}
+
 export const STOCK_MOVEMENT_TYPES = [
   { value: 'in', label: 'Entrada (compra)', color: 'emerald' },
   { value: 'out', label: 'Saída (uso)', color: 'orange' },

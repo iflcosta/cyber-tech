@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { QRCodeImage } from '@/app/admin/components/QRCode';
 import { EscPosLabelButton } from './EscPosLabelButton';
+import { shouldPrintAccessoryLabel } from '@/app/admin/types/database';
 
 interface OSLabelClientProps {
   osId: string;
@@ -34,9 +36,10 @@ export function OSLabelClient({
   reportedDefect,
   plainText58mm,
 }: OSLabelClientProps) {
+  const router = useRouter();
   const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
-  const hasAccessories = Boolean(accessoriesInfo && accessoriesInfo.trim());
+  const hasAccessories = shouldPrintAccessoryLabel(false, accessoriesInfo);
   const [copies, setCopies] = useState(hasAccessories ? 2 : 1);
   const origin =
     typeof window !== 'undefined' && window.location.origin
@@ -69,11 +72,16 @@ export function OSLabelClient({
       if (params.get('autoprint') === '1') {
         const timer = setTimeout(() => {
           window.print();
+          // No modo balcão silencioso, retorna suavemente para a ficha da OS
+          const returnTimer = setTimeout(() => {
+            router.push(`/admin/os/${osId}`);
+          }, 1500);
+          return () => clearTimeout(returnTimer);
         }, 400);
         return () => clearTimeout(timer);
       }
     }
-  }, []);
+  }, [osId, router]);
 
   return (
     <>
