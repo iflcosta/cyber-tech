@@ -77,8 +77,8 @@ export default async function ReciboPage({
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; margin: 0 !important; padding: 4mm !important; }
-          main { max-width: none !important; padding: 0 !important; }
+          body { background: white !important; margin: 0 !important; padding: 0 !important; }
+          main { max-width: none !important; padding: 0 !important; margin: 0 !important; }
           div[class*="space-y"] > *:not(.no-print):not(pre):not(div) { display: none !important; }
           div[class*="border"][class*="bg-white"] {
             box-shadow: none !important;
@@ -89,11 +89,13 @@ export default async function ReciboPage({
           }
           pre {
             font-family: 'Courier New', monospace !important;
-            font-size: 8pt !important;
-            line-height: 1.1 !important;
+            font-size: 8.5pt !important;
+            line-height: 1.15 !important;
             white-space: pre !important;
             color: black !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            text-align: left !important;
           }
         }
       `}</style>
