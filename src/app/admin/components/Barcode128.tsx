@@ -23,9 +23,15 @@ const CODE128_PATTERNS: readonly string[] = [
 ];
 
 const START_CODE_B = 104;
+const START_CODE_C = 105;
 const STOP_CODE = 106;
 
-export function encodeCode128B(raw: string): { bars: Array<{ x: number; w: number }>; totalModules: number } {
+/**
+ * Codifica texto para Code 128.
+ * Se a sequência for puramente numérica (>= 4 dígitos), usa automaticamente o Subset C
+ * (2 dígitos por símbolo), reduzindo pela metade a quantidade de barras e dobrando a espessura!
+ */
+export function encodeCode128(raw: string): { bars: Array<{ x: number; w: number }>; totalModules: number } {
   const clean = (raw || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -35,19 +41,38 @@ export function encodeCode128B(raw: string): { bars: Array<{ x: number; w: numbe
     return { bars: [], totalModules: 0 };
   }
 
-  const codes: number[] = [START_CODE_B];
-  let checksum = START_CODE_B;
+  const isAllDigits = /^\d+$/.test(clean);
+  let codes: number[] = [];
+  let checksum = 0;
 
-  for (let i = 0; i < clean.length; i++) {
-    const val = clean.charCodeAt(i) - 32;
-    codes.push(val);
-    checksum += val * (i + 1);
+  if (isAllDigits && clean.length >= 4) {
+    // Subset C (pares de dígitos 00 a 99) -> Barras muito mais grossas e fáceis de ler!
+    const padded = clean.length % 2 === 0 ? clean : '0' + clean;
+    codes = [START_CODE_C];
+    checksum = START_CODE_C;
+    let pos = 1;
+    for (let i = 0; i < padded.length; i += 2) {
+      const pair = parseInt(padded.slice(i, i + 2), 10);
+      codes.push(pair);
+      checksum += pair * pos;
+      pos++;
+    }
+  } else {
+    // Subset B (alfanumérico padrão)
+    codes = [START_CODE_B];
+    checksum = START_CODE_B;
+    for (let i = 0; i < clean.length; i++) {
+      const val = clean.charCodeAt(i) - 32;
+      codes.push(val);
+      checksum += val * (i + 1);
+    }
   }
 
   codes.push(checksum % 103);
   codes.push(STOP_CODE);
 
-  const quietZone = 10;
+  // Quiet Zone de segurança (mínimo 12 módulos de branco em cada lado)
+  const quietZone = 12;
   let cursor = quietZone;
   const bars: Array<{ x: number; w: number }> = [];
 
@@ -69,16 +94,19 @@ export function encodeCode128B(raw: string): { bars: Array<{ x: number; w: numbe
   };
 }
 
+// Mantido para compatibilidade retroativa
+export const encodeCode128B = encodeCode128;
+
 export function Barcode128({
   value,
-  height = 34,
+  height = 48,
   className = '',
 }: {
   value: string;
   height?: number;
   className?: string;
 }) {
-  const { bars, totalModules } = encodeCode128B(value);
+  const { bars, totalModules } = encodeCode128(value);
 
   if (bars.length === 0) return null;
 

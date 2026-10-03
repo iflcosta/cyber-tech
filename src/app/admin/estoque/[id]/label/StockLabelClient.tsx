@@ -26,6 +26,12 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
     .join(' · ');
 
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
+  const compactSku = item.internal_sku || `CY${item.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+  // 6 dígitos numéricos estáveis para Code 128-C (gera barras ultra grossas, fáceis para leitores baratos)
+  const numericSku = (
+    parseInt(item.id.replace(/-/g, '').slice(0, 6), 16) % 900000 +
+    100000
+  ).toString();
 
   const [labelFormat, setLabelFormat] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40'>('40x60');
   const [title, setTitle] = useState(item.name);
@@ -33,12 +39,18 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const [price, setPrice] = useState(
     item.unit_price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   );
-  const [codeSource, setCodeSource] = useState<'sku' | 'ean'>('sku');
+  const [codeFormat, setCodeFormat] = useState<'compact' | 'numeric' | 'full' | 'ean' | 'custom'>('compact');
+  const [customCode, setCustomCode] = useState('');
+  const [barcodeHeight, setBarcodeHeight] = useState<number>(50); // 50px = ~13.2mm de altura (fácil leitura)
+  const [showWarranty, setShowWarranty] = useState<boolean>(true);
   const [copies, setCopies] = useState(1);
   const [showPrice, setShowPrice] = useState(true);
 
-  const activeBarcodeValue =
-    codeSource === 'ean' && item.ean13 ? item.ean13 : fallbackSku;
+  let activeBarcodeValue = compactSku;
+  if (codeFormat === 'numeric') activeBarcodeValue = numericSku;
+  else if (codeFormat === 'full') activeBarcodeValue = fallbackSku;
+  else if (codeFormat === 'ean' && item.ean13) activeBarcodeValue = item.ean13;
+  else if (codeFormat === 'custom') activeBarcodeValue = customCode.trim() || compactSku;
 
   const copiesArray = Array.from({ length: Math.max(1, Math.min(50, copies)) });
 
@@ -170,24 +182,74 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
             </div>
           </label>
 
-          <div className="grid grid-cols-2 gap-2">
-            <label className="block">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:col-span-2 border-t border-zinc-200 pt-3">
+            <div>
               <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Código de Barras
+                Formato do Código de Barras (Otimização para Leitor)
               </span>
               <select
-                value={codeSource}
-                onChange={(e) => setCodeSource(e.target.value as 'sku' | 'ean')}
-                className="mt-1 w-full border border-zinc-400 bg-white px-2 py-1.5 font-mono text-xs text-zinc-950"
+                value={codeFormat}
+                onChange={(e) => setCodeFormat(e.target.value as any)}
+                className="mt-1 w-full border border-zinc-400 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 font-bold"
               >
-                <option value="sku">SKU ({fallbackSku})</option>
-                {item.ean13 && <option value="ean">EAN ({item.ean13})</option>}
+                <option value="compact">⚡ Compacto ({compactSku}) — Barras Mais Grossas (Recomendado)</option>
+                <option value="numeric">🔢 Numérico ({numericSku}) — Subset C (Barras Ultra Grossas)</option>
+                <option value="full">🏷️ Completo ({fallbackSku})</option>
+                {item.ean13 && <option value="ean">📦 EAN Fornecedor ({item.ean13})</option>}
+                <option value="custom">✏️ Personalizado (Digitar Código)</option>
               </select>
-            </label>
 
-            <label className="block">
+              {codeFormat === 'custom' && (
+                <input
+                  type="text"
+                  value={customCode}
+                  onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+                  placeholder="Ex: 1001 ou SSD1TB..."
+                  className="mt-2 w-full border border-zinc-950 bg-amber-50 px-2.5 py-1.5 font-mono text-xs font-bold text-zinc-950"
+                />
+              )}
+            </div>
+
+            <div>
               <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Qtd. Etiquetas
+                Altura do Código de Barras (Área de Mira)
+              </span>
+              <div className="mt-1 flex gap-1.5">
+                {[
+                  { label: 'Normal (36px)', val: 36 },
+                  { label: '⭐ Alto (50px)', val: 50 },
+                  { label: '🚀 Máximo (58px)', val: 58 },
+                ].map((opt) => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setBarcodeHeight(opt.val)}
+                    className={`flex-1 py-1.5 font-mono text-[11px] font-bold uppercase border cursor-pointer ${
+                      barcodeHeight === opt.val
+                        ? 'border-zinc-950 bg-zinc-950 text-white'
+                        : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 pt-1">
+              <label className="flex items-center gap-1.5 font-mono text-xs text-zinc-800 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showWarranty}
+                  onChange={(e) => setShowWarranty(e.target.checked)}
+                />
+                Exibir Selo de Garantia (90 Dias)
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+              <span className="font-mono text-[11px] font-bold uppercase text-zinc-700">
+                Qtd. Cópias:
               </span>
               <input
                 type="number"
@@ -195,9 +257,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 max={50}
                 value={copies}
                 onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="mt-1 w-full border border-zinc-400 px-2.5 py-1.5 font-mono text-xs font-bold text-zinc-950"
+                className="w-20 border border-zinc-400 px-2 py-1 font-mono text-xs font-bold text-center text-zinc-950"
               />
-            </label>
+            </div>
           </div>
         </div>
 
@@ -317,11 +379,11 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
                 {/* 4. Código de Barras (Code 128) + SKU Interno */}
                 <div className="pt-[0.3mm] text-center">
-                  <div className="mx-auto w-full">
-                    <Barcode128 value={activeBarcodeValue} height={showPrice ? 24 : 32} />
+                  <div className="mx-auto w-full flex justify-center">
+                    <Barcode128 value={activeBarcodeValue} height={Math.min(barcodeHeight, 38)} />
                   </div>
-                  <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
-                    {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
+                  <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
+                    {codeFormat === 'ean' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
                   </div>
                 </div>
               </div>
@@ -335,7 +397,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 </div>
 
                 {/* 2. Nome e Características do Produto */}
-                <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
+                <div className="my-[0.5mm] flex-1 flex flex-col justify-center overflow-hidden">
                   <div
                     className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
                     style={{
@@ -355,17 +417,19 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 </div>
 
                 {/* 3. Selo de Garantia da Loja */}
-                <div className="mb-[0.6mm] border border-black bg-zinc-100 py-[0.5mm] text-center font-mono text-[5.8pt] font-black uppercase tracking-wider text-black leading-none whitespace-nowrap">
-                  ✦ GARANTIA DE 90 DIAS ✦
-                </div>
+                {showWarranty && (
+                  <div className="mb-[0.5mm] border border-black bg-zinc-100 py-[0.4mm] text-center font-mono text-[5.6pt] font-black uppercase tracking-wider text-black leading-none whitespace-nowrap">
+                    ✦ GARANTIA DE 90 DIAS ✦
+                  </div>
+                )}
 
                 {/* 4. Preço em Destaque (Box Fechado) */}
                 {showPrice && (
-                  <div className="mb-[0.6mm] border-2 border-black p-[0.6mm] text-center bg-white">
+                  <div className="mb-[0.5mm] border-2 border-black p-[0.5mm] text-center bg-white">
                     <div className="font-mono text-[5.2pt] font-black uppercase tracking-wider text-black leading-none">
                       VALOR À VISTA / PIX
                     </div>
-                    <div className="my-[0.4mm] font-mono text-[13pt] font-black tracking-tight leading-none text-black">
+                    <div className="my-[0.3mm] font-mono text-[12.5pt] font-black tracking-tight leading-none text-black">
                       R$ {price}
                     </div>
                     <div className="font-mono text-[4.8pt] font-bold uppercase text-zinc-600 leading-none">
@@ -374,21 +438,21 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                   </div>
                 )}
 
-                {/* 5. Código de Barras (Code 128 com Altura Ideal de 28px) + SKU */}
+                {/* 5. Código de Barras (Alta Legibilidade para Leitores Genéricos) */}
                 <div className="pt-[0.2mm] text-center">
                   <div className="mx-auto w-full flex justify-center">
                     <Barcode128
                       value={activeBarcodeValue}
-                      height={showPrice ? 28 : 38}
+                      height={barcodeHeight}
                     />
                   </div>
-                  <div className="mt-[0.5mm] font-mono text-[6pt] font-black tracking-wider uppercase leading-none text-black">
-                    {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
+                  <div className="mt-[0.6mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
+                    {codeFormat === 'ean' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
                   </div>
                 </div>
 
                 {/* 6. Rodapé da Loja (Linha Única sem quebra) */}
-                <div className="mt-[0.6mm] border-t border-black pt-[0.4mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
+                <div className="mt-[0.5mm] border-t border-black pt-[0.3mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
                   cyberinformatica.tech · Loja
                 </div>
               </>
@@ -433,11 +497,11 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
                 {/* 4. Código de Barras (Code 128) + SKU Interno */}
                 <div className="pt-[0.4mm] text-center">
-                  <div className="mx-auto w-full">
-                    <Barcode128 value={activeBarcodeValue} height={showPrice ? 25 : 34} />
+                  <div className="mx-auto w-full flex justify-center">
+                    <Barcode128 value={activeBarcodeValue} height={Math.min(barcodeHeight, 38)} />
                   </div>
-                  <div className="mt-[0.5mm] font-mono text-[6.2pt] font-bold tracking-wider uppercase leading-none text-black">
-                    {codeSource === 'sku' ? `SKU: ${activeBarcodeValue}` : `EAN: ${activeBarcodeValue}`}
+                  <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
+                    {codeFormat === 'ean' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
                   </div>
                 </div>
               </>

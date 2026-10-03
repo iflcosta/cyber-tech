@@ -273,10 +273,27 @@ export function PDV({
     // 1. Tenta por EAN-13 (fornecedor) ou SKU interno (Cyber)
     const cUpper = c.toUpperCase();
     let found = items.find((i) => i.ean13 === c)
-              ?? items.find((i) => i.internal_sku === cUpper);
-    // 2. Tenta por nome exato
+              ?? items.find((i) => i.internal_sku?.toUpperCase() === cUpper);
+
+    // 2. Tenta pelos formatos automáticos gerados pela etiqueta da Cyber
+    if (!found) {
+      found = items.find((i) => {
+        const shortHex = i.id.replace(/-/g, '').slice(0, 6).toUpperCase();
+        const numericStr = (parseInt(shortHex, 16) % 900000 + 100000).toString();
+        return (
+          cUpper === `CY${shortHex}` ||
+          cUpper === `CY-${shortHex}` ||
+          cUpper === `CY-SKU-${shortHex}` ||
+          cUpper === shortHex ||
+          c === numericStr ||
+          i.id.toLowerCase() === c.toLowerCase()
+        );
+      });
+    }
+
+    // 3. Tenta por nome exato
     if (!found) found = items.find((i) => i.name.toLowerCase() === c.toLowerCase());
-    // 3. Tenta match parcial no nome (se for digitado)
+    // 4. Tenta match parcial no nome (se for digitado)
     if (!found && c.length >= 3) {
       found = items.find((i) =>
         i.name.toLowerCase().includes(c.toLowerCase()),
