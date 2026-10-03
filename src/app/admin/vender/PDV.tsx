@@ -598,7 +598,12 @@ export function PDV({
               {cart.map((c) => (
                 <li key={c.stock_item_id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50">
                   <div className="flex-1">
-                    <p className="font-bold text-zinc-950">{c.name}</p>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="font-bold text-zinc-950">{c.name}</p>
+                      <span className="font-mono text-[10px] bg-zinc-100 text-zinc-600 border border-zinc-300 px-1 py-0.2 rounded-xs font-semibold">
+                        {c.internal_sku || (c.ean13 ? `EAN:${c.ean13}` : `CY-${c.stock_item_id.replace(/-/g, '').slice(0, 6).toUpperCase()}`)}
+                      </span>
+                    </div>
                     <p className="text-xs text-zinc-500">
                       {fmtBRL(c.unit_price)} cada · {c.stock_available} em estoque
                     </p>

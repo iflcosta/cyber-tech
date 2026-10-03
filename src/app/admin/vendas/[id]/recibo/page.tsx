@@ -28,11 +28,14 @@ export default async function ReciboPage({
 
   const { data: items } = await supabase
     .from('sale_items')
-    .select('*')
+    .select(`
+      *,
+      stock_item:stock_items(id, internal_sku, ean13, brand, model)
+    `)
     .eq('sale_id', id)
     .order('created_at');
 
-  const reciboText = buildReciboText(sale, items ?? []);
+  const reciboText = buildReciboText(sale, (items as never) ?? []);
 
   return (
     <div className="space-y-4">

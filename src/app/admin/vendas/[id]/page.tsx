@@ -30,7 +30,10 @@ export default async function VendaDetailPage({
 
   const { data: items } = await supabase
     .from('sale_items')
-    .select('*')
+    .select(`
+      *,
+      stock_item:stock_items(id, internal_sku, ean13)
+    `)
     .eq('sale_id', id)
     .order('created_at');
 
@@ -93,27 +96,38 @@ export default async function VendaDetailPage({
             Itens ({items?.length ?? 0})
           </h2>
           <ul className="mt-3 divide-y divide-zinc-200 font-mono text-xs">
-            {(items ?? []).map((item) => (
-              <li key={item.id} className="flex items-center justify-between gap-3 py-2">
-                <div className="flex-1">
-                  <p className="font-bold text-zinc-950">{item.item_name}</p>
-                  <p className="text-zinc-500">
-                    {item.quantity}x ·{' '}
-                    {item.unit_price.toLocaleString('pt-BR', {
+            {(items ?? []).map((item) => {
+              const stockItem = (item as never as { stock_item?: { id?: string; internal_sku?: string | null; ean13?: string | null } })?.stock_item;
+              const sku = stockItem?.internal_sku || stockItem?.ean13 || (item.stock_item_id ? `CY-${item.stock_item_id.replace(/-/g, '').slice(0, 6).toUpperCase()}` : null);
+              return (
+                <li key={item.id} className="flex items-center justify-between gap-3 py-2">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="font-bold text-zinc-950">{item.item_name}</p>
+                      {sku && (
+                        <span className="font-mono text-[10px] bg-zinc-100 text-zinc-600 border border-zinc-300 px-1.5 py-0.2 rounded-xs font-semibold">
+                          {sku}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-zinc-500">
+                      {item.quantity}x ·{' '}
+                      {item.unit_price.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}{' '}
+                      cada
+                    </p>
+                  </div>
+                  <span className="font-bold text-zinc-950">
+                    {item.subtotal.toLocaleString('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
-                    })}{' '}
-                    cada
-                  </p>
-                </div>
-                <span className="font-bold text-zinc-950">
-                  {item.subtotal.toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
-                </span>
-              </li>
-            ))}
+                    })}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
