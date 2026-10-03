@@ -29,7 +29,7 @@ export default function Hero() {
 
               <p className="text-xs sm:text-base text-zinc-300 leading-relaxed mb-5 sm:mb-7 max-w-xl">
                 Há 10 anos no Centro de Bragança. Máquinas montadas para testar e levar hoje, upgrades na hora no térreo e laboratório de placas de vídeo e{" "}
-                <strong className="text-white font-semibold underline underline-offset-4">
+                <strong className="text-white font-bold">
                   troca só do vidro (tela original)
                 </strong>{" "}
                 no 2º andar.

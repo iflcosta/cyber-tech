@@ -10,11 +10,11 @@ import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
 const TELAS_URL = "https://telas.cyberinformatica.tech";
 
 const NAV_ITEMS = [
-  { href: "/#showroom", label: "Showroom Pronta-Entrega", sectionId: "showroom" },
-  { href: "/#pc-builder", label: "PC Builder", sectionId: "pc-builder" },
-  { href: "/suporte-ti", label: "Suporte em TI", sectionId: "suporte-ti" },
-  { href: "/#servicos", label: "Serviços & 2 Andares", sectionId: "servicos" },
-  { href: "/#localizacao", label: "Endereço & Garantia", sectionId: "localizacao" },
+  { href: "/#showroom", label: "Showroom PCs", mobileLabel: "Showroom PCs Pronta-Entrega", sectionId: "showroom" },
+  { href: "/#pc-builder", label: "PC Builder", mobileLabel: "PC Builder (Monte seu PC)", sectionId: "pc-builder" },
+  { href: "/suporte-ti", label: "Suporte TI", mobileLabel: "Suporte em TI para Empresas", sectionId: "suporte-ti" },
+  { href: "/#servicos", label: "Serviços", mobileLabel: "Serviços & Mezanino (2 Andares)", sectionId: "servicos" },
+  { href: "/#localizacao", label: "Localização", mobileLabel: "Endereço & Garantia 90 Dias", sectionId: "localizacao" },
 ];
 
 export default function Header() {
@@ -94,10 +94,10 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 transition-colors ${
+                  className={`whitespace-nowrap px-3 py-1.5 transition-colors border-b-2 font-mono text-[11px] uppercase tracking-wider ${
                     isActive
-                      ? "text-white font-bold underline underline-offset-8 decoration-2 decoration-white"
-                      : "text-zinc-400 hover:text-white"
+                      ? "text-white font-bold border-white"
+                      : "text-zinc-400 hover:text-white border-transparent"
                   }`}
                 >
                   {item.label}
@@ -109,9 +109,10 @@ export default function Header() {
               href={TELAS_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-zinc-300 hover:text-white border-l border-zinc-800 pl-3 ml-2 py-1 font-medium transition-colors"
+              className="whitespace-nowrap inline-flex items-center gap-1 text-zinc-300 hover:text-white border-l border-zinc-800 pl-3 ml-2 py-1.5 font-mono text-[11px] uppercase tracking-wider transition-colors"
+              title="Troca só do Vidro — Tela Original (2º Andar)"
             >
-              <span>Troca só do Vidro (Tela Original)</span>
+              <span>Telas Originais</span>
               <ArrowUpRight size={13} className="text-zinc-500" />
             </a>
           </nav>
@@ -161,7 +162,7 @@ export default function Header() {
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-between font-bold text-zinc-200 hover:text-white py-3.5 transition-colors"
               >
-                <span>{item.label}</span>
+                <span>{item.mobileLabel || item.label}</span>
                 <span className="font-mono text-zinc-500">&rarr;</span>
               </Link>
             ))}
