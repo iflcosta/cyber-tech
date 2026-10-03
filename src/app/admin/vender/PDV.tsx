@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { PAYMENT_METHODS, STOCK_CATEGORY_SUGGESTIONS, type PaymentMethodValue } from '@/app/admin/types/database';
 import { Modal } from '@/app/admin/components/Modal';
+import { ensureValidEAN13 } from '@/app/admin/components/Barcode128';
 
 type Item = {
   id: string;
@@ -280,7 +281,9 @@ export function PDV({
       found = items.find((i) => {
         const shortHex = i.id.replace(/-/g, '').slice(0, 6).toUpperCase();
         const numericStr = (parseInt(shortHex, 16) % 900000 + 100000).toString();
+        const generatedEan = ensureValidEAN13(i.ean13 || i.id);
         return (
+          c === generatedEan ||
           cUpper === `CY${shortHex}` ||
           cUpper === `CY-${shortHex}` ||
           cUpper === `CY-SKU-${shortHex}` ||

@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import JsBarcode from 'jsbarcode';
 
 /**
  * Tabela oficial de larguras (bar/space intercalados) do padrão Code 128 (valores 0 a 106).
@@ -94,20 +95,98 @@ export function encodeCode128(raw: string): { bars: Array<{ x: number; w: number
   };
 }
 
+/**
+ * Garante um código EAN-13 válido (13 dígitos com dígito verificador módulo 10 oficial).
+ * Se o código tiver menos de 12 dígitos, preenche com o prefixo '20' (padrão GS1 de uso interno).
+ */
+export function ensureValidEAN13(raw: string): string {
+  const clean = (raw || '').replace(/\D/g, '');
+  let base12 = '';
+  if (clean.length >= 12) {
+    base12 = clean.slice(0, 12);
+  } else {
+    base12 = '20' + clean.padStart(10, '0').slice(-10);
+  }
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    const d = parseInt(base12[i], 10);
+    sum += i % 2 === 0 ? d : d * 3;
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return base12 + checkDigit;
+}
+
 // Mantido para compatibilidade retroativa
 export const encodeCode128B = encodeCode128;
 
-export function Barcode128({
+export function UniversalBarcode({
   value,
-  height = 48,
+  format = 'CODE128',
+  height = 50,
+  barWidth = 2,
   className = '',
 }: {
   value: string;
+  format?: 'CODE128' | 'EAN13' | 'CODE39';
   height?: number;
+  barWidth?: number;
   className?: string;
 }) {
-  const { bars, totalModules } = encodeCode128(value);
+  const [dataUrl, setDataUrl] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!value) return;
+    try {
+      const canvas = document.createElement('canvas');
+      let targetValue = value;
+      let targetFormat = format;
+
+      if (format === 'EAN13') {
+        targetValue = ensureValidEAN13(value);
+      } else if (format === 'CODE39') {
+        targetValue = value.toUpperCase().replace(/[^0-9A-Z\-.$/+% ]/g, '');
+        if (!targetValue) targetValue = 'CYBER';
+      }
+
+      JsBarcode(canvas, targetValue, {
+        format: targetFormat,
+        width: barWidth,
+        height: height,
+        displayValue: false,
+        margin: 10,
+        background: '#ffffff',
+        lineColor: '#000000',
+        flat: true,
+      });
+
+      setDataUrl(canvas.toDataURL('image/png'));
+    } catch (err) {
+      console.warn('JsBarcode canvas error, fallback to SVG:', err);
+      setDataUrl(null);
+    }
+  }, [value, format, height, barWidth]);
+
+  // Se já temos a imagem rasterizada em PNG (sem subpixel anti-aliasing), renderiza a tag <img> com pixelated
+  if (dataUrl) {
+    return (
+      <img
+        src={dataUrl}
+        alt={`Código de barras ${value}`}
+        className={className}
+        style={{
+          imageRendering: 'pixelated',
+          height: `${height}px`,
+          maxWidth: '100%',
+          objectFit: 'contain',
+          display: 'block',
+          margin: '0 auto',
+        }}
+      />
+    );
+  }
+
+  // Fallback seguro em SVG durante SSR ou se a lib estiver inicializando
+  const { bars, totalModules } = encodeCode128(value);
   if (bars.length === 0) return null;
 
   return (
@@ -127,3 +206,6 @@ export function Barcode128({
     </svg>
   );
 }
+
+// Mantido para compatibilidade total com os arquivos existentes
+export const Barcode128 = UniversalBarcode;

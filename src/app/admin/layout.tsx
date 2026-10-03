@@ -70,6 +70,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 ERP
               </span>
             </Link>
+            <span
+              className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-zinc-600 bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded-sm"
+              title={`Publicado: ${process.env.NEXT_PUBLIC_BUILD_TIME || 'local'}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              git:{process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || 'dev'}
+            </span>
           </div>
 
           <DesktopNav

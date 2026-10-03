@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Barcode128 } from '@/app/admin/components/Barcode128';
+import { Barcode128, ensureValidEAN13 } from '@/app/admin/components/Barcode128';
 
 interface StockLabelProps {
   item: {
@@ -27,7 +27,8 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
   const compactSku = item.internal_sku || `CY${item.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
-  // 6 dígitos numéricos estáveis para Code 128-C (gera barras ultra grossas, fáceis para leitores baratos)
+  const ean13Code = ensureValidEAN13(item.ean13 || item.id);
+  // 6 dígitos numéricos estáveis para Code 128-C
   const numericSku = (
     parseInt(item.id.replace(/-/g, '').slice(0, 6), 16) % 900000 +
     100000
@@ -39,18 +40,36 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const [price, setPrice] = useState(
     item.unit_price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   );
-  const [codeFormat, setCodeFormat] = useState<'compact' | 'numeric' | 'full' | 'ean' | 'custom'>('compact');
+  const [codeFormat, setCodeFormat] = useState<'ean13' | 'compact' | 'numeric' | 'code39' | 'full' | 'custom'>('ean13');
   const [customCode, setCustomCode] = useState('');
-  const [barcodeHeight, setBarcodeHeight] = useState<number>(50); // 50px = ~13.2mm de altura (fácil leitura)
+  const [barcodeHeight, setBarcodeHeight] = useState<number>(50); // 50px = ~13.2mm de altura
+  const [barWidth, setBarWidth] = useState<number>(2); // 2px (alta nitidez e sem borrão)
   const [showWarranty, setShowWarranty] = useState<boolean>(true);
   const [copies, setCopies] = useState(1);
   const [showPrice, setShowPrice] = useState(true);
 
-  let activeBarcodeValue = compactSku;
-  if (codeFormat === 'numeric') activeBarcodeValue = numericSku;
-  else if (codeFormat === 'full') activeBarcodeValue = fallbackSku;
-  else if (codeFormat === 'ean' && item.ean13) activeBarcodeValue = item.ean13;
-  else if (codeFormat === 'custom') activeBarcodeValue = customCode.trim() || compactSku;
+  let activeBarcodeValue = ean13Code;
+  let activeFormat: 'EAN13' | 'CODE128' | 'CODE39' = 'EAN13';
+
+  if (codeFormat === 'ean13') {
+    activeBarcodeValue = ean13Code;
+    activeFormat = 'EAN13';
+  } else if (codeFormat === 'compact') {
+    activeBarcodeValue = compactSku;
+    activeFormat = 'CODE128';
+  } else if (codeFormat === 'numeric') {
+    activeBarcodeValue = numericSku;
+    activeFormat = 'CODE128';
+  } else if (codeFormat === 'code39') {
+    activeBarcodeValue = compactSku;
+    activeFormat = 'CODE39';
+  } else if (codeFormat === 'full') {
+    activeBarcodeValue = fallbackSku;
+    activeFormat = 'CODE128';
+  } else if (codeFormat === 'custom') {
+    activeBarcodeValue = customCode.trim() || ean13Code;
+    activeFormat = /^\d{12,13}$/.test(activeBarcodeValue) ? 'EAN13' : 'CODE128';
+  }
 
   const copiesArray = Array.from({ length: Math.max(1, Math.min(50, copies)) });
 
@@ -66,12 +85,19 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
       {/* Painel de Configuração (Oculto na Impressão) */}
       <div className="print:hidden mx-auto mb-6 max-w-2xl border-2 border-zinc-950 bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
               Knup KP-IM608 · {is40x60Landscape ? '40x60 Paisagem (De Lado)' : `${labelFormat}mm`}
             </span>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
               Etiqueta de Produto / PDV
+            </span>
+            <span
+              className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-zinc-600 bg-zinc-100 border border-zinc-300 px-1.5 py-0.5 rounded-sm"
+              title={`Publicado: ${process.env.NEXT_PUBLIC_BUILD_TIME || 'local'}`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              git:{process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || 'dev'}
             </span>
           </div>
           <Link
@@ -185,17 +211,18 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:col-span-2 border-t border-zinc-200 pt-3">
             <div>
               <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Formato do Código de Barras (Otimização para Leitor)
+                Padrão / Formato do Código de Barras
               </span>
               <select
                 value={codeFormat}
                 onChange={(e) => setCodeFormat(e.target.value as any)}
-                className="mt-1 w-full border border-zinc-400 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 font-bold"
+                className="mt-1 w-full border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 font-bold"
               >
-                <option value="compact">⚡ Compacto ({compactSku}) — Barras Mais Grossas (Recomendado)</option>
-                <option value="numeric">🔢 Numérico ({numericSku}) — Subset C (Barras Ultra Grossas)</option>
-                <option value="full">🏷️ Completo ({fallbackSku})</option>
-                {item.ean13 && <option value="ean">📦 EAN Fornecedor ({item.ean13})</option>}
+                <option value="ean13">🏷️ EAN-13 Padrão Supermercado ({ean13Code}) — MÁXIMA COMPATIBILIDADE</option>
+                <option value="compact">⚡ Code 128 Compacto ({compactSku}) — Barras Mais Grossas</option>
+                <option value="numeric">🔢 Code 128 Numérico ({numericSku}) — Subset C</option>
+                <option value="code39">📋 Code 39 ({compactSku}) — Espaçamento Amplo</option>
+                <option value="full">🏷️ Code 128 Completo ({fallbackSku})</option>
                 <option value="custom">✏️ Personalizado (Digitar Código)</option>
               </select>
 
@@ -204,7 +231,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                   type="text"
                   value={customCode}
                   onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                  placeholder="Ex: 1001 ou SSD1TB..."
+                  placeholder="Ex: 1001, 7891234567895, ou SSD1TB..."
                   className="mt-2 w-full border border-zinc-950 bg-amber-50 px-2.5 py-1.5 font-mono text-xs font-bold text-zinc-950"
                 />
               )}
@@ -226,6 +253,32 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                     onClick={() => setBarcodeHeight(opt.val)}
                     className={`flex-1 py-1.5 font-mono text-[11px] font-bold uppercase border cursor-pointer ${
                       barcodeHeight === opt.val
+                        ? 'border-zinc-950 bg-zinc-950 text-white'
+                        : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
+                Espessura das Barras (Resolução de Impressão)
+              </span>
+              <div className="mt-1 flex gap-1.5">
+                {[
+                  { label: 'Fina (1.6px)', val: 1.6 },
+                  { label: '⭐ Média (2px)', val: 2 },
+                  { label: 'Grossa (2.4px)', val: 2.4 },
+                ].map((opt) => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setBarWidth(opt.val)}
+                    className={`flex-1 py-1 font-mono text-[11px] font-bold uppercase border cursor-pointer ${
+                      barWidth === opt.val
                         ? 'border-zinc-950 bg-zinc-950 text-white'
                         : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
                     }`}
@@ -377,13 +430,18 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                   </div>
                 )}
 
-                {/* 4. Código de Barras (Code 128) + SKU Interno */}
+                {/* 4. Código de Barras */}
                 <div className="pt-[0.3mm] text-center">
                   <div className="mx-auto w-full flex justify-center">
-                    <Barcode128 value={activeBarcodeValue} height={Math.min(barcodeHeight, 38)} />
+                    <Barcode128
+                      value={activeBarcodeValue}
+                      format={activeFormat}
+                      height={Math.min(barcodeHeight, 38)}
+                      barWidth={barWidth}
+                    />
                   </div>
                   <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
-                    {codeFormat === 'ean' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
+                    {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
                   </div>
                 </div>
               </div>
@@ -443,11 +501,13 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                   <div className="mx-auto w-full flex justify-center">
                     <Barcode128
                       value={activeBarcodeValue}
+                      format={activeFormat}
                       height={barcodeHeight}
+                      barWidth={barWidth}
                     />
                   </div>
                   <div className="mt-[0.6mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
-                    {codeFormat === 'ean' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
+                    {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
                   </div>
                 </div>
 
@@ -498,10 +558,15 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 {/* 4. Código de Barras (Code 128) + SKU Interno */}
                 <div className="pt-[0.4mm] text-center">
                   <div className="mx-auto w-full flex justify-center">
-                    <Barcode128 value={activeBarcodeValue} height={Math.min(barcodeHeight, 38)} />
+                    <Barcode128
+                      value={activeBarcodeValue}
+                      format={activeFormat}
+                      height={Math.min(barcodeHeight, 38)}
+                      barWidth={barWidth}
+                    />
                   </div>
                   <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
-                    {codeFormat === 'ean' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
+                    {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
                   </div>
                 </div>
               </>
