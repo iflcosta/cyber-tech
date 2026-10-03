@@ -4,6 +4,7 @@ import { DesktopNav } from '@/app/admin/components/DesktopNav';
 import { MobileNav } from '@/app/admin/components/MobileNav';
 import { HeaderBackButton } from '@/app/admin/components/HeaderBackButton';
 import { PrintShortcutGuard } from '@/app/admin/components/PrintShortcutGuard';
+import { GlobalBarcodeScanner } from '@/app/admin/components/GlobalBarcodeScanner';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   let user: { id: string; email?: string | null } | null = null;
@@ -60,6 +61,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-dvh print:min-h-0 print:h-auto bg-zinc-50 print:bg-white text-zinc-950 antialiased font-body overflow-x-hidden print:overflow-visible">
       <PrintShortcutGuard />
+      <GlobalBarcodeScanner />
       <header className="print:hidden sticky top-0 z-30 border-b-2 border-zinc-950 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
@@ -70,13 +72,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 ERP
               </span>
             </Link>
-            <span
-              className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-zinc-600 bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded-sm"
-              title={`Publicado: ${process.env.NEXT_PUBLIC_BUILD_TIME || 'local'}`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              git:{process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || 'dev'}
-            </span>
           </div>
 
           <DesktopNav
@@ -93,6 +88,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
       <main className="mx-auto max-w-6xl w-full px-4 py-6 sm:px-6 print:m-0 print:p-0 print:max-w-none">{children}</main>
+
+      {/* Badge de sincronização Git discreto no rodapé (não ocupa espaço na barra superior) */}
+      <div className="print:hidden fixed bottom-2 right-2 z-40 pointer-events-none select-none">
+        <span
+          className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold text-zinc-500 bg-white/90 backdrop-blur-xs border border-zinc-300 px-2 py-0.5 shadow-xs rounded-sm pointer-events-auto"
+          title={`Publicado: ${process.env.NEXT_PUBLIC_BUILD_TIME || 'local'}`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          git:{process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || 'dev'}
+        </span>
+      </div>
     </div>
   );
 }
