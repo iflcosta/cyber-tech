@@ -187,7 +187,7 @@ export function MovementForm({
                 projectedStock < 0
                   ? 'font-black text-red-600'
                   : projectedStock === 0
-                    ? 'font-black text-orange-600'
+                    ? 'font-black text-amber-600'
                     : 'font-black text-zinc-950'
               }
             >

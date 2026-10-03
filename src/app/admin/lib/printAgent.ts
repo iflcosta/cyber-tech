@@ -38,7 +38,7 @@ export async function sendToPrintAgent(bytes: Uint8Array): Promise<PrintResult> 
       method: 'POST',
       headers: { 'Content-Type': 'application/octet-stream' },
       body: payloadBlob,
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(1000),
     });
     if (res.ok) return { ok: true };
     const body = await res.text().catch(() => '');
@@ -51,7 +51,7 @@ export async function sendToPrintAgent(bytes: Uint8Array): Promise<PrintResult> 
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
           body: payloadBlob,
-          signal: AbortSignal.timeout(4000),
+          signal: AbortSignal.timeout(1000),
         });
         if (res2.ok) {
           setPrintAgentUrl(fallbackUrl);
@@ -79,13 +79,13 @@ export async function checkPrintAgentStatus(): Promise<PrintResult> {
     : url.replace('127.0.0.1', 'localhost');
 
   try {
-    const res = await fetch(`${url}/status`, { signal: AbortSignal.timeout(2500) });
+    const res = await fetch(`${url}/status`, { signal: AbortSignal.timeout(1000) });
     if (res.ok) return { ok: true };
   } catch {}
 
   if (fallbackUrl !== url) {
     try {
-      const res2 = await fetch(`${fallbackUrl}/status`, { signal: AbortSignal.timeout(2500) });
+      const res2 = await fetch(`${fallbackUrl}/status`, { signal: AbortSignal.timeout(1000) });
       if (res2.ok) {
         setPrintAgentUrl(fallbackUrl);
         return { ok: true };

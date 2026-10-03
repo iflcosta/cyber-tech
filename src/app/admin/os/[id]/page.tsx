@@ -246,7 +246,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
                 {normalizedSo.reported_defect}
               </p>
               {normalizedSo.blocking_reason && (
-                <div className="mt-3 border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
+                <div className="mt-3 border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 font-mono">
                   <strong>⚠️ Travado em:</strong> {normalizedSo.blocking_reason}
                 </div>
               )}

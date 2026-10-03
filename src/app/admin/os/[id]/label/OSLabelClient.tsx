@@ -301,7 +301,14 @@ export function OSLabelClient({
                 >
                   {/* 1. Cabeçalho: OS + Data */}
                   <div className="flex items-center justify-between border-b border-black pb-[0.6mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                    <span className="font-mono text-[8pt] font-black">{osNumberStr}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-[8pt] font-black">{osNumberStr}</span>
+                      {copiesArray.length > 1 && (
+                        <span className="bg-black text-white px-1 py-[0.2mm] text-[5pt] font-mono font-bold tracking-tight">
+                          {idx === 0 ? '1/2 · APARELHO' : (idx === 1 ? '2/2 · ACESSÓRIO' : `${idx + 1}/${copiesArray.length}`)}
+                        </span>
+                      )}
+                    </div>
                     <span>{createdDate}</span>
                   </div>
 
@@ -357,9 +364,16 @@ export function OSLabelClient({
                   {/* Layout Vertical 40x60mm Ultra Limpo */}
                   {/* 1. Topo: Identificador Direto da OS + Data */}
                   <div className="flex items-baseline justify-between border-b-2 border-black pb-[0.8mm] leading-none">
-                    <span className="font-mono text-[12.5pt] font-black tracking-tight text-black">
-                      {osNumberStr}
-                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-mono text-[12.5pt] font-black tracking-tight text-black">
+                        {osNumberStr}
+                      </span>
+                      {copiesArray.length > 1 && (
+                        <span className="bg-black text-white px-1 py-[0.2mm] text-[6pt] font-mono font-bold tracking-tight">
+                          {idx === 0 ? '1/2 APARELHO' : (idx === 1 ? '2/2 ACESSÓRIO' : `${idx + 1}/${copiesArray.length}`)}
+                        </span>
+                      )}
+                    </div>
                     <span className="font-mono text-[6.5pt] font-bold text-black shrink-0 ml-1">
                       {createdDate}
                     </span>
@@ -413,7 +427,14 @@ export function OSLabelClient({
                   {/* Layout Horizontal 60x40mm / 50x40mm */}
                   {/* 1. Cabeçalho: OS + Data */}
                   <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                    <span className="font-mono text-[8pt] font-black">{osNumberStr}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-[8pt] font-black">{osNumberStr}</span>
+                      {copiesArray.length > 1 && (
+                        <span className="bg-black text-white px-1 py-[0.2mm] text-[5pt] font-mono font-bold tracking-tight">
+                          {idx === 0 ? '1/2 · APARELHO' : (idx === 1 ? '2/2 · ACESSÓRIO' : `${idx + 1}/${copiesArray.length}`)}
+                        </span>
+                      )}
+                    </div>
                     <span>{createdDate}</span>
                   </div>
 

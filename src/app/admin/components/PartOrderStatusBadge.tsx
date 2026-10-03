@@ -4,7 +4,7 @@ const COLOR_CLASSES: Record<string, string> = {
   amber: 'border border-amber-600 bg-amber-100 text-amber-950',
   blue: 'border-2 border-zinc-950 bg-zinc-950 text-white',
   indigo: 'border-2 border-zinc-950 bg-zinc-950 text-white',
-  orange: 'border border-orange-600 bg-orange-100 text-orange-950',
+  orange: 'border border-amber-600 bg-amber-100 text-amber-950',
   emerald: 'border border-emerald-700 bg-emerald-100 text-emerald-950',
   slate: 'border border-zinc-300 bg-zinc-100 text-zinc-700',
   red: 'border border-red-600 bg-red-100 text-red-950',

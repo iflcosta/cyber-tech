@@ -16,11 +16,24 @@ const { spawn } = require('child_process');
 const PORT = Number(process.env.PORT) || 9100;
 const PRINTER_NAME = process.env.PRINTER_NAME || 'MPT-II';
 
+const ALLOWED_ORIGINS = [
+  'https://cyberinformatica.tech',
+  'https://www.cyberinformatica.tech',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+
 function withCors(req, res) {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  const origin = req.headers.origin || '';
+  if (
+    ALLOWED_ORIGINS.includes(origin) ||
+    origin.startsWith('http://localhost:') ||
+    origin.startsWith('http://127.0.0.1:')
+  ) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, *');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.setHeader('Access-Control-Allow-Private-Network', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
 }
@@ -134,8 +147,8 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ ok: false, error: 'Rota não encontrada' }));
 });
 
-server.listen(PORT, '::', () => {
-  console.log(`[print-agent] Cyber ERP Print Agent rodando em http://localhost:${PORT} e http://127.0.0.1:${PORT}`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`[print-agent] Cyber ERP Print Agent rodando estritamente em http://127.0.0.1:${PORT}`);
   console.log(`[print-agent] Impressora configurada: ${PRINTER_NAME}`);
   console.log(`[print-agent] Pronto para receber impressões do PDV e recibos da bancada!`);
 });

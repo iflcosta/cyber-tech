@@ -10,7 +10,7 @@ export default async function LoginPage() {
   if (user) redirect('/admin/os');
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F4F4F5] px-4 text-zinc-950">
+    <div className="flex min-h-dvh items-center justify-center bg-zinc-100 px-4 text-zinc-950">
       <div className="w-full max-w-sm">
         <div className="mb-6 border-b-2 border-zinc-950 pb-4">
           <div className="flex items-center justify-between">

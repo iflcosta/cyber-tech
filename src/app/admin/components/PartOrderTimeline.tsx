@@ -5,7 +5,7 @@ const EVENT_LABELS: Record<string, { label: string; color: string; icon: string 
   created: { label: 'Pedido registrado', color: 'border border-zinc-300 bg-zinc-100 text-zinc-900', icon: '📱' },
   received: { label: 'Recebido', color: 'border-2 border-zinc-950 bg-zinc-950 text-white', icon: '📦' },
   applied: { label: 'Aplicado na OS', color: 'border border-emerald-700 bg-emerald-100 text-emerald-950', icon: '✅' },
-  return_signaled: { label: 'Devolução sinalizada', color: 'border border-orange-600 bg-orange-100 text-orange-950', icon: '↩️' },
+  return_signaled: { label: 'Devolução sinalizada', color: 'border border-amber-600 bg-amber-100 text-amber-950', icon: '↩️' },
   returned: { label: 'Devolvido', color: 'border border-zinc-300 bg-zinc-100 text-zinc-700', icon: '🚚' },
   exchange_awaited: { label: 'Aguardando troca', color: 'border border-amber-600 bg-amber-100 text-amber-950', icon: '⏳' },
   exchange_received: { label: 'Reposição recebida', color: 'border-2 border-zinc-950 bg-zinc-950 text-white', icon: '📦' },

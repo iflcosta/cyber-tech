@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCRMServiceClient } from '@/app/admin/lib/supabase/service';
 import { getWhatsAppProvider } from '@/lib/whatsapp';
+import { getAuthedUser } from '@/app/admin/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const { user } = await getAuthedUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+    }
+
     const body = await request.json().catch(() => ({}));
     const osId = typeof body.osId === 'string' ? body.osId.trim() : '';
 

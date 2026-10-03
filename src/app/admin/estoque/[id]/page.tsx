@@ -117,7 +117,7 @@ export default async function StockItemDetailPage({
             <div className="mt-4 flex items-baseline gap-3">
               <span
                 className={`font-mono text-4xl font-black ${
-                  isOut ? 'text-red-600' : isLow ? 'text-orange-600' : 'text-zinc-950'
+                  isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-zinc-950'
                 }`}
               >
                 {item.current_stock}

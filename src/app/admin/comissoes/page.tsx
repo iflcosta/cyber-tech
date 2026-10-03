@@ -275,7 +275,7 @@ export default async function ComissoesPage({
   // Política de remuneração do Iago:
   // - Até 02/10/2026: 30% mão de obra + R$ 50/dia balcão (R$ 250/semana de 5 dias)
   // - A partir de 05/10/2026 (Segunda-Feira): 30% mão de obra + R$ 200/semana fixa
-  const isNewPolicyFromOct5 = startDate >= new Date('2026-10-03T00:00:00');
+  const isNewPolicyFromOct5 = endDate >= new Date('2026-10-05T00:00:00');
   const DAILY_BALCAO_RATE = isNewPolicyFromOct5 ? 40 : 50;
   const WEEKLY_FIXED_RATE = isNewPolicyFromOct5 ? 200 : 250;
 
@@ -646,7 +646,7 @@ export default async function ComissoesPage({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden border-2 border-zinc-950 bg-white">
+        <div className="overflow-x-auto border-2 border-zinc-950 bg-white">
           <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
             <thead className="border-b-2 border-zinc-950 bg-zinc-100 font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-700">
               <tr>

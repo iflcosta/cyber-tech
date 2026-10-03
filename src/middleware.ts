@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 /**
- * Proxy/Middleware para rotas /admin/*.
+ * Middleware de segurança e renovação de sessão para rotas /admin/*.
  *
  * Responsabilidades:
  *   1. Renovar automaticamente o JWT de sessão via @supabase/ssr (evita "JWT expired"
@@ -11,7 +11,7 @@ import { createServerClient } from '@supabase/ssr';
  *   2. Redirecionar usuários não autenticados em /admin/* para /admin/login.
  *   3. Redirecionar /admin (raiz) para /admin/os (se logado) ou /admin/login.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
     if (!pathname.startsWith('/admin')) {
@@ -72,6 +72,8 @@ export async function proxy(request: NextRequest) {
 
     return response;
 }
+
+export default middleware;
 
 export const config = {
     matcher: ['/admin/:path*'],

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +12,66 @@ const NO_CACHE_HEADERS = {
   'Vercel-CDN-Cache-Control': 'no-store',
 };
 
+function maskPhoneNumbers(text: string): string {
+  if (!text) return text;
+  return text.replace(/(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?(?:9\s*)?\d{4}[-\s]?\d{4}/g, (match) => {
+    const digits = match.replace(/\D/g, '');
+    if (digits.length >= 8) {
+      const last4 = digits.slice(-4);
+      return `(••) •••••-${last4}`;
+    }
+    return match;
+  });
+}
+
+function sanitizeTrackingPayload(data: Record<string, unknown>) {
+  if (!data) return data;
+  const sanitized = { ...data };
+
+  if (Array.isArray(sanitized.timeline)) {
+    sanitized.timeline = (sanitized.timeline as Array<Record<string, unknown>>).map((event) => {
+      if (!event) return event;
+      const ev = { ...event };
+      if (typeof ev.note === 'string') {
+        ev.note = maskPhoneNumbers(ev.note);
+      }
+      if (ev.payload && typeof (ev.payload as Record<string, unknown>).note === 'string') {
+        ev.payload = {
+          ...(ev.payload as Record<string, unknown>),
+          note: maskPhoneNumbers((ev.payload as Record<string, unknown>).note as string),
+        };
+      }
+      return ev;
+    });
+  }
+
+  if (typeof sanitized.repair_notes === 'string') {
+    sanitized.repair_notes = maskPhoneNumbers(sanitized.repair_notes);
+  }
+
+  return sanitized;
+}
+
 export async function GET(request: Request) {
   try {
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = (forwardedFor ? forwardedFor.split(',')[0] : request.headers.get('x-real-ip') || '127.0.0.1').trim();
+
+    // Proteção contra brute force / enumeração de OSs públicas
+    const rl = await checkRateLimit(ip, { max: 20, windowMs: 60_000, prefix: 'track' });
+    if (rl.limited) {
+      return NextResponse.json(
+        { found: false, error: 'Muitas consultas recentes. Por favor, aguarde um momento antes de tentar novamente.' },
+        {
+          status: 429,
+          headers: {
+            ...NO_CACHE_HEADERS,
+            'Retry-After': String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))),
+          },
+        }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const query = (
       searchParams.get('q') ||
@@ -52,12 +111,13 @@ export async function GET(request: Request) {
         });
 
         if (!rpcError && rpcData && rpcData.found) {
-          return NextResponse.json(rpcData, { headers: NO_CACHE_HEADERS });
+          return NextResponse.json(sanitizeTrackingPayload(rpcData), { headers: NO_CACHE_HEADERS });
         }
 
-        // 2. Consulta direta na tabela service_orders (fallback caso RPC não retorne)
+        // 2. Consulta direta na tabela service_orders (fallback seguro caso RPC não retorne)
         const cleanQuery = query.replace(/^#/, '').trim();
         const noPrefix = cleanQuery.replace(/^OS-?/i, '').trim();
+
         let soQuery = client
           .from('service_orders')
           .select(`
@@ -97,11 +157,39 @@ export async function GET(request: Request) {
               `os_number.ilike.${cleanQuery},os_number.ilike.OS-${noPrefix},short_id.ilike.${cleanQuery},short_id.ilike.OS-${noPrefix}`,
             );
           }
+        } else if (phone) {
+          const digitsOnly = phone.replace(/\D/g, '');
+          if (digitsOnly.length >= 8) {
+            const { data: matchedCustomers } = await client
+              .from('customers')
+              .select('id')
+              .or(`phone_search.ilike.%${digitsOnly}%,phone.ilike.%${digitsOnly}%`)
+              .limit(5);
+
+            const customerIds = (matchedCustomers || []).map((c: { id: string }) => c.id);
+            if (customerIds.length === 0) {
+              return NextResponse.json(
+                { found: false, error: 'Nenhuma Ordem de Serviço encontrada para este telefone.' },
+                { status: 404, headers: NO_CACHE_HEADERS }
+              );
+            }
+            soQuery = soQuery.in('customer_id', customerIds);
+          } else {
+            return NextResponse.json(
+              { found: false, error: 'Informe um número de telefone com DDD válido.' },
+              { status: 400, headers: NO_CACHE_HEADERS }
+            );
+          }
+        } else {
+          return NextResponse.json(
+            { found: false, error: 'Informe o número da OS ou telefone para consulta.' },
+            { status: 400, headers: NO_CACHE_HEADERS }
+          );
         }
 
         const { data: orders } = await soQuery;
         if (orders && orders.length > 0) {
-          return NextResponse.json(formatSafeOS(orders[0]), { headers: NO_CACHE_HEADERS });
+          return NextResponse.json(sanitizeTrackingPayload(formatSafeOS(orders[0])), { headers: NO_CACHE_HEADERS });
         }
       } catch (e) {
         console.warn('Erro ao consultar Supabase em /api/status/track:', e);

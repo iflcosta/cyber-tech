@@ -49,6 +49,7 @@ export function PDV({
   initialCustomer?: { id: string; name: string; phone: string | null };
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isSubmittingRef = useRef(false);
 
   const [code, setCode] = useState('');
   const [search, setSearch] = useState('');
@@ -187,6 +188,7 @@ export function PDV({
         ];
       });
       setFlash(`+ ${item.name}`);
+      inputRef.current?.focus();
     },
     [],
   );
@@ -284,10 +286,12 @@ export function PDV({
     if (!found) {
       setError(`Nenhum item com codigo "${c}".`);
       setCode('');
+      inputRef.current?.focus();
       return;
     }
     addItem(found, 1);
     setCode('');
+    inputRef.current?.focus();
   }
 
   function updateQty(stockItemId: string, qty: number) {
@@ -304,18 +308,22 @@ export function PDV({
         })
         .filter(Boolean),
     );
+    inputRef.current?.focus();
   }
 
   function removeItem(stockItemId: string) {
     setCart((prev) => prev.filter((c) => c.stock_item_id !== stockItemId));
+    inputRef.current?.focus();
   }
 
   async function finalizarVenda(methodOverride?: PaymentMethodValue) {
+    if (isSubmittingRef.current) return;
     if (cart.length === 0) {
       setError('Carrinho vazio.');
       return;
     }
     const chosenMethod = methodOverride || paymentMethod;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     setError(null);
     try {
@@ -352,13 +360,14 @@ export function PDV({
       setCustomerPhone('');
       setSelectedCustomer(null);
       setCustomerMatches([]);
-      setSubmitting(false);
       // Volta foco pro input de bipagem
       inputRef.current?.focus();
     } catch (e) {
       setError((e as Error).message);
-      setSubmitting(false);
       setFinalizing(false);
+    } finally {
+      isSubmittingRef.current = false;
+      setSubmitting(false);
     }
   }
 
@@ -378,7 +387,7 @@ export function PDV({
         return;
       }
 
-      if (cart.length > 0 && !submitting) {
+      if (cart.length > 0 && !submitting && !isSubmittingRef.current) {
         if (e.key === 'F2') {
           e.preventDefault();
           finalizarVenda('pix');
@@ -585,7 +594,7 @@ export function PDV({
                     title="Confirmar e imprimir no PIX direto (Atalho: F2)"
                   >
                     <span>⚡ PIX</span>
-                    <span className="rounded bg-emerald-800 px-1 py-0.5 text-[10px] font-mono">F2</span>
+                    <span className="rounded-none bg-emerald-800 px-1 py-0.5 text-[10px] font-mono">F2</span>
                   </button>
 
                   <button
@@ -596,7 +605,7 @@ export function PDV({
                     title="Confirmar e imprimir em Dinheiro direto (Atalho: F3)"
                   >
                     <span>💵 Dinheiro</span>
-                    <span className="rounded bg-zinc-800 px-1 py-0.5 text-[10px] font-mono">F3</span>
+                    <span className="rounded-none bg-zinc-800 px-1 py-0.5 text-[10px] font-mono">F3</span>
                   </button>
 
                   <button
@@ -607,7 +616,7 @@ export function PDV({
                     title="Confirmar e imprimir no Cartão direto (Atalho: F4)"
                   >
                     <span>💳 Cartão</span>
-                    <span className="rounded bg-zinc-200 px-1 py-0.5 text-[10px] font-mono text-zinc-800">F4</span>
+                    <span className="rounded-none bg-zinc-200 px-1 py-0.5 text-[10px] font-mono text-zinc-800">F4</span>
                   </button>
 
                   <button
