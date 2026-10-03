@@ -127,7 +127,7 @@ export default async function ClientesLeadsPage() {
       if (Array.isArray(raw)) {
         for (const item of raw) {
           const p = String(item.phone || '');
-          if (!p || p === '5511919691542' || p === '5511954369269' || item.isAddressBook) continue;
+          if (!p || p === '5511919691542' || p === '5511954369269' || p === '5511966646190' || item.isAddressBook) continue;
           preloadedMap.set(p, {
             name: String(item.name || ''),
             phone: p,
@@ -151,7 +151,7 @@ export default async function ClientesLeadsPage() {
   }
 
   for (const row of crmLeads ?? []) {
-    if (row.is_address_book || row.phone_e164 === '5511919691542' || row.phone_e164 === '5511954369269') {
+    if (row.is_address_book || row.phone_e164 === '5511919691542' || row.phone_e164 === '5511954369269' || row.phone_e164 === '5511966646190') {
       continue;
     }
     const existing = preloadedMap.get(row.phone_e164);

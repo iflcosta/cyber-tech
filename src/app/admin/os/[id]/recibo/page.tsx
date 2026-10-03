@@ -189,7 +189,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
                 <strong>Endereço:</strong> Rua Coronel Teófilo Leme, 967 — Centro, Bragança Paulista - SP — CEP 12900-004
               </p>
               <p>
-                <strong>Contato:</strong> (11) 95436-9269 (WhatsApp) · contato@cyberinformatica.tech
+                <strong>Contato:</strong> (11) 4032-6582 (Fixo) · (11) 96664-6190 (WhatsApp) · contato@cyberinformatica.tech
               </p>
               <p>
                 <strong>Site:</strong> www.cyberinformatica.tech
@@ -583,7 +583,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
           <footer className="mt-5 flex items-center justify-between border-t border-zinc-200 pt-2 text-[9px] text-zinc-500">
             <span>
-              Cyber Informática · Rua Coronel Teófilo Leme, 967, Centro, Bragança Paulista - SP · (11) 95436-9269
+              Cyber Informática · Rua Coronel Teófilo Leme, 967, Centro, Bragança Paulista - SP · Fixo: (11) 4032-6582 · WhatsApp: (11) 96664-6190
             </span>
             <span className="font-mono">
               DOC-REF: {so.os_number ?? so.short_id} · ID: {so.id.slice(0, 8).toUpperCase()}

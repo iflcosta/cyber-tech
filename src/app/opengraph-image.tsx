@@ -257,7 +257,7 @@ export default async function Image() {
             }}
           >
             <span>R. CEL. TEÓFILO LEME, 967 — CENTRO</span>
-            <span style={{ color: "#ffffff" }}>(11) 95436-9269</span>
+            <span style={{ color: "#ffffff" }}>(11) 4032-6582 · (11) 96664-6190</span>
           </div>
         </div>
       </div>

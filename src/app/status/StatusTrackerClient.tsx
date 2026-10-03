@@ -248,7 +248,7 @@ export default function StatusTrackerClient() {
     }
   }
 
-  const pixKey = process.env.NEXT_PUBLIC_PIX_KEY || '11954369269';
+  const pixKey = process.env.NEXT_PUBLIC_PIX_KEY || '11966646190';
 
   function copyPix() {
     navigator.clipboard.writeText(pixKey);
@@ -1017,7 +1017,7 @@ export default function StatusTrackerClient() {
               CYBER INFORMÁTICA · CERTIFICADO DE GARANTIA
             </h1>
             <p className="text-xs font-mono">
-              Rua Coronel Teófilo Leme, 967 - Centro, Bragança Paulista - SP • (11) 95436-9269
+              Rua Coronel Teófilo Leme, 967 - Centro, Bragança Paulista - SP • Fixo: (11) 4032-6582 · WhatsApp: (11) 96664-6190
             </p>
             <p className="text-xs font-mono font-bold mt-1">
               ORDEM DE SERVIÇO #{data.os_number || data.short_id} · GARANTIA LEGAL CDC 90 DIAS

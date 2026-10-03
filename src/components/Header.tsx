@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, ArrowUpRight, Search } from "lucide-react";
+import { Menu, X, ArrowUpRight, Search, Phone } from "lucide-react";
 import { brand } from "@/lib/brand";
 import CyberLogo from "./CyberLogo";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
@@ -64,13 +64,22 @@ export default function Header() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <span className="sm:hidden text-zinc-300 font-semibold">
               CENTRO · BRAGANÇA
             </span>
             <span className="hidden sm:inline text-zinc-400">
               SEG–SEX 09H–18H · SÁB 09H–13H
             </span>
+            <span className="hidden md:inline text-zinc-700">/</span>
+            <a
+              href={`tel:+${brand.landline}`}
+              className="hidden md:inline-flex items-center gap-1 text-zinc-300 hover:text-white transition-colors"
+              title={`Ligar para o Telefone Fixo: ${brand.landlineFormatted}`}
+            >
+              <Phone className="w-3 h-3 text-zinc-400" />
+              <span>FIXO: {brand.landlineFormatted}</span>
+            </a>
             <span className="hidden lg:inline text-zinc-700">/</span>
             <span className="hidden lg:inline text-zinc-200 font-semibold">
               GARANTIA LEGAL CDC 90 DIAS
@@ -128,6 +137,16 @@ export default function Header() {
               <span className="sm:hidden">OS</span>
             </Link>
 
+            <a
+              href={`tel:+${brand.landline}`}
+              className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-100 text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-colors min-h-[38px]"
+              title={`Ligar para o Telefone Fixo: ${brand.landlineFormatted}`}
+            >
+              <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="hidden md:inline">{brand.landlineFormatted}</span>
+              <span className="md:hidden">Fixo</span>
+            </a>
+
             <TrackedWhatsAppLink
               phone={brand.whatsapp}
               message={headerWhatsappMessage}
@@ -178,21 +197,33 @@ export default function Header() {
             </a>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Link
               href="/status"
               onClick={() => setOpen(false)}
-              className="border border-zinc-700 bg-zinc-900 py-3 px-3 text-center font-mono font-bold uppercase tracking-wider text-white"
+              className="border border-zinc-700 bg-zinc-900 py-3 px-2 text-center font-mono font-bold uppercase tracking-wider text-white text-[11px] flex flex-col items-center justify-center gap-1 min-h-[46px]"
             >
-              Consultar OS
+              <Search className="w-3.5 h-3.5 text-zinc-400" />
+              <span>OS</span>
             </Link>
+            <a
+              href={`tel:+${brand.landline}`}
+              onClick={() => setOpen(false)}
+              className="border border-zinc-700 bg-zinc-900 py-3 px-2 text-center font-mono font-bold uppercase tracking-wider text-white text-[11px] flex flex-col items-center justify-center gap-1 min-h-[46px]"
+            >
+              <Phone className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Fixo</span>
+            </a>
             <TrackedWhatsAppLink
               phone={brand.whatsapp}
               message={headerWhatsappMessage}
               source="header_drawer"
-              className="bg-white text-black py-3 px-3 text-center font-mono font-bold uppercase tracking-wider"
+              className="bg-white text-black py-3 px-2 text-center font-mono font-bold uppercase tracking-wider text-[11px] flex flex-col items-center justify-center gap-1 min-h-[46px]"
             >
-              WhatsApp Loja
+              <span className="flex items-center gap-0.5">
+                <span>WhatsApp</span>
+                <ArrowUpRight className="w-3 h-3" />
+              </span>
             </TrackedWhatsAppLink>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, ArrowRight } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Phone } from "lucide-react";
 
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -311,7 +311,8 @@ export default function Home() {
                       <strong className="text-zinc-950 uppercase block mb-1">
                         ATENDIMENTO & PORTAL OS
                       </strong>
-                      <span className="text-zinc-600 block">WHATSAPP: (11) 95436-9269</span>
+                      <span className="text-zinc-600 block">FIXO: {brand.landlineFormatted}</span>
+                      <span className="text-zinc-600 block">WHATSAPP: {brand.whatsappFormatted}</span>
                       <Link
                         href="/status"
                         className="text-zinc-950 font-bold underline underline-offset-4 inline-flex items-center gap-1 mt-1"
@@ -330,9 +331,18 @@ export default function Home() {
                     source="location_section"
                     className="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-4 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
                   >
-                    <span>Chamar no WhatsApp Agora</span>
+                    <span>Chamar no WhatsApp ({brand.whatsappFormatted})</span>
                     <ArrowUpRight className="w-4 h-4 shrink-0" />
                   </TrackedWhatsAppLink>
+
+                  <a
+                    href={`tel:+${brand.landline}`}
+                    className="w-full border border-zinc-900 bg-zinc-900 hover:bg-zinc-800 text-white font-mono font-bold uppercase tracking-wider py-4 px-6 text-xs flex items-center justify-center gap-2 transition-colors min-h-[48px]"
+                    title={`Ligar para o Telefone Fixo: ${brand.landlineFormatted}`}
+                  >
+                    <span>Ligar no Telefone Fixo ({brand.landlineFormatted})</span>
+                    <Phone className="w-4 h-4 shrink-0" />
+                  </a>
 
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(

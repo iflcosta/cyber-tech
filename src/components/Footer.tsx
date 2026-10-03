@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Instagram, Facebook, ArrowUpRight } from "lucide-react";
+import { Instagram, Facebook, ArrowUpRight, Phone } from "lucide-react";
 
 import { brand } from "@/lib/brand";
 import TrackedWhatsAppLink from "./TrackedWhatsAppLink";
@@ -33,7 +33,7 @@ export default function Footer() {
           {/* Contato e Localização */}
           <div>
             <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white mb-4">
-              ENDEREÇO & HORÁRIO
+              ENDEREÇO & CONTATO
             </h3>
             <ul className="space-y-2.5 text-xs text-zinc-300 font-mono">
               <li>
@@ -43,6 +43,15 @@ export default function Footer() {
               </li>
               <li className="text-zinc-400">{brand.openingHours}</li>
               <li>
+                <a
+                  href={`tel:+${brand.landline}`}
+                  className="inline-flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <span>Fixo: {brand.landlineFormatted}</span>
+                </a>
+              </li>
+              <li>
                 <TrackedWhatsAppLink
                   phone={brand.whatsapp}
                   message="Olá! Vim pelo site da Cyber Informática."
@@ -50,7 +59,7 @@ export default function Footer() {
                   className="text-white hover:text-zinc-300 underline underline-offset-4 font-bold transition-colors"
                   ariaLabel="Abrir WhatsApp da Cyber Informática"
                 >
-                  WhatsApp: (11) 95436-9269
+                  WhatsApp: {brand.whatsappFormatted}
                 </TrackedWhatsAppLink>
               </li>
             </ul>

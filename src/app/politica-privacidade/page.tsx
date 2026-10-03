@@ -130,7 +130,7 @@ export default function PoliticaPrivacidadePage() {
                 Dúvidas? Fale com a gente:{" "}
                 <a href={`mailto:${brand.email}`} className="text-[var(--color-cyber-blue)] hover:underline">{brand.email}</a>
                 {" · "}
-                WhatsApp (11) 95436-9269.
+                WhatsApp {brand.whatsappFormatted} ou Telefone Fixo {brand.landlineFormatted}.
               </p>
             </section>
           </div>

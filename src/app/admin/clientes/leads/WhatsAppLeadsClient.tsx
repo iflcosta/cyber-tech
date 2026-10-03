@@ -490,7 +490,7 @@ export function WhatsAppLeadsClient({
     // 1. Carregar base do ERP (OS, PDV, Site)
     for (const item of initialLeads) {
       const p = normalizePhoneBR(item.phone);
-      if (!p || p === '5511919691542' || p === '5511954369269') continue;
+      if (!p || p === '5511919691542' || p === '5511954369269' || p === '5511966646190') continue;
       const ddd = p.slice(2, 4);
       const cleanName = item.name.trim();
       const niche = inferNiche(cleanName);
@@ -548,7 +548,7 @@ export function WhatsAppLeadsClient({
     for (const wa of importedLeads) {
       if (wa.isAddressBook) continue;
       const p = normalizePhoneBR(wa.phone);
-      if (!p || p === '5511919691542' || p === '5511954369269') continue;
+      if (!p || p === '5511919691542' || p === '5511954369269' || p === '5511966646190') continue;
       const ddd = p.slice(2, 4);
       const waName = wa.name?.trim() || `Cliente WhatsApp ${formatPhoneBR(p)}`;
       const hasRealName = !isGenericName(waName);

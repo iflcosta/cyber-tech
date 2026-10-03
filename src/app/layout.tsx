@@ -159,7 +159,7 @@ export default function RootLayout({
                 "url": brand.url,
                 "logo": `${brand.url}/logo.png`,
                 "image": `${brand.url}/og-image.png`,
-                "telephone": "+55-11-95436-9269",
+                "telephone": "+55-11-4032-6582",
                 "email": "contato@cyberinformatica.tech",
                 "priceRange": "$$",
                 "currenciesAccepted": "BRL",
@@ -238,7 +238,7 @@ export default function RootLayout({
                     "name": "Como posso falar com a curadoria técnica?",
                     "acceptedAnswer": {
                       "@type": "Answer",
-                      "text": "Pelo WhatsApp (11) 95436-9269 ou diretamente na loja."
+                      "text": "Pelo WhatsApp (11) 96664-6190, Telefone Fixo (11) 4032-6582 ou diretamente na loja."
                     }
                   }
                 ]
