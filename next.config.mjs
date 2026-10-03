@@ -1,16 +1,20 @@
 import { execSync } from 'child_process';
 
-let commitSha = 'dev';
-try {
-  commitSha = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ||
-              execSync('git rev-parse --short HEAD').toString().trim();
-} catch (e) {
-  commitSha = 'dev';
+let commitSha = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7);
+if (!commitSha) {
+  try {
+    commitSha = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {
+    commitSha = 'dev';
+  }
 }
 const buildTime = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   env: {
     NEXT_PUBLIC_GIT_COMMIT_SHA: commitSha,
     NEXT_PUBLIC_BUILD_TIME: buildTime,

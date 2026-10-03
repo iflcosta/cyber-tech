@@ -453,6 +453,7 @@ export function PDV({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart, submitting, addingPart, finalizing, paymentMethod, customerName, customerPhone, selectedCustomer, discountNum, notes]);
 
   // Sugestoes da busca manual
