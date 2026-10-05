@@ -200,7 +200,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               </span>
             )}
             <StatusBadge status={normalizedSo.status} hasQuote={grandTotal > 0} />
-            <StaleBadge days={normalizedSo.days_since_update} />
+            {!['delivered', 'cancelled'].includes(normalizedSo.status) && (
+              <StaleBadge days={normalizedSo.days_since_update} status={normalizedSo.status} />
+            )}
           </h1>
           <p className="text-sm text-zinc-500 truncate">
             {normalizedSo.customer_name} · {typeLabel}

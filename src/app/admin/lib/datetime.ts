@@ -115,3 +115,23 @@ export function todayBR(reference: Date = new Date()): string {
 export function startOfMonthBRStr(reference: Date = new Date()): string {
   return `${todayBR(reference).slice(0, 7)}-01`;
 }
+
+/**
+ * Ciclo semanal de fechamento na Sexta-Feira (Sábado 00:00 até Sexta-Feira 23:59:59).
+ * Na Cyber Informática, as comissões fecham toda sexta-feira.
+ */
+export function getFridayCycleBounds(refDate: Date = new Date(), weekOffset = 0): { start: Date; end: Date } {
+  const d = new Date(refDate);
+  d.setHours(12, 0, 0, 0);
+  const day = d.getDay();
+  const daysSinceSaturday = (day + 1) % 7;
+  const start = new Date(d);
+  start.setDate(d.getDate() - daysSinceSaturday + weekOffset * 7);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+}

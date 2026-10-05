@@ -4,6 +4,7 @@ import { OSCard } from '@/app/admin/components/OSCard';
 import { OSFilter } from './OSFilter';
 import { WARRANTY_DAYS } from '@/app/admin/types/database';
 import { sanitizeSearchTerm, findMatchingCustomerIds } from '@/app/admin/lib/search';
+import { getFridayCycleBounds } from '@/app/admin/lib/datetime';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,11 +73,16 @@ export default async function OSListPage({
     query = query.or(orParts.join(','));
   }
 
+  const isIago = (profile?.full_name || '').toLowerCase().includes('iago');
+  const isJefferson = (profile?.full_name || '').toLowerCase().includes('jefferson');
+  const fridayBounds = getFridayCycleBounds(new Date(), 0);
+
   // Executa query principal + contadores de bancada + lista de técnicos em paralelo
   const [
     { data: orders, error },
     { data: activeForCounts },
     { data: allTechProfiles },
+    weekOrdersRes,
   ] = await Promise.all([
     query,
     supabase
@@ -87,7 +93,38 @@ export default async function OSListPage({
       .from('profiles')
       .select('id, full_name, role, active')
       .order('full_name'),
+    (isIago || isJefferson)
+      ? supabase
+          .from('service_orders')
+          .select('labor_cost')
+          .eq('technician_id', user.id)
+          .gte('created_at', fridayBounds.start.toISOString())
+          .lte('created_at', fridayBounds.end.toISOString())
+      : Promise.resolve({ data: [] }),
   ]);
+
+  let myFridayCommission: {
+    total: number;
+    osComm: number;
+    fixedRate: number;
+  } | null = null;
+
+  if (isIago || isJefferson) {
+    const rate = isIago ? 0.30 : 0.50;
+    const osComm = ((weekOrdersRes as { data?: Array<{ labor_cost: number | null }> })?.data ?? []).reduce(
+      (acc, row) => {
+        const labor = Number(row.labor_cost || 0);
+        return acc + Math.round(labor * rate * 100) / 100;
+      },
+      0,
+    );
+    const fixedRate = isIago ? 200 : 0;
+    myFridayCommission = {
+      total: osComm + fixedRate,
+      osComm,
+      fixedRate,
+    };
+  }
 
   const activeRows = activeForCounts ?? [];
   const mineCount = activeRows.filter((r) => r.technician_id === user.id).length;
@@ -142,12 +179,37 @@ export default async function OSListPage({
             {params.status && params.status !== 'all' && ` // status: ${params.status}`}
           </p>
         </div>
-        <Link
-          href="/admin/os/new"
-          className="bg-zinc-950 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800"
-        >
-          + Nova OS
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          {myFridayCommission && (
+            <Link
+              href="/admin/comissoes"
+              className="flex items-center gap-2 border-2 border-emerald-600 bg-emerald-50 px-3 py-1.5 font-mono text-xs font-bold text-emerald-950 hover:bg-emerald-100 transition shadow-xs"
+              title="Clique para abrir o painel detalhado de Comissões"
+            >
+              <span className="text-sm">💰</span>
+              <div>
+                <span className="uppercase text-[10px] text-emerald-700 block leading-tight">
+                  Minha Comissão (Sexta):
+                </span>
+                <span className="text-sm font-black text-emerald-950">
+                  {myFridayCommission.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
+                {myFridayCommission.fixedRate > 0 && (
+                  <span className="text-[10px] text-emerald-700 font-normal ml-1 hidden sm:inline">
+                    ({myFridayCommission.osComm.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} OS + R$ {myFridayCommission.fixedRate} Fixo)
+                  </span>
+                )}
+              </div>
+              <span className="text-emerald-700 font-bold ml-0.5">→</span>
+            </Link>
+          )}
+          <Link
+            href="/admin/os/new"
+            className="bg-zinc-950 px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800"
+          >
+            + Nova OS
+          </Link>
+        </div>
       </div>
 
       <OSFilter

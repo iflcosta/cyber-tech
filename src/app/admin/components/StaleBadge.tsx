@@ -1,4 +1,11 @@
-export function StaleBadge({ days }: { days: number | null | undefined }) {
+export function StaleBadge({
+  days,
+  status,
+}: {
+  days: number | null | undefined;
+  status?: string;
+}) {
+  if (status === 'delivered' || status === 'cancelled') return null;
   if (days == null || days < 3) return null;
   if (days < 7) {
     return (

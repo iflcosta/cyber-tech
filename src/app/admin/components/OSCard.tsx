@@ -71,7 +71,9 @@ export function OSCard({
               #{so.os_number}
             </span>
             <StatusBadge status={so.status} hasQuote={hasQuote} />
-            {so.days_since_update > 2 && <StaleBadge days={so.days_since_update} />}
+            {!['delivered', 'cancelled'].includes(so.status) && so.days_since_update > 2 && (
+              <StaleBadge days={so.days_since_update} status={so.status} />
+            )}
           </div>
           <h3 className="mt-1.5 truncate text-base font-bold text-zinc-950">{so.customer_name}</h3>
           <p className="mt-0.5 text-xs text-zinc-600">

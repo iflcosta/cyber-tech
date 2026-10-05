@@ -1,32 +1,12 @@
 import Link from 'next/link';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
-import { formatDateBR } from '@/app/admin/lib/datetime';
+import { formatDateBR, getFridayCycleBounds } from '@/app/admin/lib/datetime';
 import { SettleFridayButton } from './SettleFridayButton';
 
 export const dynamic = 'force-dynamic';
 
 function fmtBRL(n: number): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-/**
- * Calcula o ciclo semanal de fechamento na Sexta-Feira (Sábado 00:00 até Sexta-Feira 23:59:59).
- * Na Cyber Informática, o Felipe dá baixa nas comissões toda sexta-feira.
- */
-function getFridayCycleBounds(refDate: Date, weekOffset = 0): { start: Date; end: Date } {
-  const d = new Date(refDate);
-  d.setHours(12, 0, 0, 0);
-  const day = d.getDay();
-  const daysSinceSaturday = (day + 1) % 7;
-  const start = new Date(d);
-  start.setDate(d.getDate() - daysSinceSaturday + weekOffset * 7);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-
-  return { start, end };
 }
 
 export default async function ComissoesPage({
@@ -42,8 +22,12 @@ export default async function ComissoesPage({
   }>;
 }) {
   const params = await searchParams;
-  const { supabase, user } = await getAuthedProfile();
+  const { supabase, user, profile } = await getAuthedProfile();
   if (!user) return null;
+
+  const currentUserName = profile?.full_name ?? '';
+  const isCurrentUserIago = currentUserName.toLowerCase().includes('iago');
+  const isCurrentUserJefferson = currentUserName.toLowerCase().includes('jefferson');
 
   const now = new Date();
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -439,12 +423,19 @@ export default async function ComissoesPage({
       {/* Grid de Repasse por Técnico */}
       <div className="grid grid-cols-1 sm:grid-cols-3 border-2 border-zinc-950 bg-zinc-950 gap-[1px]">
         {/* Iago 30% + Ajuda de Custo */}
-        <div className="bg-white p-5">
+        <div className={`p-5 transition ${isCurrentUserIago ? 'bg-emerald-50/70 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
-                Iago // Balcão &amp; Bancada
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
+                  Iago // Balcão &amp; Bancada
+                </p>
+                {isCurrentUserIago && (
+                  <span className="bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase px-1.5 py-0.5">
+                    Você
+                  </span>
+                )}
+              </div>
               <p className="font-mono text-[11px] text-zinc-500">{iagoPolicyDesc}</p>
             </div>
             <span className="border border-zinc-950 bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold text-white">
@@ -487,12 +478,19 @@ export default async function ComissoesPage({
         </div>
 
         {/* Jefferson 50% */}
-        <div className="bg-white p-5">
+        <div className={`p-5 transition ${isCurrentUserJefferson ? 'bg-emerald-50/70 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
-                Jefferson // 2º Andar
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
+                  Jefferson // 2º Andar
+                </p>
+                {isCurrentUserJefferson && (
+                  <span className="bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase px-1.5 py-0.5">
+                    Você
+                  </span>
+                )}
+              </div>
               <p className="font-mono text-[11px] text-zinc-500">50/50 Celulares, OCA e GPU</p>
             </div>
             <span className="border border-zinc-950 bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-950">
