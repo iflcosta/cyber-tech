@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Barcode128, ensureValidEAN13 } from '@/app/admin/components/Barcode128';
+import {
+  parseDeviceNotes,
+  isDeviceItem,
+  calculateInstallment,
+  DeviceType,
+} from '@/app/admin/lib/deviceSpecs';
 
 interface StockLabelProps {
   item: {
@@ -28,11 +34,18 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const fallbackSku = item.internal_sku || `CY-SKU-${item.id.slice(0, 6).toUpperCase()}`;
   const compactSku = item.internal_sku || `CY${item.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
   const ean13Code = ensureValidEAN13(item.ean13 || item.id);
-  // 6 dígitos numéricos estáveis para Code 128-C
   const numericSku = (
     parseInt(item.id.replace(/-/g, '').slice(0, 6), 16) % 900000 +
     100000
   ).toString();
+
+  // Detecção automática de Aparelho / Máquina
+  const parsedNotes = parseDeviceNotes(item.notes);
+  const isInitiallyDevice = isDeviceItem(item.category, item.notes);
+
+  const [labelMode, setLabelMode] = useState<'device-tech' | 'standard' | 'showcase'>(
+    isInitiallyDevice ? 'device-tech' : 'standard',
+  );
 
   const [labelFormat, setLabelFormat] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40'>('40x60');
   const [title, setTitle] = useState(item.name);
@@ -40,16 +53,38 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const [price, setPrice] = useState(
     item.unit_price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   );
-  const [codeFormat, setCodeFormat] = useState<'ean13' | 'compact' | 'numeric' | 'code39' | 'full' | 'custom'>('ean13');
+  const [codeFormat, setCodeFormat] = useState<'ean13' | 'compact' | 'numeric' | 'code39' | 'full' | 'custom'>('compact');
   const [customCode, setCustomCode] = useState('');
-  const [barcodeHeight, setBarcodeHeight] = useState<number>(50); // 50px = ~13.2mm de altura
-  const [barWidth, setBarWidth] = useState<number>(2); // 2px (alta nitidez e sem borrão)
+  const [barcodeHeight, setBarcodeHeight] = useState<number>(36);
+  const [barWidth, setBarWidth] = useState<number>(2);
   const [showWarranty, setShowWarranty] = useState<boolean>(true);
   const [copies, setCopies] = useState(1);
   const [showPrice, setShowPrice] = useState(true);
 
-  let activeBarcodeValue = ean13Code;
-  let activeFormat: 'EAN13' | 'CODE128' | 'CODE39' = 'EAN13';
+  // Campos específicos de Ficha Técnica da Máquina
+  const [deviceCondition, setDeviceCondition] = useState(
+    parsedNotes.specs?.condition || (item.category?.includes('PC') ? 'NOVO (MONTAGEM)' : 'SEMINOVO GRADE A+'),
+  );
+  const [deviceCpu, setDeviceCpu] = useState(parsedNotes.specs?.cpu || '');
+  const [deviceRam, setDeviceRam] = useState(parsedNotes.specs?.ram || '');
+  const [deviceStorage, setDeviceStorage] = useState(parsedNotes.specs?.storage || '');
+  const [deviceGpu, setDeviceGpu] = useState(parsedNotes.specs?.gpu || '');
+  const [deviceScreen, setDeviceScreen] = useState(parsedNotes.specs?.screen || '');
+  const [deviceBattery, setDeviceBattery] = useState(
+    parsedNotes.specs?.battery || (parsedNotes.specs?.batteryHealth ? `Saúde: ${parsedNotes.specs.batteryHealth}` : ''),
+  );
+  const [deviceImei, setDeviceImei] = useState(
+    parsedNotes.specs?.imei || parsedNotes.specs?.serialNumber || '',
+  );
+  const [deviceCardInstallment, setDeviceCardInstallment] = useState(
+    parsedNotes.specs?.installmentInfo || calculateInstallment(item.unit_price).text,
+  );
+  const [deviceWarrantyText, setDeviceWarrantyText] = useState(
+    parsedNotes.specs?.warranty || '✦ 90 Dias de Garantia Loja',
+  );
+
+  let activeBarcodeValue = compactSku;
+  let activeFormat: 'EAN13' | 'CODE128' | 'CODE39' = 'CODE128';
 
   if (codeFormat === 'ean13') {
     activeBarcodeValue = ean13Code;
@@ -67,7 +102,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
     activeBarcodeValue = fallbackSku;
     activeFormat = 'CODE128';
   } else if (codeFormat === 'custom') {
-    activeBarcodeValue = customCode.trim() || ean13Code;
+    activeBarcodeValue = customCode.trim() || compactSku;
     activeFormat = /^\d{12,13}$/.test(activeBarcodeValue) ? 'EAN13' : 'CODE128';
   }
 
@@ -78,26 +113,18 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const labelWidthMm = labelFormat === '60x40' ? 60 : (is40x60Any ? 40 : 50);
   const labelHeightMm = is40x60Any ? 60 : (labelFormat === '60x40' ? 40 : 40);
-  const paperHeightMm = is40x60Any ? 60 : 40;
 
   return (
     <>
       {/* Painel de Configuração (Oculto na Impressão) */}
-      <div className="print:hidden mx-auto mb-6 max-w-2xl border-2 border-zinc-950 bg-white p-5">
+      <div className="print:hidden mx-auto mb-6 max-w-3xl border-2 border-zinc-950 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
               Knup KP-IM608 · {is40x60Landscape ? '40x60 Paisagem (De Lado)' : `${labelFormat}mm`}
             </span>
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">
-              Etiqueta de Produto / PDV
-            </span>
-            <span
-              className="inline-flex items-center gap-1 font-mono text-[10px] font-bold text-zinc-600 bg-zinc-100 border border-zinc-300 px-1.5 py-0.5 rounded-sm"
-              title={`Publicado: ${process.env.NEXT_PUBLIC_BUILD_TIME || 'local'}`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              git:{process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || 'dev'}
+              Gerador de Etiquetas Cyber
             </span>
           </div>
           <Link
@@ -108,196 +135,256 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           </Link>
         </div>
 
-        {/* Seletor de Tamanho de Etiqueta */}
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[11px] font-bold uppercase text-zinc-700 mr-1">
-            Formato / Bobina:
+        {/* 1. SELETOR PRINCIPAL DO TIPO DE ETIQUETA */}
+        <div className="mt-4">
+          <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700 mb-1.5">
+            Modelo / Tipo de Etiqueta:
           </span>
-          <button
-            type="button"
-            onClick={() => setLabelFormat('40x60')}
-            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
-              labelFormat === '40x60'
-                ? 'border-zinc-950 bg-zinc-950 text-white'
-                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-            }`}
-          >
-            📱 40x60 mm Em Pé (Vertical / Retrato)
-          </button>
-          <button
-            type="button"
-            onClick={() => setLabelFormat('40x60-landscape')}
-            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
-              labelFormat === '40x60-landscape'
-                ? 'border-zinc-950 bg-zinc-950 text-white'
-                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-            }`}
-          >
-            🔄 40x60 mm De Lado (Paisagem / Estilo 60x40)
-          </button>
-          <button
-            type="button"
-            onClick={() => setLabelFormat('60x40')}
-            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
-              labelFormat === '60x40'
-                ? 'border-zinc-950 bg-zinc-950 text-white'
-                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-            }`}
-          >
-            60x40 mm (Bobina Horizontal)
-          </button>
-          <button
-            type="button"
-            onClick={() => setLabelFormat('50x40')}
-            className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
-              labelFormat === '50x40'
-                ? 'border-zinc-950 bg-zinc-950 text-white'
-                : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-            }`}
-          >
-            50x40 mm
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => setLabelMode('device-tech')}
+              className={`p-2.5 font-mono text-xs font-bold uppercase border-2 text-left transition cursor-pointer ${
+                labelMode === 'device-tech'
+                  ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                  : 'border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-200'
+              }`}
+            >
+              💻📱 Ficha Técnica de Aparelho
+              <span className="block text-[10px] font-normal opacity-80 mt-0.5">
+                Especificações (CPU, RAM, SSD) + Preço + Barcode
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setLabelMode('standard')}
+              className={`p-2.5 font-mono text-xs font-bold uppercase border-2 text-left transition cursor-pointer ${
+                labelMode === 'standard'
+                  ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                  : 'border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-200'
+              }`}
+            >
+              🏷️ Etiqueta de Produto Padrão
+              <span className="block text-[10px] font-normal opacity-80 mt-0.5">
+                Código de barras grande + Preço PDV
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setLabelMode('showcase')}
+              className={`p-2.5 font-mono text-xs font-bold uppercase border-2 text-left transition cursor-pointer ${
+                labelMode === 'showcase'
+                  ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                  : 'border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-200'
+              }`}
+            >
+              🪧 Display de Vitrine / Balcão
+              <span className="block text-[10px] font-normal opacity-80 mt-0.5">
+                Expositor de acrílico para balcão da loja
+              </span>
+            </button>
+          </div>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="block">
-            <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-              Nome do Produto na Etiqueta
+        {/* 2. SELETOR DE TAMANHO / BOBINA (PARA ETIQUETAS TÉRMICAS) */}
+        {labelMode !== 'showcase' && (
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-200 pt-3">
+            <span className="font-mono text-[11px] font-bold uppercase text-zinc-700 mr-1">
+              Formato / Bobina:
             </span>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full border border-zinc-400 px-2.5 py-1.5 font-mono text-xs text-zinc-950"
-            />
-          </label>
+            <button
+              type="button"
+              onClick={() => setLabelFormat('40x60')}
+              className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+                labelFormat === '40x60'
+                  ? 'border-zinc-950 bg-zinc-950 text-white'
+                  : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+              }`}
+            >
+              📱 40x60 mm Vertical (Em Pé)
+            </button>
+            <button
+              type="button"
+              onClick={() => setLabelFormat('40x60-landscape')}
+              className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+                labelFormat === '40x60-landscape'
+                  ? 'border-zinc-950 bg-zinc-950 text-white'
+                  : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+              }`}
+            >
+              🔄 40x60 mm De Lado (Paisagem 60x40 na bobina 40mm)
+            </button>
+            <button
+              type="button"
+              onClick={() => setLabelFormat('60x40')}
+              className={`px-3 py-1 font-mono text-xs font-bold uppercase border cursor-pointer ${
+                labelFormat === '60x40'
+                  ? 'border-zinc-950 bg-zinc-950 text-white'
+                  : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+              }`}
+            >
+              60x40 mm (Bobina Horizontal)
+            </button>
+          </div>
+        )}
 
-          <label className="block">
-            <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-              Características / Marca / Modelo
-            </span>
-            <input
-              type="text"
-              value={specsLine}
-              onChange={(e) => setSpecsLine(e.target.value)}
-              placeholder="Ex: SATA III 2.5 · 500MB/s · Kingston"
-              className="mt-1 w-full border border-zinc-400 px-2.5 py-1.5 font-mono text-xs text-zinc-950"
-            />
-          </label>
+        {/* 3. CAMPOS DE EDIÇÃO EM TEMPO REAL */}
+        <div className="mt-4 border-t border-zinc-200 pt-3 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
+                Título / Nome da Máquina
+              </span>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 w-full border border-zinc-400 px-2.5 py-1.5 font-mono text-xs text-zinc-950 font-bold"
+              />
+            </label>
 
-          <label className="block">
-            <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-              Valor de Venda (R$)
-            </span>
-            <div className="mt-1 flex items-center gap-2">
+            <label className="block">
+              <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
+                Valor à Vista / Pix (R$)
+              </span>
               <input
                 type="text"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                disabled={!showPrice}
-                className="w-full border border-zinc-400 px-2.5 py-1.5 font-mono text-xs font-bold text-zinc-950 disabled:opacity-40"
+                className="mt-1 w-full border border-zinc-400 px-2.5 py-1.5 font-mono text-xs font-bold text-emerald-800"
               />
-              <label className="flex items-center gap-1 font-mono text-[11px] text-zinc-700 whitespace-nowrap cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showPrice}
-                  onChange={(e) => setShowPrice(e.target.checked)}
-                />
-                Exibir preço
-              </label>
-            </div>
-          </label>
+            </label>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:col-span-2 border-t border-zinc-200 pt-3">
+          {/* Especificações da Máquina (Modos Ficha Técnica e Vitrine) */}
+          {(labelMode === 'device-tech' || labelMode === 'showcase') && (
+            <div className="border border-zinc-300 bg-zinc-50 p-3 space-y-3">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 flex items-center justify-between">
+                <span>Especificações Técnicas na Etiqueta</span>
+                <span className="text-[10px] text-zinc-500 font-normal">Ajuste fino pré-impressão</span>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-3">
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Selo de Condição</span>
+                  <input
+                    value={deviceCondition}
+                    onChange={(e) => setDeviceCondition(e.target.value.toUpperCase())}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="SEMINOVO GRADE A+"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Processador (CPU)</span>
+                  <input
+                    value={deviceCpu}
+                    onChange={(e) => setDeviceCpu(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="i5-8250U 3.4GHz"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Memória RAM</span>
+                  <input
+                    value={deviceRam}
+                    onChange={(e) => setDeviceRam(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="16GB DDR4"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-3">
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">SSD / Armazenamento</span>
+                  <input
+                    value={deviceStorage}
+                    onChange={(e) => setDeviceStorage(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="512GB SSD NVMe"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Vídeo / Gráficos</span>
+                  <input
+                    value={deviceGpu}
+                    onChange={(e) => setDeviceGpu(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="Intel UHD 620 / RTX 4060"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Tela / Bateria</span>
+                  <input
+                    value={deviceScreen || deviceBattery}
+                    onChange={(e) => {
+                      if (deviceScreen) setDeviceScreen(e.target.value);
+                      else setDeviceBattery(e.target.value);
+                    }}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder='14" Full HD / Saúde 92%'
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-3">
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Parcelamento Cartão</span>
+                  <input
+                    value={deviceCardInstallment}
+                    onChange={(e) => setDeviceCardInstallment(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="12x de R$ 209,00"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Texto de Garantia</span>
+                  <input
+                    value={deviceWarrantyText}
+                    onChange={(e) => setDeviceWarrantyText(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="✦ 90 Dias de Garantia Loja"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-mono font-bold uppercase text-zinc-600 block">Serial / IMEI</span>
+                  <input
+                    value={deviceImei}
+                    onChange={(e) => setDeviceImei(e.target.value)}
+                    className="w-full border border-zinc-300 bg-white px-2 py-1 font-mono text-xs"
+                    placeholder="Opcional"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Configuração de Código de Barras e Cópias */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-zinc-200 pt-3">
             <div>
               <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Padrão / Formato do Código de Barras
+                Padrão do Código de Barras
               </span>
               <select
                 value={codeFormat}
                 onChange={(e) => setCodeFormat(e.target.value as any)}
-                className="mt-1 w-full border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs text-zinc-950 font-bold"
+                className="mt-1 w-full border-2 border-zinc-950 bg-white px-2 py-1 font-mono text-xs text-zinc-950 font-bold"
               >
-                <option value="ean13">🏷️ EAN-13 Padrão Supermercado ({ean13Code}) — MÁXIMA COMPATIBILIDADE</option>
-                <option value="compact">⚡ Code 128 Compacto ({compactSku}) — Barras Mais Grossas</option>
-                <option value="numeric">🔢 Code 128 Numérico ({numericSku}) — Subset C</option>
-                <option value="code39">📋 Code 39 ({compactSku}) — Espaçamento Amplo</option>
+                <option value="compact">⚡ Code 128 Compacto ({compactSku}) — Recomendado</option>
+                <option value="ean13">🏷️ EAN-13 Supermercado ({ean13Code})</option>
+                <option value="numeric">🔢 Code 128 Numérico ({numericSku})</option>
+                <option value="code39">📋 Code 39 ({compactSku})</option>
                 <option value="full">🏷️ Code 128 Completo ({fallbackSku})</option>
                 <option value="custom">✏️ Personalizado (Digitar Código)</option>
               </select>
-
-              {codeFormat === 'custom' && (
-                <input
-                  type="text"
-                  value={customCode}
-                  onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                  placeholder="Ex: 1001, 7891234567895, ou SSD1TB..."
-                  className="mt-2 w-full border border-zinc-950 bg-amber-50 px-2.5 py-1.5 font-mono text-xs font-bold text-zinc-950"
-                />
-              )}
-            </div>
-
-            <div>
-              <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Altura do Código de Barras (Área de Mira)
-              </span>
-              <div className="mt-1 flex gap-1.5">
-                {[
-                  { label: 'Normal (36px)', val: 36 },
-                  { label: '⭐ Alto (50px)', val: 50 },
-                  { label: '🚀 Máximo (58px)', val: 58 },
-                ].map((opt) => (
-                  <button
-                    key={opt.val}
-                    type="button"
-                    onClick={() => setBarcodeHeight(opt.val)}
-                    className={`flex-1 py-1.5 font-mono text-[11px] font-bold uppercase border cursor-pointer ${
-                      barcodeHeight === opt.val
-                        ? 'border-zinc-950 bg-zinc-950 text-white'
-                        : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Espessura das Barras (Resolução de Impressão)
-              </span>
-              <div className="mt-1 flex gap-1.5">
-                {[
-                  { label: 'Fina (1.6px)', val: 1.6 },
-                  { label: '⭐ Média (2px)', val: 2 },
-                  { label: 'Grossa (2.4px)', val: 2.4 },
-                ].map((opt) => (
-                  <button
-                    key={opt.val}
-                    type="button"
-                    onClick={() => setBarWidth(opt.val)}
-                    className={`flex-1 py-1 font-mono text-[11px] font-bold uppercase border cursor-pointer ${
-                      barWidth === opt.val
-                        ? 'border-zinc-950 bg-zinc-950 text-white'
-                        : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 pt-1">
-              <label className="flex items-center gap-1.5 font-mono text-xs text-zinc-800 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showWarranty}
-                  onChange={(e) => setShowWarranty(e.target.checked)}
-                />
-                Exibir Selo de Garantia (90 Dias)
-              </label>
             </div>
 
             <div className="flex items-center justify-end gap-2">
@@ -316,264 +403,526 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           </div>
         </div>
 
-        {/* Alerta de Configuração Crítica do Chrome */}
-        <div className="mt-4 border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
-          <div className="flex items-center gap-1.5 font-bold text-amber-900">
-            <span className="text-base">⚠️</span> Para não gerar 3 páginas nem cortar a etiqueta:
-          </div>
-          <ol className="mt-1.5 list-decimal pl-4 space-y-1 font-mono text-[11px] text-amber-900">
-            <li>No diálogo de impressão do Chrome, clique em <strong>Mais definições</strong> (More settings).</li>
-            <li><strong>Desmarque</strong> a opção <strong>"Cabeçalhos e rodapés"</strong> (isso remove data e URL que empurram o conteúdo para 3 páginas).</li>
-            <li>Altere <strong>Margens</strong> para <strong>"Nenhuma"</strong> (None).</li>
-            <li>Altere <strong>Escala</strong> para <strong>100%</strong> (Padrão).</li>
-          </ol>
-          <p className="mt-1 text-[10px] text-amber-800">
-            <em>O Chrome memoriza essas escolhas para a sua impressora KP-IM608, você só precisa configurar uma única vez!</em>
-          </p>
-        </div>
-
+        {/* Botão de Impressão */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4">
           <p className="font-mono text-[11px] text-zinc-600">
-            Papel da <strong>Knup KP-IM608</strong>: <strong>{is40x60Landscape ? '40 x 60 mm (Paisagem / Girada 90°)' : (labelFormat === '40x60' ? '40 x 60 mm (Vertical)' : (labelFormat === '60x40' ? '60 x 40 mm' : '50 x 40 mm'))}</strong>.
+            {labelMode === 'showcase'
+              ? 'Pronto para Display de Acrílico de Balcão / Vitrine.'
+              : `Impressão Térmica: ${is40x60Landscape ? '40 x 60 mm De Lado (Paisagem)' : `${labelWidthMm} x ${labelHeightMm} mm`}.`}
           </p>
           <button
             type="button"
             onClick={() => window.print()}
-            className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 cursor-pointer"
+            className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
           >
-            🖨️ Imprimir {copies > 1 ? `${copies} Etiquetas` : 'Etiqueta'} ({is40x60Landscape ? '40x60 De Lado' : `${labelFormat}mm`})
+            🖨️ Imprimir {copies > 1 ? `${copies} Etiquetas` : 'Etiqueta'}
           </button>
         </div>
       </div>
 
       {/* Dica visual informativa sobre o Modo Paisagem */}
-      {is40x60Landscape && (
+      {is40x60Landscape && labelMode !== 'showcase' && (
         <div className="print:hidden mx-auto mb-4 max-w-2xl border-2 border-zinc-950 bg-zinc-100 px-3 py-2 text-center font-mono text-[11px] font-bold uppercase text-zinc-950">
           🔄 <strong>Modo Paisagem Ativo:</strong> A etiqueta sai <strong>girada 90° de lado</strong> na bobina de 40mm. Ao colar no produto, você cola na <strong>horizontal (60mm de largura × 40mm de altura)</strong>!
         </div>
       )}
 
-      {/* Área de Impressão (40x60mm, 60x40mm ou 50x40mm) */}
-      <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
-        {copiesArray.map((_, index) => (
-          <div
-            key={index}
-            className="label-thermal-item border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
-            style={{
-              width: labelFormat === '40x60' ? '38mm' : `${labelWidthMm}mm`,
-              height: `${labelHeightMm}mm`,
-              padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2.5mm 1.5mm' : (labelFormat === '60x40' ? '2mm 3mm' : '2mm 2.5mm')),
-              margin: labelFormat === '40x60' ? '0 1mm' : '0 auto',
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: is40x60Landscape ? 'center' : 'space-between',
-              alignItems: is40x60Landscape ? 'center' : 'stretch',
-              position: 'relative',
-              overflow: 'hidden',
-              pageBreakAfter: index < copiesArray.length - 1 ? 'always' : 'auto',
-              breakAfter: index < copiesArray.length - 1 ? 'page' : 'auto',
-            }}
-          >
-            {labelFormat === '40x60-landscape' ? (
-              /* Layout Paisagem Rotacionada 90° (Design 60x40mm na bobina física de 40x60mm) */
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '50%',
-                  top: '50%',
-                  width: '58mm',
-                  height: '38mm',
-                  transform: 'translate(-50%, -50%) rotate(90deg)',
-                  transformOrigin: 'center center',
-                  padding: '1.8mm 2.6mm',
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* 1. Topo: Marca da Loja + Lote/Data */}
-                <div className="flex items-center justify-between border-b border-black pb-[0.6mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                  <span>CYBER INFORMÁTICA</span>
-                  <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
-                </div>
-
-                {/* 2. Nome e Características do Produto */}
-                <div className="my-[0.5mm] flex-1 flex flex-col justify-center overflow-hidden">
-                  <div
-                    className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {title}
-                  </div>
-                  {specsLine && (
-                    <div className="mt-[0.4mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
-                      {specsLine}
-                    </div>
-                  )}
-                </div>
-
-                {/* 3. Preço em Destaque */}
-                {showPrice && (
-                  <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.5mm] leading-none">
-                    <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
-                    <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
-                      R$ {price}
-                    </span>
-                  </div>
-                )}
-
-                {/* 4. Código de Barras */}
-                <div className="pt-[0.3mm] text-center">
-                  <div className="mx-auto w-full flex justify-center">
-                    <Barcode128
-                      value={activeBarcodeValue}
-                      format={activeFormat}
-                      height={Math.min(barcodeHeight, 38)}
-                      barWidth={barWidth}
-                    />
-                  </div>
-                  <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
-                    {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
-                  </div>
-                </div>
+      {/* ÁREA DE IMPRESSÃO */}
+      {labelMode === 'showcase' ? (
+        /* MODELO DISPLAY DE VITRINE / PRATELEIRA */
+        <div className="mx-auto my-4 max-w-[420px] print:m-0 print:max-w-none">
+          <div className="border-4 border-zinc-950 bg-white p-6 shadow-2xl font-sans text-zinc-950 print:border-2 print:shadow-none">
+            <div className="flex items-center justify-between border-b-2 border-zinc-950 pb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="bg-zinc-950 text-white px-2 py-0.5 font-black text-xs uppercase tracking-wider">CYBER</span>
+                <span className="font-extrabold text-xs tracking-tight uppercase">INFORMÁTICA</span>
               </div>
-            ) : labelFormat === '40x60' ? (
-              /* Layout Vertical Profissional 40x60mm (Preenchimento Sob Medida para Bobina 40x60mm) */
-              <>
-                {/* 1. Topo: Marca da Loja + Lote/Data */}
-                <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.2pt] font-black uppercase leading-none">
-                  <span>CYBER INFORMÁTICA</span>
-                  <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+              <span className="border border-emerald-600 bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold px-2 py-0.5 uppercase">
+                {deviceCondition}
+              </span>
+            </div>
+
+            <div className="mt-3">
+              <span className="text-[10px] font-mono font-bold uppercase text-zinc-500 tracking-wider block">
+                {item.category?.toUpperCase() || 'EQUIPAMENTO PRONTA-ENTREGA'}
+              </span>
+              <h2 className="text-lg font-black uppercase tracking-tight text-zinc-950 leading-tight mt-0.5">
+                {title}
+              </h2>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 font-mono text-xs">
+              {deviceCpu && (
+                <div className="border border-zinc-300 bg-zinc-50 p-2">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase">⚡ Processador</div>
+                  <div className="font-black text-zinc-950 text-[11px] mt-0.5">{deviceCpu}</div>
                 </div>
-
-                {/* 2. Nome e Características do Produto */}
-                <div className="my-[0.5mm] flex-1 flex flex-col justify-center overflow-hidden">
-                  <div
-                    className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {title}
-                  </div>
-                  {specsLine && (
-                    <div className="mt-[0.4mm] truncate font-mono text-[5.8pt] font-bold uppercase text-zinc-800 leading-tight">
-                      {specsLine}
-                    </div>
-                  )}
+              )}
+              {deviceRam && (
+                <div className="border border-zinc-300 bg-zinc-50 p-2">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase">🧠 Memória RAM</div>
+                  <div className="font-black text-zinc-950 text-[11px] mt-0.5">{deviceRam}</div>
                 </div>
-
-                {/* 3. Selo de Garantia da Loja */}
-                {showWarranty && (
-                  <div className="mb-[0.5mm] border border-black bg-zinc-100 py-[0.4mm] text-center font-mono text-[5.6pt] font-black uppercase tracking-wider text-black leading-none whitespace-nowrap">
-                    ✦ GARANTIA DE 90 DIAS ✦
-                  </div>
-                )}
-
-                {/* 4. Preço em Destaque (Box Fechado) */}
-                {showPrice && (
-                  <div className="mb-[0.5mm] border-2 border-black p-[0.5mm] text-center bg-white">
-                    <div className="font-mono text-[5.2pt] font-black uppercase tracking-wider text-black leading-none">
-                      VALOR À VISTA / PIX
-                    </div>
-                    <div className="my-[0.3mm] font-mono text-[12.5pt] font-black tracking-tight leading-none text-black">
-                      R$ {price}
-                    </div>
-                    <div className="font-mono text-[4.8pt] font-bold uppercase text-zinc-600 leading-none">
-                      Consulte parcelamento no cartão
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. Código de Barras (Alta Legibilidade para Leitores Genéricos) */}
-                <div className="pt-[0.2mm] text-center">
-                  <div className="mx-auto w-full flex justify-center">
-                    <Barcode128
-                      value={activeBarcodeValue}
-                      format={activeFormat}
-                      height={barcodeHeight}
-                      barWidth={barWidth}
-                    />
-                  </div>
-                  <div className="mt-[0.6mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
-                    {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
-                  </div>
+              )}
+              {deviceStorage && (
+                <div className="border border-zinc-300 bg-zinc-50 p-2">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase">💾 Armazenamento</div>
+                  <div className="font-black text-zinc-950 text-[11px] mt-0.5">{deviceStorage}</div>
                 </div>
-
-                {/* 6. Rodapé da Loja (Linha Única sem quebra) */}
-                <div className="mt-[0.5mm] border-t border-black pt-[0.3mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
-                  cyberinformatica.tech · Loja
+              )}
+              {deviceGpu && (
+                <div className="border border-zinc-300 bg-zinc-50 p-2">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase">🎮 Gráficos</div>
+                  <div className="font-black text-zinc-950 text-[11px] mt-0.5">{deviceGpu}</div>
                 </div>
-              </>
-            ) : (
-              /* Layout Horizontal 60x40mm ou 50x40mm */
-              <>
-                {/* 1. Topo: Marca da Loja + Lote/Data */}
-                <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
-                  <span>CYBER INFORMÁTICA</span>
-                  <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+              )}
+              {deviceScreen && (
+                <div className="border border-zinc-300 bg-zinc-50 p-2">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase">🖥️ Tela</div>
+                  <div className="font-black text-zinc-950 text-[11px] mt-0.5">{deviceScreen}</div>
                 </div>
-
-                {/* 2. Nome e Características do Produto */}
-                <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
-                  <div
-                    className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {title}
-                  </div>
-                  {specsLine && (
-                    <div className="mt-[0.5mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
-                      {specsLine}
-                    </div>
-                  )}
+              )}
+              {deviceBattery && (
+                <div className="border border-zinc-300 bg-zinc-50 p-2">
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase">🔋 Bateria</div>
+                  <div className="font-black text-zinc-950 text-[11px] mt-0.5">{deviceBattery}</div>
                 </div>
+              )}
+            </div>
 
-                {/* 3. Preço em Destaque */}
-                {showPrice && (
-                  <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.6mm] leading-none">
-                    <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
-                    <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
-                      R$ {price}
-                    </span>
-                  </div>
-                )}
+            <div className="mt-3 flex items-center justify-between text-[10px] font-mono font-bold bg-zinc-100 p-2 border border-zinc-300">
+              <span>🛡️ {deviceWarrantyText}</span>
+              {deviceImei && <span>SN: {deviceImei}</span>}
+            </div>
 
-                {/* 4. Código de Barras (Code 128) + SKU Interno */}
-                <div className="pt-[0.4mm] text-center">
-                  <div className="mx-auto w-full flex justify-center">
-                    <Barcode128
-                      value={activeBarcodeValue}
-                      format={activeFormat}
-                      height={Math.min(barcodeHeight, 38)}
-                      barWidth={barWidth}
-                    />
-                  </div>
-                  <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
-                    {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
-                  </div>
-                </div>
-              </>
-            )}
+            <div className="mt-4 border-2 border-zinc-950 bg-zinc-950 text-white p-3 text-center">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                À VISTA NO PIX OU DINHEIRO
+              </span>
+              <div className="text-3xl font-black font-mono tracking-tight text-white my-0.5">
+                R$ {price}
+              </div>
+              <div className="font-mono text-xs text-zinc-300">
+                ou {deviceCardInstallment}
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2 border-t border-zinc-200 flex items-center justify-between font-mono text-[9px] text-zinc-500">
+              <span>SKU: <strong className="text-zinc-900">{compactSku}</strong></span>
+              <span>cyberinformatica.tech</span>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        /* MODELO TÉRMICO (60x40mm, 40x60mm De Lado, ou 40x60mm Vertical) */
+        <div className="label-print-container flex flex-col items-center gap-4 print:block print:m-0 print:p-0">
+          {copiesArray.map((_, index) => (
+            <div
+              key={index}
+              className="label-thermal-item border-2 border-dashed border-zinc-400 bg-white text-black shadow-sm print:border-0 print:shadow-none"
+              style={{
+                width: labelFormat === '40x60' ? '38mm' : `${labelWidthMm}mm`,
+                height: `${labelHeightMm}mm`,
+                padding: is40x60Landscape ? '0' : (labelFormat === '40x60' ? '2mm 1.5mm' : (labelFormat === '60x40' ? '1.8mm 2.5mm' : '2mm 2.5mm')),
+                margin: labelFormat === '40x60' ? '0 1mm' : '0 auto',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: is40x60Landscape ? 'center' : 'space-between',
+                alignItems: is40x60Landscape ? 'center' : 'stretch',
+                position: 'relative',
+                overflow: 'hidden',
+                pageBreakAfter: index < copiesArray.length - 1 ? 'always' : 'auto',
+                breakAfter: index < copiesArray.length - 1 ? 'page' : 'auto',
+              }}
+            >
+              {labelMode === 'device-tech' ? (
+                /* FICHA TÉCNICA DA MÁQUINA NA ETIQUETA TÉRMICA */
+                labelFormat === '40x60-landscape' ? (
+                  /* Formato 60x40mm Rotacionado 90° (para bobina 40mm) */
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '50%',
+                      width: '58mm',
+                      height: '38mm',
+                      transform: 'translate(-50%, -50%) rotate(90deg)',
+                      transformOrigin: 'center center',
+                      padding: '1.4mm 2mm',
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* Topo */}
+                    <div className="flex items-center justify-between border-b border-black pb-[0.3mm] font-mono text-[5.8pt] font-black uppercase leading-none">
+                      <span>CYBER INFORMÁTICA</span>
+                      <span className="bg-black text-white px-1 py-0.2">{deviceCondition}</span>
+                    </div>
+
+                    {/* Título */}
+                    <div className="my-[0.3mm]">
+                      <div className="font-sans text-[7.5pt] font-black uppercase leading-tight truncate text-black">
+                        {title}
+                      </div>
+                    </div>
+
+                    {/* Ficha Técnica */}
+                    <div className="border border-black bg-zinc-50 p-[0.8mm] font-mono text-[5.2pt] leading-tight space-y-[0.3mm]">
+                      {deviceCpu && (
+                        <div className="flex justify-between">
+                          <span className="font-bold text-zinc-600">CPU:</span>
+                          <span className="font-black text-black truncate max-w-[42mm]">{deviceCpu}</span>
+                        </div>
+                      )}
+                      {(deviceRam || deviceStorage) && (
+                        <div className="flex justify-between">
+                          <span className="font-bold text-zinc-600">RAM/SSD:</span>
+                          <span className="font-black text-black">{deviceRam} · {deviceStorage}</span>
+                        </div>
+                      )}
+                      {(deviceGpu || deviceScreen || deviceBattery) && (
+                        <div className="flex justify-between">
+                          <span className="font-bold text-zinc-600">OBS:</span>
+                          <span className="font-black text-black truncate max-w-[42mm]">
+                            {[deviceGpu, deviceScreen, deviceBattery].filter(Boolean).join(' · ')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bloco de Preço */}
+                    <div className="my-[0.3mm] flex items-stretch border border-black bg-white">
+                      <div className="bg-black text-white px-1.5 py-[0.5mm] flex flex-col justify-center items-center text-center">
+                        <span className="text-[4.5pt] font-bold uppercase leading-none">À VISTA</span>
+                        <span className="text-[9pt] font-black tracking-tight leading-none mt-0.5">R$ {price}</span>
+                      </div>
+                      <div className="flex-1 pl-1.5 py-[0.5mm] flex flex-col justify-center font-mono text-[4.8pt] leading-none">
+                        <span className="font-bold text-black">{deviceCardInstallment}</span>
+                        <span className="text-[4.2pt] text-zinc-600 mt-0.5">{deviceWarrantyText}</span>
+                      </div>
+                    </div>
+
+                    {/* Barcode Bipável no PDV */}
+                    <div className="text-center pt-[0.2mm]">
+                      <div className="mx-auto w-full flex justify-center">
+                        <Barcode128
+                          value={activeBarcodeValue}
+                          format={activeFormat}
+                          height={18}
+                          barWidth={barWidth}
+                        />
+                      </div>
+                      <div className="font-mono text-[5.5pt] font-black tracking-wider uppercase leading-none mt-[0.3mm]">
+                        SKU: {compactSku}
+                      </div>
+                    </div>
+                  </div>
+                ) : labelFormat === '40x60' ? (
+                  /* Formato 40x60mm Vertical */
+                  <>
+                    <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6pt] font-black uppercase leading-none">
+                      <span>CYBER INFORMÁTICA</span>
+                      <span className="text-[5pt] font-bold">{monthYear}</span>
+                    </div>
+
+                    <div className="my-[0.5mm] text-center">
+                      <div className="font-sans text-[7.8pt] font-black uppercase leading-tight text-black line-clamp-2">
+                        {title}
+                      </div>
+                      <span className="inline-block mt-[0.3mm] bg-black text-white font-mono text-[5pt] font-bold px-1 py-0.2 uppercase">
+                        {deviceCondition}
+                      </span>
+                    </div>
+
+                    <div className="border-y border-black py-[0.6mm] my-[0.3mm] font-mono text-[5.6pt] leading-snug space-y-[0.2mm]">
+                      {deviceCpu && <div>⚡ <strong>{deviceCpu}</strong></div>}
+                      {deviceRam && <div>🧠 <strong>{deviceRam}</strong></div>}
+                      {deviceStorage && <div>💾 <strong>{deviceStorage}</strong></div>}
+                      {deviceGpu && <div>🎮 <strong>{deviceGpu}</strong></div>}
+                      {deviceScreen && <div>🖥️ <strong>{deviceScreen}</strong></div>}
+                      {deviceBattery && <div>🔋 <strong>{deviceBattery}</strong></div>}
+                      {deviceImei && <div>🏷️ <strong>SN: {deviceImei}</strong></div>}
+                    </div>
+
+                    <div className="border border-black p-[0.6mm] text-center bg-zinc-50 my-[0.4mm]">
+                      <span className="font-mono text-[5pt] font-black uppercase leading-none block">
+                        VALOR À VISTA / PIX
+                      </span>
+                      <span className="font-mono text-[11pt] font-black tracking-tight leading-none text-black my-[0.3mm] block">
+                        R$ {price}
+                      </span>
+                      <span className="font-mono text-[5pt] font-bold text-zinc-700 leading-none block">
+                        {deviceCardInstallment}
+                      </span>
+                    </div>
+
+                    <div className="pt-[0.2mm] text-center">
+                      <div className="mx-auto w-full flex justify-center">
+                        <Barcode128
+                          value={activeBarcodeValue}
+                          format={activeFormat}
+                          height={22}
+                          barWidth={barWidth}
+                        />
+                      </div>
+                      <div className="mt-[0.4mm] font-mono text-[5.8pt] font-black tracking-wider uppercase leading-none text-black">
+                        SKU: {compactSku}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* Formato 60x40mm Horizontal Padrão */
+                  <>
+                    <div className="flex items-center justify-between border-b border-black pb-[0.5mm] font-mono text-[6.5pt] font-black uppercase leading-none">
+                      <span>CYBER INFORMÁTICA</span>
+                      <span className="bg-black text-white px-1.5 py-0.2">{deviceCondition}</span>
+                    </div>
+
+                    <div className="my-[0.4mm]">
+                      <div className="font-sans text-[8.2pt] font-black uppercase leading-tight truncate text-black">
+                        {title}
+                      </div>
+                    </div>
+
+                    <div className="border border-black bg-zinc-50 p-[1mm] font-mono text-[5.8pt] leading-tight space-y-[0.3mm]">
+                      {deviceCpu && (
+                        <div className="flex justify-between">
+                          <span className="font-bold text-zinc-600">CPU:</span>
+                          <span className="font-black text-black truncate max-w-[44mm]">{deviceCpu}</span>
+                        </div>
+                      )}
+                      {(deviceRam || deviceStorage) && (
+                        <div className="flex justify-between">
+                          <span className="font-bold text-zinc-600">RAM / SSD:</span>
+                          <span className="font-black text-black">{deviceRam} · {deviceStorage}</span>
+                        </div>
+                      )}
+                      {(deviceGpu || deviceScreen || deviceBattery) && (
+                        <div className="flex justify-between">
+                          <span className="font-bold text-zinc-600">DETALHES:</span>
+                          <span className="font-black text-black truncate max-w-[44mm]">
+                            {[deviceGpu, deviceScreen, deviceBattery].filter(Boolean).join(' · ')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="my-[0.4mm] flex items-stretch border border-black bg-white">
+                      <div className="bg-black text-white px-2 py-[0.6mm] flex flex-col justify-center items-center text-center">
+                        <span className="text-[5pt] font-bold uppercase leading-none">À VISTA</span>
+                        <span className="text-[10.5pt] font-black tracking-tight leading-none mt-0.5">R$ {price}</span>
+                      </div>
+                      <div className="flex-1 pl-2 py-[0.6mm] flex flex-col justify-center font-mono text-[5.2pt] leading-none">
+                        <span className="font-bold text-black">{deviceCardInstallment}</span>
+                        <span className="text-[4.5pt] text-zinc-600 mt-0.5">{deviceWarrantyText}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-center pt-[0.2mm]">
+                      <div className="mx-auto w-full flex justify-center">
+                        <Barcode128
+                          value={activeBarcodeValue}
+                          format={activeFormat}
+                          height={20}
+                          barWidth={barWidth}
+                        />
+                      </div>
+                      <div className="font-mono text-[6pt] font-black tracking-wider uppercase leading-none mt-[0.3mm]">
+                        SKU: {compactSku}
+                      </div>
+                    </div>
+                  </>
+                )
+              ) : (
+                /* MODO PADRÃO DE PRODUTO / PEÇA (EXISTENTE) */
+                labelFormat === '40x60-landscape' ? (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '50%',
+                      width: '58mm',
+                      height: '38mm',
+                      transform: 'translate(-50%, -50%) rotate(90deg)',
+                      transformOrigin: 'center center',
+                      padding: '1.8mm 2.6mm',
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div className="flex items-center justify-between border-b border-black pb-[0.6mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                      <span>CYBER INFORMÁTICA</span>
+                      <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+                    </div>
+
+                    <div className="my-[0.5mm] flex-1 flex flex-col justify-center overflow-hidden">
+                      <div
+                        className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {title}
+                      </div>
+                      {specsLine && (
+                        <div className="mt-[0.4mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
+                          {specsLine}
+                        </div>
+                      )}
+                    </div>
+
+                    {showPrice && (
+                      <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.5mm] leading-none">
+                        <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
+                        <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
+                          R$ {price}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="pt-[0.3mm] text-center">
+                      <div className="mx-auto w-full flex justify-center">
+                        <Barcode128
+                          value={activeBarcodeValue}
+                          format={activeFormat}
+                          height={Math.min(barcodeHeight, 38)}
+                          barWidth={barWidth}
+                        />
+                      </div>
+                      <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
+                        {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
+                      </div>
+                    </div>
+                  </div>
+                ) : labelFormat === '40x60' ? (
+                  <>
+                    <div className="flex items-center justify-between border-b border-black pb-[0.4mm] font-mono text-[6.2pt] font-black uppercase leading-none">
+                      <span>CYBER INFORMÁTICA</span>
+                      <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+                    </div>
+
+                    <div className="my-[0.5mm] flex-1 flex flex-col justify-center overflow-hidden">
+                      <div
+                        className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {title}
+                      </div>
+                      {specsLine && (
+                        <div className="mt-[0.4mm] truncate font-mono text-[5.8pt] font-bold uppercase text-zinc-800 leading-tight">
+                          {specsLine}
+                        </div>
+                      )}
+                    </div>
+
+                    {showWarranty && (
+                      <div className="mb-[0.5mm] border border-black bg-zinc-100 py-[0.4mm] text-center font-mono text-[5.6pt] font-black uppercase tracking-wider text-black leading-none whitespace-nowrap">
+                        ✦ GARANTIA DE 90 DIAS ✦
+                      </div>
+                    )}
+
+                    {showPrice && (
+                      <div className="mb-[0.5mm] border-2 border-black p-[0.5mm] text-center bg-white">
+                        <div className="font-mono text-[5.2pt] font-black uppercase tracking-wider text-black leading-none">
+                          VALOR À VISTA / PIX
+                        </div>
+                        <div className="my-[0.3mm] font-mono text-[12.5pt] font-black tracking-tight leading-none text-black">
+                          R$ {price}
+                        </div>
+                        <div className="font-mono text-[4.8pt] font-bold uppercase text-zinc-600 leading-none">
+                          Consulte parcelamento no cartão
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-[0.2mm] text-center">
+                      <div className="mx-auto w-full flex justify-center">
+                        <Barcode128
+                          value={activeBarcodeValue}
+                          format={activeFormat}
+                          height={barcodeHeight}
+                          barWidth={barWidth}
+                        />
+                      </div>
+                      <div className="mt-[0.6mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
+                        {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
+                      </div>
+                    </div>
+
+                    <div className="mt-[0.5mm] border-t border-black pt-[0.3mm] text-center font-mono text-[5pt] font-bold uppercase text-black leading-none truncate whitespace-nowrap">
+                      cyberinformatica.tech · Loja
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between border-b border-black pb-[0.8mm] font-mono text-[6.5pt] font-bold uppercase leading-none">
+                      <span>CYBER INFORMÁTICA</span>
+                      <span>{item.shelf_location ? `${item.shelf_location} · ${monthYear}` : monthYear}</span>
+                    </div>
+
+                    <div className="my-[0.6mm] flex-1 flex flex-col justify-center overflow-hidden">
+                      <div
+                        className="font-sans text-[8.5pt] font-black uppercase leading-[1.08] text-black"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {title}
+                      </div>
+                      {specsLine && (
+                        <div className="mt-[0.5mm] truncate font-mono text-[6.2pt] font-bold uppercase text-black leading-none">
+                          {specsLine}
+                        </div>
+                      )}
+                    </div>
+
+                    {showPrice && (
+                      <div className="my-[0.4mm] flex items-baseline justify-between border-y border-black py-[0.6mm] leading-none">
+                        <span className="font-mono text-[5.8pt] font-bold uppercase">VALOR:</span>
+                        <span className="font-mono text-[11.8pt] font-black tracking-tight text-black">
+                          R$ {price}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="pt-[0.4mm] text-center">
+                      <div className="mx-auto w-full flex justify-center">
+                        <Barcode128
+                          value={activeBarcodeValue}
+                          format={activeFormat}
+                          height={Math.min(barcodeHeight, 38)}
+                          barWidth={barWidth}
+                        />
+                      </div>
+                      <div className="mt-[0.5mm] font-mono text-[6.5pt] font-black tracking-wider uppercase leading-none text-black">
+                        {activeFormat === 'EAN13' ? `EAN: ${activeBarcodeValue}` : `CÓD: ${activeBarcodeValue}`}
+                      </div>
+                    </div>
+                  </>
+                )
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <style>{`
         @page {

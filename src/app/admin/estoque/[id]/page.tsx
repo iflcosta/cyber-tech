@@ -6,6 +6,7 @@ import { DeleteStockItemButton } from './DeleteStockItemButton';
 import { ToggleActiveButton } from './ToggleActiveButton';
 import { StockItemEditor } from './StockItemEditor';
 import { formatDateBR, formatDateTimeBR } from '@/app/admin/lib/datetime';
+import { parseDeviceNotes } from '@/app/admin/lib/deviceSpecs';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +54,7 @@ export default async function StockItemDetailPage({
 
   const isLow = item.current_stock <= item.min_stock;
   const isOut = item.current_stock === 0;
+  const { humanNotes, specs: deviceSpecs } = parseDeviceNotes(item.notes);
 
   return (
     <div className="space-y-6">
@@ -60,16 +62,144 @@ export default async function StockItemDetailPage({
         <Link href="/admin/estoque" className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-600 underline hover:text-zinc-950">
           ← Todo o estoque
         </Link>
-        <h1 className="mt-2 flex flex-wrap items-center gap-2 font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">
-          <span>{item.name}</span>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {deviceSpecs && (
+            <span className="bg-zinc-950 text-white font-mono text-xs font-bold uppercase px-2 py-0.5">
+              {deviceSpecs.type === 'notebook'
+                ? '💻 NOTEBOOK'
+                : deviceSpecs.type === 'computador'
+                  ? '🖥️ COMPUTADOR'
+                  : '📱 CELULAR'}
+            </span>
+          )}
+          <h1 className="font-mono text-2xl font-black uppercase tracking-tight text-zinc-950">
+            {item.name}
+          </h1>
           {!item.active && (
             <span className="border border-zinc-400 bg-zinc-200 px-2 py-0.5 font-mono text-xs font-bold uppercase text-zinc-800">Inativo</span>
           )}
-        </h1>
+        </div>
         <p className="font-mono text-xs uppercase tracking-wider text-zinc-500">
           {[item.brand, item.model].filter(Boolean).join(' ') || 'Sem marca/modelo'}
         </p>
       </div>
+
+      {deviceSpecs && (
+        <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-zinc-950 pb-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="border border-zinc-950 bg-zinc-100 font-mono text-xs font-bold uppercase px-2 py-0.5 text-zinc-950">
+                {deviceSpecs.condition || 'Seminovo'}
+              </span>
+              {deviceSpecs.warranty && (
+                <span className="border border-zinc-300 bg-zinc-50 font-mono text-xs text-zinc-700 px-2 py-0.5">
+                  ✦ {deviceSpecs.warranty}
+                </span>
+              )}
+              {deviceSpecs.showInShowroom && (
+                <span className="border border-emerald-600 bg-emerald-50 text-emerald-800 font-mono text-xs font-bold uppercase px-2 py-0.5">
+                  🌐 Publicado no Showroom
+                </span>
+              )}
+            </div>
+
+            <Link
+              href={`/admin/estoque/${item.id}/label`}
+              target="_blank"
+              className="bg-zinc-950 hover:bg-zinc-800 text-white px-3 py-1 font-mono text-xs font-bold uppercase tracking-wider transition"
+            >
+              🏷️ Imprimir Etiqueta da Máquina →
+            </Link>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 font-mono text-xs">
+            {deviceSpecs.cpu && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">⚡ Processador (CPU)</span>
+                <strong className="text-zinc-950">{deviceSpecs.cpu}</strong>
+              </div>
+            )}
+            {deviceSpecs.ram && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🧠 Memória RAM</span>
+                <strong className="text-zinc-950">{deviceSpecs.ram}</strong>
+              </div>
+            )}
+            {deviceSpecs.storage && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">💾 Armazenamento</span>
+                <strong className="text-zinc-950">{deviceSpecs.storage}</strong>
+              </div>
+            )}
+            {deviceSpecs.gpu && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🎮 Placa de Vídeo (GPU)</span>
+                <strong className="text-zinc-950">{deviceSpecs.gpu}</strong>
+              </div>
+            )}
+            {deviceSpecs.screen && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🖥️ Tela &amp; Resolução</span>
+                <strong className="text-zinc-950">{deviceSpecs.screen}</strong>
+              </div>
+            )}
+            {(deviceSpecs.battery || deviceSpecs.batteryHealth) && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🔋 Bateria</span>
+                <strong className="text-zinc-950">{deviceSpecs.battery || `Saúde: ${deviceSpecs.batteryHealth}`}</strong>
+              </div>
+            )}
+            {deviceSpecs.color && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🎨 Cor</span>
+                <strong className="text-zinc-950">{deviceSpecs.color}</strong>
+              </div>
+            )}
+            {deviceSpecs.imei && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🏷️ IMEI</span>
+                <strong className="text-zinc-950">{deviceSpecs.imei}</strong>
+              </div>
+            )}
+            {deviceSpecs.serialNumber && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🔢 Serial / Service Tag</span>
+                <strong className="text-zinc-950">{deviceSpecs.serialNumber}</strong>
+              </div>
+            )}
+            {deviceSpecs.charger && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🔌 Carregador</span>
+                <strong className="text-zinc-950">{deviceSpecs.charger}</strong>
+              </div>
+            )}
+            {deviceSpecs.motherboard && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">🖲️ Placa-Mãe</span>
+                <strong className="text-zinc-950">{deviceSpecs.motherboard}</strong>
+              </div>
+            )}
+            {deviceSpecs.powerSupply && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">⚡ Fonte</span>
+                <strong className="text-zinc-950">{deviceSpecs.powerSupply}</strong>
+              </div>
+            )}
+            {deviceSpecs.caseType && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">📦 Gabinete</span>
+                <strong className="text-zinc-950">{deviceSpecs.caseType}</strong>
+              </div>
+            )}
+            {deviceSpecs.accessories && deviceSpecs.accessories.length > 0 && (
+              <div className="border border-zinc-200 bg-zinc-50 p-2 sm:col-span-2">
+                <span className="text-zinc-500 block text-[10px] font-bold uppercase">📦 Acessórios Inclusos</span>
+                <strong className="text-zinc-950">{deviceSpecs.accessories.join(', ')}</strong>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Acoes perigosas (so quem tem can_delete) */}
       {canDelete && (

@@ -3,6 +3,7 @@ import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { StockFilter } from './StockFilter';
 import { WipeStockButtons } from './WipeStockButtons';
 import { sanitizeSearchTerm } from '@/app/admin/lib/search';
+import { getDeviceType } from '@/app/admin/lib/deviceSpecs';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,16 +87,16 @@ export default async function StockListPage({
         <div className="flex flex-wrap shrink-0 gap-2">
           {canDelete && <WipeStockButtons />}
           <Link
-            href="/admin/estoque/new?showroom=1"
-            className="border-2 border-zinc-950 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition"
+            href="/admin/estoque/novo-aparelho"
+            className="border-2 border-zinc-950 bg-emerald-600 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-emerald-700 transition shadow-sm"
           >
-            + Publicar PC no Showroom
+            💻📱 + Cadastrar Aparelho / PC / Celular
           </Link>
           <Link
             href="/admin/estoque/new"
             className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
           >
-            + Novo Item
+            + Nova Peça / Item
           </Link>
         </div>
       </div>
@@ -155,12 +156,34 @@ export default async function StockListPage({
                 return (
                   <tr key={item.id} className="hover:bg-zinc-50 transition">
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/estoque/${item.id}`}
-                        className="font-bold text-zinc-950 hover:underline transition text-sm"
-                      >
-                        {item.name}
-                      </Link>
+                      {(() => {
+                        const devType = getDeviceType(item.category, item.notes);
+                        return (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {devType === 'notebook' && (
+                              <span className="border border-blue-900 bg-blue-100 text-blue-900 px-1.5 py-0.5 font-mono text-[9px] font-black uppercase">
+                                💻 Notebook
+                              </span>
+                            )}
+                            {devType === 'computador' && (
+                              <span className="border border-purple-900 bg-purple-100 text-purple-900 px-1.5 py-0.5 font-mono text-[9px] font-black uppercase">
+                                🖥️ Desktop PC
+                              </span>
+                            )}
+                            {devType === 'celular' && (
+                              <span className="border border-emerald-900 bg-emerald-100 text-emerald-900 px-1.5 py-0.5 font-mono text-[9px] font-black uppercase">
+                                📱 Celular
+                              </span>
+                            )}
+                            <Link
+                              href={`/admin/estoque/${item.id}`}
+                              className="font-bold text-zinc-950 hover:underline transition text-sm"
+                            >
+                              {item.name}
+                            </Link>
+                          </div>
+                        );
+                      })()}
                       <div className="mt-0.5 flex flex-wrap items-center gap-2">
                         {item.internal_sku && (
                           <span className="border border-zinc-950 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-zinc-950">

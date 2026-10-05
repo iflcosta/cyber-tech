@@ -910,6 +910,9 @@ export const STOCK_MOVEMENT_TYPES = [
 export type StockMovementTypeValue = (typeof STOCK_MOVEMENT_TYPES)[number]['value'];
 
 export const STOCK_CATEGORY_SUGGESTIONS = [
+  'Notebooks',
+  'Computadores',
+  'Celulares / Smartphones',
   'PC Pronta-Entrega',
   'Cabos',
   'Fontes',
