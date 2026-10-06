@@ -12,12 +12,12 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 export function createCRMBrowserClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_CRM_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_CRM_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anon) {
     throw new Error(
-      '[CRM] Variaveis NEXT_PUBLIC_SUPABASE_CRM_URL e NEXT_PUBLIC_SUPABASE_CRM_ANON_KEY precisam estar definidas no .env.local'
+      '[CRM] Variaveis NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY precisam estar definidas no .env.local'
     );
   }
 

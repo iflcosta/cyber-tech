@@ -55,8 +55,8 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   );
   const [codeFormat, setCodeFormat] = useState<'ean13' | 'compact' | 'numeric' | 'code39' | 'full' | 'custom'>('compact');
   const [customCode, setCustomCode] = useState('');
-  const [barcodeHeight, setBarcodeHeight] = useState<number>(36);
-  const [barWidth, setBarWidth] = useState<number>(2);
+  const [barcodeHeight, setBarcodeHeight] = useState<number>(52);
+  const [barWidth, setBarWidth] = useState<number>(2.4);
   const [showWarranty, setShowWarranty] = useState<boolean>(true);
   const [copies, setCopies] = useState(1);
   const [showPrice, setShowPrice] = useState(true);
@@ -368,37 +368,106 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
           )}
 
           {/* Configuração de Código de Barras e Cópias */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-zinc-200 pt-3">
-            <div>
-              <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Padrão do Código de Barras
-              </span>
-              <select
-                value={codeFormat}
-                onChange={(e) => setCodeFormat(e.target.value as any)}
-                className="mt-1 w-full border-2 border-zinc-950 bg-white px-2 py-1 font-mono text-xs text-zinc-950 font-bold"
-              >
-                <option value="compact">⚡ Code 128 Compacto ({compactSku}) — Recomendado</option>
-                <option value="ean13">🏷️ EAN-13 Supermercado ({ean13Code})</option>
-                <option value="numeric">🔢 Code 128 Numérico ({numericSku})</option>
-                <option value="code39">📋 Code 39 ({compactSku})</option>
-                <option value="full">🏷️ Code 128 Completo ({fallbackSku})</option>
-                <option value="custom">✏️ Personalizado (Digitar Código)</option>
-              </select>
+          <div className="border-t border-zinc-200 pt-3 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700">
+                  Padrão do Código de Barras
+                </span>
+                <select
+                  value={codeFormat}
+                  onChange={(e) => setCodeFormat(e.target.value as any)}
+                  className="mt-1 w-full border-2 border-zinc-950 bg-white px-2 py-1.5 font-mono text-xs text-zinc-950 font-bold"
+                >
+                  <option value="compact">⚡ Code 128 Compacto ({compactSku}) — Barras Mais Grossas (Recomendado)</option>
+                  <option value="ean13">🏷️ EAN-13 Padrão Supermercado ({ean13Code}) — Máxima Compatibilidade</option>
+                  <option value="numeric">🔢 Code 128 Numérico ({numericSku}) — Subset C (Ultra Grossa)</option>
+                  <option value="code39">📋 Code 39 ({compactSku})</option>
+                  <option value="full">🏷️ Code 128 Completo ({fallbackSku})</option>
+                  <option value="custom">✏️ Personalizado (Digitar Código)</option>
+                </select>
+
+                {codeFormat === 'custom' && (
+                  <input
+                    type="text"
+                    value={customCode}
+                    onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+                    placeholder="Ex: 7891234567895 ou NOTEBOOK01"
+                    className="mt-2 w-full border-2 border-zinc-950 bg-amber-50 px-2 py-1 font-mono text-xs font-bold text-zinc-950"
+                  />
+                )}
+              </div>
+
+              <div className="flex items-center justify-between sm:justify-end gap-3">
+                <div>
+                  <span className="block font-mono text-[11px] font-bold uppercase text-zinc-700 mb-1">
+                    Qtd. Cópias:
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={copies}
+                    onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    className="w-20 border-2 border-zinc-950 px-2 py-1 font-mono text-xs font-bold text-center text-zinc-950"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
-              <span className="font-mono text-[11px] font-bold uppercase text-zinc-700">
-                Qtd. Cópias:
-              </span>
-              <input
-                type="number"
-                min={1}
-                max={50}
-                value={copies}
-                onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-20 border border-zinc-400 px-2 py-1 font-mono text-xs font-bold text-center text-zinc-950"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <span className="block font-mono text-[10px] font-bold uppercase text-zinc-700 mb-1">
+                  Espessura das Barras (Resolução de Leitura):
+                </span>
+                <div className="flex gap-1">
+                  {[
+                    { label: 'Normal (2.0px)', val: 2.0 },
+                    { label: '⭐ Grossa (2.4px)', val: 2.4 },
+                    { label: 'Extra (2.8px)', val: 2.8 },
+                    { label: 'Ultra (3.2px)', val: 3.2 },
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setBarWidth(opt.val)}
+                      className={`flex-1 py-1 font-mono text-[10px] font-bold uppercase border cursor-pointer ${
+                        barWidth === opt.val
+                          ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                          : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="block font-mono text-[10px] font-bold uppercase text-zinc-700 mb-1">
+                  Altura do Código de Barras:
+                </span>
+                <div className="flex gap-1">
+                  {[
+                    { label: 'Média (42px)', val: 42 },
+                    { label: '⭐ Alta (52px)', val: 52 },
+                    { label: 'Extra Alta (60px)', val: 60 },
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setBarcodeHeight(opt.val)}
+                      className={`flex-1 py-1 font-mono text-[10px] font-bold uppercase border cursor-pointer ${
+                        barcodeHeight === opt.val
+                          ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                          : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -612,7 +681,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                         <Barcode128
                           value={activeBarcodeValue}
                           format={activeFormat}
-                          height={18}
+                          height={24}
                           barWidth={barWidth}
                         />
                       </div>
@@ -665,7 +734,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                         <Barcode128
                           value={activeBarcodeValue}
                           format={activeFormat}
-                          height={22}
+                          height={28}
                           barWidth={barWidth}
                         />
                       </div>
@@ -727,7 +796,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                         <Barcode128
                           value={activeBarcodeValue}
                           format={activeFormat}
-                          height={20}
+                          height={26}
                           barWidth={barWidth}
                         />
                       </div>
@@ -795,7 +864,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                         <Barcode128
                           value={activeBarcodeValue}
                           format={activeFormat}
-                          height={Math.min(barcodeHeight, 38)}
+                          height={Math.min(barcodeHeight, 46)}
                           barWidth={barWidth}
                         />
                       </div>
@@ -908,7 +977,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                         <Barcode128
                           value={activeBarcodeValue}
                           format={activeFormat}
-                          height={Math.min(barcodeHeight, 38)}
+                          height={Math.min(barcodeHeight, 46)}
                           barWidth={barWidth}
                         />
                       </div>

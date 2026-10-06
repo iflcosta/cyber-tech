@@ -84,6 +84,43 @@ export default async function StockItemDetailPage({
         </p>
       </div>
 
+      {/* BARRA DE PREÇO & AÇÃO DE EDIÇÃO RÁPIDA */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-zinc-950 bg-emerald-50/70 p-4 shadow-xs">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-950">
+            Preço de Venda:
+          </span>
+          <span className="font-mono text-3xl font-black text-emerald-900 tracking-tight">
+            {item.unit_price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </span>
+          {item.notes && item.notes.includes('Parcelamento:') && (
+            <span className="font-mono text-xs font-bold text-zinc-700 bg-white border border-zinc-300 px-2 py-0.5">
+              💳 {item.notes.split('Parcelamento:')[1]?.split('\n')[0]?.trim()}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <StockItemEditor
+            item={{
+              id: item.id,
+              name: item.name,
+              category: item.category,
+              brand: item.brand,
+              model: item.model,
+              ean13: item.ean13,
+              unit_price: item.unit_price,
+              unit_cost: item.unit_cost,
+              min_stock: item.min_stock,
+              notes: item.notes,
+              shelf_location: item.shelf_location,
+            }}
+            triggerLabel="✏️ Alterar Preço / Editar Item"
+            className="border-2 border-zinc-950 bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-xs"
+          />
+        </div>
+      </div>
+
       {deviceSpecs && (
         <section className="border-2 border-zinc-950 bg-white p-4 sm:p-5 shadow-sm space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-zinc-950 pb-2.5">
@@ -367,7 +404,10 @@ export default async function StockItemDetailPage({
                   unit_cost: item.unit_cost,
                   min_stock: item.min_stock,
                   notes: item.notes,
+                  shelf_location: item.shelf_location,
                 }}
+                triggerLabel="✏️ Editar Dados"
+                className="border border-zinc-950 bg-white px-2 py-0.5 font-mono text-[11px] font-bold uppercase text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
               />
             </div>
             <dl className="mt-3 space-y-2 font-mono text-xs">

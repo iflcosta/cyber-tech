@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import { STOCK_CATEGORY_SUGGESTIONS } from '@/app/admin/types/database';
+import { parseDeviceNotes, encodeDeviceNotes, calculateInstallment } from '@/app/admin/lib/deviceSpecs';
 
 type StockItemData = {
   id: string;
@@ -16,6 +17,7 @@ type StockItemData = {
   unit_cost: number | null;
   min_stock: number;
   notes: string | null;
+  shelf_location?: string | null;
 };
 
 function parseBRL(v: string): number | null {
@@ -28,9 +30,19 @@ function parseBRL(v: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export function StockItemEditor({ item }: { item: StockItemData }) {
+export function StockItemEditor({
+  item,
+  initialOpen = false,
+  triggerLabel = 'Editar dados',
+  className,
+}: {
+  item: StockItemData;
+  initialOpen?: boolean;
+  triggerLabel?: string;
+  className?: string;
+}) {
   const router = useRouter();
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(initialOpen);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +51,7 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
   const [brand, setBrand] = useState(item.brand ?? '');
   const [model, setModel] = useState(item.model ?? '');
   const [ean13, setEan13] = useState(item.ean13 ?? '');
+  const [shelfLocation, setShelfLocation] = useState(item.shelf_location ?? '');
   const [unitPrice, setUnitPrice] = useState(item.unit_price.toFixed(2).replace('.', ','));
   const [unitCost, setUnitCost] = useState(
     item.unit_cost !== null ? item.unit_cost.toFixed(2).replace('.', ',') : '',
@@ -67,6 +80,17 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
       return;
     }
 
+    // Se o item tiver Ficha Técnica gravada nas notas, recalcula o parcelamento e mantém o JSON sincronizado!
+    let finalNotes = notes.trim() || null;
+    const { specs, humanNotes } = parseDeviceNotes(notes);
+    if (specs) {
+      const updatedInstallment = calculateInstallment(priceNum).text;
+      finalNotes = encodeDeviceNotes(humanNotes, {
+        ...specs,
+        installmentInfo: updatedInstallment,
+      });
+    }
+
     setSaving(true);
     setError(null);
     try {
@@ -79,10 +103,11 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
           brand: brand.trim() || null,
           model: model.trim() || null,
           ean13: ean13.trim() || null,
+          shelf_location: shelfLocation.trim() || null,
           unit_price: priceNum,
           unit_cost: costNum,
           min_stock: minNum,
-          notes: notes.trim() || null,
+          notes: finalNotes,
           updated_at: new Date().toISOString(),
         })
         .eq('id', item.id);
@@ -102,34 +127,73 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="text-xs font-semibold text-zinc-900 underline hover:text-black"
+        className={
+          className ||
+          'font-mono text-xs font-bold text-zinc-950 underline underline-offset-4 hover:text-black hover:bg-zinc-100 px-2 py-1 transition cursor-pointer'
+        }
       >
-        Editar dados
+        {triggerLabel}
       </button>
     );
   }
 
   return (
-    <div className="mt-3 space-y-3 border-t border-zinc-200 pt-3 text-sm">
+    <div className="mt-3 space-y-3 border-2 border-zinc-950 bg-white p-4 shadow-sm text-sm">
+      <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+        <span className="font-mono text-xs font-bold uppercase text-zinc-950">
+          ✏️ Editar Dados do Item / Preço
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="font-mono text-xs text-zinc-500 hover:text-zinc-950 cursor-pointer"
+        >
+          ✕ Fechar
+        </button>
+      </div>
+
       <div>
-        <label className="block text-xs font-medium text-zinc-600">Nome *</label>
+        <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Nome / Título *</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 font-bold focus:border-black focus:outline-none"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-medium text-zinc-600">Categoria</label>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Preço de Venda (R$) *</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={unitPrice}
+            onChange={(e) => setUnitPrice(e.target.value)}
+            className="mt-1 w-full border-2 border-zinc-950 bg-emerald-50/50 px-2.5 py-1.5 font-mono text-sm font-black text-emerald-800 focus:border-black focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Custo de Compra (R$)</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={unitCost}
+            onChange={(e) => setUnitCost(e.target.value)}
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-xs text-zinc-900 focus:border-black focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Categoria</label>
           <input
             type="text"
             list="stock-cat-list-edit"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:border-black focus:outline-none"
           />
           <datalist id="stock-cat-list-edit">
             {STOCK_CATEGORY_SUGGESTIONS.map((c) => (
@@ -138,88 +202,82 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
           </datalist>
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-600">EAN-13 / Código</label>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Localização / Vitrine</label>
           <input
             type="text"
-            value={ean13}
-            onChange={(e) => setEan13(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            value={shelfLocation}
+            onChange={(e) => setShelfLocation(e.target.value)}
+            placeholder="Ex: Vitrine Balcão 01"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-xs text-zinc-900 focus:border-black focus:outline-none"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-medium text-zinc-600">Marca</label>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Marca</label>
           <input
             type="text"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:border-black focus:outline-none"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-600">Modelo</label>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Modelo</label>
           <input
             type="text"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-900 focus:border-black focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-medium text-zinc-600">Preço (R$) *</label>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">EAN-13 (Código de barras)</label>
           <input
             type="text"
-            inputMode="decimal"
-            value={unitPrice}
-            onChange={(e) => setUnitPrice(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            value={ean13}
+            onChange={(e) => setEan13(e.target.value)}
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-xs text-zinc-900 focus:border-black focus:outline-none"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-600">Custo (R$)</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={unitCost}
-            onChange={(e) => setUnitCost(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-zinc-600">Est. Mínimo</label>
+          <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Estoque Mínimo</label>
           <input
             type="number"
             min="0"
             value={minStock}
             onChange={(e) => setMinStock(e.target.value)}
-            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-xs text-zinc-900 focus:border-black focus:outline-none"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-zinc-600">Observações</label>
+        <label className="block font-mono text-[11px] font-bold uppercase text-zinc-700">Observações / Ficha Técnica</label>
         <textarea
-          rows={2}
+          rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 text-sm text-zinc-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="mt-1 w-full border border-zinc-300 px-2.5 py-1.5 font-mono text-[11px] text-zinc-900 focus:border-black focus:outline-none"
         />
       </div>
 
-      {error && <p className="border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
+      {error && (
+        <p className="border-2 border-red-600 bg-red-50 p-2 font-mono text-xs font-bold text-red-900">
+          [ERRO] {error}
+        </p>
+      )}
 
-      <div className="flex justify-end gap-2 pt-1">
+      <div className="flex justify-end gap-2 pt-2 border-t border-zinc-200">
         <button
           type="button"
           onClick={() => setEditing(false)}
           disabled={saving}
-          className="border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-wider text-zinc-700 hover:bg-zinc-50"
+          className="border border-zinc-300 bg-white px-3 py-1.5 font-mono text-xs font-medium uppercase text-zinc-700 hover:bg-zinc-50 cursor-pointer"
         >
           Cancelar
         </button>
@@ -227,9 +285,9 @@ export function StockItemEditor({ item }: { item: StockItemData }) {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="bg-black px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="bg-zinc-950 px-4 py-1.5 font-mono text-xs font-bold uppercase text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer shadow-xs"
         >
-          {saving ? 'Salvando…' : 'Salvar alterações'}
+          {saving ? 'Gravando…' : '✓ Salvar Alterações'}
         </button>
       </div>
     </div>

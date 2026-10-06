@@ -7,13 +7,34 @@ import { QRCodeImage } from '@/app/admin/components/QRCode';
 
 const CHROME_KIOSK_COMMAND = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --user-data-dir="%LOCALAPPDATA%\\Google\\Chrome\\CyberBalcao" --kiosk-printing --test-type --app=https://www.cyberinformatica.tech/admin/os`;
 
+export type ProfileRecord = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  role: 'owner' | 'technician';
+  can_delete: boolean;
+  active: boolean;
+  commission_rate: number | string | null;
+  created_at?: string;
+};
+
+interface ConfiguracoesClientProps {
+  userName: string;
+  userRole: string;
+  isOwner?: boolean;
+  currentUserId?: string;
+  initialProfiles?: ProfileRecord[];
+}
+
 export function ConfiguracoesClient({
   userName,
   userRole,
-}: {
-  userName: string;
-  userRole: string;
-}) {
+  isOwner = false,
+  currentUserId,
+  initialProfiles = [],
+}: ConfiguracoesClientProps) {
+  // Estado da Equipe & Permissões
+  const [profiles, setProfiles] = useState<ProfileRecord[]>(initialProfiles);
   // Estado do Agente de Impressão Local (MPT-II 58mm)
   const [agentUrl, setAgentUrlState] = useState('http://127.0.0.1:9100');
   const [agentStatus, setAgentStatus] = useState<'checking' | 'online' | 'offline'>('checking');
@@ -42,6 +63,50 @@ export function ConfiguracoesClient({
     setAgentStatus('checking');
     const res = await checkPrintAgentStatus();
     setAgentStatus(res.ok ? 'online' : 'offline');
+  }
+
+  async function handleSaveProfile(
+    targetUserId: string,
+    updates: {
+      role: 'owner' | 'technician';
+      canDelete: boolean;
+      active: boolean;
+      commissionRate: number;
+    },
+  ): Promise<{ ok: boolean; message: string }> {
+    try {
+      const res = await fetch('/api/admin/permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUserId,
+          role: updates.role,
+          canDelete: updates.canDelete,
+          active: updates.active,
+          commissionRate: updates.commissionRate,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        return { ok: false, message: data.error || 'Erro ao atualizar permissões.' };
+      }
+      setProfiles((prev) =>
+        prev.map((p) =>
+          p.id === targetUserId
+            ? {
+                ...p,
+                role: updates.role,
+                can_delete: updates.canDelete,
+                active: updates.active,
+                commission_rate: updates.commissionRate,
+              }
+            : p,
+        ),
+      );
+      return { ok: true, message: 'Permissões atualizadas com sucesso!' };
+    } catch (err) {
+      return { ok: false, message: (err as Error).message || 'Erro de conexão ao salvar.' };
+    }
   }
 
   function handleSaveAgentUrl(e: React.FormEvent) {
@@ -158,6 +223,43 @@ export function ConfiguracoesClient({
             <p className="font-mono text-xs font-bold text-zinc-950 uppercase">{userName}</p>
             <p className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider">{userRole}</p>
           </div>
+        </div>
+      </div>
+
+      {/* SEÇÃO PRINCIPAL: GESTÃO DE EQUIPE & CONTROLE DE PERMISSÕES */}
+      <div className="border-2 border-zinc-950 bg-white p-5 shadow-xs space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-zinc-950 pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-bold uppercase tracking-wider text-zinc-950 flex items-center gap-1.5">
+                <span>👥</span> Gestão de Equipe &amp; Controle de Permissões
+              </span>
+              <span className="bg-zinc-950 text-white font-mono text-[10px] font-bold px-2 py-0.5 uppercase">
+                {profiles.length} Membros
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-zinc-600 font-mono">
+              Controle de acesso total, permissão de exclusão de dados (can_delete), status ativo e taxas de comissão.
+            </p>
+          </div>
+
+          {!isOwner && (
+            <span className="border border-amber-500 bg-amber-50 px-2.5 py-1 font-mono text-xs font-bold text-amber-900">
+              🔒 Somente Proprietários podem alterar permissões
+            </span>
+          )}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {profiles.map((prof) => (
+            <UserPermissionCard
+              key={prof.id}
+              profile={prof}
+              isCurrentUser={prof.id === currentUserId}
+              canEdit={isOwner}
+              onSave={handleSaveProfile}
+            />
+          ))}
         </div>
       </div>
 
@@ -527,5 +629,235 @@ export function ConfiguracoesClient({
         </div>
       )}
     </div>
+  );
+}
+
+function UserPermissionCard({
+  profile,
+  isCurrentUser,
+  canEdit,
+  onSave,
+}: {
+  profile: ProfileRecord;
+  isCurrentUser: boolean;
+  canEdit: boolean;
+  onSave: (
+    targetUserId: string,
+    updates: {
+      role: 'owner' | 'technician';
+      canDelete: boolean;
+      active: boolean;
+      commissionRate: number;
+    },
+  ) => Promise<{ ok: boolean; message: string }>;
+}) {
+  const [role, setRole] = useState<'owner' | 'technician'>(profile.role);
+  const [canDelete, setCanDelete] = useState<boolean>(profile.can_delete);
+  const [active, setActive] = useState<boolean>(profile.active ?? true);
+  const [commissionRate, setCommissionRate] = useState<string>(
+    profile.commission_rate !== null && profile.commission_rate !== undefined
+      ? String(profile.commission_rate)
+      : '0',
+  );
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const isOwnerRole = role === 'owner';
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canEdit || saving) return;
+
+    setSaving(true);
+    setFeedback(null);
+    const parsedCommission = parseFloat(commissionRate.replace(',', '.')) || 0;
+    const res = await onSave(profile.id, {
+      role,
+      canDelete,
+      active,
+      commissionRate: parsedCommission,
+    });
+    setSaving(false);
+    setFeedback(res);
+    setTimeout(() => setFeedback(null), 3500);
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className={`border-2 p-4 transition space-y-3 ${
+        isCurrentUser ? 'border-zinc-950 bg-zinc-50/70 shadow-xs' : 'border-zinc-300 bg-white'
+      } ${!active ? 'opacity-70 bg-zinc-100' : ''}`}
+    >
+      {/* Topo do Usuário */}
+      <div className="flex items-start justify-between gap-2 border-b border-zinc-200 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">
+            {isOwnerRole ? '👑' : '🛠️'}
+          </span>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <strong className="font-mono text-sm uppercase text-zinc-950">
+                {profile.full_name || 'Sem Nome'}
+              </strong>
+              {isCurrentUser && (
+                <span className="bg-zinc-950 text-white font-mono text-[9px] font-bold px-1.5 py-0.2 uppercase">
+                  Você
+                </span>
+              )}
+            </div>
+            <span className="font-mono text-[11px] text-zinc-500 block truncate max-w-[200px]">
+              {profile.email}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {canEdit ? (
+            <button
+              type="button"
+              onClick={() => setActive(!active)}
+              className={`font-mono text-[10px] font-bold uppercase px-2 py-0.5 border cursor-pointer transition ${
+                active
+                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                  : 'border-red-600 bg-red-50 text-red-800'
+              }`}
+              title="Clique para ativar/desativar conta"
+            >
+              {active ? '● Ativo' : '○ Inativo'}
+            </button>
+          ) : (
+            <span
+              className={`font-mono text-[10px] font-bold uppercase px-2 py-0.5 border ${
+                active
+                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                  : 'border-red-600 bg-red-50 text-red-800'
+              }`}
+            >
+              {active ? '● Ativo' : '○ Inativo'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Controles de Permissão */}
+      <div className="space-y-2.5 font-mono text-xs">
+        {/* Papel no Sistema */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">
+            Papel / Nível de Acesso:
+          </label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as 'owner' | 'technician')}
+            disabled={!canEdit}
+            className="w-full border-2 border-zinc-950 bg-white px-2.5 py-1 text-xs font-bold text-zinc-950 disabled:bg-zinc-100 disabled:border-zinc-300"
+          >
+            <option value="owner">👑 Dono / Administrador (Acesso Total)</option>
+            <option value="technician">🛠️ Técnico Bancada (Ordens de Serviço)</option>
+          </select>
+          <span className="text-[10px] text-zinc-500 block mt-0.5">
+            {role === 'owner'
+              ? '✓ Acesso a Configurações, Financeiro, Relatórios e Permissões.'
+              : '✓ Acesso focado em OS, Balcão, Peças e Execução de Serviços.'}
+          </span>
+        </div>
+
+        {/* Permissão de Exclusão (can_delete) */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">
+            Permissão para Excluir Dados (can_delete):
+          </label>
+          {canEdit ? (
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setCanDelete(true)}
+                className={`py-1.5 px-2 font-mono text-xs font-bold uppercase border cursor-pointer transition ${
+                  canDelete
+                    ? 'border-emerald-700 bg-emerald-600 text-white shadow-xs'
+                    : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                }`}
+              >
+                ✅ Liberado
+              </button>
+              <button
+                type="button"
+                onClick={() => setCanDelete(false)}
+                className={`py-1.5 px-2 font-mono text-xs font-bold uppercase border cursor-pointer transition ${
+                  !canDelete
+                    ? 'border-zinc-950 bg-zinc-950 text-white shadow-xs'
+                    : 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                }`}
+              >
+                🚫 Bloqueado
+              </button>
+            </div>
+          ) : (
+            <div
+              className={`p-1.5 text-xs font-bold uppercase border text-center ${
+                canDelete
+                  ? 'border-emerald-700 bg-emerald-50 text-emerald-900'
+                  : 'border-zinc-300 bg-zinc-100 text-zinc-700'
+              }`}
+            >
+              {canDelete ? '✅ Pode Excluir (Liberado)' : '🚫 Exclusão Bloqueada'}
+            </div>
+          )}
+          <span className="text-[10px] text-zinc-500 block mt-0.5">
+            {canDelete
+              ? '⚠️ Usuário pode apagar OSs, excluir clientes e remover itens de estoque.'
+              : '🔒 Botões de apagar OSs, estoque e clientes ficam ocultos.'}
+          </span>
+        </div>
+
+        {/* Taxa de Comissão */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">
+            Taxa de Comissão (%):
+          </label>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              inputMode="decimal"
+              value={commissionRate}
+              onChange={(e) => setCommissionRate(e.target.value)}
+              disabled={!canEdit}
+              placeholder="Ex: 30 ou 0.5"
+              className="w-24 border border-zinc-400 bg-white px-2 py-1 text-xs font-bold text-zinc-950 disabled:bg-zinc-100"
+            />
+            <span className="font-bold text-zinc-700 text-xs">%</span>
+          </div>
+          <span className="text-[10px] text-zinc-500 block mt-0.5">
+            Percentual pago sobre os serviços concluídos na sexta-feira.
+          </span>
+        </div>
+      </div>
+
+      {/* Feedback e Botão Salvar */}
+      {feedback && (
+        <div
+          className={`p-2 font-mono text-xs font-bold border ${
+            feedback.ok
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+              : 'bg-red-50 border-red-300 text-red-900'
+          }`}
+        >
+          {feedback.message}
+        </div>
+      )}
+
+      {canEdit && (
+        <div className="pt-2 border-t border-zinc-200">
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full border-2 border-zinc-950 bg-zinc-950 py-1.5 px-3 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 transition cursor-pointer"
+          >
+            {saving ? 'Gravando Alterações…' : `💾 Salvar Permissões de ${profile.full_name || 'Usuário'}`}
+          </button>
+        </div>
+      )}
+    </form>
   );
 }
