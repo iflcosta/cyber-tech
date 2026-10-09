@@ -94,6 +94,29 @@ export function UsePartForm({
       });
       if (insErr) throw insErr;
 
+      // Sincroniza o valor estimado da OS para refletir a peça no rastreio público e recibos
+      try {
+        const { data: currentOS } = await supabase
+          .from('service_orders')
+          .select('estimated_value')
+          .eq('id', serviceOrderId)
+          .single();
+
+        if (currentOS) {
+          const currentEst = Number(currentOS.estimated_value || 0);
+          const newEstimated = Math.round((currentEst + total) * 100) / 100;
+          await supabase
+            .from('service_orders')
+            .update({
+              estimated_value: newEstimated,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', serviceOrderId);
+        }
+      } catch {
+        // Falha não-bloqueante na atualização de estimativa
+      }
+
       setSelected(null);
       setSearch('');
       setQuantity('1');
@@ -135,6 +158,30 @@ export function UsePartForm({
         } as never,
       );
       if (rpcErr) throw rpcErr;
+
+      // Sincroniza o valor estimado da OS com a nova peça avulsa
+      try {
+        const totalNew = price * qty;
+        const { data: currentOS } = await supabase
+          .from('service_orders')
+          .select('estimated_value')
+          .eq('id', serviceOrderId)
+          .single();
+
+        if (currentOS && totalNew > 0) {
+          const currentEst = Number(currentOS.estimated_value || 0);
+          const newEstimated = Math.round((currentEst + totalNew) * 100) / 100;
+          await supabase
+            .from('service_orders')
+            .update({
+              estimated_value: newEstimated,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', serviceOrderId);
+        }
+      } catch {
+        // Falha não-bloqueante
+      }
 
       setNewName('');
       setNewCategory('');

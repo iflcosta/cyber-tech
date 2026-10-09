@@ -39,6 +39,7 @@ const TABLES = [
   'service_orders',
   'service_order_events',
   'service_order_payments',
+  'commission_ledger',
   'stock_category_codes',
   'stock_items',
   'stock_movements',
@@ -47,6 +48,7 @@ const TABLES = [
   'part_orders',
   'part_order_events',
   'contact_leads',
+  'it_support_leads',
 ] as const;
 
 function checkAuth(req: Request): boolean {

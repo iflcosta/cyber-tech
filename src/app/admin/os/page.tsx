@@ -96,10 +96,9 @@ export default async function OSListPage({
     (isIago || isJefferson)
       ? supabase
           .from('service_orders')
-          .select('labor_cost')
+          .select('labor_cost, status, delivered_at, updated_at')
           .eq('technician_id', user.id)
-          .gte('created_at', fridayBounds.start.toISOString())
-          .lte('created_at', fridayBounds.end.toISOString())
+          .in('status', ['ready', 'delivered'])
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -111,14 +110,24 @@ export default async function OSListPage({
 
   if (isIago || isJefferson) {
     const rate = isIago ? 0.30 : 0.50;
-    const osComm = ((weekOrdersRes as { data?: Array<{ labor_cost: number | null }> })?.data ?? []).reduce(
+    const startMs = fridayBounds.start.getTime();
+    const endMs = fridayBounds.end.getTime();
+
+    const weekDeliveredOrders = ((weekOrdersRes as { data?: Array<{ labor_cost: number | null; status: string; delivered_at: string | null; updated_at: string | null }> })?.data ?? []).filter((row) => {
+      const finishDateStr = row.delivered_at || row.updated_at;
+      if (!finishDateStr) return false;
+      const t = new Date(finishDateStr).getTime();
+      return t >= startMs && t <= endMs;
+    });
+
+    const osComm = weekDeliveredOrders.reduce(
       (acc, row) => {
         const labor = Number(row.labor_cost || 0);
         return acc + Math.round(labor * rate * 100) / 100;
       },
       0,
     );
-    const fixedRate = isIago ? 200 : 0;
+    const fixedRate = isIago ? 100 : 0;
     myFridayCommission = {
       total: osComm + fixedRate,
       osComm,

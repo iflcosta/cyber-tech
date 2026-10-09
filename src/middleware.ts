@@ -18,8 +18,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL;
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_CRM_ANON_KEY;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_CRM_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_CRM_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     // Se as variáveis ainda não estiverem configuradas no ambiente, deixa o layout exibir o aviso
     if (!url || !anon) {

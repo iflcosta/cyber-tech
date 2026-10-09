@@ -28,6 +28,7 @@ export default async function ComissoesPage({
   const currentUserName = profile?.full_name ?? '';
   const isCurrentUserIago = currentUserName.toLowerCase().includes('iago');
   const isCurrentUserJefferson = currentUserName.toLowerCase().includes('jefferson');
+  const isOwnerOrManager = Boolean(profile?.can_delete) || isCurrentUserIago || (profile?.role === 'owner' && !isCurrentUserJefferson);
 
   const now = new Date();
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -242,6 +243,13 @@ export default async function ComissoesPage({
   });
 
   const records = Array.from(recordsMap.values());
+  const visibleRecords = isOwnerOrManager
+    ? records
+    : records.filter(
+        (r) =>
+          r.technician_id === user.id ||
+          r.technician_name.toLowerCase().includes(currentUserName.toLowerCase()),
+      );
   const pendingRecords = records.filter((r) => r.status === 'pending' && r.commission_amount > 0);
 
   const totalLabor = serviceOrders.reduce((acc, so) => acc + Number(so.labor_cost || 0), 0);
@@ -258,10 +266,10 @@ export default async function ComissoesPage({
 
   // Política de remuneração do Iago:
   // - Até 02/10/2026: 30% mão de obra + R$ 50/dia balcão (R$ 250/semana de 5 dias)
-  // - A partir de 05/10/2026 (Segunda-Feira): 30% mão de obra + R$ 200/semana fixa
+  // - A partir de 05/10/2026: 30% mão de obra + R$ 100/semana fixa (período da tarde / R$ 20/dia)
   const isNewPolicyFromOct5 = endDate >= new Date('2026-10-05T00:00:00');
-  const DAILY_BALCAO_RATE = isNewPolicyFromOct5 ? 40 : 50;
-  const WEEKLY_FIXED_RATE = isNewPolicyFromOct5 ? 200 : 250;
+  const DAILY_BALCAO_RATE = isNewPolicyFromOct5 ? 20 : 50;
+  const WEEKLY_FIXED_RATE = isNewPolicyFromOct5 ? 100 : 250;
 
   const defaultBalcaoDays =
     selectedPeriodo === 'semana' || selectedPeriodo === 'semana_anterior'
@@ -277,8 +285,8 @@ export default async function ComissoesPage({
       ? WEEKLY_FIXED_RATE
       : iagoBalcaoDays * DAILY_BALCAO_RATE;
 
-  const iagoPolicyBadge = isNewPolicyFromOct5 ? '30% + R$ 200/sem' : '30% + R$ 50/d';
-  const iagoPolicyDesc = isNewPolicyFromOct5 ? 'Iago 30% + R$ 200/sem fixo' : 'Iago 30% + R$ 50/dia (Balcão)';
+  const iagoPolicyBadge = isNewPolicyFromOct5 ? '30% + R$ 100/sem' : '30% + R$ 50/d';
+  const iagoPolicyDesc = isNewPolicyFromOct5 ? 'Iago 30% + R$ 100/sem fixo (tarde)' : 'Iago 30% + R$ 50/dia (Balcão)';
 
   const iagoPending = records
     .filter((r) => r.technician_name.toLowerCase().includes('iago') && r.status === 'pending')
@@ -338,23 +346,25 @@ export default async function ComissoesPage({
           </p>
         </div>
 
-        <SettleFridayButton
-          pendingItems={pendingRecords.map((r) => ({
-            id: r.id,
-            service_order_id: r.service_order_id,
-            technician_id: r.technician_id,
-            technician_name: r.technician_name,
-            labor_amount: r.labor_amount,
-            commission_rate: r.commission_rate,
-            commission_amount: r.commission_amount,
-            os_payment_status: r.os_payment_status,
-          }))}
-          pendingTotal={totalPending}
-          periodLabel={periodLabel}
-        />
+        {isOwnerOrManager && (
+          <SettleFridayButton
+            pendingItems={pendingRecords.map((r) => ({
+              id: r.id,
+              service_order_id: r.service_order_id,
+              technician_id: r.technician_id,
+              technician_name: r.technician_name,
+              labor_amount: r.labor_amount,
+              commission_rate: r.commission_rate,
+              commission_amount: r.commission_amount,
+              os_payment_status: r.os_payment_status,
+            }))}
+            pendingTotal={totalPending}
+            periodLabel={periodLabel}
+          />
+        )}
       </div>
 
-      {migrationPending && (
+      {migrationPending && isOwnerOrManager && (
         <div className="border-2 border-zinc-950 bg-zinc-100 p-4 font-mono text-xs text-zinc-900">
           <p className="font-bold uppercase">
             [AVISO DE BANCO DE DADOS] A tabela `commission_ledger` (Migration 0034) ainda não foi executada no SQL Editor do Supabase.
@@ -365,174 +375,182 @@ export default async function ComissoesPage({
         </div>
       )}
 
-      {/* Grid de Resumo de Faturamento: Mão de Obra vs Peças */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-2 border-zinc-950 bg-zinc-950 gap-[1px]">
-        <div className="bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-              Mão de Obra Total
-            </p>
-            <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-zinc-800">
-              Serviços
-            </span>
+      {/* Grid de Resumo de Faturamento: Mão de Obra vs Peças (Exclusivo Dono / Gerência) */}
+      {isOwnerOrManager && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-2 border-zinc-950 bg-zinc-950 gap-[1px]">
+          <div className="bg-white p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                Mão de Obra Total
+              </p>
+              <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-zinc-800">
+                Serviços
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalLabor)}</p>
+            <p className="mt-1 font-mono text-xs text-zinc-500">{serviceOrders.length} OSs no período</p>
           </div>
-          <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalLabor)}</p>
-          <p className="mt-1 font-mono text-xs text-zinc-500">{serviceOrders.length} OSs no período</p>
-        </div>
 
-        <div className="bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-              Peças Aplicadas
-            </p>
-            <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-zinc-800">
-              Estoque Eduardo
-            </span>
+          <div className="bg-white p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                Peças Aplicadas
+              </p>
+              <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-zinc-800">
+                Estoque Eduardo
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalParts)}</p>
+            <p className="mt-1 font-mono text-xs text-zinc-500">Custo direto repassado</p>
           </div>
-          <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalParts)}</p>
-          <p className="mt-1 font-mono text-xs text-zinc-500">Custo direto repassado</p>
-        </div>
 
-        <div className="bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-              Faturamento Bruto
-            </p>
-            <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-zinc-800">
-              Total OS
-            </span>
+          <div className="bg-white p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                Faturamento Bruto
+              </p>
+              <span className="border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-zinc-800">
+                Total OS
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalRevenue)}</p>
+            <p className="mt-1 font-mono text-xs text-zinc-500">Mão de obra + peças</p>
           </div>
-          <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalRevenue)}</p>
-          <p className="mt-1 font-mono text-xs text-zinc-500">Mão de obra + peças</p>
-        </div>
 
-        <div className="bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-              Loja / Felipe (Margem)
-            </p>
-            <span className="border border-zinc-950 bg-zinc-950 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
-              Retido Loja
-            </span>
+          <div className="bg-white p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                Loja / Felipe (Margem)
+              </p>
+              <span className="border border-zinc-950 bg-zinc-950 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-white">
+                Retido Loja
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(storeRetainedLabor)}</p>
+            <p className="mt-1 font-mono text-xs text-zinc-500">Líquido após repasse técnico</p>
           </div>
-          <p className="mt-2 text-2xl font-black font-mono text-zinc-950">{fmtBRL(storeRetainedLabor)}</p>
-          <p className="mt-1 font-mono text-xs text-zinc-500">Líquido após repasse técnico</p>
         </div>
-      </div>
+      )}
 
       {/* Grid de Repasse por Técnico */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 border-2 border-zinc-950 bg-zinc-950 gap-[1px]">
-        {/* Iago 30% + Ajuda de Custo */}
-        <div className={`p-5 transition ${isCurrentUserIago ? 'bg-emerald-50/70 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
-                  Iago // Balcão &amp; Bancada
-                </p>
-                {isCurrentUserIago && (
-                  <span className="bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase px-1.5 py-0.5">
-                    Você
-                  </span>
-                )}
+      <div className={`grid grid-cols-1 ${isOwnerOrManager ? 'sm:grid-cols-3' : ''} border-2 border-zinc-950 bg-zinc-950 gap-[1px]`}>
+        {/* Iago 30% + Ajuda de Custo (Visível para Iago ou Gerência/Dono) */}
+        {(isOwnerOrManager || isCurrentUserIago) && (
+          <div className={`p-5 transition ${isCurrentUserIago ? 'bg-emerald-50/70 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
+                    Iago // Balcão &amp; Bancada
+                  </p>
+                  {isCurrentUserIago && (
+                    <span className="bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase px-1.5 py-0.5">
+                      Você
+                    </span>
+                  )}
+                </div>
+                <p className="font-mono text-[11px] text-zinc-500">{iagoPolicyDesc}</p>
               </div>
-              <p className="font-mono text-[11px] text-zinc-500">{iagoPolicyDesc}</p>
+              <span className="border border-zinc-950 bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold text-white">
+                {iagoPolicyBadge}
+              </span>
             </div>
-            <span className="border border-zinc-950 bg-zinc-950 px-2 py-0.5 font-mono text-[11px] font-bold text-white">
-              {iagoPolicyBadge}
-            </span>
-          </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <div>
-              <p className="font-mono text-[11px] text-zinc-500">
-                Total Sexta (Comissão + {isNewPolicyFromOct5 ? 'Fixo R$ 200' : `${iagoBalcaoDays}d Balcão`}):
-              </p>
-              <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(iagoFridayTotalWithAllowance)}</p>
-              <p className="text-[11px] font-mono text-zinc-600 mt-0.5">
-                OS 30%: {fmtBRL(iagoPending)} + {isNewPolicyFromOct5 ? 'Fixo Semanal' : 'Balcão'}: {fmtBRL(iagoBalcaoAllowance)}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-mono text-[11px] text-zinc-500">Só Comissão:</p>
-              <p className="text-sm font-mono text-zinc-900 font-bold">{fmtBRL(iagoTotal)}</p>
-            </div>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-zinc-200 flex items-center justify-between font-mono text-[11px]">
-            <span className="text-zinc-600 font-bold uppercase">Dias no balcão:</span>
-            <div className="flex items-center gap-1">
-              {[0, 3, 4, 5, 6].map((d) => (
-                <Link
-                  key={d}
-                  href={`/admin/comissoes${buildQuery({ dias_balcao: String(d) })}`}
-                  className={`px-2 py-0.5 font-mono font-bold transition ${
-                    iagoBalcaoDays === d
-                      ? 'bg-zinc-950 text-white'
-                      : 'border border-zinc-300 bg-zinc-50 text-zinc-800 hover:bg-zinc-200'
-                  }`}
-                >
-                  {d}d
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Jefferson 50% */}
-        <div className={`p-5 transition ${isCurrentUserJefferson ? 'bg-emerald-50/70 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
-                  Jefferson // 2º Andar
+            <div className="mt-4 flex items-baseline justify-between">
+              <div>
+                <p className="font-mono text-[11px] text-zinc-500">
+                  Total Sexta (Comissão + {isNewPolicyFromOct5 ? 'Fixo R$ 100' : `${iagoBalcaoDays}d Balcão`}):
                 </p>
-                {isCurrentUserJefferson && (
-                  <span className="bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase px-1.5 py-0.5">
-                    Você
-                  </span>
-                )}
+                <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(iagoFridayTotalWithAllowance)}</p>
+                <p className="text-[11px] font-mono text-zinc-600 mt-0.5">
+                  OS 30%: {fmtBRL(iagoPending)} + {isNewPolicyFromOct5 ? 'Fixo Semanal (Tarde)' : 'Balcão'}: {fmtBRL(iagoBalcaoAllowance)}
+                </p>
               </div>
-              <p className="font-mono text-[11px] text-zinc-500">50/50 Celulares, OCA e GPU</p>
+              <div className="text-right">
+                <p className="font-mono text-[11px] text-zinc-500">Só Comissão:</p>
+                <p className="text-sm font-mono text-zinc-900 font-bold">{fmtBRL(iagoTotal)}</p>
+              </div>
             </div>
-            <span className="border border-zinc-950 bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-950">
-              50 / 50
-            </span>
+            <div className="mt-3 pt-2.5 border-t border-zinc-200 flex items-center justify-between font-mono text-[11px]">
+              <span className="text-zinc-600 font-bold uppercase">Dias no balcão:</span>
+              <div className="flex items-center gap-1">
+                {[0, 3, 4, 5, 6].map((d) => (
+                  <Link
+                    key={d}
+                    href={`/admin/comissoes${buildQuery({ dias_balcao: String(d) })}`}
+                    className={`px-2 py-0.5 font-mono font-bold transition ${
+                      iagoBalcaoDays === d
+                        ? 'bg-zinc-950 text-white'
+                        : 'border border-zinc-300 bg-zinc-50 text-zinc-800 hover:bg-zinc-200'
+                    }`}
+                  >
+                    {d}d
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <div>
-              <p className="font-mono text-[11px] text-zinc-500">A Pagar na Sexta:</p>
-              <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(jeffersonPending)}</p>
-            </div>
-            <div className="text-right">
-              <p className="font-mono text-[11px] text-zinc-500">Total Período:</p>
-              <p className="text-sm font-mono text-zinc-900 font-bold">{fmtBRL(jeffersonTotal)}</p>
-            </div>
-          </div>
-        </div>
+        )}
 
-        {/* Total Comissões Pendentes vs Acertadas */}
-        <div className="bg-white p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
-                Fechamento de Sexta-Feira
-              </p>
-              <p className="font-mono text-[11px] text-zinc-500">Status de Baixa Semanal</p>
+        {/* Jefferson 50% (Visível para Jefferson ou Gerência/Dono) */}
+        {(isOwnerOrManager || isCurrentUserJefferson) && (
+          <div className={`p-5 transition ${isCurrentUserJefferson ? 'bg-emerald-50/70 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
+                    Jefferson // 2º Andar
+                  </p>
+                  {isCurrentUserJefferson && (
+                    <span className="bg-emerald-600 text-white font-mono text-[9px] font-bold uppercase px-1.5 py-0.5">
+                      Você
+                    </span>
+                  )}
+                </div>
+                <p className="font-mono text-[11px] text-zinc-500">50/50 Celulares, OCA e GPU</p>
+              </div>
+              <span className="border border-zinc-950 bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-950">
+                50 / 50
+              </span>
             </div>
-            <span className="border border-zinc-950 bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-950">
-              SEXTA-FEIRA
-            </span>
+            <div className="mt-4 flex items-baseline justify-between">
+              <div>
+                <p className="font-mono text-[11px] text-zinc-500">A Pagar na Sexta:</p>
+                <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(jeffersonPending)}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-mono text-[11px] text-zinc-500">Total Período:</p>
+                <p className="text-sm font-mono text-zinc-900 font-bold">{fmtBRL(jeffersonTotal)}</p>
+              </div>
+            </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <div>
-              <p className="font-mono text-[11px] text-zinc-500">Pendente de Baixa (OS):</p>
-              <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalPending)}</p>
+        )}
+
+        {/* Total Comissões Pendentes vs Acertadas (Exclusivo Dono / Gerência) */}
+        {isOwnerOrManager && (
+          <div className="bg-white p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-mono text-xs font-black uppercase tracking-wider text-zinc-950">
+                  Fechamento de Sexta-Feira
+                </p>
+                <p className="font-mono text-[11px] text-zinc-500">Status de Baixa Semanal</p>
+              </div>
+              <span className="border border-zinc-950 bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-950">
+                SEXTA-FEIRA
+              </span>
             </div>
-            <div className="text-right">
-              <p className="font-mono text-[11px] text-zinc-500">Já Baixado:</p>
-              <p className="text-sm font-mono text-zinc-900 font-bold">{fmtBRL(totalPaidOut)}</p>
+            <div className="mt-4 flex items-baseline justify-between">
+              <div>
+                <p className="font-mono text-[11px] text-zinc-500">Pendente de Baixa (OS):</p>
+                <p className="text-2xl font-black font-mono text-zinc-950">{fmtBRL(totalPending)}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-mono text-[11px] text-zinc-500">Já Baixado:</p>
+                <p className="text-sm font-mono text-zinc-900 font-bold">{fmtBRL(totalPaidOut)}</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Barra de Filtros: Ciclo Semanal de Sexta-Feira, Técnico e Status */}
@@ -605,38 +623,40 @@ export default async function ComissoesPage({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-200 font-mono text-xs">
-          <span className="font-bold text-zinc-500 uppercase tracking-wider mr-1">Técnico:</span>
-          <Link
-            href={`/admin/comissoes${buildQuery({ tech: undefined })}`}
-            className={`px-2.5 py-1 font-bold uppercase transition ${
-              !params.tech ? 'bg-zinc-950 text-white' : 'border border-zinc-300 text-zinc-700 hover:bg-zinc-100'
-            }`}
-          >
-            Todos os Técnicos
-          </Link>
-          {techList.map((t) => {
-            const rate = getCommissionRate(t.full_name, t.commission_rate);
-            const active = params.tech === t.id;
-            return (
-              <Link
-                key={t.id}
-                href={`/admin/comissoes${buildQuery({ tech: t.id })}`}
-                className={`px-2.5 py-1 font-bold uppercase transition ${
-                  active
-                    ? 'bg-zinc-950 text-white'
-                    : 'border border-zinc-300 text-zinc-700 hover:bg-zinc-100'
-                }`}
-              >
-                {t.full_name} ({Math.round(rate * 100)}%)
-              </Link>
-            );
-          })}
-        </div>
+        {isOwnerOrManager && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-200 font-mono text-xs">
+            <span className="font-bold text-zinc-500 uppercase tracking-wider mr-1">Técnico:</span>
+            <Link
+              href={`/admin/comissoes${buildQuery({ tech: undefined })}`}
+              className={`px-2.5 py-1 font-bold uppercase transition ${
+                !params.tech ? 'bg-zinc-950 text-white' : 'border border-zinc-300 text-zinc-700 hover:bg-zinc-100'
+              }`}
+            >
+              Todos os Técnicos
+            </Link>
+            {techList.map((t) => {
+              const rate = getCommissionRate(t.full_name, t.commission_rate);
+              const active = params.tech === t.id;
+              return (
+                <Link
+                  key={t.id}
+                  href={`/admin/comissoes${buildQuery({ tech: t.id })}`}
+                  className={`px-2.5 py-1 font-bold uppercase transition ${
+                    active
+                      ? 'bg-zinc-950 text-white'
+                      : 'border border-zinc-300 text-zinc-700 hover:bg-zinc-100'
+                  }`}
+                >
+                  {t.full_name} ({Math.round(rate * 100)}%)
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Tabela de Lançamentos de Comissões */}
-      {records.length === 0 ? (
+      {visibleRecords.length === 0 ? (
         <div className="border-2 border-dashed border-zinc-300 bg-white p-12 text-center font-mono">
           <p className="text-sm font-bold uppercase text-zinc-800">Nenhum registro de comissão encontrado.</p>
           <p className="text-xs text-zinc-500 mt-1 max-w-md mx-auto">
@@ -659,7 +679,7 @@ export default async function ComissoesPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 text-xs text-zinc-800">
-              {records.map((r) => {
+              {visibleRecords.map((r) => {
                 const isIago = r.technician_name.toLowerCase().includes('iago');
                 const isJefferson = r.technician_name.toLowerCase().includes('jefferson');
 

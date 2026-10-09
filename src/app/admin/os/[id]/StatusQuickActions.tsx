@@ -119,6 +119,28 @@ export function StatusQuickActions({
     );
   }, [initialServiceVal]);
 
+  // Modal de conclusão (Pronto para Retirada & Gerar Etiqueta)
+  const readyTitleId = useId();
+  const [readying, setReadying] = useState(false);
+  const [readyNotesInput, setReadyNotesInput] = useState(
+    repairNotes?.trim() || reportedDefect || '',
+  );
+  const [readyLaborInput, setReadyLaborInput] = useState(
+    initialServiceVal > 0 ? initialServiceVal.toFixed(2).replace('.', ',') : '',
+  );
+  const [readyAutoOpenLabel, setReadyAutoOpenLabel] = useState(true);
+  const [readyNotifyWhatsApp, setReadyNotifyWhatsApp] = useState(Boolean(customerPhone));
+
+  useEffect(() => {
+    setReadyNotesInput(repairNotes?.trim() || reportedDefect || '');
+  }, [repairNotes, reportedDefect]);
+
+  useEffect(() => {
+    if (initialServiceVal > 0 && !readyLaborInput) {
+      setReadyLaborInput(initialServiceVal.toFixed(2).replace('.', ','));
+    }
+  }, [initialServiceVal]);
+
   // Modal de entrega
   const totalPaid = (payments ?? []).reduce((acc, p) => acc + Number(p.amount), 0);
   const remainingToPay = Math.max(0, effectiveGrandTotal - totalPaid);
@@ -216,6 +238,10 @@ export function StatusQuickActions({
       setApproving(true);
       return;
     }
+    if (next === 'ready') {
+      setReadying(true);
+      return;
+    }
     if (next === 'delivered') {
       setDelivering(true);
       return;
@@ -224,6 +250,10 @@ export function StatusQuickActions({
   }
 
   function handleSecondaryClick(s: OSStatusValue) {
+    if (s === 'ready') {
+      setReadying(true);
+      return;
+    }
     if (s === 'delivered') {
       setDelivering(true);
       return;
@@ -261,6 +291,62 @@ export function StatusQuickActions({
       labor_cost: parsedService,
       estimated_value: totalApproved > 0 ? totalApproved : null,
     });
+  }
+
+  async function confirmReady() {
+    setError(null);
+    setActiveStatus('ready');
+    const parsedLabor = parseBRL(readyLaborInput) ?? 0;
+    const finalGrandTotal = parsedLabor + partsTotal;
+    const notesToSave = readyNotesInput.trim();
+
+    try {
+      const supabase = createCRMBrowserClient();
+      const { error: upErr } = await supabase
+        .from('service_orders')
+        .update({
+          status: 'ready',
+          repair_notes: notesToSave || null,
+          labor_cost: parsedLabor,
+          estimated_value: finalGrandTotal > 0 ? finalGrandTotal : null,
+        })
+        .eq('id', osId);
+      if (upErr) throw upErr;
+
+      await supabase.from('service_order_events').insert({
+        service_order_id: osId,
+        event_type: 'status_changed',
+        from_value: currentStatus,
+        to_value: 'ready',
+        note: `OS finalizada na bancada · Aparelho pronto para retirada${
+          notesToSave ? ` · ${notesToSave}` : ''
+        }`,
+        author_id: currentUserId,
+      });
+
+      if (readyNotifyWhatsApp && customerPhone) {
+        const totalMsg =
+          finalGrandTotal > 0 ? ` Valor total: ${fmtBRL(finalGrandTotal)}.` : '';
+        const servMsg = notesToSave ? ` Serviço realizado: ${notesToSave}.` : '';
+        const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu aparelho${
+          osLabel ? ` (OS ${osLabel})` : ''
+        } já está pronto para retirada.${servMsg}${totalMsg} 🙂`;
+        const link = toWhatsAppLink(customerPhone, msg);
+        if (link) window.open(link, '_blank');
+      }
+
+      setReadying(false);
+
+      if (readyAutoOpenLabel) {
+        router.push(`/admin/os/${osId}/label-ready?autoprint=1`);
+      } else {
+        startTransition(() => router.refresh());
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setActiveStatus(null);
+    }
   }
 
   async function confirmDelivery() {
@@ -333,6 +419,8 @@ export function StatusQuickActions({
 
   const modalServiceVal = parseBRL(approvalServiceInput) ?? 0;
   const modalTotalVal = modalServiceVal + partsTotal;
+  const modalReadyLaborVal = parseBRL(readyLaborInput) ?? 0;
+  const modalReadyTotalVal = modalReadyLaborVal + partsTotal;
 
   return (
     <section className="border-2 border-zinc-950 bg-zinc-50 p-4 shadow-xs">
@@ -497,6 +585,115 @@ export function StatusQuickActions({
             className="bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
           >
             {activeStatus !== null ? 'Salvando…' : 'Confirmar aprovação'}
+          </button>
+        </div>
+      </Modal>
+
+      {/* MODAL DE CONCLUIR OS E GERAR ETIQUETA DE PRONTO */}
+      <Modal open={readying} onClose={() => setReadying(false)} titleId={readyTitleId}>
+        <div className="flex items-center gap-2">
+          <span className="bg-emerald-600 text-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
+            ✓ Conclusão de Serviço
+          </span>
+          <h2 id={readyTitleId} className="font-mono text-lg font-black uppercase text-zinc-950">
+            Marcar como Pronto & Gerar Etiqueta
+          </h2>
+        </div>
+        <p className="mt-1 text-xs text-zinc-600">
+          Confira o laudo final e valor do serviço. A etiqueta com os dados completos será gerada automaticamente!
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <div>
+            <label className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
+              Serviço realizado / Informações finais (Laudo) *
+            </label>
+            <textarea
+              value={readyNotesInput}
+              onChange={(e) => setReadyNotesInput(e.target.value)}
+              rows={3}
+              placeholder="Ex: Troca de tela LED e limpeza preventiva interna com troca de pasta térmica..."
+              className="mt-1 block w-full border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
+            <div>
+              <label className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
+                Valor do Serviço / Mão de Obra (R$)
+              </label>
+              <div className="relative mt-1">
+                <span className="pointer-events-none absolute left-3 top-2 font-mono text-sm text-zinc-500">
+                  R$
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={readyLaborInput}
+                  onChange={(e) => setReadyLaborInput(e.target.value)}
+                  placeholder="0,00"
+                  className="block w-full border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+            </div>
+
+            <div className="border border-zinc-300 bg-zinc-50 p-2.5 text-xs">
+              <div className="flex items-center justify-between text-zinc-600 font-mono text-[11px]">
+                <span>Mão de Obra: <strong>{fmtBRL(modalReadyLaborVal)}</strong></span>
+                <span>Peças: <strong>{fmtBRL(partsTotal)}</strong></span>
+              </div>
+              <div className="mt-1 flex items-center justify-between border-t border-zinc-200 pt-1 text-sm font-black text-zinc-950 font-mono">
+                <span>TOTAL DA OS:</span>
+                <span className="text-base text-emerald-700">{fmtBRL(modalReadyTotalVal)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-zinc-200 bg-zinc-50 p-3 space-y-2">
+            <label className="flex items-center gap-2 text-xs font-bold text-zinc-900 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={readyAutoOpenLabel}
+                onChange={(e) => setReadyAutoOpenLabel(e.target.checked)}
+                className="h-4 w-4 accent-black text-black focus:ring-black rounded"
+              />
+              🏷️ Gerar e abrir Etiqueta de Pronto imediatamente
+            </label>
+
+            {customerPhone && (
+              <label className="flex items-center gap-2 text-xs font-medium text-zinc-800 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={readyNotifyWhatsApp}
+                  onChange={(e) => setReadyNotifyWhatsApp(e.target.checked)}
+                  className="h-4 w-4 accent-black text-black focus:ring-black rounded"
+                />
+                📲 Avisar cliente no WhatsApp que o aparelho está pronto ({customerPhone})
+              </label>
+            )}
+          </div>
+        </div>
+
+        {error && <p className="mt-3 border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setReadying(false)}
+            disabled={activeStatus !== null}
+            className="border border-zinc-300 bg-white px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 disabled:opacity-30 cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={confirmReady}
+            disabled={activeStatus !== null}
+            className="bg-emerald-700 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-emerald-800 disabled:opacity-50 cursor-pointer shadow-xs"
+          >
+            {activeStatus === 'ready'
+              ? 'Finalizando…'
+              : '✓ Concluir OS & Gerar Etiqueta'}
           </button>
         </div>
       </Modal>

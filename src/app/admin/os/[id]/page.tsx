@@ -210,13 +210,24 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
             {normalizedSo.equipment_model ? ` ${normalizedSo.equipment_model}` : ''}
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap">
           <Link
             href={`/admin/os/${normalizedSo.id}/label`}
             target="_blank"
             className="flex items-center justify-center border border-zinc-300 bg-white px-2.5 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-50 transition-colors text-center"
           >
-            🏷️ Etiqueta
+            🏷️ <span className="hidden sm:inline">&nbsp;Etiqueta&nbsp;</span>Entrada
+          </Link>
+          <Link
+            href={`/admin/os/${normalizedSo.id}/label-ready`}
+            target="_blank"
+            className={`flex items-center justify-center border px-2.5 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-colors text-center ${
+              ['ready', 'delivered'].includes(normalizedSo.status)
+                ? 'border-emerald-700 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 font-black'
+                : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50'
+            }`}
+          >
+            🏷️ Etiqueta de Pronto
           </Link>
           <Link
             href={`/admin/os/${normalizedSo.id}/print`}
