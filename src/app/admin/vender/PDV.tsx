@@ -39,6 +39,17 @@ function fmtBRL(n: number): string {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+const QUICK_PDV_CHIPS = [
+  { label: '📱 Cabo Tipo-C', keyword: 'tipo-c', altKeyword: 'type-c', defaultName: 'Cabo USB Tipo-C Reforçado', category: 'Cabos', price: '25,00' },
+  { label: '⚡ Cabo Lightning (iPhone)', keyword: 'lightning', altKeyword: 'iphone', defaultName: 'Cabo Lightning USB para iPhone', category: 'Cabos', price: '30,00' },
+  { label: '🛡️ Película 3D', keyword: 'pelicula', altKeyword: 'película', defaultName: 'Película de Vidro 3D / Cerâmica', category: 'Acessórios', price: '25,00' },
+  { label: '💻 Fonte Notebook', keyword: 'fonte', altKeyword: 'carregador', defaultName: 'Fonte Carregador Universal Notebook', category: 'Fontes', price: '85,00' },
+  { label: '🔌 Cabo de Força', keyword: 'cabo de forca', altKeyword: 'tripolar', defaultName: 'Cabo de Força Tripolar Padrão BR', category: 'Cabos', price: '20,00' },
+  { label: '🧪 Pasta Térmica', keyword: 'pasta termica', altKeyword: 'térmica', defaultName: 'Pasta Térmica Alta Condutividade Prata', category: 'Acessórios', price: '25,00' },
+  { label: '🛠️ Formatação Balcão', keyword: 'formatacao', altKeyword: 'formatação', defaultName: 'Formatação e Instalação de Sistema (Balcão)', category: 'Serviços', price: '120,00' },
+  { label: '🖱️ Mouse USB', keyword: 'mouse', altKeyword: 'mouse usb', defaultName: 'Mouse Óptico USB Básico', category: 'Periféricos', price: '35,00' },
+] as const;
+
 export function PDV({
   items,
   currentUserId,
@@ -69,6 +80,7 @@ export function PDV({
   const [customerPhone, setCustomerPhone] = useState(initialCustomer?.phone ?? '');
   const [discount, setDiscount] = useState('');
   const [notes, setNotes] = useState('');
+  const [cashTendered, setCashTendered] = useState('');
 
   // Busca cliente já cadastrado enquanto digita — mesmo padrão da tela
   // de Nova OS. Vincular a venda a um cliente existente (customer_id)
@@ -197,6 +209,31 @@ export function PDV({
     },
     [],
   );
+
+  const cashTenderedNum = parseBRL(cashTendered) ?? 0;
+  const changeAmount = Math.max(0, cashTenderedNum - total);
+  const changeMissing = Math.max(0, total - cashTenderedNum);
+
+  function handleQuickChip(chip: (typeof QUICK_PDV_CHIPS)[number]) {
+    const s = chip.keyword.toLowerCase();
+    const alt = chip.altKeyword?.toLowerCase();
+    const found = items.find(
+      (i) =>
+        i.name.toLowerCase().includes(s) ||
+        (alt && i.name.toLowerCase().includes(alt)),
+    );
+
+    if (found && found.current_stock > 0) {
+      addItem(found, 1);
+    } else {
+      setNewPartName(found ? found.name : chip.defaultName);
+      setNewPartCategory(chip.category);
+      setNewPartPrice(found ? found.unit_price.toFixed(2).replace('.', ',') : chip.price);
+      setNewPartQty('1');
+      setNewPartError(null);
+      setAddingPart(true);
+    }
+  }
 
   function openAddPart() {
     setNewPartName(search.trim());
@@ -414,6 +451,7 @@ export function PDV({
       setCustomerPhone('');
       setSelectedCustomer(null);
       setCustomerMatches([]);
+      setCashTendered('');
       // Volta foco pro input de bipagem
       inputRef.current?.focus();
     } catch (e) {
@@ -489,6 +527,28 @@ export function PDV({
           <span className="border border-emerald-600 bg-emerald-50 px-1.5 py-0.5 font-bold text-emerald-800">F2 PIX</span>
           <span className="border border-zinc-950 bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-950">F3 Dinheiro</span>
           <span className="border border-zinc-300 bg-white px-1.5 py-0.5 font-bold text-zinc-700">F4 Cartão</span>
+        </div>
+      </div>
+
+      {/* Barra de Chips Rápidos de Balcão (1-toque) */}
+      <div className="border border-zinc-200 bg-zinc-50 p-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-600">
+            ⚡ Venda Rápida de Balcão (Acessórios &amp; Mão de Obra Frequentes):
+          </span>
+          <span className="font-mono text-[10px] text-zinc-400">1 clique para lançar</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {QUICK_PDV_CHIPS.map((chip) => (
+            <button
+              key={chip.label}
+              type="button"
+              onClick={() => handleQuickChip(chip)}
+              className="border border-zinc-300 bg-white px-2.5 py-1 font-mono text-xs font-semibold text-zinc-800 hover:border-zinc-950 hover:bg-zinc-100 hover:text-zinc-950 transition cursor-pointer shadow-2xs"
+            >
+              {chip.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -725,6 +785,72 @@ export function PDV({
                   ))}
                 </div>
               </div>
+
+              {paymentMethod === 'cash' && (
+                <div className="border-2 border-zinc-950 bg-zinc-50 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
+                      💵 Valor Recebido em Dinheiro
+                    </label>
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase font-bold">
+                      Calculadora de Troco
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm font-bold text-zinc-700">R$</span>
+                    <input
+                      value={cashTendered}
+                      onChange={(e) => setCashTendered(e.target.value)}
+                      placeholder={total > 0 ? total.toFixed(2).replace('.', ',') : '0,00'}
+                      inputMode="decimal"
+                      className="w-full border-2 border-zinc-950 bg-white px-3 py-1.5 text-base font-mono font-black text-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950/20"
+                    />
+                  </div>
+
+                  {/* Chips de valores rápidos em cédulas */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase font-bold mr-1">
+                      Atalhos:
+                    </span>
+                    {[20, 50, 100, 200].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setCashTendered(val.toString())}
+                        className="border border-zinc-300 bg-white px-2 py-0.5 font-mono text-xs font-bold text-zinc-800 hover:border-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
+                      >
+                        R$ {val}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setCashTendered(total.toFixed(2).replace('.', ','))}
+                      className="border border-zinc-950 bg-zinc-100 px-2 py-0.5 font-mono text-xs font-bold text-zinc-950 hover:bg-zinc-200 transition cursor-pointer"
+                    >
+                      Exato ({fmtBRL(total)})
+                    </button>
+                  </div>
+
+                  {/* Resultado do Troco com Alto Destaque */}
+                  {cashTenderedNum > 0 && (
+                    <div
+                      className={`mt-2 border-2 p-2.5 font-mono flex items-center justify-between ${
+                        cashTenderedNum >= total
+                          ? 'border-emerald-700 bg-emerald-50 text-emerald-950'
+                          : 'border-amber-600 bg-amber-50 text-amber-950'
+                      }`}
+                    >
+                      <span className="text-xs uppercase font-bold">
+                        {cashTenderedNum >= total ? 'Troco a devolver:' : 'Falta receber:'}
+                      </span>
+                      <span className="text-lg font-black tracking-tight">
+                        {cashTenderedNum >= total ? fmtBRL(changeAmount) : fmtBRL(changeMissing)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">

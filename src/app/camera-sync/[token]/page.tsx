@@ -22,6 +22,12 @@ const GUIDED_SLOTS = [
     subtitle: 'Registre portas USB/HDMI, dobradiças ou riscos prévios',
     icon: '🔍',
   },
+  {
+    id: 'board',
+    title: '4. Bancada / Placa Aberta / Oxidação',
+    subtitle: 'Registre placa-mãe, circuito interno, oxidação ou componentes',
+    icon: '🔬',
+  },
 ] as const;
 
 async function loadDrawableImage(

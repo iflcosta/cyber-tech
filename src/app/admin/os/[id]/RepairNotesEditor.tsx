@@ -23,12 +23,14 @@ export function RepairNotesEditor({
   initialLaborCost,
   partsTotal = 0,
   canEdit,
+  hasItemizedServices = false,
 }: {
   osId: string;
   initialNotes: string;
   initialLaborCost: number;
   partsTotal?: number;
   canEdit: boolean;
+  hasItemizedServices?: boolean;
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState(initialNotes ?? '');
@@ -53,15 +55,20 @@ export function RepairNotesEditor({
     try {
       const supabase = createCRMBrowserClient();
       const laborNum = parseBRL(labor);
-      const totalEstimated = laborNum + partsTotal;
+
+      const updatePayload: Record<string, unknown> = {
+        repair_notes: notes,
+      };
+
+      if (!hasItemizedServices) {
+        updatePayload.labor_cost = laborNum;
+        const totalEstimated = laborNum + partsTotal;
+        updatePayload.estimated_value = totalEstimated > 0 ? totalEstimated : null;
+      }
 
       const { error: err } = await supabase
         .from('service_orders')
-        .update({
-          repair_notes: notes,
-          labor_cost: laborNum,
-          estimated_value: totalEstimated > 0 ? totalEstimated : null,
-        })
+        .update(updatePayload)
         .eq('id', osId);
       if (err) {
         setError('Erro: ' + err.message);
@@ -108,11 +115,16 @@ export function RepairNotesEditor({
               inputMode="decimal"
               value={labor}
               onChange={(e) => setLabor(e.target.value)}
-              disabled={!canEdit}
+              disabled={!canEdit || hasItemizedServices}
               placeholder="0,00"
-              className="block w-full border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-zinc-50 disabled:text-zinc-500"
+              className="block w-full border border-zinc-300 bg-white py-2 pl-10 pr-3 font-mono text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-zinc-100 disabled:text-zinc-700"
             />
           </div>
+          {hasItemizedServices && (
+            <p className="mt-1 font-mono text-[10px] text-zinc-500">
+              ⚡ Sincronizado com os procedimentos fracionados por técnico abaixo.
+            </p>
+          )}
         </div>
 
         <div className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs">

@@ -42,8 +42,16 @@ export function OSPhotosEditor({
     Array.isArray(initialPhotos) ? initialPhotos.filter(Boolean) : [],
   );
   const [cameraSyncOpen, setCameraSyncOpen] = useState(false);
+  const [activeSessionToken, setActiveSessionToken] = useState<string | undefined>(undefined);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function openCameraSync() {
+    setActiveSessionToken(
+      `bancada_${osId.slice(0, 8)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+    );
+    setCameraSyncOpen(true);
+  }
 
   useEffect(() => {
     setPhotos(Array.isArray(initialPhotos) ? initialPhotos.filter(Boolean) : []);
@@ -119,20 +127,20 @@ export function OSPhotosEditor({
   }
 
   return (
-    <div className="border-t-2 border-zinc-950 pt-3">
+    <div id="fotos-aparelho" className="border-t-2 border-zinc-950 pt-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <p className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-950">
-          Fotos na entrada ({photos.length})
+          📷 Fotos da Bancada &amp; Aparelho ({photos.length})
         </p>
 
         {canEdit && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
-              onClick={() => setCameraSyncOpen(true)}
-              className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm text-center"
+              onClick={openCameraSync}
+              className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 border-2 border-zinc-950 bg-zinc-950 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-sm text-center cursor-pointer"
             >
-              <span>📱 Cyber Camera Sync (QR Code)</span>
+              <span>📱 Bipar Fotos no Celular (QR Code)</span>
             </button>
 
             <label className="inline-flex w-full sm:w-auto justify-center cursor-pointer items-center gap-1.5 border-2 border-zinc-950 bg-white px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition text-center">
@@ -157,7 +165,7 @@ export function OSPhotosEditor({
 
       {photos.length === 0 ? (
         <p className="mt-2 font-mono text-xs text-zinc-500">
-          Nenhuma foto anexada ainda. Use o botão <strong>Cyber Camera Sync (QR Code)</strong> para fotografar pelo celular ou envie do PC.
+          Nenhuma foto anexada ainda. Clique em <strong>📱 Bipar Fotos no Celular (QR Code)</strong> para fotografar carcaça ou placa aberta pelo celular sem cabos.
         </p>
       ) : (
         <div className="mt-2.5 grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -199,6 +207,7 @@ export function OSPhotosEditor({
           onPhotosSynced={handlePhotosSynced}
           existingPhotos={photos}
           osId={osId}
+          sessionTokenProp={activeSessionToken}
         />
       )}
     </div>

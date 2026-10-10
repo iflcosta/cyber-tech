@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 import {
@@ -114,18 +114,7 @@ export function NewOSForm({
     loadTechs();
   }, []);
 
-  // Atalho de teclado Alt+C para abrir o Cyber Camera Sync em qualquer etapa
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.altKey && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        setHasOpenedCameraSync(true);
-        setCameraSyncOpen(true);
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+
 
   // Busca cliente já cadastrado enquanto digita nome ou telefone
   useEffect(() => {
@@ -244,9 +233,13 @@ export function NewOSForm({
       setError('Nome do cliente é obrigatório.');
       return;
     }
-    if (step === 2 && !equipment.model.trim() && !['outro', 'computador'].includes(equipment.type)) {
-      setError('Modelo do aparelho é obrigatório.');
-      return;
+    if (step === 2 && !equipment.model.trim()) {
+      if (!['outro', 'computador'].includes(equipment.type)) {
+        setEquipment((prev) => ({
+          ...prev,
+          model: prev.brand.trim() ? `${prev.brand.trim()} (Não especificado)` : 'Não identificado',
+        }));
+      }
     }
     setError(null);
     setStep((s) => Math.min(3, s + 1));
@@ -420,6 +413,35 @@ export function NewOSForm({
       setSubmitting(false);
     }
   }
+
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const nextRef = useRef(next);
+  nextRef.current = next;
+  const submitRef = useRef(submit);
+  submitRef.current = submit;
+
+  // Atalhos de teclado no Balcão:
+  // Alt+C -> Cyber Camera Sync (QR Code no Celular)
+  // Ctrl+Enter / Cmd+Enter -> Avançar etapa (ou Criar OS + Etiqueta na etapa 3)
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        setHasOpenedCameraSync(true);
+        setCameraSyncOpen(true);
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (stepRef.current < 3) {
+          nextRef.current();
+        } else {
+          submitRef.current(true);
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <>
@@ -604,7 +626,24 @@ export function NewOSForm({
                   }
                 />
               </Field>
-              <Field label={equipment.type === 'computador' ? 'Modelo / Gabinete (se souber)' : 'Modelo *'}>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="block font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
+                    {equipment.type === 'computador' ? 'Modelo / Gabinete (se souber)' : 'Modelo *'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEquipment((prev) => ({
+                        ...prev,
+                        model: prev.brand.trim() ? `${prev.brand.trim()} (Genérico)` : 'Não identificado',
+                      }))
+                    }
+                    className="font-mono text-[10px] uppercase font-bold text-zinc-500 hover:text-zinc-950 underline cursor-pointer"
+                  >
+                    + Não identificado
+                  </button>
+                </div>
                 <input
                   value={equipment.model}
                   onChange={(e) => setEquipment({ ...equipment, model: e.target.value })}
@@ -619,7 +658,7 @@ export function NewOSForm({
                           : 'Ex: Nitro 5 / Galaxy S23 / Inspiron 15'
                   }
                 />
-              </Field>
+              </div>
               <Field label={equipment.type === 'computador' ? 'Cor / sinais distintivos' : 'Cor'}>
                 <input
                   value={equipment.color}
@@ -671,6 +710,48 @@ export function NewOSForm({
             </Field>
 
             <Field label="Checklist de integridade na entrada">
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                <span className="font-mono text-[11px] font-bold uppercase text-zinc-500 mr-1">
+                  Presets Rápidos:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChecklist((prev) => ({
+                      ...prev,
+                      liga: true,
+                      tela_ok: true,
+                      carrega: true,
+                    }));
+                  }}
+                  className="border border-emerald-600 bg-emerald-50 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800 hover:bg-emerald-100 transition cursor-pointer"
+                >
+                  ⚡ Teste Padrão OK (Liga / Tela / Carga)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const reset = Object.fromEntries(
+                      activeChecklistFields.map((f) => [f.key, false]),
+                    );
+                    setChecklist({ ...reset, liga: false, riscos: true });
+                  }}
+                  className="border border-red-600 bg-red-50 px-2 py-0.5 font-mono text-[11px] font-bold text-red-800 hover:bg-red-100 transition cursor-pointer"
+                >
+                  ❌ Não Liga / Inoperante
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChecklist(
+                      Object.fromEntries(activeChecklistFields.map((f) => [f.key, false])),
+                    );
+                  }}
+                  className="ml-auto font-mono text-[11px] text-zinc-400 underline hover:text-zinc-950 cursor-pointer"
+                >
+                  Limpar
+                </button>
+              </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {activeChecklistFields.map((f) => {
                   const checked = checklist[f.key] ?? false;
@@ -949,9 +1030,10 @@ export function NewOSForm({
             <button
               type="button"
               onClick={next}
-              className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer"
+              className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer flex items-center gap-2"
             >
-              Próximo passo →
+              <span>Próximo passo →</span>
+              <kbd className="hidden sm:inline-block bg-zinc-800 text-zinc-300 px-1.5 py-0.5 text-[10px] rounded-xs border border-zinc-700">Ctrl+Enter ↵</kbd>
             </button>
           ) : (
             <div className="flex flex-wrap items-center gap-3">
@@ -967,13 +1049,16 @@ export function NewOSForm({
                 type="button"
                 onClick={() => submit(true)}
                 disabled={submitting}
-                className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+                className="bg-zinc-950 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
               >
-                {submitting
-                  ? 'Salvando OS…'
-                  : printAccessoryLabel
-                    ? '🖨️ Criar OS + 2x Etiquetas (Aparelho + Acessório)'
-                    : '🖨️ Criar OS + Etiqueta 58mm (Knup 40x60)'}
+                <span>
+                  {submitting
+                    ? 'Salvando OS…'
+                    : printAccessoryLabel
+                      ? '🖨️ Criar OS + 2x Etiquetas (Aparelho + Acessório)'
+                      : '🖨️ Criar OS + Etiqueta 58mm (Knup 40x60)'}
+                </span>
+                <kbd className="hidden sm:inline-block bg-zinc-800 text-zinc-300 px-1.5 py-0.5 text-[10px] rounded-xs border border-zinc-700">Ctrl+Enter ↵</kbd>
               </button>
             </div>
           )}
