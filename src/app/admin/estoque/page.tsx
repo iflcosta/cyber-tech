@@ -87,6 +87,12 @@ export default async function StockListPage({
         <div className="flex flex-wrap shrink-0 gap-2">
           {canDelete && <WipeStockButtons />}
           <Link
+            href="/admin/termo-compra-usado"
+            className="border-2 border-zinc-950 bg-amber-500 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-amber-400 transition shadow-sm"
+          >
+            📄 Compra Usados (Termos)
+          </Link>
+          <Link
             href="/admin/estoque/novo-aparelho"
             className="border-2 border-zinc-950 bg-emerald-600 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-emerald-700 transition shadow-sm"
           >

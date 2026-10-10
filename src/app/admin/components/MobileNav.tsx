@@ -9,12 +9,14 @@ import { PWAInstallButton } from './PWAInstallButton';
 const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/os', label: 'OS' },
+  { href: '/admin/caixa', label: 'Caixa' },
   { href: '/admin/clientes', label: 'Clientes' },
   { href: '/admin/clientes/leads', label: 'Leads TI', iagoOnly: true },
   { href: '/admin/estoque', label: 'Estoque' },
+  { href: '/admin/termo-compra-usado', label: 'Compra Usados' },
   { href: '/admin/vendas', label: 'Vendas' },
   { href: '/admin/comissoes', label: 'Comissões' },
-  { href: '/admin/pecas', label: 'Peças' },
+  { href: '/admin/pecas', label: 'Compras' },
   { href: '/admin/fornecedores', label: 'Fornecedores' },
   { href: '/admin/configuracoes', label: '⚙️ Configurações' },
 ];
