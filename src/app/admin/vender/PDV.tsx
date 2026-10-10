@@ -25,6 +25,8 @@ type CartItem = {
   unit_price: number;
   quantity: number;
   stock_available: number;
+  ean13?: string | null;
+  internal_sku?: string | null;
 };
 
 function parseBRL(v: string): number | null {
@@ -185,6 +187,8 @@ export function PDV({
             unit_price: item.unit_price,
             quantity: qty,
             stock_available: stockAvail,
+            ean13: item.ean13,
+            internal_sku: item.internal_sku,
           },
         ];
       });

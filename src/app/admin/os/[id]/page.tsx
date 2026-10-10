@@ -16,6 +16,7 @@ import { UsePartForm } from './UsePartForm';
 import { EquipmentEditor } from './EquipmentEditor';
 import { OSPhotosEditor } from './OSPhotosEditor';
 import { TechnicianAssigner } from './TechnicianAssigner';
+import { OSServicesEditor } from './OSServicesEditor';
 import { getEquipmentTypeLabel } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -53,6 +54,7 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     { data: payments },
     { data: stockItemsForUse },
     { data: partOrdersRaw },
+    { data: serviceOrderServicesRaw },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -103,6 +105,11 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
       .select('id, part_description, part_variant, status, part_value, supplier:suppliers(name)')
       .eq('service_order_id', id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('service_order_services')
+      .select('*')
+      .eq('service_order_id', id)
+      .order('created_at', { ascending: true }),
   ]);
 
   if (!so) notFound();
@@ -309,6 +316,18 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               partsTotal={partsTotal}
               canEdit={canEdit}
             />
+
+            <div className="border-t border-zinc-200 pt-3">
+              <OSServicesEditor
+                osId={normalizedSo.id}
+                initialServices={serviceOrderServicesRaw ?? []}
+                technicians={allProfiles ?? []}
+                canEdit={canEdit}
+                isFinal={isFinal}
+                fallbackLaborCost={effectiveLaborCost}
+                fallbackTechId={normalizedSo.technician_id}
+              />
+            </div>
 
             {(partsUsed && partsUsed.length > 0) && (
               <div className="border-t border-zinc-200 pt-3">

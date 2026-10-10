@@ -95,10 +95,10 @@ export default async function OSListPage({
       .order('full_name'),
     (isIago || isJefferson)
       ? supabase
-          .from('service_orders')
-          .select('labor_cost, status, delivered_at, updated_at')
+          .from('commission_ledger')
+          .select('labor_amount, commission_rate, commission_amount, status, created_at')
           .eq('technician_id', user.id)
-          .in('status', ['ready', 'delivered'])
+          .eq('status', 'pending')
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -110,27 +110,45 @@ export default async function OSListPage({
 
   if (isIago || isJefferson) {
     const rate = isIago ? 0.30 : 0.50;
-    const startMs = fridayBounds.start.getTime();
-    const endMs = fridayBounds.end.getTime();
+    const ledgerRows = ((weekOrdersRes as { data?: Array<{ commission_amount: number | null }> })?.data ?? []);
 
-    const weekDeliveredOrders = ((weekOrdersRes as { data?: Array<{ labor_cost: number | null; status: string; delivered_at: string | null; updated_at: string | null }> })?.data ?? []).filter((row) => {
-      const finishDateStr = row.delivered_at || row.updated_at;
-      if (!finishDateStr) return false;
-      const t = new Date(finishDateStr).getTime();
-      return t >= startMs && t <= endMs;
-    });
+    let osComm = 0;
+    if (ledgerRows.length > 0) {
+      osComm = ledgerRows.reduce(
+        (acc, row) => acc + Number(row.commission_amount || 0),
+        0,
+      );
+    } else {
+      // Fallback para cálculo direto em service_orders caso o ledger ainda não tenha sido populado
+      const { data: fallbackOrders } = await supabase
+        .from('service_orders')
+        .select('labor_cost, status, delivered_at, updated_at')
+        .eq('technician_id', user.id)
+        .in('status', ['ready', 'delivered']);
 
-    const osComm = weekDeliveredOrders.reduce(
-      (acc, row) => {
-        const labor = Number(row.labor_cost || 0);
-        return acc + Math.round(labor * rate * 100) / 100;
-      },
-      0,
-    );
+      const startMs = fridayBounds.start.getTime();
+      const endMs = fridayBounds.end.getTime();
+
+      const weekDeliveredOrders = (fallbackOrders ?? []).filter((row) => {
+        const finishDateStr = row.delivered_at || row.updated_at;
+        if (!finishDateStr) return false;
+        const t = new Date(finishDateStr).getTime();
+        return t >= startMs && t <= endMs;
+      });
+
+      osComm = weekDeliveredOrders.reduce(
+        (acc, row) => {
+          const labor = Number(row.labor_cost || 0);
+          return acc + Math.round(labor * rate * 100) / 100;
+        },
+        0,
+      );
+    }
+
     const fixedRate = isIago ? 100 : 0;
     myFridayCommission = {
-      total: osComm + fixedRate,
-      osComm,
+      total: Math.round((osComm + fixedRate) * 100) / 100,
+      osComm: Math.round(osComm * 100) / 100,
       fixedRate,
     };
   }
@@ -198,7 +216,7 @@ export default async function OSListPage({
               <span className="text-sm">💰</span>
               <div>
                 <span className="uppercase text-[10px] text-emerald-700 block leading-tight">
-                  Minha Comissão (Sexta):
+                  Minha Comissão (A Receber):
                 </span>
                 <span className="text-sm font-black text-emerald-950">
                   {myFridayCommission.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
