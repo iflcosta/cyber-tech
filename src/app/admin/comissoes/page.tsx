@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { formatDateBR, getFridayCycleBounds } from '@/app/admin/lib/datetime';
 import { CommissionsSpreadsheet, SpreadsheetRecord } from './CommissionsSpreadsheet';
@@ -24,6 +25,9 @@ export default async function ComissoesPage({
   const params = await searchParams;
   const { supabase, user, profile } = await getAuthedProfile();
   if (!user) return null;
+  if (profile?.role === 'receptionist') {
+    redirect('/admin/os');
+  }
 
   const currentUserName = profile?.full_name ?? '';
   const isCurrentUserIago = currentUserName.toLowerCase().includes('iago');

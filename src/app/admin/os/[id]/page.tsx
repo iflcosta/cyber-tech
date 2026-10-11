@@ -17,6 +17,7 @@ import { EquipmentEditor } from './EquipmentEditor';
 import { OSPhotosEditor } from './OSPhotosEditor';
 import { TechnicianAssigner } from './TechnicianAssigner';
 import { OSServicesEditor } from './OSServicesEditor';
+import { TopClaimOSBanner } from './TopClaimOSBanner';
 import { getEquipmentTypeLabel } from '@/app/admin/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -155,7 +156,9 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
   const activeTechnicians = (allProfiles ?? []).filter((p) => p.active !== false);
 
   const canEdit =
-    profile?.role === 'owner' || profile?.role === 'technician';
+    profile?.role === 'owner' ||
+    profile?.role === 'technician' ||
+    profile?.role === 'receptionist';
   const typeLabel = getEquipmentTypeLabel(
     so.equipment_type,
     so.equipment_brand,
@@ -190,6 +193,15 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </a>
         </div>
       )}
+
+      <TopClaimOSBanner
+        osId={normalizedSo.id}
+        technicianId={normalizedSo.technician_id}
+        status={normalizedSo.status}
+        currentUserId={user.id}
+        currentUserName={profile?.full_name ?? user.email?.split('@')[0] ?? 'Técnico'}
+        currentUserRole={profile?.role}
+      />
 
       {/* Cabeçalho da OS */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">

@@ -11,7 +11,7 @@ export type ProfileRecord = {
   id: string;
   full_name: string | null;
   email: string | null;
-  role: 'owner' | 'technician';
+  role: 'owner' | 'technician' | 'receptionist';
   can_delete: boolean;
   active: boolean;
   commission_rate: number | string | null;
@@ -68,7 +68,7 @@ export function ConfiguracoesClient({
   async function handleSaveProfile(
     targetUserId: string,
     updates: {
-      role: 'owner' | 'technician';
+      role: 'owner' | 'technician' | 'receptionist';
       canDelete: boolean;
       active: boolean;
       commissionRate: number;
@@ -644,14 +644,14 @@ function UserPermissionCard({
   onSave: (
     targetUserId: string,
     updates: {
-      role: 'owner' | 'technician';
+      role: 'owner' | 'technician' | 'receptionist';
       canDelete: boolean;
       active: boolean;
       commissionRate: number;
     },
   ) => Promise<{ ok: boolean; message: string }>;
 }) {
-  const [role, setRole] = useState<'owner' | 'technician'>(profile.role);
+  const [role, setRole] = useState<'owner' | 'technician' | 'receptionist'>(profile.role);
   const [canDelete, setCanDelete] = useState<boolean>(profile.can_delete);
   const [active, setActive] = useState<boolean>(profile.active ?? true);
   const [commissionRate, setCommissionRate] = useState<string>(
@@ -693,7 +693,7 @@ function UserPermissionCard({
       <div className="flex items-start justify-between gap-2 border-b border-zinc-200 pb-2.5">
         <div className="flex items-center gap-2">
           <span className="text-xl">
-            {isOwnerRole ? '👑' : '🛠️'}
+            {isOwnerRole ? '👑' : role === 'receptionist' ? '💼' : '🛠️'}
           </span>
           <div>
             <div className="flex items-center gap-1.5">
@@ -749,17 +749,20 @@ function UserPermissionCard({
           </label>
           <select
             value={role}
-            onChange={(e) => setRole(e.target.value as 'owner' | 'technician')}
+            onChange={(e) => setRole(e.target.value as 'owner' | 'technician' | 'receptionist')}
             disabled={!canEdit}
             className="w-full border-2 border-zinc-950 bg-white px-2.5 py-1 text-xs font-bold text-zinc-950 disabled:bg-zinc-100 disabled:border-zinc-300"
           >
             <option value="owner">👑 Dono / Administrador (Acesso Total)</option>
             <option value="technician">🛠️ Técnico Bancada (Ordens de Serviço)</option>
+            <option value="receptionist">💼 Atendente Balcão (OS, PDV & Estoque)</option>
           </select>
           <span className="text-[10px] text-zinc-500 block mt-0.5">
             {role === 'owner'
               ? '✓ Acesso a Configurações, Financeiro, Relatórios e Permissões.'
-              : '✓ Acesso focado em OS, Balcão, Peças e Execução de Serviços.'}
+              : role === 'receptionist'
+                ? '✓ Balcão da loja: Check-in de OS, PDV, Estoque. Comissões e Configurações ocultos.'
+                : '✓ Acesso focado em bancada: OS, Peças, Diagnóstico e Execução.'}
           </span>
         </div>
 

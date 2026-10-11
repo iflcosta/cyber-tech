@@ -82,7 +82,7 @@ export function NewOSForm({
   const [technicians, setTechnicians] = useState<
     Array<{ id: string; full_name: string; commission_rate: number }>
   >([]);
-  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(currentUserId);
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>('');
 
   useEffect(() => {
     async function loadTechs() {
@@ -955,7 +955,7 @@ export function NewOSForm({
                   onChange={(e) => setSelectedTechnicianId(e.target.value)}
                   className="form-input"
                 >
-                  <option value="">Sem técnico atribuído (Loja / Geral)</option>
+                  <option value="">⚡ Sem técnico atribuído (Fila da Bancada / QR Code)</option>
                   {technicians.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.full_name}{' '}

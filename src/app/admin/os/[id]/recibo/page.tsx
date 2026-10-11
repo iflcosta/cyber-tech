@@ -129,8 +129,10 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   const warrantyStartFormatted = formatDateBR(warrantyStart);
   const warrantyEndFormatted = formatDateBR(warrantyEnd);
 
-  const isFinal = so.status === 'delivered';
-  const canConfirmDelivery = profile?.role === 'owner' || profile?.role === 'technician';
+  const canConfirmDelivery =
+    profile?.role === 'owner' ||
+    profile?.role === 'technician' ||
+    profile?.role === 'receptionist';
 
   const equipmentFullTitle = [
     typeLabel,

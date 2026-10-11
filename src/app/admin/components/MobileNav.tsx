@@ -24,16 +24,23 @@ const LINKS = [
 export function MobileNav({
   userName,
   roleLabel,
+  userRole,
   showLeadsTab = false,
 }: {
   userName: string;
   roleLabel: string;
+  userRole?: string;
   showLeadsTab?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const visibleLinks = LINKS.filter((link) => !link.iagoOnly || showLeadsTab);
+  const isReceptionist = userRole === 'receptionist';
+  const visibleLinks = LINKS.filter(
+    (link) =>
+      (!link.iagoOnly || showLeadsTab) &&
+      (!isReceptionist || (link.href !== '/admin/comissoes' && link.href !== '/admin/configuracoes')),
+  );
 
   // Fecha o menu sempre que a rota muda (clique num link). Ajuste de
   // estado durante o render em vez de useEffect — padrão recomendado

@@ -9,6 +9,9 @@ export default async function ConfiguracoesPage() {
   if (!user) {
     redirect('/admin/login');
   }
+  if (profile?.role === 'receptionist') {
+    redirect('/admin/os');
+  }
 
   const { data: allProfiles } = await supabase
     .from('profiles')
@@ -17,7 +20,12 @@ export default async function ConfiguracoesPage() {
     .order('full_name');
 
   const userName = profile?.full_name ?? user.email?.split('@')[0] ?? 'Operador';
-  const roleLabel = profile?.role === 'owner' ? 'Dono / Administrador' : 'Técnico Bancada';
+  const roleLabel =
+    profile?.role === 'owner'
+      ? 'Dono / Administrador'
+      : profile?.role === 'receptionist'
+        ? 'Atendimento / Balcão'
+        : 'Técnico Bancada';
   const isOwner = profile?.role === 'owner';
 
   return (

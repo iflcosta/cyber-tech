@@ -29,14 +29,21 @@ function initials(name: string) {
 export function DesktopNav({
   userName,
   roleLabel,
+  userRole,
   showLeadsTab = false,
 }: {
   userName: string;
   roleLabel: string;
+  userRole?: string;
   showLeadsTab?: boolean;
 }) {
   const pathname = usePathname();
-  const visibleLinks = LINKS.filter((link) => !link.iagoOnly || showLeadsTab);
+  const isReceptionist = userRole === 'receptionist';
+  const visibleLinks = LINKS.filter(
+    (link) =>
+      (!link.iagoOnly || showLeadsTab) &&
+      (!isReceptionist || link.href !== '/admin/comissoes'),
+  );
 
   return (
     <div className="hidden items-center gap-4 xl:gap-6 lg:flex">
@@ -86,16 +93,18 @@ export function DesktopNav({
 
       <div className="flex items-center gap-2.5 border-l-2 border-zinc-200 pl-4">
         <PWAInstallButton />
-        <Link
-          href="/admin/configuracoes"
-          title="Configurações do Sistema"
-          aria-label="Configurações do Sistema"
-          className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-zinc-950 font-mono text-xs font-bold transition hover:bg-zinc-100 cursor-pointer ${
-            pathname.startsWith('/admin/configuracoes') ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'
-          }`}
-        >
-          ⚙️
-        </Link>
+        {!isReceptionist && (
+          <Link
+            href="/admin/configuracoes"
+            title="Configurações do Sistema"
+            aria-label="Configurações do Sistema"
+            className={`flex h-8 w-8 shrink-0 items-center justify-center border-2 border-zinc-950 font-mono text-xs font-bold transition hover:bg-zinc-100 cursor-pointer ${
+              pathname.startsWith('/admin/configuracoes') ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'
+            }`}
+          >
+            ⚙️
+          </Link>
+        )}
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center bg-zinc-950 font-mono text-xs font-bold text-white uppercase"
           aria-hidden="true"

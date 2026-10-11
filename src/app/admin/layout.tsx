@@ -76,13 +76,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
           <DesktopNav
             userName={profile?.full_name ?? '—'}
-            roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            roleLabel={profile?.role === 'owner' ? 'Dono' : profile?.role === 'receptionist' ? 'Atendimento' : 'Técnico'}
+            userRole={profile?.role ?? undefined}
             showLeadsTab={showLeadsTab}
           />
 
           <MobileNav
             userName={profile?.full_name ?? '—'}
-            roleLabel={profile?.role === 'owner' ? 'Dono' : 'Técnico'}
+            roleLabel={profile?.role === 'owner' ? 'Dono' : profile?.role === 'receptionist' ? 'Atendimento' : 'Técnico'}
+            userRole={profile?.role ?? undefined}
             showLeadsTab={showLeadsTab}
           />
         </div>

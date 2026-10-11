@@ -18,7 +18,7 @@ export type Database = {
           id: string;
           full_name: string;
           email: string;
-          role: 'owner' | 'technician';
+          role: 'owner' | 'technician' | 'receptionist';
           active: boolean;
           can_delete: boolean;
           commission_rate: number;
@@ -28,7 +28,7 @@ export type Database = {
           id: string;
           full_name: string;
           email: string;
-          role: 'owner' | 'technician';
+          role: 'owner' | 'technician' | 'receptionist';
           active?: boolean;
           can_delete?: boolean;
           commission_rate?: number;
