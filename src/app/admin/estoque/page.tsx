@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { StockFilter } from './StockFilter';
-import { WipeStockButtons } from './WipeStockButtons';
 import { sanitizeSearchTerm } from '@/app/admin/lib/search';
 import { getDeviceType } from '@/app/admin/lib/deviceSpecs';
 
@@ -85,7 +84,6 @@ export default async function StockListPage({
           </p>
         </div>
         <div className="flex flex-wrap shrink-0 gap-2">
-          {canDelete && <WipeStockButtons />}
           <Link
             href="/admin/termo-compra-usado"
             className="border-2 border-zinc-950 bg-amber-500 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-amber-400 transition shadow-sm"

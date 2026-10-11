@@ -39,6 +39,7 @@ export function DesktopNav({
 }) {
   const pathname = usePathname();
   const isReceptionist = userRole === 'receptionist';
+  const isOwner = userRole === 'owner';
   const visibleLinks = LINKS.filter(
     (link) =>
       (!link.iagoOnly || showLeadsTab) &&
@@ -93,7 +94,7 @@ export function DesktopNav({
 
       <div className="flex items-center gap-2.5 border-l-2 border-zinc-200 pl-4">
         <PWAInstallButton />
-        {!isReceptionist && (
+        {isOwner && (
           <Link
             href="/admin/configuracoes"
             title="Configurações do Sistema"

@@ -134,6 +134,17 @@ export function CommissionsSpreadsheet({
     .filter((r) => r.technician_name.toLowerCase().includes('jefferson'))
     .reduce((acc, r) => acc + Number(r.commission_amount || 0), 0);
 
+  // Alvos da baixa pendente e contagem de OSs ainda não quitadas pelo cliente
+  const pendingTargets = useMemo(() => {
+    return selectedIds.size > 0
+      ? filteredRecords.filter((r) => selectedIds.has(r.id) && r.status === 'pending')
+      : filteredRecords.filter((r) => r.status === 'pending');
+  }, [selectedIds, filteredRecords]);
+
+  const unpaidCount = useMemo(() => {
+    return pendingTargets.filter((r) => r.os_payment_status !== 'paid').length;
+  }, [pendingTargets]);
+
   // Selecionar todos os visíveis
   const allVisibleSelected = filteredRecords.length > 0 && filteredRecords.every((r) => selectedIds.has(r.id));
   const toggleSelectAll = () => {
@@ -448,7 +459,7 @@ export function CommissionsSpreadsheet({
                     <td className="px-3 py-2 whitespace-nowrap">
                       <span className={`inline-block px-1.5 py-0.5 text-[10px] font-bold uppercase ${
                         isIago ? 'bg-emerald-100 text-emerald-950 border border-emerald-300' :
-                        isJefferson ? 'bg-blue-100 text-blue-950 border border-blue-300' :
+                        isJefferson ? 'bg-amber-100 text-amber-950 border border-amber-300' :
                         'bg-zinc-100 text-zinc-800 border border-zinc-300'
                       }`}>
                         {r.technician_name}
@@ -534,10 +545,10 @@ export function CommissionsSpreadsheet({
             {/* Total Jefferson */}
             {(isOwnerOrManager || currentUserName.toLowerCase().includes('jefferson')) && (
               <div className="border-l border-zinc-300 pl-3">
-                <span className="text-blue-800 uppercase text-[10px] font-bold block">
+                <span className="text-amber-800 uppercase text-[10px] font-bold block">
                   Jefferson (50%):
                 </span>
-                <strong className="text-base text-blue-950 font-black">
+                <strong className="text-base text-zinc-950 font-black">
                   {fmtBRL(jeffersonCommission)}
                 </strong>
               </div>
@@ -658,6 +669,15 @@ export function CommissionsSpreadsheet({
                 Confira os valores que serão marcados como <strong>QUITADOS / ACERTADOS</strong>:
               </p>
 
+              {unpaidCount > 0 && (
+                <div className="border-2 border-amber-500 bg-amber-50 p-2.5 text-amber-950 text-[11px] font-bold flex items-start gap-2">
+                  <span className="text-sm">⚠️</span>
+                  <div>
+                    Aviso de Fluxo de Caixa: <strong>{unpaidCount} {unpaidCount === 1 ? 'OS neste lote ainda não foi quitada' : 'OSs neste lote ainda não foram quitadas'}</strong> pelo cliente. Ao confirmar a baixa, a comissão será adiantada ao técnico.
+                  </div>
+                </div>
+              )}
+
               <div className="border border-zinc-300 bg-zinc-50 p-3 space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-emerald-900">Iago (Turno da Tarde):</span>
@@ -671,8 +691,8 @@ export function CommissionsSpreadsheet({
                 </div>
 
                 <div className="flex justify-between items-center border-t border-zinc-200 pt-2">
-                  <span className="font-bold text-blue-900">Jefferson (Mezanino 50%):</span>
-                  <span className="font-black text-sm text-blue-950">{fmtBRL(jeffersonCommission)}</span>
+                  <span className="font-bold text-zinc-900">Jefferson (Mezanino 50%):</span>
+                  <span className="font-black text-sm text-zinc-950">{fmtBRL(jeffersonCommission)}</span>
                 </div>
 
                 <div className="flex justify-between items-center border-t-2 border-zinc-950 pt-2 text-sm font-black">

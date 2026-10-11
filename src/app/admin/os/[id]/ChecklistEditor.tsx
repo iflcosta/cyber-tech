@@ -60,6 +60,18 @@ export function ChecklistEditor({
         setSaving(false);
         return;
       }
+
+      // Registra evento de auditoria
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user?.id) {
+        await supabase.from('service_order_events').insert({
+          service_order_id: osId,
+          event_type: 'checklist_updated',
+          author_id: userData.user.id,
+          note: 'Checklist pericial de integridade física atualizado',
+        }).catch((e) => console.warn('Falha ao registrar auditoria de checklist:', e));
+      }
+
       setSaved(true);
       setSaving(false);
       router.refresh();

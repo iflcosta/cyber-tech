@@ -18,7 +18,7 @@ const LINKS = [
   { href: '/admin/comissoes', label: 'Comissões' },
   { href: '/admin/pecas', label: 'Compras' },
   { href: '/admin/fornecedores', label: 'Fornecedores' },
-  { href: '/admin/configuracoes', label: '⚙️ Configurações' },
+  { href: '/admin/configuracoes', label: 'Configurações' },
 ];
 
 export function MobileNav({
@@ -36,10 +36,12 @@ export function MobileNav({
   const pathname = usePathname();
   const router = useRouter();
   const isReceptionist = userRole === 'receptionist';
+  const isOwner = userRole === 'owner';
   const visibleLinks = LINKS.filter(
     (link) =>
       (!link.iagoOnly || showLeadsTab) &&
-      (!isReceptionist || (link.href !== '/admin/comissoes' && link.href !== '/admin/configuracoes')),
+      (!isReceptionist || link.href !== '/admin/comissoes') &&
+      (link.href !== '/admin/configuracoes' || isOwner),
   );
 
   // Fecha o menu sempre que a rota muda (clique num link). Ajuste de

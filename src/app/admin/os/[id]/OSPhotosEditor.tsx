@@ -69,6 +69,18 @@ export function OSPhotosEditor({
           })
           .eq('id', osId);
         if (upErr) throw upErr;
+
+        // Registra evento de auditoria
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          await supabase.from('service_order_events').insert({
+            service_order_id: osId,
+            event_type: 'note_added',
+            author_id: userData.user.id,
+            note: `Registro fotográfico atualizado no sistema (${nextPhotos.length} fotos anexadas)`,
+          }).catch((err) => console.warn('Erro ao registrar evento de fotos:', err));
+        }
+
         router.refresh();
       } catch (e) {
         setError((e as Error).message || 'Erro ao salvar fotos na OS.');

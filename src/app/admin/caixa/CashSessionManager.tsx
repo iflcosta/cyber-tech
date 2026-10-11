@@ -313,7 +313,7 @@ export function CashSessionManager({
                 <button
                   type="button"
                   onClick={() => setShowEntryModal('reinforce')}
-                  className="border-2 border-blue-600 bg-blue-50 text-blue-950 px-3.5 py-2 font-bold uppercase hover:bg-blue-100 transition flex items-center gap-1.5 shadow-xs"
+                  className="border-2 border-emerald-600 bg-emerald-50 text-emerald-950 px-3.5 py-2 font-bold uppercase hover:bg-emerald-100 transition flex items-center gap-1.5 shadow-xs"
                 >
                   <span>📥</span> + Suprimento (Entrada)
                 </button>
@@ -552,7 +552,7 @@ export function CashSessionManager({
                   type="submit"
                   disabled={isSubmittingEntry}
                   className={`px-4 py-1.5 font-bold uppercase text-white disabled:opacity-50 ${
-                    showEntryModal === 'bleed' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                    showEntryModal === 'bleed' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'
                   }`}
                 >
                   {isSubmittingEntry ? 'Registrando...' : showEntryModal === 'bleed' ? 'Confirmar Sangria' : 'Confirmar Suprimento'}

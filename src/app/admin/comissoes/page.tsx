@@ -49,7 +49,7 @@ export default async function ComissoesPage({
   let periodLabel: string;
 
   if (selectedPeriodo === 'pendentes') {
-    startDate = new Date(Date.now() - 30 * 86400000);
+    startDate = new Date('2025-01-01T00:00:00Z');
     endDate = new Date(Date.now() + 86400000);
     periodLabel = 'Lançamentos Pendentes de Acerto (Ativo)';
   } else if (selectedPeriodo === 'semana') {
@@ -263,16 +263,16 @@ export default async function ComissoesPage({
 
         {/* Jefferson 50% */}
         {(isOwnerOrManager || isCurrentUserJefferson) && (
-          <div className={`p-4 transition ${isCurrentUserJefferson ? 'bg-blue-50/80 ring-2 ring-blue-600 ring-inset' : 'bg-white'}`}>
+          <div className={`p-4 transition ${isCurrentUserJefferson ? 'bg-amber-50/80 ring-2 ring-amber-500 ring-inset' : 'bg-white'}`}>
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-black uppercase text-zinc-950">
-                Jefferson // 50/50 {isCurrentUserJefferson && <span className="bg-blue-600 text-white px-1 ml-1 text-[9px]">VOCÊ</span>}
+                Jefferson // 50/50 {isCurrentUserJefferson && <span className="bg-zinc-950 text-white px-1 ml-1 text-[9px]">VOCÊ</span>}
               </span>
               <span className="border border-zinc-950 bg-zinc-100 text-zinc-950 px-1.5 py-0.5 font-mono text-[10px] font-bold">
                 50% Cel/Placas
               </span>
             </div>
-            <p className="mt-2 text-2xl font-black font-mono text-blue-950">
+            <p className="mt-2 text-2xl font-black font-mono text-zinc-950">
               {fmtBRL(globalJeffersonPending)}
             </p>
             <p className="mt-1 font-mono text-[11px] text-zinc-600">

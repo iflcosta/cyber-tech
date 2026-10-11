@@ -9,7 +9,7 @@ export default async function ConfiguracoesPage() {
   if (!user) {
     redirect('/admin/login');
   }
-  if (profile?.role === 'receptionist') {
+  if (profile?.role !== 'owner') {
     redirect('/admin/os');
   }
 

@@ -216,9 +216,10 @@ export function StatusQuickActions({
       if (newStatus === 'ready' && customerPhone) {
         const totalMsg =
           effectiveGrandTotal > 0 ? ` Valor total: ${fmtBRL(effectiveGrandTotal)}.` : '';
+        const trackingLink = osLabel ? `\n\nConsulte os detalhes e laudo pelo link:\n👉 https://www.cyberinformatica.tech/status?os=${encodeURIComponent(osLabel.replace(/\D/g, '') || osLabel)}` : '';
         const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu aparelho${
           osLabel ? ` (OS ${osLabel})` : ''
-        } já está pronto para retirada.${totalMsg} 🙂`;
+        } já está pronto para retirada.${totalMsg}${trackingLink}\n\n📍 Rua Cel. Teófilo Leme 967, Centro de Bragança Paulista. 🙂`;
         const link = toWhatsAppLink(customerPhone, msg);
         if (link) window.open(link, '_blank');
       }
@@ -328,9 +329,10 @@ export function StatusQuickActions({
         const totalMsg =
           finalGrandTotal > 0 ? ` Valor total: ${fmtBRL(finalGrandTotal)}.` : '';
         const servMsg = notesToSave ? ` Serviço realizado: ${notesToSave}.` : '';
+        const trackingLink = osLabel ? `\n\nConsulte o laudo completo em tempo real:\n👉 https://www.cyberinformatica.tech/status?os=${encodeURIComponent(osLabel.replace(/\D/g, '') || osLabel)}` : '';
         const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu aparelho${
           osLabel ? ` (OS ${osLabel})` : ''
-        } já está pronto para retirada.${servMsg}${totalMsg} 🙂`;
+        } já está pronto para retirada.${servMsg}${totalMsg}${trackingLink}\n\n📍 Rua Cel. Teófilo Leme 967, Centro de Bragança Paulista. 🙂`;
         const link = toWhatsAppLink(customerPhone, msg);
         if (link) window.open(link, '_blank');
       }
@@ -615,6 +617,31 @@ export function StatusQuickActions({
               placeholder="Ex: Troca de tela LED e limpeza preventiva interna com troca de pasta térmica..."
               className="mt-1 block w-full border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
+          </div>
+
+          {/* CHECKLIST DE SAÍDA / QA DE BANCADA */}
+          <div className="border border-zinc-200 bg-zinc-50 p-3 space-y-2">
+            <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              Protocolo de Liberação Técnica (QA de Saída):
+            </span>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+              <label className="flex items-center gap-1.5 cursor-pointer text-zinc-800">
+                <input type="checkbox" defaultChecked className="accent-black" />
+                <span>✓ Estresse / Vídeo OK</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-zinc-800">
+                <input type="checkbox" defaultChecked className="accent-black" />
+                <span>✓ Carga / Bateria OK</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-zinc-800">
+                <input type="checkbox" defaultChecked className="accent-black" />
+                <span>✓ Parafusos conferidos</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-zinc-800">
+                <input type="checkbox" defaultChecked className="accent-black" />
+                <span>✓ Limpeza externa OK</span>
+              </label>
+            </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
