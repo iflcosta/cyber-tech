@@ -139,7 +139,7 @@ export function StatusQuickActions({
     if (initialServiceVal > 0 && !readyLaborInput) {
       setReadyLaborInput(initialServiceVal.toFixed(2).replace('.', ','));
     }
-  }, [initialServiceVal]);
+  }, [initialServiceVal, readyLaborInput]);
 
   // Modal de entrega
   const totalPaid = (payments ?? []).reduce((acc, p) => acc + Number(p.amount), 0);

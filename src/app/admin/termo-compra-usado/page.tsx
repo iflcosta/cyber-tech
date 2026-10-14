@@ -1,6 +1,4 @@
-import Link from 'next/link';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
-import { formatDateBR } from '@/app/admin/lib/datetime';
 import { UsedDevicePurchaseManager, PurchaseRecord } from './UsedDevicePurchaseManager';
 
 export const dynamic = 'force-dynamic';

@@ -24,7 +24,19 @@ export interface ShowroomPC {
   fromErp: boolean;
 }
 
-function parseErpStockToShowroom(item: any): ShowroomPC {
+interface ErpStockItem {
+  id: string;
+  name?: string | null;
+  model?: string | null;
+  brand?: string | null;
+  notes?: string | null;
+  internal_sku?: string | null;
+  current_stock?: number | null;
+  unit_price?: number | null;
+  image_url?: string | null;
+}
+
+function parseErpStockToShowroom(item: ErpStockItem): ShowroomPC {
   const rawNotes = String(item.notes || "");
   const extractField = (key: string, fallback: string) => {
     const regex = new RegExp(`${key}\\s*:\\s*([^\\n|]+)`, "i");
@@ -63,8 +75,8 @@ function parseErpStockToShowroom(item: any): ShowroomPC {
     sku: item.internal_sku || "CYB-PC",
     tier,
     tierLabel,
-    badge: item.current_stock > 0 ? "DISPONÍVEL NA BANCADA" : "SOB ENCOMENDA",
-    name: item.name,
+    badge: (item.current_stock ?? 0) > 0 ? "DISPONÍVEL NA BANCADA" : "SOB ENCOMENDA",
+    name: item.name || "Computador Cyber",
     subtitle: extractField("Resumo", item.model || "Máquina montada, testada e pronta para retirada na loja física."),
     cpu: extractField("CPU", extractField("Processador", item.brand || "Processador AMD Ryzen / Intel Core")),
     gpu: extractField("GPU", extractField("Placa de Vídeo", "Consulte configuração gráfica")),

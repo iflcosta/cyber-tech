@@ -40,7 +40,17 @@ export function OSLabelClient({
   const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60');
   const [qrTarget, setQrTarget] = useState<'admin' | 'status'>('admin');
   const hasAccessories = shouldPrintAccessoryLabel(false, accessoriesInfo);
-  const [copies, setCopies] = useState(hasAccessories ? 2 : 1);
+  const [copies, setCopies] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('copies');
+      if (c) {
+        const parsed = parseInt(c, 10);
+        if (parsed > 0) return Math.min(20, Math.max(1, parsed));
+      }
+    }
+    return hasAccessories ? 2 : 1;
+  });
   const origin =
     typeof window !== 'undefined' && window.location.origin
       ? window.location.origin
@@ -58,17 +68,12 @@ export function OSLabelClient({
   const isKnupThermal = is40x60Any || mode === '60x40' || mode === '50x40';
   const labelWidthMm = mode === '60x40' ? 60 : (is40x60Any ? 40 : 50);
   const labelHeightMm = mode === '40x60' ? 55 : (is40x60Landscape ? 58 : (mode === '60x40' ? 38 : 38));
-  const paperHeightMm = is40x60Any ? 60 : 40;
 
   // Disparo automático quando vindo do check-in da OS (?autoprint=1)
   // No Chrome/Edge com --kiosk-printing, isso imprime direto na Knup sem diálogo!
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const c = params.get('copies');
-      if (c) {
-        setCopies(Math.max(1, parseInt(c, 10) || 1));
-      }
       if (params.get('autoprint') === '1') {
         const timer = setTimeout(() => {
           window.print();
@@ -206,8 +211,8 @@ export function OSLabelClient({
               </div>
               <ol className="mt-1.5 list-decimal pl-4 space-y-1 font-mono text-[11px] text-amber-900">
                 <li>No diálogo de impressão do Chrome, clique em <strong>Mais definições</strong> (More settings).</li>
-                <li><strong>Desmarque</strong> a opção <strong>"Cabeçalhos e rodapés"</strong> (isso remove URL e data que empurram para 3 páginas).</li>
-                <li>Altere <strong>Margens</strong> para <strong>"Nenhuma"</strong> (None).</li>
+                <li><strong>Desmarque</strong> a opção <strong>&quot;Cabeçalhos e rodapés&quot;</strong> (isso remove URL e data que empurram para 3 páginas).</li>
+                <li>Altere <strong>Margens</strong> para <strong>&quot;Nenhuma&quot;</strong> (None).</li>
                 <li>Altere <strong>Escala</strong> para <strong>100%</strong> (Padrão).</li>
               </ol>
               <p className="mt-1 text-[10px] text-amber-800">

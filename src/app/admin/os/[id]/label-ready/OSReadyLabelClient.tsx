@@ -46,7 +46,7 @@ export function OSReadyLabelClient({
   partsTotal,
   grandTotal,
   partsList = [],
-  totalPaid,
+  totalPaid: _totalPaid,
   remainingToPay,
   isPaid,
   accessoriesInfo,
@@ -55,7 +55,17 @@ export function OSReadyLabelClient({
   const router = useRouter();
   const [mode, setMode] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40' | '58mm'>('40x60');
   const [qrTarget, setQrTarget] = useState<'status' | 'admin'>('status');
-  const [copies, setCopies] = useState(1);
+  const [copies, setCopies] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get('copies');
+      if (c) {
+        const parsed = parseInt(c, 10);
+        if (parsed > 0) return Math.min(20, Math.max(1, parsed));
+      }
+    }
+    return 1;
+  });
 
   const origin =
     typeof window !== 'undefined' && window.location.origin
@@ -79,10 +89,6 @@ export function OSReadyLabelClient({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const c = params.get('copies');
-      if (c) {
-        setCopies(Math.max(1, parseInt(c, 10) || 1));
-      }
       if (params.get('autoprint') === '1') {
         const timer = setTimeout(() => {
           window.print();

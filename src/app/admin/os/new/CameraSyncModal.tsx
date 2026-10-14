@@ -23,29 +23,27 @@ export function CameraSyncModal({
     () => `sync_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
   );
   const sessionToken = sessionTokenProp || internalToken;
-  const [hasActivated, setHasActivated] = useState(false);
+  const [hasActivated, setHasActivated] = useState(open);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
-  const [mobileUrl, setMobileUrl] = useState<string>('');
   const [syncedPhotos, setSyncedPhotos] = useState<string[]>([]);
   const [sessionStatus, setSessionStatus] = useState<'active' | 'completed'>('active');
   const seenRef = useRef<Set<string>>(new Set(existingPhotos));
 
-  useEffect(() => {
-    if (open && !hasActivated) {
-      setHasActivated(true);
-    }
-  }, [open, hasActivated]);
+  if (open && !hasActivated) {
+    setHasActivated(true);
+  }
+
+  const origin =
+    typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : 'https://cyberinformatica.tech';
+  const mobileUrl = `${origin}/camera-sync/${sessionToken}`;
 
   // Inicializa sessão e gera QR Code quando ativado pela primeira vez
   useEffect(() => {
     if (!open && !hasActivated) return;
 
-    const origin =
-      typeof window !== 'undefined' ? window.location.origin : 'https://cyberinformatica.tech';
-    const url = `${origin}/camera-sync/${sessionToken}`;
-    setMobileUrl(url);
-
-    QRCode.toDataURL(url, {
+    QRCode.toDataURL(mobileUrl, {
       width: 220,
       margin: 1,
       errorCorrectionLevel: 'M',
@@ -63,7 +61,7 @@ export function CameraSyncModal({
         ...(osId ? { osId } : {}),
       }),
     }).catch(() => {});
-  }, [open, hasActivated, sessionToken, osId]);
+  }, [open, hasActivated, sessionToken, osId, mobileUrl]);
 
   // Escuta via Supabase Realtime + Polling contínuo em background mesmo após fechar o modal
   useEffect(() => {

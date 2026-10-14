@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCRMBrowserClient } from '@/app/admin/lib/supabase/client';
 
@@ -37,13 +37,15 @@ export function RepairNotesEditor({
   const [labor, setLabor] = useState(
     initialLaborCost > 0 ? initialLaborCost.toFixed(2).replace('.', ',') : '',
   );
+  const [prevInitialLaborCost, setPrevInitialLaborCost] = useState(initialLaborCost);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  if (initialLaborCost !== prevInitialLaborCost) {
+    setPrevInitialLaborCost(initialLaborCost);
     setLabor(initialLaborCost > 0 ? initialLaborCost.toFixed(2).replace('.', ',') : '');
-  }, [initialLaborCost]);
+  }
 
   const liveLaborNum = parseBRL(labor);
   const liveGrandTotal = liveLaborNum + partsTotal;

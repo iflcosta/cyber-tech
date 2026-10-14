@@ -7,7 +7,6 @@ import {
   parseDeviceNotes,
   isDeviceItem,
   calculateInstallment,
-  DeviceType,
 } from '@/app/admin/lib/deviceSpecs';
 
 interface StockLabelProps {
@@ -49,7 +48,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
 
   const [labelFormat, setLabelFormat] = useState<'40x60' | '40x60-landscape' | '60x40' | '50x40'>('40x60');
   const [title, setTitle] = useState(item.name);
-  const [specsLine, setSpecsLine] = useState(defaultSpecs || 'Pronta-Entrega · Garantia Loja');
+  const [specsLine] = useState(defaultSpecs || 'Pronta-Entrega · Garantia Loja');
   const [price, setPrice] = useState(
     item.unit_price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   );
@@ -57,9 +56,9 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
   const [customCode, setCustomCode] = useState('');
   const [barcodeHeight, setBarcodeHeight] = useState<number>(52);
   const [barWidth, setBarWidth] = useState<number>(2.4);
-  const [showWarranty, setShowWarranty] = useState<boolean>(true);
+  const [showWarranty] = useState<boolean>(true);
   const [copies, setCopies] = useState(1);
-  const [showPrice, setShowPrice] = useState(true);
+  const [showPrice] = useState(true);
 
   // Campos específicos de Ficha Técnica da Máquina
   const [deviceCondition, setDeviceCondition] = useState(
@@ -376,7 +375,7 @@ export function StockLabelClient({ item, monthYear }: StockLabelProps) {
                 </span>
                 <select
                   value={codeFormat}
-                  onChange={(e) => setCodeFormat(e.target.value as any)}
+                  onChange={(e) => setCodeFormat(e.target.value as 'ean13' | 'compact' | 'numeric' | 'code39' | 'full' | 'custom')}
                   className="mt-1 w-full border-2 border-zinc-950 bg-white px-2 py-1.5 font-mono text-xs text-zinc-950 font-bold"
                 >
                   <option value="compact">⚡ Code 128 Compacto ({compactSku}) — Barras Mais Grossas (Recomendado)</option>
