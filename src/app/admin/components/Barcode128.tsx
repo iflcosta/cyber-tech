@@ -139,7 +139,7 @@ export function UniversalBarcode({
     try {
       const canvas = document.createElement('canvas');
       let targetValue = value;
-      let targetFormat = format;
+      const targetFormat = format;
 
       if (format === 'EAN13') {
         targetValue = ensureValidEAN13(value);
@@ -159,10 +159,11 @@ export function UniversalBarcode({
         flat: true,
       });
 
-      setDataUrl(canvas.toDataURL('image/png'));
+      const url = canvas.toDataURL('image/png');
+      queueMicrotask(() => setDataUrl(url));
     } catch (err) {
       console.warn('JsBarcode canvas error, fallback to SVG:', err);
-      setDataUrl(null);
+      queueMicrotask(() => setDataUrl(null));
     }
   }, [value, format, height, barWidth]);
 

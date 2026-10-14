@@ -50,7 +50,7 @@ export default async function ComissoesPage({
 
   if (selectedPeriodo === 'pendentes') {
     startDate = new Date('2025-01-01T00:00:00Z');
-    endDate = new Date(Date.now() + 86400000);
+    endDate = new Date(now.getTime() + 86400000);
     periodLabel = 'Lançamentos Pendentes de Acerto (Ativo)';
   } else if (selectedPeriodo === 'semana') {
     const bounds = getFridayCycleBounds(now, 0);
@@ -72,7 +72,7 @@ export default async function ComissoesPage({
     periodLabel = `2ª Quinzena (${selectedMonth})`;
   } else if (selectedPeriodo === 'todos') {
     startDate = new Date(2026, 0, 1);
-    endDate = new Date(Date.now() + 86400000);
+    endDate = new Date(now.getTime() + 86400000);
     periodLabel = 'Todos os Registros';
   } else {
     startDate = new Date(year, month - 1, 1, 0, 0, 0, 0);

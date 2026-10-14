@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getAuthedUser } from '@/app/admin/lib/auth';
-import { formatDateBR, formatTimeBR } from '@/app/admin/lib/datetime';
-import type { Sale, SaleItem } from '@/app/admin/types/database';
 import { buildReciboText } from '@/app/admin/lib/reciboText';
 import { ReciboPrintButton } from './ReciboPrintButton';
 import { AutoPrint } from './AutoPrint';

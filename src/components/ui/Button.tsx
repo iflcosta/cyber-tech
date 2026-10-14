@@ -24,6 +24,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       // atribuição (não lê .current) — padrão seguro e usado em todo o
       // site; reescrever pra @radix-ui/react-slot é risco maior do que
       // vale por ora.
+      // eslint-disable-next-line react-hooks/refs
       return React.cloneElement(children, {
         className: cn(
           "inline-flex items-center justify-center rounded-none font-display font-bold uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 disabled:grayscale disabled:pointer-events-none duration-[130ms] ease-linear",
