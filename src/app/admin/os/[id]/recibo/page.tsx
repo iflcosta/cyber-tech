@@ -134,6 +134,8 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
     profile?.role === 'technician' ||
     profile?.role === 'receptionist';
 
+  const isFinal = so.status === 'delivered' || so.status === 'cancelled';
+
   const equipmentFullTitle = [
     typeLabel,
     so.equipment_brand,

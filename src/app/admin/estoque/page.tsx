@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { getAuthedProfile } from '@/app/admin/lib/auth';
 import { StockFilter } from './StockFilter';
+import { CategoryBar } from './CategoryBar';
+import { InlineCategorySelect } from './InlineCategorySelect';
+import { detectCategoryFromName } from './lib/categoryDetector';
 import { sanitizeSearchTerm } from '@/app/admin/lib/search';
 import { getDeviceType } from '@/app/admin/lib/deviceSpecs';
 
@@ -9,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function StockListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; low?: string; inactive?: string }>;
+  searchParams: Promise<{ q?: string; low?: string; inactive?: string; category?: string }>;
 }) {
   const params = await searchParams;
   const { supabase, user, profile } = await getAuthedProfile();
@@ -53,20 +56,72 @@ export default async function StockListPage({
     error = fb.error;
   }
 
-  const canDelete = profile?.can_delete === true;
+  const allItems = items ?? [];
+
+  // Apuração de categorias e sugestões de auto-classificação em todos os itens carregados
+  let uncategorizedCount = 0;
+  const suggestions: Array<{ id: string; name: string; suggestedCategory: string }> = [];
+  const hybridCountMap = new Map<string, number>();
+
+  for (const item of allItems) {
+    const actualCat = item.category?.trim();
+    const detected = detectCategoryFromName(item.name);
+
+    if (actualCat) {
+      hybridCountMap.set(actualCat, (hybridCountMap.get(actualCat) ?? 0) + 1);
+    } else {
+      uncategorizedCount++;
+      if (detected) {
+        suggestions.push({
+          id: item.id,
+          name: item.name,
+          suggestedCategory: detected,
+        });
+        // Na contagem dos chips, soma com os detectados para refletir a busca híbrida
+        hybridCountMap.set(detected, (hybridCountMap.get(detected) ?? 0) + 1);
+      }
+    }
+  }
+
+  const categoryCounts = Array.from(hybridCountMap.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Filtro Híbrido por Categoria
+  let filtered = allItems;
+
+  if (params.category) {
+    const selectedCat = params.category.trim();
+    if (selectedCat === 'none') {
+      filtered = filtered.filter((i) => !i.category || i.category.trim() === '');
+    } else {
+      const lower = selectedCat.toLowerCase();
+      filtered = filtered.filter((i) => {
+        const itemCat = i.category?.trim().toLowerCase();
+        if (itemCat === lower) return true;
+        // Se o item não tem categoria no banco, aplica inteligência pelo nome
+        if (!i.category) {
+          const detected = detectCategoryFromName(i.name)?.toLowerCase();
+          if (detected === lower) return true;
+          if (i.name.toLowerCase().includes(lower)) return true;
+        }
+        return false;
+      });
+    }
+  }
 
   const { data: lowItems } = await supabase
     .from('stock_low_alert')
     .select('id, name, current_stock, min_stock')
     .limit(10);
 
-  let filtered = items ?? [];
   if (params.low === '1') {
     filtered = filtered.filter((i) => i.current_stock <= i.min_stock);
   }
 
   return (
     <div className="space-y-5">
+      {/* HEADER DA PÁGINA */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-zinc-950 pb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -78,9 +133,10 @@ export default async function StockListPage({
             </span>
           </div>
           <p className="mt-0.5 font-mono text-xs text-zinc-600">
-            {filtered.length} {filtered.length === 1 ? 'item cadastrado' : 'itens cadastrados'}
-            {params.q && ` (busca: "${params.q}")`}
-            {params.low === '1' && ' · filtrando estoque baixo'}
+            {filtered.length} {filtered.length === 1 ? 'item exibido' : 'itens exibidos'} de {allItems.length} no catálogo
+            {params.category && ` · categoria: ${params.category === 'none' ? 'Sem Categoria' : params.category}`}
+            {params.q && ` · busca: "${params.q}"`}
+            {params.low === '1' && ' · estoque baixo'}
           </p>
         </div>
         <div className="flex flex-wrap shrink-0 gap-2">
@@ -105,6 +161,7 @@ export default async function StockListPage({
         </div>
       </div>
 
+      {/* ALERTA DE REPOSIÇÃO */}
       {(lowItems ?? []).length > 0 && params.low !== '1' && (
         <Link
           href="/admin/estoque?low=1"
@@ -117,6 +174,16 @@ export default async function StockListPage({
         </Link>
       )}
 
+      {/* BARRA DE CHIPS DE CATEGORIAS */}
+      <CategoryBar
+        categoryCounts={categoryCounts}
+        selectedCategory={params.category}
+        totalCount={allItems.length}
+        uncategorizedCount={uncategorizedCount}
+        suggestions={suggestions}
+      />
+
+      {/* FORMULÁRIO DE BUSCA */}
       <StockFilter />
 
       {error && (
@@ -125,18 +192,20 @@ export default async function StockListPage({
         </div>
       )}
 
+      {/* LISTAGEM OU EMPTY STATE */}
       {filtered.length === 0 ? (
-        <div className="border-2 border-dashed border-zinc-300 bg-white p-10 text-center">
-          <p className="font-mono text-sm text-zinc-600">
-            {params.q || params.low === '1'
-              ? 'Nenhum item encontrado com esses filtros.'
-              : 'Nenhum item cadastrado ainda.'}
+        <div className="border-2 border-dashed border-zinc-300 bg-white p-10 text-center font-mono">
+          <p className="text-sm font-bold text-zinc-700">
+            Nenhum item encontrado com esses filtros.
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Tente selecionar outra categoria ou limpar a busca de texto.
           </p>
           <Link
-            href="/admin/estoque/new"
+            href="/admin/estoque"
             className="mt-3 inline-block bg-zinc-950 px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800"
           >
-            Cadastrar Primeiro Item →
+            Ver Todo o Estoque →
           </Link>
         </div>
       ) : (
@@ -157,6 +226,8 @@ export default async function StockListPage({
                 const isLow = item.current_stock <= item.min_stock;
                 const isOut = item.current_stock === 0;
                 const reserved = item.reserved_stock ?? 0;
+                const detected = detectCategoryFromName(item.name);
+
                 return (
                   <tr key={item.id} className="hover:bg-zinc-50 transition">
                     <td className="px-4 py-3">
@@ -206,14 +277,17 @@ export default async function StockListPage({
                         </span>
                       )}
                     </td>
+
+                    {/* COLUNA CATEGORIA / LOCAL COM EDIÇÃO INLINE */}
                     <td className="hidden px-4 py-3 text-zinc-700 sm:table-cell">
-                      <div>{item.category ?? <span className="text-zinc-400">—</span>}</div>
-                      {item.shelf_location && (
-                        <span className="mt-0.5 inline-block border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-zinc-700">
-                          {item.shelf_location}
-                        </span>
-                      )}
+                      <InlineCategorySelect
+                        itemId={item.id}
+                        currentCategory={item.category}
+                        suggestedCategory={detected}
+                        shelfLocation={item.shelf_location}
+                      />
                     </td>
+
                     <td className="px-4 py-3 text-right font-mono">
                       <span className="font-bold text-zinc-950">
                         {item.current_stock}
