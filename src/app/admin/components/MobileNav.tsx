@@ -6,21 +6,19 @@ import { useRouter, usePathname } from 'next/navigation';
 import { createCRMBrowserClient } from '../lib/supabase/client';
 import { PWAInstallButton } from './PWAInstallButton';
 
-const LINKS = [
-  { href: '/admin/dashboard', label: 'Dashboard' },
-  { href: '/admin/os', label: 'OS' },
-  { href: '/admin/caixa', label: 'Caixa' },
-  { href: '/admin/contas-a-receber', label: 'A Receber' },
-  { href: '/admin/clientes', label: 'Clientes' },
-  { href: '/admin/clientes/leads', label: 'Leads TI', iagoOnly: true },
-  { href: '/admin/estoque', label: 'Estoque' },
-  { href: '/admin/termo-compra-usado', label: 'Compra Usados' },
-  { href: '/admin/vendas', label: 'Vendas' },
-  { href: '/admin/comissoes', label: 'Comissões' },
-  { href: '/admin/pecas', label: 'Compras' },
-  { href: '/admin/fornecedores', label: 'Fornecedores' },
-  { href: '/admin/configuracoes', label: 'Configurações' },
-];
+type MobileNavItem = {
+  href: string;
+  label: string;
+  icon?: string;
+  iagoOnly?: boolean;
+  hideForReceptionist?: boolean;
+  ownerOnly?: boolean;
+};
+
+type MobileNavGroup = {
+  title: string;
+  items: MobileNavItem[];
+};
 
 export function MobileNav({
   userName,
@@ -38,18 +36,8 @@ export function MobileNav({
   const router = useRouter();
   const isReceptionist = userRole === 'receptionist';
   const isOwner = userRole === 'owner';
-  const visibleLinks = LINKS.filter(
-    (link) =>
-      (!link.iagoOnly || showLeadsTab) &&
-      (!isReceptionist || link.href !== '/admin/comissoes') &&
-      (link.href !== '/admin/configuracoes' || isOwner),
-  );
 
-  // Fecha o menu sempre que a rota muda (clique num link). Ajuste de
-  // estado durante o render em vez de useEffect — padrão recomendado
-  // pelo próprio React pra "resetar estado quando algo muda": evita o
-  // render extra (efeito rodando só depois de já ter pintado a tela
-  // com o menu aberto na rota nova).
+  // Fecha o menu sempre que a rota muda
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
@@ -62,6 +50,49 @@ export function MobileNav({
     router.push('/admin/login');
     router.refresh();
   }
+
+  const GROUPS: MobileNavGroup[] = [
+    {
+      title: 'OPERACIONAL',
+      items: [
+        { href: '/admin/dashboard', label: 'Dashboard Geral', icon: '📊' },
+        { href: '/admin/os', label: 'Bancada de OS', icon: '🔧' },
+        { href: '/admin/vender', label: 'PDV / Nova Venda', icon: '⚡' },
+        { href: '/admin/vendas', label: 'Histórico de Vendas', icon: '🛍️' },
+        { href: '/admin/termo-compra-usado', label: 'Compra de Usados (Art. 180)', icon: '📄' },
+      ],
+    },
+    {
+      title: 'ESTOQUE & SUPRIMENTOS',
+      items: [
+        { href: '/admin/estoque', label: 'Catálogo de Estoque', icon: '📦' },
+        { href: '/admin/estoque/novo-aparelho', label: 'Cadastrar Aparelho / PC', icon: '💻' },
+        { href: '/admin/pecas', label: 'Compras & Peças', icon: '🚚' },
+        { href: '/admin/fornecedores', label: 'Fornecedores', icon: '🏢' },
+      ],
+    },
+    {
+      title: 'FINANCEIRO & CRÉDITO',
+      items: [
+        { href: '/admin/caixa', label: 'Caixa Diário', icon: '💵' },
+        { href: '/admin/contas-a-receber', label: 'A Receber & Fiado', icon: '💰' },
+        { href: '/admin/comissoes', label: 'Comissões Técnicas', icon: '📊', hideForReceptionist: true },
+      ],
+    },
+    {
+      title: 'CLIENTES & COMERCIAL',
+      items: [
+        { href: '/admin/clientes', label: 'Lista de Clientes', icon: '👥' },
+        { href: '/admin/clientes/leads', label: 'Leads TI / B2B', icon: '💼', iagoOnly: true },
+      ],
+    },
+    {
+      title: 'ADMINISTRAÇÃO',
+      items: [
+        { href: '/admin/configuracoes', label: 'Configurações da Loja', icon: '⚙️', ownerOnly: true },
+      ],
+    },
+  ];
 
   return (
     <div className="lg:hidden">
@@ -84,61 +115,88 @@ export function MobileNav({
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b-2 border-zinc-950 bg-white shadow-2xl">
-          <div className="flex flex-col gap-1 p-4">
-            <div className="mb-2 border-2 border-zinc-950 bg-zinc-100 px-3.5 py-2.5">
-              <p className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-950">{userName}</p>
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{roleLabel}</p>
+        <div className="absolute inset-x-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b-2 border-zinc-950 bg-white shadow-2xl font-mono">
+          <div className="flex flex-col gap-3 p-4">
+            {/* PERFIL */}
+            <div className="border-2 border-zinc-950 bg-zinc-100 px-3.5 py-2.5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-zinc-950">{userName}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">{roleLabel}</p>
+              </div>
+              <PWAInstallButton mobile />
             </div>
 
-            <PWAInstallButton mobile />
+            {/* AÇÕES RÁPIDAS PRINCIPAIS */}
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/admin/os/new"
+                className="bg-zinc-950 px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition flex items-center justify-center gap-1.5"
+              >
+                <span>+</span>
+                <span>Nova OS</span>
+              </Link>
+              <Link
+                href="/admin/vender"
+                className="border-2 border-zinc-950 bg-white px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition flex items-center justify-center gap-1.5"
+              >
+                <span>⚡</span>
+                <span>Vender PDV</span>
+              </Link>
+            </div>
 
-            <Link
-              href="/admin/os/new"
-              className="mb-1 bg-zinc-950 px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition min-h-[48px] flex items-center justify-center"
-            >
-              + Nova OS
-            </Link>
-            <Link
-              href="/admin/vender"
-              className="mb-1 border-2 border-zinc-950 bg-white px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition min-h-[48px] flex items-center justify-center"
-            >
-              + Vender
-            </Link>
-            <Link
-              href="/admin/pecas/new"
-              className="mb-3 border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-center font-mono text-xs font-semibold uppercase tracking-wider text-zinc-800 hover:bg-zinc-200 transition min-h-[44px] flex items-center justify-center"
-            >
-              + Pedido Peça
-            </Link>
+            {/* GRUPOS DE NAVEGAÇÃO */}
+            <div className="space-y-3 pt-1">
+              {GROUPS.map((group) => {
+                const visibleItems = group.items.filter(
+                  (item) =>
+                    (!item.iagoOnly || showLeadsTab) &&
+                    (!item.hideForReceptionist || !isReceptionist) &&
+                    (!item.ownerOnly || isOwner),
+                );
 
-            {visibleLinks.map((link) => {
-              const active =
-                pathname === link.href ||
-                (pathname.startsWith(link.href + '/') &&
-                  !(link.href === '/admin/clientes' && pathname.startsWith('/admin/clientes/leads')));
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider transition min-h-[44px] flex items-center ${
-                    active
-                      ? 'bg-zinc-950 text-white'
-                      : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+                if (visibleItems.length === 0) return null;
 
-            <div className="mt-4 border-t-2 border-zinc-200 pt-4">
+                return (
+                  <div key={group.title} className="space-y-1">
+                    <span className="block px-2 text-[10px] font-black uppercase tracking-wider text-zinc-500 border-b border-zinc-200 pb-1">
+                      {group.title}
+                    </span>
+                    <div className="space-y-0.5">
+                      {visibleItems.map((item) => {
+                        const active =
+                          pathname === item.href ||
+                          (pathname.startsWith(item.href + '/') &&
+                            !(item.href === '/admin/clientes' && pathname.startsWith('/admin/clientes/leads')));
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`px-3 py-2 text-xs font-bold uppercase tracking-wider transition flex items-center gap-2 ${
+                              active
+                                ? 'bg-zinc-950 text-white'
+                                : 'text-zinc-800 hover:bg-zinc-100'
+                            }`}
+                          >
+                            <span>{item.icon}</span>
+                            <span>{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* LOGOUT */}
+            <div className="border-t-2 border-zinc-200 pt-3">
               <button
                 type="button"
                 onClick={logout}
-                className="w-full border-2 border-zinc-950 bg-white px-4 py-3 text-center font-mono text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
+                className="w-full border-2 border-zinc-950 bg-white px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
               >
-                Sair
+                Encerrar Sessão (Sair)
               </button>
             </div>
           </div>
