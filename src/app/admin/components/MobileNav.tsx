@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/os', label: 'OS' },
   { href: '/admin/caixa', label: 'Caixa' },
+  { href: '/admin/contas-a-receber', label: 'A Receber' },
   { href: '/admin/clientes', label: 'Clientes' },
   { href: '/admin/clientes/leads', label: 'Leads TI', iagoOnly: true },
   { href: '/admin/estoque', label: 'Estoque' },

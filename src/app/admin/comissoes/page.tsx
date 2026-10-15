@@ -174,20 +174,9 @@ export default async function ComissoesPage({
     };
   });
 
-  // Política de remuneração do Iago: R$ 100/semana fixa (período da tarde)
-  const isNewPolicyFromOct5 = endDate >= new Date('2026-10-05T00:00:00');
-  const DAILY_BALCAO_RATE = isNewPolicyFromOct5 ? 20 : 50;
-  const WEEKLY_FIXED_RATE = isNewPolicyFromOct5 ? 100 : 250;
-
-  const defaultBalcaoDays = 5;
-  const parsedBalcaoDays = params.dias_balcao !== undefined ? parseInt(params.dias_balcao, 10) : defaultBalcaoDays;
-  const iagoBalcaoDays = Number.isFinite(parsedBalcaoDays) && parsedBalcaoDays >= 0 ? parsedBalcaoDays : defaultBalcaoDays;
-  const iagoBalcaoAllowance =
-    isNewPolicyFromOct5 && params.dias_balcao === undefined
-      ? WEEKLY_FIXED_RATE
-      : iagoBalcaoDays * DAILY_BALCAO_RATE;
-
-  const iagoTotalWithFixed = globalIagoPending + iagoBalcaoAllowance;
+  // Política de remuneração do Iago: 100% comissão (30% sobre mão de obra das OSs), sem fixo semanal
+  const iagoBalcaoAllowance = 0;
+  const iagoTotalWithFixed = globalIagoPending;
 
   const buildQuery = (newParams: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
@@ -241,22 +230,22 @@ export default async function ComissoesPage({
 
       {/* CARDS RESUMO DE FECHAMENTO (VALORES MANTIDOS ATÉ A BAIXA) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-2 border-zinc-950 bg-zinc-950 gap-[1px]">
-        {/* Iago 30% + Fixo da Tarde */}
+        {/* Iago 30% */}
         {(isOwnerOrManager || isCurrentUserIago) && (
           <div className={`p-4 transition ${isCurrentUserIago ? 'bg-emerald-50/80 ring-2 ring-emerald-600 ring-inset' : 'bg-white'}`}>
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-black uppercase text-zinc-950">
-                Iago // Tarde {isCurrentUserIago && <span className="bg-emerald-600 text-white px-1 ml-1 text-[9px]">VOCÊ</span>}
+                Iago // 30% {isCurrentUserIago && <span className="bg-emerald-600 text-white px-1 ml-1 text-[9px]">VOCÊ</span>}
               </span>
               <span className="border border-zinc-950 bg-zinc-950 text-white px-1.5 py-0.5 font-mono text-[10px] font-bold">
-                30% + R$ 100 Fixo
+                30% Mão de Obra
               </span>
             </div>
             <p className="mt-2 text-2xl font-black font-mono text-emerald-950">
-              {fmtBRL(iagoTotalWithFixed)}
+              {fmtBRL(globalIagoPending)}
             </p>
             <p className="mt-1 font-mono text-[11px] text-zinc-600">
-              OS 30%: {fmtBRL(globalIagoPending)} + Fixo: {fmtBRL(iagoBalcaoAllowance)}
+              Total de comissão pendente (30%)
             </p>
           </div>
         )}
@@ -382,25 +371,7 @@ export default async function ComissoesPage({
           </Link>
         </div>
 
-        {/* Ajuste de dias de balcão do Iago se necessário */}
-        {(isOwnerOrManager || isCurrentUserIago) && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-zinc-500 font-bold uppercase text-[11px]">Dias Balcão Iago:</span>
-            {[0, 3, 4, 5].map((d) => (
-              <Link
-                key={d}
-                href={`/admin/comissoes${buildQuery({ dias_balcao: String(d) })}`}
-                className={`px-2 py-0.5 font-bold transition ${
-                  iagoBalcaoDays === d
-                    ? 'bg-zinc-950 text-white'
-                    : 'border border-zinc-300 bg-zinc-50 text-zinc-700 hover:bg-zinc-200'
-                }`}
-              >
-                {d}d
-              </Link>
-            ))}
-          </div>
-        )}
+
       </div>
 
       {/* PLANILHA INTERATIVA REATIVA */}

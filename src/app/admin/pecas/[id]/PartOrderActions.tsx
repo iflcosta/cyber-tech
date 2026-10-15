@@ -18,15 +18,30 @@ export function PartOrderActions({
   status,
   returnReason,
   currentUserId,
+  serviceOrderId,
+  serviceOrderShortId,
+  partDescription = '',
+  partVariant,
+  partValue = 0,
 }: {
   orderId: string;
   status: PartOrderStatusValue;
   returnReason: ReturnReasonValue | null;
   currentUserId: string;
+  serviceOrderId?: string | null;
+  serviceOrderShortId?: string | null;
+  partDescription?: string;
+  partVariant?: string | null;
+  partValue?: number;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [applyPrice, setApplyPrice] = useState(
+    partValue > 0 ? partValue.toFixed(2).replace('.', ',') : '0,00'
+  );
 
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [reason, setReason] = useState<ReturnReasonValue>('not_the_issue');
@@ -35,6 +50,88 @@ export function PartOrderActions({
   const [wantsExchange, setWantsExchange] = useState(true);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelNote, setCancelNote] = useState('');
+
+  async function handleApply() {
+    if (serviceOrderId) {
+      setShowApplyConfirm(true);
+      return;
+    }
+    await transition({ newStatus: 'applied', eventType: 'applied' });
+  }
+
+  async function confirmApplyToOS() {
+    setBusy(true);
+    setError(null);
+    try {
+      const supabase = createCRMBrowserClient();
+      const itemName = [partDescription, partVariant].filter(Boolean).join(' - ');
+      const cleanPrice = Number(applyPrice.replace(/\./g, '').replace(',', '.'));
+      const numValue = Number.isFinite(cleanPrice) && cleanPrice > 0 ? cleanPrice : (partValue || 0);
+
+      if (serviceOrderId && numValue > 0) {
+        // Lança saída de estoque atômica para a OS
+        const { error: rpcErr } = await supabase.rpc(
+          'create_stock_item_and_use',
+          {
+            p_name: itemName || 'Peça Encomendada',
+            p_unit_price: numValue,
+            p_quantity: 1,
+            p_service_order_id: serviceOrderId,
+            p_category: 'Peça Encomendada',
+          } as never,
+        );
+        if (rpcErr) throw rpcErr;
+
+        // Atualiza valor estimado da OS para refletir no recibo e portal
+        try {
+          const { data: currentOS } = await supabase
+            .from('service_orders')
+            .select('estimated_value')
+            .eq('id', serviceOrderId)
+            .single();
+
+          if (currentOS) {
+            const currentEst = Number(currentOS.estimated_value || 0);
+            const newEst = Math.round((currentEst + numValue) * 100) / 100;
+            await supabase
+              .from('service_orders')
+              .update({
+                estimated_value: newEst,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', serviceOrderId);
+          }
+        } catch {
+          // não bloqueia
+        }
+      }
+
+      // Atualiza status do pedido
+      const { error: upErr } = await supabase
+        .from('part_orders')
+        .update({ status: 'applied', updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+      if (upErr) throw upErr;
+
+      await supabase.from('part_order_events').insert({
+        part_order_id: orderId,
+        event_type: 'applied',
+        from_value: status,
+        to_value: 'applied',
+        note: serviceOrderId
+          ? `Peça aplicada e debitada automaticamente na OS #${serviceOrderShortId ?? ''} (R$ ${numValue.toFixed(2)})`
+          : 'Peça aplicada com sucesso',
+        author_id: currentUserId,
+      });
+
+      setShowApplyConfirm(false);
+      router.refresh();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function transition(opts: {
     newStatus: PartOrderStatusValue;
@@ -73,10 +170,25 @@ export function PartOrderActions({
 
   if (TERMINAL_STATUSES.includes(status)) {
     return (
-      <section className="border-2 border-zinc-300 bg-zinc-50 p-3 text-center">
-        <p className="font-mono text-xs text-zinc-500">
-          Pedido finalizado ({status === 'applied' ? 'aplicado na OS' : status === 'returned' ? 'devolvido' : 'cancelado'}).
+      <section className="border-2 border-zinc-950 bg-zinc-50 p-4 text-center space-y-2">
+        <p className="font-mono text-xs font-bold text-zinc-950">
+          {status === 'applied'
+            ? '✅ Pedido Finalizado — Peça Aplicada'
+            : status === 'returned'
+              ? '↩️ Pedido Finalizado — Devolvido'
+              : '❌ Pedido Cancelado'}
         </p>
+        {status === 'applied' && serviceOrderId && (
+          <p className="font-mono text-[11px] text-zinc-600">
+            Lançada na{' '}
+            <a
+              href={`/admin/os/${serviceOrderId}`}
+              className="font-bold underline text-emerald-800 hover:text-emerald-950"
+            >
+              OS #{serviceOrderShortId}
+            </a>
+          </p>
+        )}
       </section>
     );
   }
@@ -95,14 +207,14 @@ export function PartOrderActions({
         </button>
       )}
 
-      {status === 'received' && !showReturnForm && (
+      {status === 'received' && !showReturnForm && !showApplyConfirm && (
         <div className="mt-3 space-y-2">
           <button
-            onClick={() => transition({ newStatus: 'applied', eventType: 'applied' })}
+            onClick={handleApply}
             disabled={busy}
             className="w-full border-2 border-zinc-950 bg-zinc-950 px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white transition hover:bg-zinc-800 disabled:opacity-50 cursor-pointer"
           >
-            {busy ? 'Salvando…' : '✅ Aplicado — resolveu o problema'}
+            {busy ? 'Salvando…' : '✅ Aplicado — debitar e vincular na OS'}
           </button>
           <button
             onClick={() => setShowReturnForm(true)}
@@ -111,6 +223,53 @@ export function PartOrderActions({
           >
             ↩️ Sinalizar devolução
           </button>
+        </div>
+      )}
+
+      {/* Confirmação de Aplicação Automática na OS */}
+      {status === 'received' && showApplyConfirm && (
+        <div className="mt-3 space-y-3 border-2 border-emerald-600 bg-emerald-50/50 p-3">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🔬</span>
+            <h3 className="font-mono text-xs font-black uppercase text-emerald-950">
+              Lançar Peça na OS #{serviceOrderShortId}
+            </h3>
+          </div>
+          <p className="font-mono text-[11px] text-zinc-700 leading-snug">
+            Ao confirmar, a peça <strong>{partDescription}</strong> será debitada do estoque e lançada automaticamente como custo de peça na OS vinculada.
+          </p>
+
+          <label className="block">
+            <span className="block font-mono text-[10px] font-bold uppercase text-zinc-800">
+              Valor da Peça a lançar na OS (R$)
+            </span>
+            <input
+              type="text"
+              value={applyPrice}
+              onChange={(e) => setApplyPrice(e.target.value)}
+              className="mt-1 w-full border border-zinc-400 bg-white px-2.5 py-1.5 font-mono text-xs font-bold text-zinc-950 focus:border-emerald-600 focus:outline-none"
+              placeholder="0,00"
+            />
+          </label>
+
+          {error && <p className="border border-red-300 bg-red-50 p-2 font-mono text-xs text-red-700">{error}</p>}
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowApplyConfirm(false)}
+              disabled={busy}
+              className="flex-1 border-2 border-zinc-950 bg-white px-3 py-2 font-mono text-xs font-bold uppercase text-zinc-950 hover:bg-zinc-100 cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmApplyToOS}
+              disabled={busy}
+              className="flex-1 border-2 border-emerald-800 bg-emerald-800 px-3 py-2 font-mono text-xs font-bold uppercase text-white hover:bg-emerald-900 disabled:opacity-50 cursor-pointer"
+            >
+              {busy ? 'Gravando…' : 'Confirmar e Debitar'}
+            </button>
+          </div>
         </div>
       )}
 

@@ -53,7 +53,7 @@ export function CommissionsSpreadsheet({
   currentUserId,
   currentUserName,
   isOwnerOrManager,
-  iagoFixedAllowance = 100,
+  iagoFixedAllowance = 0,
 }: {
   records: SpreadsheetRecord[];
   technicians: TechProfile[];
@@ -527,17 +527,19 @@ export function CommissionsSpreadsheet({
               <strong className="text-sm">{fmtBRL(totalCommission)}</strong>
             </div>
 
-            {/* Total Iago com Fixo */}
+            {/* Total Iago */}
             {(isOwnerOrManager || currentUserName.toLowerCase().includes('iago')) && (
               <div className="border-l border-zinc-300 pl-3">
                 <span className="text-emerald-800 uppercase text-[10px] font-bold block">
-                  Iago (30% + R$ {iagoFixedAllowance} Fixo):
+                  Iago (30% M.O.):
                 </span>
                 <strong className="text-base text-emerald-950 font-black">
                   {fmtBRL(iagoCommission + (statusFilter === 'pending' ? iagoFixedAllowance : 0))}
                 </strong>
                 <span className="text-[10px] text-zinc-500 block">
-                  ({fmtBRL(iagoCommission)} OS + R$ {iagoFixedAllowance} Fixo Tarde)
+                  {iagoFixedAllowance > 0
+                    ? `(${fmtBRL(iagoCommission)} OS + R$ ${iagoFixedAllowance} Fixo)`
+                    : 'Comissão direta OS'}
                 </span>
               </div>
             )}
@@ -680,14 +682,14 @@ export function CommissionsSpreadsheet({
 
               <div className="border border-zinc-300 bg-zinc-50 p-3 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-emerald-900">Iago (Turno da Tarde):</span>
+                  <span className="font-bold text-emerald-900">Iago (30% M.O.):</span>
                   <span className="font-black text-sm text-emerald-950">
                     {fmtBRL(iagoCommission + iagoFixedAllowance)}
                   </span>
                 </div>
                 <div className="text-[11px] text-zinc-500 pl-3">
-                  • Comissões OS (30%): {fmtBRL(iagoCommission)}<br />
-                  • Fixo Semanal Tarde: {fmtBRL(iagoFixedAllowance)}
+                  • Comissões OS (30% sobre Mão de Obra)
+                  {iagoFixedAllowance > 0 && ` + Fixo: ${fmtBRL(iagoFixedAllowance)}`}
                 </div>
 
                 <div className="flex justify-between items-center border-t border-zinc-200 pt-2">

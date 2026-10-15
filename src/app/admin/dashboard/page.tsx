@@ -5,6 +5,7 @@ import { PAYMENT_METHODS, getEquipmentTypeLabel } from '@/app/admin/types/databa
 import { PixQRButton } from '@/app/admin/components/PixQRButton';
 import { StatusBadge } from '@/app/admin/components/StatusBadge';
 import { SalesChart } from './SalesChart';
+import { DREWidget } from './DREWidget';
 import { formatDateTimeBR, startOfDayBR, startOfMonthBR } from '@/app/admin/lib/datetime';
 
 const CHART_DAYS = 14;
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
     unpaidList,
     partsWaitingList,
     activeBenchOS,
+    cashBleedEntriesMonth,
   ] = await Promise.all([
     // Uma query só cobre o gráfico E os cards "Hoje"/"Últimos 7 dias" —
     // ambos derivados por agregação em memória dos mesmos buckets diários
@@ -144,6 +146,12 @@ export default async function DashboardPage() {
       .select('id, short_id, os_number, status, equipment_type, equipment_brand, equipment_model, estimated_value, labor_cost, technician_id, customer:customers(name)')
       .in('status', ['awaiting_approval', 'approved', 'in_progress', 'waiting_part', 'ready'])
       .order('updated_at', { ascending: false }),
+    // Sangrias do Caixa no mês (despesas operacionais reais)
+    supabase
+      .from('cash_entries')
+      .select('amount, description')
+      .eq('entry_type', 'out_bleed')
+      .gte('created_at', monthStart.toISOString()),
   ]);
 
   // Numeros de OS
@@ -268,6 +276,49 @@ export default async function DashboardPage() {
     }
   }
   const supplierTotalsSorted = Array.from(supplierAgg.values()).sort((a, b) => b.total - a.total);
+
+  // Apuração do DRE Gerencial do Mês (Demonstrativo do Resultado do Exercício)
+  const cashBleedTotal = ((cashBleedEntriesMonth.data ?? []) as unknown as { amount: number }[]).reduce(
+    (acc, e) => acc + Number(e.amount || 0),
+    0,
+  );
+  const cashBleedCount = cashBleedEntriesMonth.data?.length ?? 0;
+
+  const dreSalesGross = totalMonth;
+  const dreSalesCount = countMonth;
+  const dreLaborGross = laborRevenueMonth;
+  const dreLaborCount = osDeliveredMonth.data?.length ?? 0;
+  const drePartsGross = partsAppliedTotal;
+  const drePartsCount = partsAppliedCount;
+  const dreTotalGrossRevenue = dreSalesGross + dreLaborGross + drePartsGross;
+  const drePartsCMV = partsAppliedTotal;
+  const dreGrossMargin = dreTotalGrossRevenue - drePartsCMV;
+  // Política do ERP: 30% sobre Mão de Obra das OSs
+  const dreTechnicianCommissions = Math.round(dreLaborGross * 0.30 * 100) / 100;
+  const dreCashBleedExpenses = cashBleedTotal;
+  const dreNetProfit = Math.round((dreGrossMargin - dreTechnicianCommissions - dreCashBleedExpenses) * 100) / 100;
+  const dreNetMarginPct = dreTotalGrossRevenue > 0 ? (dreNetProfit / dreTotalGrossRevenue) * 100 : 0;
+
+  const monthNameRaw = new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, month: 'long', year: 'numeric' }).format(monthStart);
+  const drePeriodLabel = monthNameRaw.charAt(0).toUpperCase() + monthNameRaw.slice(1);
+
+  const dreData = {
+    periodLabel: drePeriodLabel,
+    salesGross: dreSalesGross,
+    salesCount: dreSalesCount,
+    laborGross: dreLaborGross,
+    laborCount: dreLaborCount,
+    partsGross: drePartsGross,
+    partsCount: drePartsCount,
+    totalGrossRevenue: dreTotalGrossRevenue,
+    partsCMV: drePartsCMV,
+    grossMargin: dreGrossMargin,
+    technicianCommissions: dreTechnicianCommissions,
+    cashBleedExpenses: dreCashBleedExpenses,
+    cashBleedCount: cashBleedCount,
+    netProfit: dreNetProfit,
+    netMarginPct: dreNetMarginPct,
+  };
 
   // Painel "hoje" — normaliza cada lista (join vira campo direto) e
   // calcula "há quantos dias" onde faz sentido. "agora" lido uma vez só
@@ -580,6 +631,9 @@ export default async function DashboardPage() {
           </div>
         </section>
       )}
+
+      {/* DRE Simplificado do Mês (Demonstrativo de Resultado do Exercício) */}
+      <DREWidget data={dreData} />
 
       {/* Numeros da bancada (OS) */}
       <section>

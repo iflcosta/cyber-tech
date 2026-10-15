@@ -114,6 +114,11 @@ export default async function PartOrderDetailPage({ params }: { params: Promise<
               status={order.status as PartOrderStatusValue}
               returnReason={order.return_reason as ReturnReasonValue | null}
               currentUserId={profile.id}
+              serviceOrderId={so?.id ?? null}
+              serviceOrderShortId={so?.short_id ?? so?.os_number ?? null}
+              partDescription={order.part_description}
+              partVariant={order.part_variant}
+              partValue={Number(order.part_value || 0)}
             />
           )}
 

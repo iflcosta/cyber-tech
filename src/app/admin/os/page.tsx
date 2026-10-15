@@ -145,11 +145,12 @@ export default async function OSListPage({
       );
     }
 
-    const fixedRate = isIago ? 100 : 0;
+    // Política atual: Iago trabalha 100% comissionado a 30% sobre M.O. (removido fixo de R$ 100/sem)
+    const fixedRate = 0;
     myFridayCommission = {
-      total: Math.round((osComm + fixedRate) * 100) / 100,
+      total: Math.round(osComm * 100) / 100,
       osComm: Math.round(osComm * 100) / 100,
-      fixedRate,
+      fixedRate: 0,
     };
   }
 
