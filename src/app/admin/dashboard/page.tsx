@@ -47,6 +47,8 @@ export default async function DashboardPage() {
     partsWaitingList,
     activeBenchOS,
     cashBleedEntriesMonth,
+    osPartsMovementsMonth,
+    commissionsMonth,
   ] = await Promise.all([
     // Uma query só cobre o gráfico E os cards "Hoje"/"Últimos 7 dias" —
     // ambos derivados por agregação em memória dos mesmos buckets diários
@@ -74,7 +76,7 @@ export default async function DashboardPage() {
       .limit(5),
     supabase
       .from('sale_items')
-      .select('item_name, quantity, subtotal, sale:sales!inner(created_at, voided_at)')
+      .select('item_name, quantity, subtotal, stock_item:stock_items(unit_cost), sale:sales!inner(created_at, voided_at)')
       .gte('sale.created_at', monthStart.toISOString())
       .is('sale.voided_at', null)
       .limit(500),
@@ -91,7 +93,7 @@ export default async function DashboardPage() {
       .eq('status', 'ready'),
     supabase
       .from('service_orders')
-      .select('labor_cost, estimated_value')
+      .select('id, labor_cost, estimated_value')
       .eq('status', 'delivered')
       .gte('delivered_at', monthStart.toISOString()),
     // Peças de fornecedores — fluxo TOTALMENTE separado de Vendas (PDV).
@@ -152,7 +154,33 @@ export default async function DashboardPage() {
       .select('amount, description')
       .eq('entry_type', 'out_bleed')
       .gte('created_at', monthStart.toISOString()),
+    // Peças aplicadas em OS via movimentação de estoque no mês (estoque próprio + encomendas)
+    supabase
+      .from('stock_movements')
+      .select('service_order_id, quantity, unit_price, total_amount, stock_item:stock_items(unit_cost)')
+      .eq('movement_type', 'out')
+      .not('service_order_id', 'is', null)
+      .gte('created_at', monthStart.toISOString()),
+    // Comissões reais apuradas no livro-razão (commission_ledger) no mês
+    supabase
+      .from('commission_ledger')
+      .select('commission_amount, technician_name, status')
+      .gte('created_at', monthStart.toISOString()),
   ]);
+
+  // Mapeia peças aplicadas por OS para não inflar mão de obra quando labor_cost = 0
+  const partsByOSMonth = new Map<string, number>();
+  for (const m of (osPartsMovementsMonth.data ?? []) as unknown as Array<{
+    service_order_id: string | null;
+    total_amount: number | null;
+  }>) {
+    if (m.service_order_id) {
+      partsByOSMonth.set(
+        m.service_order_id,
+        (partsByOSMonth.get(m.service_order_id) ?? 0) + Number(m.total_amount || 0),
+      );
+    }
+  }
 
   // Numeros de OS
   const osOpenCount = osOpen.count ?? 0;
@@ -160,10 +188,11 @@ export default async function DashboardPage() {
   const osReadyCount = osReady.count ?? 0;
   const laborRevenueMonth = (osDeliveredMonth.data ?? []).reduce(
     (acc, o) => {
-      const row = o as { labor_cost: number | null; estimated_value: number | null };
+      const row = o as { id: string; labor_cost: number | null; estimated_value: number | null };
       const labor = Number(row.labor_cost ?? 0);
       const est = Number(row.estimated_value ?? 0);
-      return acc + (labor > 0 ? labor : est);
+      const osParts = partsByOSMonth.get(row.id) ?? 0;
+      return acc + (labor > 0 ? labor : Math.max(0, est - osParts));
     },
     0,
   );
@@ -284,18 +313,54 @@ export default async function DashboardPage() {
   );
   const cashBleedCount = cashBleedEntriesMonth.data?.length ?? 0;
 
+  // CMV das vendas do PDV (soma de quantity * unit_cost dos itens vendidos no mês)
+  const pdvSalesCMV = ((topItems.data ?? []) as unknown as Array<{
+    quantity: number;
+    stock_item: { unit_cost: number | null } | Array<{ unit_cost: number | null }> | null;
+  }>).reduce((acc, row) => {
+    const si = Array.isArray(row.stock_item) ? row.stock_item[0] : row.stock_item;
+    const unitCost = Number(si?.unit_cost ?? 0);
+    return acc + Number(row.quantity || 0) * (unitCost > 0 ? unitCost : 0);
+  }, 0);
+
+  // Peças aplicadas em OSs no mês (estoque próprio + peças encomendadas)
+  const osMovementsList = (osPartsMovementsMonth.data ?? []) as unknown as Array<{
+    quantity: number;
+    unit_price: number | null;
+    total_amount: number | null;
+    stock_item: { unit_cost: number | null } | Array<{ unit_cost: number | null }> | null;
+  }>;
+  const osPartsRevenueFromMovements = osMovementsList.reduce(
+    (acc, m) => acc + Number(m.total_amount || 0),
+    0,
+  );
+  const osPartsCostFromMovements = osMovementsList.reduce((acc, m) => {
+    const si = Array.isArray(m.stock_item) ? m.stock_item[0] : m.stock_item;
+    const cost = Number(si?.unit_cost ?? m.unit_price ?? 0);
+    return acc + Number(m.quantity || 1) * (cost > 0 ? cost : 0);
+  }, 0);
+
+  const effectiveOSPartsGross = Math.max(partsAppliedTotal, osPartsRevenueFromMovements);
+  const effectiveOSPartsCMV = Math.max(partsAppliedTotal, osPartsCostFromMovements);
+  const effectiveOSPartsCount = Math.max(partsAppliedCount, osMovementsList.length);
+
   const dreSalesGross = totalMonth;
   const dreSalesCount = countMonth;
   const dreLaborGross = laborRevenueMonth;
   const dreLaborCount = osDeliveredMonth.data?.length ?? 0;
-  const drePartsGross = partsAppliedTotal;
-  const drePartsCount = partsAppliedCount;
-  const dreTotalGrossRevenue = dreSalesGross + dreLaborGross + drePartsGross;
-  const drePartsCMV = partsAppliedTotal;
-  const dreGrossMargin = dreTotalGrossRevenue - drePartsCMV;
-  // Política do ERP: 30% sobre Mão de Obra das OSs
-  const dreTechnicianCommissions = Math.round(dreLaborGross * 0.30 * 100) / 100;
-  const dreCashBleedExpenses = cashBleedTotal;
+  const drePartsGross = Math.round(effectiveOSPartsGross * 100) / 100;
+  const drePartsCount = effectiveOSPartsCount;
+  const dreTotalGrossRevenue = Math.round((dreSalesGross + dreLaborGross + drePartsGross) * 100) / 100;
+  const drePartsCMV = Math.round((effectiveOSPartsCMV + pdvSalesCMV) * 100) / 100;
+  const dreGrossMargin = Math.round((dreTotalGrossRevenue - drePartsCMV) * 100) / 100;
+
+  // Comissões reais apuradas no commission_ledger (respeitando Felipe 0%, Iago 30%, Jefferson 50%)
+  const ledgerCommissionsTotal = ((commissionsMonth.data ?? []) as unknown as Array<{
+    commission_amount: number | null;
+  }>).reduce((acc, c) => acc + Number(c.commission_amount || 0), 0);
+
+  const dreTechnicianCommissions = Math.round(ledgerCommissionsTotal * 100) / 100;
+  const dreCashBleedExpenses = Math.round(cashBleedTotal * 100) / 100;
   const dreNetProfit = Math.round((dreGrossMargin - dreTechnicianCommissions - dreCashBleedExpenses) * 100) / 100;
   const dreNetMarginPct = dreTotalGrossRevenue > 0 ? (dreNetProfit / dreTotalGrossRevenue) * 100 : 0;
 
@@ -449,7 +514,7 @@ export default async function DashboardPage() {
 
         <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           <Link
-            href="/admin/os?tech=me&status=awaiting_diagnosis"
+            href="/admin/os?tech=me&status=awaiting_approval"
             className="border border-zinc-300 bg-zinc-50 p-3 transition hover:border-zinc-950 hover:bg-zinc-100"
           >
             <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600">

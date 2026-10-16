@@ -448,7 +448,7 @@ export default async function StockItemDetailPage({
                   value={`${(((item.unit_price - item.unit_cost) / item.unit_price) * 100).toFixed(1)}%`}
                 />
               )}
-              {item.notes && <Row label="Obs" value={item.notes} />}
+              {humanNotes && <Row label="Obs" value={humanNotes} />}
             </dl>
           </section>
 

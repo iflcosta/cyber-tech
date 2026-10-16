@@ -41,10 +41,11 @@ yarn-error.log*
 next-env.d.ts
 .vercel
 
-# scratch local scripts
+# scratch local scripts & PII exports
 apply_0034.js
 crm_backup_pre_reset.json
 inspect_os.js
 reset_database.sql
 reset_db.js
 wipe_crm_db.js
+tools/whatsapp-leads/output/

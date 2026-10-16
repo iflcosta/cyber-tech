@@ -681,10 +681,19 @@ export function CommissionsSpreadsheet({
               )}
 
               <div className="border border-zinc-300 bg-zinc-50 p-3 space-y-2">
+                <div className="flex justify-between items-center text-[11px] text-zinc-600 border-b border-zinc-200 pb-1.5">
+                  <span>Lançamentos selecionados para baixa:</span>
+                  <strong className="text-zinc-950">{pendingTargets.length} {pendingTargets.length === 1 ? 'item' : 'itens'}</strong>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-emerald-900">Iago (30% M.O.):</span>
                   <span className="font-black text-sm text-emerald-950">
-                    {fmtBRL(iagoCommission + iagoFixedAllowance)}
+                    {fmtBRL(
+                      pendingTargets
+                        .filter((r) => r.technician_name.toLowerCase().includes('iago'))
+                        .reduce((acc, r) => acc + Number(r.commission_amount || 0), 0) +
+                        iagoFixedAllowance,
+                    )}
                   </span>
                 </div>
                 <div className="text-[11px] text-zinc-500 pl-3">
@@ -694,12 +703,23 @@ export function CommissionsSpreadsheet({
 
                 <div className="flex justify-between items-center border-t border-zinc-200 pt-2">
                   <span className="font-bold text-zinc-900">Jefferson (Mezanino 50%):</span>
-                  <span className="font-black text-sm text-zinc-950">{fmtBRL(jeffersonCommission)}</span>
+                  <span className="font-black text-sm text-zinc-950">
+                    {fmtBRL(
+                      pendingTargets
+                        .filter((r) => r.technician_name.toLowerCase().includes('jefferson'))
+                        .reduce((acc, r) => acc + Number(r.commission_amount || 0), 0),
+                    )}
+                  </span>
                 </div>
 
                 <div className="flex justify-between items-center border-t-2 border-zinc-950 pt-2 text-sm font-black">
-                  <span>TOTAL A PAGAR:</span>
-                  <span>{fmtBRL(totalCommission + iagoFixedAllowance)}</span>
+                  <span>TOTAL A PAGAR NESTA BAIXA:</span>
+                  <span>
+                    {fmtBRL(
+                      pendingTargets.reduce((acc, r) => acc + Number(r.commission_amount || 0), 0) +
+                        iagoFixedAllowance,
+                    )}
+                  </span>
                 </div>
               </div>
 

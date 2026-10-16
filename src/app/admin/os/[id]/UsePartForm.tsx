@@ -18,8 +18,12 @@ function fmtBRL(n: number): string {
 }
 
 function parseBRLInput(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  const clean = v.trim().replace(/[R$\s]/g, '');
+  if (!clean) return null;
+  const normalized = clean.includes(',')
+    ? clean.replace(/\./g, '').replace(',', '.')
+    : clean;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -98,13 +102,15 @@ export function UsePartForm({
       try {
         const { data: currentOS } = await supabase
           .from('service_orders')
-          .select('estimated_value')
+          .select('estimated_value, labor_cost')
           .eq('id', serviceOrderId)
           .single();
 
         if (currentOS) {
           const currentEst = Number(currentOS.estimated_value || 0);
-          const newEstimated = Math.round((currentEst + total) * 100) / 100;
+          const currentLabor = Number(currentOS.labor_cost || 0);
+          const baseValue = currentEst > 0 ? currentEst : currentLabor;
+          const newEstimated = Math.round((baseValue + total) * 100) / 100;
           await supabase
             .from('service_orders')
             .update({
@@ -164,13 +170,15 @@ export function UsePartForm({
         const totalNew = price * qty;
         const { data: currentOS } = await supabase
           .from('service_orders')
-          .select('estimated_value')
+          .select('estimated_value, labor_cost')
           .eq('id', serviceOrderId)
           .single();
 
         if (currentOS && totalNew > 0) {
           const currentEst = Number(currentOS.estimated_value || 0);
-          const newEstimated = Math.round((currentEst + totalNew) * 100) / 100;
+          const currentLabor = Number(currentOS.labor_cost || 0);
+          const baseValue = currentEst > 0 ? currentEst : currentLabor;
+          const newEstimated = Math.round((baseValue + totalNew) * 100) / 100;
           await supabase
             .from('service_orders')
             .update({

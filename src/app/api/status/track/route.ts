@@ -115,8 +115,18 @@ export async function GET(request: Request) {
         }
 
         // 2. Consulta direta na tabela service_orders (fallback seguro caso RPC não retorne)
-        const cleanQuery = query.replace(/^#/, '').trim();
+        const rawClean = query.replace(/^#/, '').trim();
+        // Sanitiza contra PostgREST filter injection removendo caracteres de controle de sintaxe
+        const cleanQuery = rawClean.replace(/[,().%*'\\"`;]/g, '').trim();
         const noPrefix = cleanQuery.replace(/^OS-?/i, '').trim();
+        const digitsFromQuery = cleanQuery.replace(/\D/g, '');
+        const isLikelyPhoneQuery =
+          !cleanQuery.toUpperCase().startsWith('OS') &&
+          !cleanQuery.toUpperCase().startsWith('CYB') &&
+          digitsFromQuery.length >= 8 &&
+          digitsFromQuery.length <= 13;
+
+        const effectivePhone = phone || (isLikelyPhoneQuery ? digitsFromQuery : '');
 
         let soQuery = client
           .from('service_orders')
@@ -148,7 +158,7 @@ export async function GET(request: Request) {
           .order('created_at', { ascending: false })
           .limit(1);
 
-        if (cleanQuery) {
+        if (cleanQuery && !isLikelyPhoneQuery) {
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
           if (isUUID) {
             soQuery = soQuery.eq('id', cleanQuery);
@@ -157,8 +167,8 @@ export async function GET(request: Request) {
               `os_number.ilike.${cleanQuery},os_number.ilike.OS-${noPrefix},short_id.ilike.${cleanQuery},short_id.ilike.OS-${noPrefix}`,
             );
           }
-        } else if (phone) {
-          const digitsOnly = phone.replace(/\D/g, '');
+        } else if (effectivePhone) {
+          const digitsOnly = effectivePhone.replace(/\D/g, '');
           if (digitsOnly.length >= 8) {
             const { data: matchedCustomers } = await client
               .from('customers')

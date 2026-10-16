@@ -117,28 +117,64 @@ export function UsedDevicePurchaseManager({
 
       // 1. Opcional: cadastra no estoque de vitrine como seminovo
       if (addToStock) {
-        const stockName = `${deviceType.toUpperCase()}: ${brand} ${model}${color ? ` (${color})` : ''} - SEMINOVO`;
+        const categoryMap: Record<string, string> = {
+          celular: 'Celulares & Tablets',
+          tablet: 'Celulares & Tablets',
+          notebook: 'Notebooks',
+          computador: 'Computadores & PCs',
+          outro: 'Outros',
+        };
+        const mappedCategory = categoryMap[deviceType] || 'Outros';
+        const stockName = `${deviceType.toUpperCase()}: ${brand.trim()} ${model.trim()}${color.trim() ? ` (${color.trim()})` : ''} - SEMINOVO`;
+        const suggestedSalePrice = Math.round(price * 1.4 * 100) / 100;
+
         const { data: stockItem, error: stockErr } = await supabase
           .from('stock_items')
           .insert({
             name: stockName,
+            category: mappedCategory,
             brand: brand.trim(),
             model: model.trim(),
-            unit_price: price * 1.4, // Sugestão de margem bruta inicial de 40%
-            cost_price: price,
-            current_stock: 1,
+            unit_price: suggestedSalePrice,
+            unit_cost: price,
+            current_stock: 0,
             min_stock: 0,
             active: true,
+            notes: [
+              conditionNotes.trim() || null,
+              imei1.trim() ? `IMEI: ${imei1.trim()}` : null,
+              serialNumber.trim() ? `Serial: ${serialNumber.trim()}` : null,
+            ]
+              .filter(Boolean)
+              .join(' | ') || null,
           })
-          .select()
+          .select('id')
           .single();
 
-        if (!stockErr && stockItem) {
+        if (stockErr) {
+          throw new Error(`Falha ao cadastrar seminovo no estoque: ${stockErr.message}`);
+        }
+
+        if (stockItem) {
           createdStockItemId = stockItem.id;
+          // Registra movimentação inicial de entrada ('in') para somar 1 unidade via trigger e manter histórico
+          const { error: movErr } = await supabase.from('stock_movements').insert({
+            stock_item_id: stockItem.id,
+            movement_type: 'in',
+            quantity: 1,
+            unit_price: price,
+            total_amount: price,
+            reference: `Compra Usado (${sellerName.trim()})`,
+            notes: 'Entrada automática via Termo de Compra de Aparelho Usado',
+            author_id: currentUserId,
+          });
+          if (movErr) {
+            throw new Error(`Falha ao registrar entrada no estoque: ${movErr.message}`);
+          }
         }
       }
 
-      // 2. Cria registro de compra e compliance
+      // 2. Cria registro de compra e compliance (pago diretamente pelo dono via PIX/bolso, sem saída do Caixa)
       const { data: purchase, error: purchaseErr } = await supabase
         .from('used_device_purchases')
         .insert({

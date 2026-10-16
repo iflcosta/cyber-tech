@@ -57,7 +57,7 @@ export function StockItemEditor({
     item.unit_cost !== null ? item.unit_cost.toFixed(2).replace('.', ',') : '',
   );
   const [minStock, setMinStock] = useState(String(item.min_stock));
-  const [notes, setNotes] = useState(item.notes ?? '');
+  const [notes, setNotes] = useState(() => parseDeviceNotes(item.notes).humanNotes);
 
   async function handleSave() {
     if (!name.trim()) {
@@ -80,13 +80,15 @@ export function StockItemEditor({
       return;
     }
 
-    // Se o item tiver Ficha Técnica gravada nas notas, recalcula o parcelamento e mantém o JSON sincronizado!
+    // Se o item tiver Ficha Técnica gravada nas notas originais, recalcula o parcelamento e preserva o JSON!
     let finalNotes = notes.trim() || null;
-    const { specs, humanNotes } = parseDeviceNotes(notes);
-    if (specs) {
+    const { specs: originalSpecs } = parseDeviceNotes(item.notes);
+    const { specs: inlineSpecs, humanNotes: cleanedHumanNotes } = parseDeviceNotes(notes);
+    const specsToKeep = inlineSpecs || originalSpecs;
+    if (specsToKeep) {
       const updatedInstallment = calculateInstallment(priceNum).text;
-      finalNotes = encodeDeviceNotes(humanNotes, {
-        ...specs,
+      finalNotes = encodeDeviceNotes(cleanedHumanNotes, {
+        ...specsToKeep,
         installmentInfo: updatedInstallment,
       });
     }

@@ -26,7 +26,7 @@ function fmtBRL(n: number): string {
 }
 
 export function DREWidget({ data }: { data: DREData }) {
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
   const isProfitPositive = data.netProfit >= 0;
 
   return (
@@ -52,7 +52,7 @@ export function DREWidget({ data }: { data: DREData }) {
             onClick={() => setShowDetails(!showDetails)}
             className="border border-zinc-950 bg-zinc-100 hover:bg-zinc-200 px-3 py-1 font-mono text-xs font-bold uppercase text-zinc-950 transition cursor-pointer"
           >
-            {showDetails ? 'Recolher Linhas' : 'Expandir Linhas Detalhadas'}
+            {showDetails ? 'Recolher Tabela' : 'Expandir Tabela Detalhada'}
           </button>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function DREWidget({ data }: { data: DREData }) {
             {fmtBRL(data.grossMargin)}
           </p>
           <span className="font-mono text-[10px] text-zinc-500 block">
-            Após dedução de CMV de peças ({fmtBRL(data.partsCMV)})
+            Após dedução de CMV de produtos e peças ({fmtBRL(data.partsCMV)})
           </span>
         </div>
 
@@ -144,160 +144,162 @@ export function DREWidget({ data }: { data: DREData }) {
       </div>
 
       {/* TABELA DRE FORMATO OFICIAL ZEBRADA */}
-      <div className="border border-zinc-950 overflow-x-auto">
-        <table className="w-full text-left font-mono text-xs border-collapse">
-          <thead>
-            <tr className="bg-zinc-950 text-white uppercase text-[10px]">
-              <th className="p-2.5">Conta / Descritivo Contábil</th>
-              <th className="p-2.5 text-center w-28">Ref. Operação</th>
-              <th className="p-2.5 text-right w-36">Valor (R$)</th>
-              <th className="p-2.5 text-right w-24">Part. %</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200">
-            {/* 1. RECEITA OPERACIONAL BRUTA */}
-            <tr className="bg-zinc-100 font-bold">
-              <td className="p-2.5 text-zinc-950">1. RECEITA OPERACIONAL BRUTA</td>
-              <td className="p-2.5 text-center text-zinc-600">
-                {data.salesCount + data.laborCount} ops
-              </td>
-              <td className="p-2.5 text-right text-zinc-950 font-black">
-                {fmtBRL(data.totalGrossRevenue)}
-              </td>
-              <td className="p-2.5 text-right text-zinc-600">100.0%</td>
-            </tr>
+      {showDetails && (
+        <div className="border border-zinc-950 overflow-x-auto">
+          <table className="w-full text-left font-mono text-xs border-collapse">
+            <thead>
+              <tr className="bg-zinc-950 text-white uppercase text-[10px]">
+                <th className="p-2.5">Conta / Descritivo Contábil</th>
+                <th className="p-2.5 text-center w-28">Ref. Operação</th>
+                <th className="p-2.5 text-right w-36">Valor (R$)</th>
+                <th className="p-2.5 text-right w-24">Part. %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200">
+              {/* 1. RECEITA OPERACIONAL BRUTA */}
+              <tr className="bg-zinc-100 font-bold">
+                <td className="p-2.5 text-zinc-950">1. RECEITA OPERACIONAL BRUTA</td>
+                <td className="p-2.5 text-center text-zinc-600">
+                  {data.salesCount + data.laborCount} ops
+                </td>
+                <td className="p-2.5 text-right text-zinc-950 font-black">
+                  {fmtBRL(data.totalGrossRevenue)}
+                </td>
+                <td className="p-2.5 text-right text-zinc-600">100.0%</td>
+              </tr>
 
-            {/* Linhas filhas da receita */}
-            <tr className="hover:bg-zinc-50">
-              <td className="p-2 pl-6 text-zinc-700">
-                <Link href="/admin/vendas" className="hover:underline flex items-center gap-1.5">
-                  <span>↳</span> Vendas de Balcão e Acessórios (PDV)
-                </Link>
-              </td>
-              <td className="p-2 text-center text-zinc-500">{data.salesCount} vendas</td>
-              <td className="p-2 text-right text-zinc-800">{fmtBRL(data.salesGross)}</td>
-              <td className="p-2 text-right text-zinc-500">
-                {data.totalGrossRevenue > 0
-                  ? `${((data.salesGross / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              {/* Linhas filhas da receita */}
+              <tr className="hover:bg-zinc-50">
+                <td className="p-2 pl-6 text-zinc-700">
+                  <Link href="/admin/vendas" className="hover:underline flex items-center gap-1.5">
+                    <span>↳</span> Vendas de Balcão e Acessórios (PDV)
+                  </Link>
+                </td>
+                <td className="p-2 text-center text-zinc-500">{data.salesCount} vendas</td>
+                <td className="p-2 text-right text-zinc-800">{fmtBRL(data.salesGross)}</td>
+                <td className="p-2 text-right text-zinc-500">
+                  {data.totalGrossRevenue > 0
+                    ? `${((data.salesGross / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            <tr className="hover:bg-zinc-50">
-              <td className="p-2 pl-6 text-zinc-700">
-                <Link href="/admin/os" className="hover:underline flex items-center gap-1.5">
-                  <span>↳</span> Serviços e Mão de Obra de OS Concluídas
-                </Link>
-              </td>
-              <td className="p-2 text-center text-zinc-500">{data.laborCount} OSs</td>
-              <td className="p-2 text-right text-zinc-800">{fmtBRL(data.laborGross)}</td>
-              <td className="p-2 text-right text-zinc-500">
-                {data.totalGrossRevenue > 0
-                  ? `${((data.laborGross / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              <tr className="hover:bg-zinc-50">
+                <td className="p-2 pl-6 text-zinc-700">
+                  <Link href="/admin/os" className="hover:underline flex items-center gap-1.5">
+                    <span>↳</span> Serviços e Mão de Obra de OS Concluídas
+                  </Link>
+                </td>
+                <td className="p-2 text-center text-zinc-500">{data.laborCount} OSs</td>
+                <td className="p-2 text-right text-zinc-800">{fmtBRL(data.laborGross)}</td>
+                <td className="p-2 text-right text-zinc-500">
+                  {data.totalGrossRevenue > 0
+                    ? `${((data.laborGross / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            <tr className="hover:bg-zinc-50">
-              <td className="p-2 pl-6 text-zinc-700">
-                <Link href="/admin/pecas" className="hover:underline flex items-center gap-1.5">
-                  <span>↳</span> Peças e Componentes Repassados na OS
-                </Link>
-              </td>
-              <td className="p-2 text-center text-zinc-500">{data.partsCount} peças</td>
-              <td className="p-2 text-right text-zinc-800">{fmtBRL(data.partsGross)}</td>
-              <td className="p-2 text-right text-zinc-500">
-                {data.totalGrossRevenue > 0
-                  ? `${((data.partsGross / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              <tr className="hover:bg-zinc-50">
+                <td className="p-2 pl-6 text-zinc-700">
+                  <Link href="/admin/pecas" className="hover:underline flex items-center gap-1.5">
+                    <span>↳</span> Peças e Componentes Repassados na OS
+                  </Link>
+                </td>
+                <td className="p-2 text-center text-zinc-500">{data.partsCount} peças</td>
+                <td className="p-2 text-right text-zinc-800">{fmtBRL(data.partsGross)}</td>
+                <td className="p-2 text-right text-zinc-500">
+                  {data.totalGrossRevenue > 0
+                    ? `${((data.partsGross / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            {/* 2. CUSTO DAS MERCADORIAS E PEÇAS (CMV) */}
-            <tr className="bg-zinc-50 font-bold text-red-900">
-              <td className="p-2.5">2. (-) CUSTO VARIÁVEL / CMV (PEÇAS E COMPONENTES)</td>
-              <td className="p-2.5 text-center text-red-700">{data.partsCount} un</td>
-              <td className="p-2.5 text-right font-black">- {fmtBRL(data.partsCMV)}</td>
-              <td className="p-2.5 text-right text-red-700">
-                {data.totalGrossRevenue > 0
-                  ? `-${((data.partsCMV / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              {/* 2. CUSTO DAS MERCADORIAS E PEÇAS (CMV) */}
+              <tr className="bg-zinc-50 font-bold text-red-900">
+                <td className="p-2.5">2. (-) CUSTO VARIÁVEL / CMV (PRODUTOS PDV + PEÇAS OS)</td>
+                <td className="p-2.5 text-center text-red-700">CMV Real</td>
+                <td className="p-2.5 text-right font-black">- {fmtBRL(data.partsCMV)}</td>
+                <td className="p-2.5 text-right text-red-700">
+                  {data.totalGrossRevenue > 0
+                    ? `-${((data.partsCMV / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            {/* 3. MARGEM DE CONTRIBUIÇÃO BRUTA */}
-            <tr className="bg-zinc-100 font-bold border-t-2 border-zinc-950">
-              <td className="p-2.5 text-zinc-950">3. (=) MARGEM DE CONTRIBUIÇÃO OPERACIONAL</td>
-              <td className="p-2.5 text-center text-zinc-500">—</td>
-              <td className="p-2.5 text-right text-zinc-950 font-black">
-                {fmtBRL(data.grossMargin)}
-              </td>
-              <td className="p-2.5 text-right text-zinc-950">
-                {data.totalGrossRevenue > 0
-                  ? `${((data.grossMargin / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              {/* 3. MARGEM DE CONTRIBUIÇÃO BRUTA */}
+              <tr className="bg-zinc-100 font-bold border-t-2 border-zinc-950">
+                <td className="p-2.5 text-zinc-950">3. (=) MARGEM DE CONTRIBUIÇÃO OPERACIONAL</td>
+                <td className="p-2.5 text-center text-zinc-500">—</td>
+                <td className="p-2.5 text-right text-zinc-950 font-black">
+                  {fmtBRL(data.grossMargin)}
+                </td>
+                <td className="p-2.5 text-right text-zinc-950">
+                  {data.totalGrossRevenue > 0
+                    ? `${((data.grossMargin / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            {/* 4. DEDUÇÕES OPERACIONAIS: COMISSÕES */}
-            <tr className="hover:bg-zinc-50 text-red-900">
-              <td className="p-2 pl-6">
-                <Link href="/admin/comissoes" className="hover:underline flex items-center gap-1.5">
-                  <span>↳</span> 4.1 (-) Comissões Técnicas sobre M.O. (30% Mão de Obra)
-                </Link>
-              </td>
-              <td className="p-2 text-center text-zinc-500">30% sobre M.O.</td>
-              <td className="p-2 text-right font-bold">- {fmtBRL(data.technicianCommissions)}</td>
-              <td className="p-2 text-right text-red-700">
-                {data.totalGrossRevenue > 0
-                  ? `-${((data.technicianCommissions / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              {/* 4. DEDUÇÕES OPERACIONAIS: COMISSÕES */}
+              <tr className="hover:bg-zinc-50 text-red-900">
+                <td className="p-2 pl-6">
+                  <Link href="/admin/comissoes" className="hover:underline flex items-center gap-1.5">
+                    <span>↳</span> 4.1 (-) Comissões Técnicas Apuradas (Livro de Comissões)
+                  </Link>
+                </td>
+                <td className="p-2 text-center text-zinc-500">Rateio Real</td>
+                <td className="p-2 text-right font-bold">- {fmtBRL(data.technicianCommissions)}</td>
+                <td className="p-2 text-right text-red-700">
+                  {data.totalGrossRevenue > 0
+                    ? `-${((data.technicianCommissions / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            {/* 5. DEDUÇÕES OPERACIONAIS: SANGRIAS E DESPESAS DE CAIXA */}
-            <tr className="hover:bg-zinc-50 text-red-900">
-              <td className="p-2 pl-6">
-                <Link href="/admin/caixa" className="hover:underline flex items-center gap-1.5">
-                  <span>↳</span> 4.2 (-) Despesas Operacionais / Sangrias do Caixa
-                </Link>
-              </td>
-              <td className="p-2 text-center text-zinc-500">{data.cashBleedCount} sangrias</td>
-              <td className="p-2 text-right font-bold">- {fmtBRL(data.cashBleedExpenses)}</td>
-              <td className="p-2 text-right text-red-700">
-                {data.totalGrossRevenue > 0
-                  ? `-${((data.cashBleedExpenses / data.totalGrossRevenue) * 100).toFixed(1)}%`
-                  : '0%'}
-              </td>
-            </tr>
+              {/* 5. DEDUÇÕES OPERACIONAIS: SANGRIAS E DESPESAS DE CAIXA */}
+              <tr className="hover:bg-zinc-50 text-red-900">
+                <td className="p-2 pl-6">
+                  <Link href="/admin/caixa" className="hover:underline flex items-center gap-1.5">
+                    <span>↳</span> 4.2 (-) Despesas Operacionais / Sangrias do Caixa
+                  </Link>
+                </td>
+                <td className="p-2 text-center text-zinc-500">{data.cashBleedCount} sangrias</td>
+                <td className="p-2 text-right font-bold">- {fmtBRL(data.cashBleedExpenses)}</td>
+                <td className="p-2 text-right text-red-700">
+                  {data.totalGrossRevenue > 0
+                    ? `-${((data.cashBleedExpenses / data.totalGrossRevenue) * 100).toFixed(1)}%`
+                    : '0%'}
+                </td>
+              </tr>
 
-            {/* 6. LUCRO LÍQUIDO REAL */}
-            <tr
-              className={`font-black text-sm border-t-2 border-b-2 border-zinc-950 ${
-                isProfitPositive
-                  ? 'bg-emerald-100 text-emerald-950'
-                  : 'bg-red-100 text-red-950'
-              }`}
-            >
-              <td className="p-3">5. (=) RESULTADO LÍQUIDO REAL DO PERÍODO</td>
-              <td className="p-3 text-center">
-                {isProfitPositive ? 'LUCRO' : 'PREJUÍZO'}
-              </td>
-              <td className="p-3 text-right text-base font-black">
-                {fmtBRL(data.netProfit)}
-              </td>
-              <td className="p-3 text-right">
-                {data.netMarginPct.toFixed(1)}%
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              {/* 6. LUCRO LÍQUIDO REAL */}
+              <tr
+                className={`font-black text-sm border-t-2 border-b-2 border-zinc-950 ${
+                  isProfitPositive
+                    ? 'bg-emerald-100 text-emerald-950'
+                    : 'bg-red-100 text-red-950'
+                }`}
+              >
+                <td className="p-3">5. (=) RESULTADO LÍQUIDO REAL DO PERÍODO</td>
+                <td className="p-3 text-center">
+                  {isProfitPositive ? 'LUCRO' : 'PREJUÍZO'}
+                </td>
+                <td className="p-3 text-right text-base font-black">
+                  {fmtBRL(data.netProfit)}
+                </td>
+                <td className="p-3 text-right">
+                  {data.netMarginPct.toFixed(1)}%
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* RODA PÉ INFORMATIVO */}
       <div className="flex flex-wrap items-center justify-between text-[11px] font-mono text-zinc-500 pt-1">
         <span>
-          💡 Cálculo em conformidade com as comissões técnicas (30% sobre Mão de Obra das OSs) e movimentações reais de caixa.
+          💡 Cálculo em conformidade com o CMV real (PDV + OS), livro de comissões (Iago 30% / Jefferson 50% / Loja 0%) e sangrias do caixa.
         </span>
         <Link
           href="/admin/comissoes"

@@ -59,8 +59,8 @@ export default async function ContasAReceberPage() {
   // 4. Busca sessão de caixa aberta no momento
   const { data: activeSessionRow } = await supabase
     .from('cash_sessions')
-    .select('id, opened_at, operator:profiles!cash_sessions_operator_id_fkey(full_name)')
-    .is('closed_at', null)
+    .select('id, opened_at, operator:profiles!cash_sessions_opened_by_fkey(full_name)')
+    .eq('status', 'open')
     .order('opened_at', { ascending: false })
     .limit(1)
     .maybeSingle();

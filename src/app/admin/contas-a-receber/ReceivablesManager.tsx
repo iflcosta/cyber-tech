@@ -165,7 +165,10 @@ export function ReceivablesManager({
     e.preventDefault();
     if (!payModalItem) return;
 
-    const num = Number(payAmountStr.replace(/\./g, '').replace(',', '.'));
+    const normalized = payAmountStr.includes(',')
+      ? payAmountStr.replace(/\./g, '').replace(',', '.')
+      : payAmountStr.trim();
+    const num = Number(normalized);
     if (!Number.isFinite(num) || num <= 0) {
       setPayError('Informe um valor de pagamento válido maior que zero.');
       return;
@@ -177,25 +180,48 @@ export function ReceivablesManager({
     try {
       const supabase = createCRMBrowserClient();
 
-      // 1. Grava o pagamento da OS
-      const { error: payErr } = await supabase.from('service_order_payments').insert({
-        service_order_id: payModalItem.id,
-        amount: num,
-        payment_method: payMethod,
-        author_id: currentUserId,
-      } as never);
+      // 1. Grava o pagamento da OS (se for em dinheiro e houver caixa aberto, a trigger
+      //    trg_os_payments_cash_sync_insert já lança automaticamente em cash_entries)
+      const { data: insertedPay, error: payErr } = await supabase
+        .from('service_order_payments')
+        .insert({
+          service_order_id: payModalItem.id,
+          amount: num,
+          payment_method: payMethod,
+          author_id: currentUserId,
+        } as never)
+        .select('id')
+        .single();
       if (payErr) throw payErr;
 
-      // 2. Se for em dinheiro e houver caixa aberto, lança no Caixa
-      if (addToCash && activeCashSession && payMethod === 'cash') {
-        const desc = `Recebimento OS #${payModalItem.short_id} (${payModalItem.customer_name}) - Baixa em A Receber`;
-        await supabase.from('cash_entries').insert({
-          session_id: activeCashSession.id,
-          entry_type: 'in_os',
-          amount: num,
-          description: desc,
+      // 2. Se o operador desmarcou a opção de lançar no caixa em um pagamento em dinheiro,
+      //    remove a entrada automática gerada pela trigger; caso contrário, se houver observação,
+      //    enriquece a descrição no caixa.
+      if (payMethod === 'cash' && insertedPay?.id) {
+        if (!addToCash) {
+          await supabase
+            .from('cash_entries')
+            .delete()
+            .eq('service_order_payment_id', insertedPay.id);
+        } else if (payNotes.trim()) {
+          const customDesc = `Recebimento OS #${payModalItem.short_id || payModalItem.os_number} (${payModalItem.customer_name}) - ${payNotes.trim()}`;
+          await supabase
+            .from('cash_entries')
+            .update({ description: customDesc })
+            .eq('service_order_payment_id', insertedPay.id);
+        }
+      }
+
+      // 3. Se houver observação na baixa, registra na timeline da OS para rastreabilidade
+      if (payNotes.trim()) {
+        await supabase.from('service_order_events').insert({
+          service_order_id: payModalItem.id,
           author_id: currentUserId,
-        });
+          event_type: 'note',
+          payload: {
+            note: `Baixa em Contas a Receber (${fmtBRL(num)} via ${payMethod.toUpperCase()}): ${payNotes.trim()}`,
+          },
+        } as never);
       }
 
       setPayModalItem(null);

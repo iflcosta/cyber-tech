@@ -65,7 +65,10 @@ export function PartOrderActions({
     try {
       const supabase = createCRMBrowserClient();
       const itemName = [partDescription, partVariant].filter(Boolean).join(' - ');
-      const cleanPrice = Number(applyPrice.replace(/\./g, '').replace(',', '.'));
+      const normalizedPrice = applyPrice.includes(',')
+        ? applyPrice.replace(/\./g, '').replace(',', '.')
+        : applyPrice.trim();
+      const cleanPrice = Number(normalizedPrice);
       const numValue = Number.isFinite(cleanPrice) && cleanPrice > 0 ? cleanPrice : (partValue || 0);
 
       if (serviceOrderId && numValue > 0) {
@@ -82,17 +85,19 @@ export function PartOrderActions({
         );
         if (rpcErr) throw rpcErr;
 
-        // Atualiza valor estimado da OS para refletir no recibo e portal
+        // Atualiza valor estimado da OS para refletir no recibo e portal preservando mão de obra
         try {
           const { data: currentOS } = await supabase
             .from('service_orders')
-            .select('estimated_value')
+            .select('estimated_value, labor_cost')
             .eq('id', serviceOrderId)
             .single();
 
           if (currentOS) {
             const currentEst = Number(currentOS.estimated_value || 0);
-            const newEst = Math.round((currentEst + numValue) * 100) / 100;
+            const currentLabor = Number(currentOS.labor_cost || 0);
+            const baseValue = currentEst > 0 ? currentEst : currentLabor;
+            const newEst = Math.round((baseValue + numValue) * 100) / 100;
             await supabase
               .from('service_orders')
               .update({

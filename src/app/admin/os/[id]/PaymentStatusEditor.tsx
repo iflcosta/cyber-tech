@@ -11,8 +11,12 @@ function fmtBRL(n: number): string {
 }
 
 function parseBRL(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(/\./g, '').replace(',', '.'));
+  const clean = v.trim().replace(/[R$\s]/g, '');
+  if (!clean) return null;
+  const normalized = clean.includes(',')
+    ? clean.replace(/\./g, '').replace(',', '.')
+    : clean;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
