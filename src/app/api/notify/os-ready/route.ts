@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const totalMsg = grandTotal > 0 ? `💰 *Valor total:* ${fmtBRL(grandTotal)}` : '';
     const repairNote = so.repair_notes?.trim();
     const serviceMsg = repairNote ? `🔧 *Serviço realizado:* ${repairNote}` : '';
-    const trackingUrl = `https://www.cyberinformatica.tech/status?os=${encodeURIComponent(osNumberStr.replace(/\D/g, '') || osNumberStr)}`;
+    const trackingUrl = `https://www.cyberinformatica.tech/status?os=${encodeURIComponent(so.os_number || so.short_id || osNumberStr)}`;
 
     const messageLines = [
       `Olá, *${customerFirstName}*! 👋`,

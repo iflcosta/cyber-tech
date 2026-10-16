@@ -120,86 +120,98 @@ export async function GET(request: Request) {
         const cleanQuery = rawClean.replace(/[,().%*'\\"`;]/g, '').trim();
         const noPrefix = cleanQuery.replace(/^OS-?/i, '').trim();
         const digitsFromQuery = cleanQuery.replace(/\D/g, '');
-        const isLikelyPhoneQuery =
-          !cleanQuery.toUpperCase().startsWith('OS') &&
-          !cleanQuery.toUpperCase().startsWith('CYB') &&
-          digitsFromQuery.length >= 8 &&
-          digitsFromQuery.length <= 13;
 
-        const effectivePhone = phone || (isLikelyPhoneQuery ? digitsFromQuery : '');
+        const selectCols = `
+          id,
+          short_id,
+          os_number,
+          status,
+          equipment_type,
+          equipment_brand,
+          equipment_model,
+          equipment_color,
+          equipment_serial,
+          reported_defect,
+          repair_notes,
+          accessories_in,
+          entry_checklist,
+          equipment_photos,
+          estimated_value,
+          labor_cost,
+          payment_status,
+          payment_method,
+          estimated_ready_at,
+          created_at,
+          updated_at,
+          delivered_at,
+          customer:customers(name, phone, phone_search)
+        `;
 
-        let soQuery = client
-          .from('service_orders')
-          .select(`
-            id,
-            short_id,
-            os_number,
-            status,
-            equipment_type,
-            equipment_brand,
-            equipment_model,
-            equipment_color,
-            equipment_serial,
-            reported_defect,
-            repair_notes,
-            accessories_in,
-            entry_checklist,
-            equipment_photos,
-            estimated_value,
-            labor_cost,
-            payment_status,
-            payment_method,
-            estimated_ready_at,
-            created_at,
-            updated_at,
-            delivered_at,
-            customer:customers(name, phone, phone_search)
-          `)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (cleanQuery && !isLikelyPhoneQuery) {
+        // 2.1 Tenta buscar diretamente pela OS (código, número sequencial ou formato compacto)
+        if (cleanQuery) {
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanQuery);
-          if (isUUID) {
-            soQuery = soQuery.eq('id', cleanQuery);
-          } else {
-            soQuery = soQuery.or(
-              `os_number.ilike.${cleanQuery},os_number.ilike.OS-${noPrefix},short_id.ilike.${cleanQuery},short_id.ilike.OS-${noPrefix}`,
-            );
-          }
-        } else if (effectivePhone) {
-          const digitsOnly = effectivePhone.replace(/\D/g, '');
-          if (digitsOnly.length >= 8) {
-            const { data: matchedCustomers } = await client
-              .from('customers')
-              .select('id')
-              .or(`phone_search.ilike.%${digitsOnly}%,phone.ilike.%${digitsOnly}%`)
-              .limit(5);
+          let directSoQuery = client
+            .from('service_orders')
+            .select(selectCols)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-            const customerIds = (matchedCustomers || []).map((c: { id: string }) => c.id);
-            if (customerIds.length === 0) {
-              return NextResponse.json(
-                { found: false, error: 'Nenhuma Ordem de Serviço encontrada para este telefone.' },
-                { status: 404, headers: NO_CACHE_HEADERS }
-              );
-            }
-            soQuery = soQuery.in('customer_id', customerIds);
+          if (isUUID) {
+            directSoQuery = directSoQuery.eq('id', cleanQuery);
           } else {
-            return NextResponse.json(
-              { found: false, error: 'Informe um número de telefone com DDD válido.' },
-              { status: 400, headers: NO_CACHE_HEADERS }
-            );
+            const osFilters: string[] = [
+              `os_number.ilike.${cleanQuery}`,
+              `os_number.ilike.OS-${noPrefix}`,
+              `short_id.ilike.${cleanQuery}`,
+              `short_id.ilike.OS-${noPrefix}`,
+            ];
+
+            // Formato compacto ano + sequência (ex: 20260021 -> 2026-0021)
+            if (digitsFromQuery.length === 8 && digitsFromQuery.startsWith('202')) {
+              const formatted = `${digitsFromQuery.slice(0, 4)}-${digitsFromQuery.slice(4)}`;
+              osFilters.push(`os_number.ilike.%${formatted}%`);
+              osFilters.push(`os_number.ilike.OS-${formatted}`);
+            }
+
+            // Sequencial curto (ex: 21 ou 0021 -> %-0021)
+            if (digitsFromQuery.length > 0 && digitsFromQuery.length <= 6) {
+              const pad4 = digitsFromQuery.padStart(4, '0');
+              osFilters.push(`os_number.ilike.%-${pad4}`);
+              osFilters.push(`short_id.ilike.%${pad4}`);
+            }
+
+            directSoQuery = directSoQuery.or(osFilters.join(','));
           }
-        } else {
-          return NextResponse.json(
-            { found: false, error: 'Informe o número da OS ou telefone para consulta.' },
-            { status: 400, headers: NO_CACHE_HEADERS }
-          );
+
+          const { data: directOrders } = await directSoQuery;
+          if (directOrders && directOrders.length > 0) {
+            return NextResponse.json(sanitizeTrackingPayload(formatSafeOS(directOrders[0])), { headers: NO_CACHE_HEADERS });
+          }
         }
 
-        const { data: orders } = await soQuery;
-        if (orders && orders.length > 0) {
-          return NextResponse.json(sanitizeTrackingPayload(formatSafeOS(orders[0])), { headers: NO_CACHE_HEADERS });
+        // 2.2 Se não localizou por código e a consulta aparenta ser um telefone (mínimo 10 dígitos)
+        const effectivePhone = phone || (digitsFromQuery.length >= 10 && digitsFromQuery.length <= 13 ? digitsFromQuery : '');
+        if (effectivePhone) {
+          const digitsOnly = effectivePhone.replace(/\D/g, '');
+          const { data: matchedCustomers } = await client
+            .from('customers')
+            .select('id')
+            .or(`phone_search.ilike.%${digitsOnly}%,phone.ilike.%${digitsOnly}%`)
+            .limit(5);
+
+          const customerIds = (matchedCustomers || []).map((c: { id: string }) => c.id);
+          if (customerIds.length > 0) {
+            const { data: phoneOrders } = await client
+              .from('service_orders')
+              .select(selectCols)
+              .in('customer_id', customerIds)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+            if (phoneOrders && phoneOrders.length > 0) {
+              return NextResponse.json(sanitizeTrackingPayload(formatSafeOS(phoneOrders[0])), { headers: NO_CACHE_HEADERS });
+            }
+          }
         }
       } catch (e) {
         console.warn('Erro ao consultar Supabase em /api/status/track:', e);
