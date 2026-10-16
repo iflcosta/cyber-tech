@@ -27,8 +27,27 @@ export default async function VenderPage({
     .eq('id', user.id)
     .single();
 
-  // Veio da ficha do cliente ("+ Nova venda") — pré-vincula a venda a
-  // esse cliente, sem precisar buscar de novo na hora de finalizar.
+  // Consulta se há sessão de caixa aberta no momento
+  const { data: openCashSession } = await supabase
+    .from('cash_sessions')
+    .select('id, opened_at, session_number')
+    .eq('status', 'open')
+    .order('opened_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let cashWarning: 'none' | 'closed' | 'old' = 'none';
+  let cashOpenedAt: string | undefined;
+  if (!openCashSession) {
+    cashWarning = 'closed';
+  } else {
+    cashOpenedAt = openCashSession.opened_at;
+    const isOld =
+      Date.now() - new Date(openCashSession.opened_at).getTime() > 16 * 60 * 60 * 1000 ||
+      new Date(openCashSession.opened_at).toLocaleDateString('pt-BR') !== new Date().toLocaleDateString('pt-BR');
+    if (isOld) cashWarning = 'old';
+  }
+
   let initialCustomer;
   if (params.customer) {
     const { data: c } = await supabase
@@ -45,6 +64,8 @@ export default async function VenderPage({
       currentUserId={user.id}
       currentUserName={profile?.full_name ?? '—'}
       initialCustomer={initialCustomer}
+      cashWarning={cashWarning}
+      cashOpenedAt={cashOpenedAt}
     />
   );
 }

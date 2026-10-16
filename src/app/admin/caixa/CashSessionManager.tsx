@@ -216,6 +216,11 @@ export function CashSessionManager({
     }
   }
 
+  const isOldSession = activeSession
+    ? Date.now() - new Date(activeSession.opened_at).getTime() > 16 * 60 * 60 * 1000 ||
+      new Date(activeSession.opened_at).toLocaleDateString('pt-BR') !== new Date().toLocaleDateString('pt-BR')
+    : false;
+
   return (
     <div className="space-y-6 font-sans">
       {/* SE O CAIXA ESTIVER FECHADO: TELA DE ABERTURA MATINAL */}
@@ -283,6 +288,32 @@ export function CashSessionManager({
       ) : (
         /* SE O CAIXA ESTIVER ABERTO: PAINEL DE CONTROLE DE CAIXA */
         <div className="space-y-6">
+          {isOldSession && (
+            <div className="border-2 border-amber-500 bg-amber-50 p-4 font-mono text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <p className="font-bold uppercase tracking-wider">
+                    Atenção: Esta sessão de caixa foi aberta em {formatDateTimeBR(activeSession.opened_at)} (dia anterior)
+                  </p>
+                  <p className="text-[11px] text-amber-900 mt-0.5">
+                    Para manter a prestação de contas diária e a conferência de gaveta exatas, recomenda-se realizar o <strong>Fechamento de Caixa</strong> de ontem antes de registrar novas movimentações hoje.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setCloseResult(null);
+                  setShowCloseModal(true);
+                }}
+                className="whitespace-nowrap bg-amber-600 px-3 py-1.5 font-bold uppercase text-white hover:bg-amber-700 transition cursor-pointer"
+              >
+                🔒 Fechar Caixa de Ontem
+              </button>
+            </div>
+          )}
+
           {/* BARRA SUPERIOR DO CAIXA ABERTO */}
           <div className="border-2 border-zinc-950 bg-white p-5 shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-4">

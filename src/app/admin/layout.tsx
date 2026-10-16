@@ -5,6 +5,7 @@ import { MobileNav } from '@/app/admin/components/MobileNav';
 import { HeaderBackButton } from '@/app/admin/components/HeaderBackButton';
 import { PrintShortcutGuard } from '@/app/admin/components/PrintShortcutGuard';
 import { GlobalBarcodeScanner } from '@/app/admin/components/GlobalBarcodeScanner';
+import { GlobalShortcuts } from '@/app/admin/components/GlobalShortcuts';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   let user: { id: string; email?: string | null } | null = null;
@@ -62,6 +63,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-dvh print:min-h-0 print:h-auto bg-zinc-50 print:bg-white text-zinc-950 antialiased font-body overflow-x-hidden print:overflow-visible">
       <PrintShortcutGuard />
       <GlobalBarcodeScanner />
+      <GlobalShortcuts />
       <header className="print:hidden sticky top-0 z-30 border-b-2 border-zinc-950 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">

@@ -233,16 +233,20 @@ export function DesktopNav({
       <div className="flex items-center gap-2">
         <Link
           href="/admin/os/new"
-          className="whitespace-nowrap bg-zinc-950 px-3.5 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-xs flex items-center gap-1.5"
+          className="whitespace-nowrap bg-zinc-950 px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition shadow-xs flex items-center gap-1.5"
+          title="Nova Ordem de Serviço (Atalho: F3)"
         >
           <span>+</span>
           <span>Nova OS</span>
+          <span className="text-[9px] bg-zinc-800 text-zinc-300 px-1 py-0.5 font-normal ml-0.5">F3</span>
         </Link>
         <Link
           href="/admin/vender"
-          className="whitespace-nowrap border-2 border-zinc-950 bg-white px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition shadow-xs"
+          className="whitespace-nowrap border-2 border-zinc-950 bg-white px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-zinc-950 hover:bg-zinc-100 transition shadow-xs flex items-center gap-1.5"
+          title="PDV / Nova Venda (Atalho: F2)"
         >
-          + Vender
+          <span>+ Vender</span>
+          <span className="text-[9px] bg-zinc-100 text-zinc-600 px-1 py-0.5 font-normal border border-zinc-300">F2</span>
         </Link>
       </div>
 

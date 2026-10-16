@@ -13,6 +13,7 @@ import { ChecklistEditor } from './ChecklistEditor';
 import { PaymentStatusEditor } from './PaymentStatusEditor';
 import { PartOrderStatusBadge } from '@/app/admin/components/PartOrderStatusBadge';
 import { UsePartForm } from './UsePartForm';
+import { AppliedPartsList } from './AppliedPartsList';
 import { EquipmentEditor } from './EquipmentEditor';
 import { OSPhotosEditor } from './OSPhotosEditor';
 import { TechnicianAssigner } from './TechnicianAssigner';
@@ -84,8 +85,8 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
     supabase
       .from('stock_movements')
       .select(`
-        id, quantity, unit_price, total_amount, created_at,
-        stock_item:stock_items(name, ean13)
+        id, quantity, unit_price, total_amount, created_at, stock_item_id,
+        stock_item:stock_items(id, name, ean13)
       `)
       .eq('service_order_id', id)
       .in('movement_type', ['out', 'sale'])
@@ -348,26 +349,14 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
               />
             </div>
 
-            {(partsUsed && partsUsed.length > 0) && (
-              <div className="border-t border-zinc-200 pt-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Peças aplicadas do estoque ({partsUsed.length})
-                </h3>
-                <ul className="mt-2 divide-y divide-zinc-100 text-sm">
-                  {partsUsed.map((p) => (
-                    <li key={p.id} className="flex items-center justify-between py-1.5">
-                      <span className="text-zinc-900">
-                        {p.stock_item?.name ?? '(item removido)'}
-                        <span className="ml-2 font-mono text-zinc-500">×{p.quantity}</span>
-                      </span>
-                      <span className="font-mono font-medium text-zinc-900">
-                        R$ {Number(p.total_amount ?? 0).toFixed(2)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <AppliedPartsList
+              parts={(partsUsedRaw ?? []) as any}
+              serviceOrderId={normalizedSo.id}
+              osNumber={normalizedSo.os_number}
+              canEdit={canEdit}
+              isFinal={isFinal}
+              currentUserId={profile?.id ?? ''}
+            />
 
             {canEdit && !isFinal && (
               <div className="border-t border-zinc-200 pt-3">

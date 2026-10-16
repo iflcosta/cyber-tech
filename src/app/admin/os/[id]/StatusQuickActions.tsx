@@ -326,15 +326,16 @@ export function StatusQuickActions({
       });
 
       if (readyNotifyWhatsApp && customerPhone) {
-        const totalMsg =
-          finalGrandTotal > 0 ? ` Valor total: ${fmtBRL(finalGrandTotal)}.` : '';
-        const servMsg = notesToSave ? ` Serviço realizado: ${notesToSave}.` : '';
-        const trackingLink = osLabel ? `\n\nConsulte o laudo completo em tempo real:\n👉 https://www.cyberinformatica.tech/status?os=${encodeURIComponent(osLabel.replace(/\D/g, '') || osLabel)}` : '';
-        const msg = `Olá ${customerName ?? ''}! Aqui é da Cyber Informática. Seu aparelho${
-          osLabel ? ` (OS ${osLabel})` : ''
-        } já está pronto para retirada.${servMsg}${totalMsg}${trackingLink}\n\n📍 Rua Cel. Teófilo Leme 967, Centro de Bragança Paulista. 🙂`;
-        const link = toWhatsAppLink(customerPhone, msg);
-        if (link) window.open(link, '_blank');
+        // Dispara notificação automática de WhatsApp em background via Evolution API (não-bloqueante)
+        fetch('/api/notify/os-ready', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ osId }),
+          keepalive: true,
+        }).catch((err) => {
+          console.warn('[WhatsApp Auto] Falha ao disparar notificação em background:', err);
+        });
       }
 
       setReadying(false);
@@ -695,7 +696,7 @@ export function StatusQuickActions({
                   onChange={(e) => setReadyNotifyWhatsApp(e.target.checked)}
                   className="h-4 w-4 accent-black text-black focus:ring-black rounded"
                 />
-                📲 Avisar cliente no WhatsApp que o aparelho está pronto ({customerPhone})
+                📲 Notificar cliente no WhatsApp automaticamente via Evolution API ({customerPhone})
               </label>
             )}
           </div>

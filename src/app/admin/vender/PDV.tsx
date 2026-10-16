@@ -60,12 +60,16 @@ export function PDV({
   currentUserId,
   currentUserName,
   initialCustomer,
+  cashWarning = 'none',
+  cashOpenedAt,
 }: {
   items: Item[];
   currentUserId: string;
   currentUserName: string;
   /** Pré-vincula a venda a esse cliente (ex: veio da ficha do cliente). */
   initialCustomer?: { id: string; name: string; phone: string | null };
+  cashWarning?: 'none' | 'closed' | 'old';
+  cashOpenedAt?: string;
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -536,6 +540,46 @@ export function PDV({
           <span className="border border-zinc-300 bg-white px-1.5 py-0.5 font-bold text-zinc-700">F4 Cartão</span>
         </div>
       </div>
+
+      {cashWarning === 'closed' && (
+        <div className="border-2 border-red-600 bg-red-50 p-3 font-mono text-xs text-red-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚠️</span>
+            <div>
+              <p className="font-bold uppercase tracking-wider">Atenção: Nenhuma sessão de caixa aberta no momento</p>
+              <p className="text-[11px] text-red-900 mt-0.5">
+                Vendas em dinheiro não poderão ser computadas na gaveta até que o caixa do dia seja aberto.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/admin/caixa"
+            className="whitespace-nowrap bg-red-600 px-3 py-1 font-bold uppercase text-white hover:bg-red-700 transition"
+          >
+            Abrir Caixa Agora &rarr;
+          </a>
+        </div>
+      )}
+
+      {cashWarning === 'old' && (
+        <div className="border-2 border-amber-500 bg-amber-50 p-3 font-mono text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚠️</span>
+            <div>
+              <p className="font-bold uppercase tracking-wider">Atenção: Sessão de caixa aberta em dia anterior</p>
+              <p className="text-[11px] text-amber-900 mt-0.5">
+                Recomendamos fazer o fechamento cego de ontem em Financeiro &rarr; Caixa antes de continuar as vendas hoje.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/admin/caixa"
+            className="whitespace-nowrap bg-amber-600 px-3 py-1 font-bold uppercase text-white hover:bg-amber-700 transition"
+          >
+            Conferir Caixa &rarr;
+          </a>
+        </div>
+      )}
 
       {/* Barra de Chips Rápidos de Balcão (1-toque) */}
       <div className="border border-zinc-200 bg-zinc-50 p-3">
